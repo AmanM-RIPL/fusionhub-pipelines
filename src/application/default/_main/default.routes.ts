@@ -1,0 +1,26 @@
+import { FastifyInstance } from "fastify";
+import tenantRoutes from "../tenant/tenant.route";
+import userRoutes from "../user/user.route";
+import tenantContextPlugin from "../tenant/tenant.context";
+import userContextPlugin from "../user/user.context";
+import dbTransactionPlugin from "../../../infrastructure/plugins/db-transaction-plugin";
+import fp from 'fastify-plugin';
+import permissionContextPlugin from "../permission/permission.context";
+import permissionRoutes from "../permission/permission.route";
+import draftEntityContextPlugin from "../draft-entity/draft-entity.context";
+
+export default async function defaultRoutes(fastify: FastifyInstance) {
+
+  // Registering the plugins
+  await fastify.register(fp(dbTransactionPlugin));
+  await fastify.register(fp(draftEntityContextPlugin));
+  
+  await fastify.register(fp(tenantContextPlugin));
+  await fastify.register(fp(userContextPlugin));
+  await fastify.register(fp(permissionContextPlugin));
+
+  // Registering routes
+  await fastify.register(fp(tenantRoutes));
+  await fastify.register(fp(userRoutes));
+  await fastify.register(fp(permissionRoutes));
+}

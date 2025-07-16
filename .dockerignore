@@ -1,0 +1,36 @@
+# Ignore node_modules - we don't want to copy this to Docker
+node_modules
+node_modules/
+
+# Ignore npm-debug files
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Ignore any environment variables files
+.env
+.env.local
+.env.docker
+
+# Ignore build files
+dist
+build
+
+# Ignore TypeScript cache files
+*.tsbuildinfo
+
+# Ignore logs
+logs
+*.log
+
+# Ignore any editor config files
+.vscode
+.idea
+
+# Ignore Docker files themselves
+Dockerfile
+.dockerignore
+
+# Ignore git repository
+.git
+.gitignore
