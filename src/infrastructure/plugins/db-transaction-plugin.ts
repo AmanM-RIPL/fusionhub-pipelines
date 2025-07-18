@@ -53,6 +53,8 @@ export default async function dbTransactionPlugin(fastify: FastifyInstance) {
     } else if (error instanceof CustomError) {
       statusCode = error.statusCode;
       errorMessage = error.message;
+    } else {
+      errorMessage = error.message;
     }
 
     reply.code(statusCode).send({ error: errorMessage });
