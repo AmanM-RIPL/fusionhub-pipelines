@@ -153,50 +153,6 @@ export default async function userRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // Login route
-  fastify.post(
-    '/user/login',
-    {
-      schema: {
-        body: { $ref: 'user-object#/properties/authenticate' },
-        response: {
-          201: {
-            allOf: [
-              { $ref: 'user-object#/properties/selectable' },
-              {
-                type: 'object',
-                properties: {
-                  token: { type: 'string' }
-                },
-                required: ['token']
-              }
-            ]
-          },
-          500: { type: 'object', properties: { error: { type: 'string' } } }
-        }
-      },
-      handler: async (
-        request: FastifyRequest<{
-          Body: { username: string; password: string;};
-        }>,
-        reply: FastifyReply
-      ) => {
-        const userDetails = await request.getDecorator<UserService>('userService').authenticate(request.body.username, request.body.password);
-
-        if (!userDetails) {
-          throw new NotFoundError('Invalid username or password');
-        }
-
-        const token = fastify.jwt.sign({
-          user: userDetails.id,
-          tenant: userDetails.tenant
-        });
-
-        return reply.code(201).send({ ...userDetails, token });
-      }
-    }
-  );
-
   fastify.patch(
     '/user/:userId',
     {

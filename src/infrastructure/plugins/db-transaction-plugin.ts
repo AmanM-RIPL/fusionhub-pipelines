@@ -55,6 +55,10 @@ export default async function dbTransactionPlugin(fastify: FastifyInstance) {
       errorMessage = error.message;
     } else {
       errorMessage = error.message;
+
+      if (process.env.NODE_ENV === "development") {
+        console.log(error);
+      }
     }
 
     reply.code(statusCode).send({ error: errorMessage });

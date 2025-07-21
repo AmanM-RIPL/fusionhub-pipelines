@@ -6,6 +6,7 @@ import kyselyPlugin from './infrastructure/plugins/kysely-plugin';
 import defaultJsonSchema from './infrastructure/plugins/default-json-schema';
 import defaultRoutes from './application/default/_main/default.routes';
 import { PinoLoggerOptions } from 'fastify/types/logger';
+import authRoutes from './application/auth/_main/auth.route';
 
 // logger configuration
 const envToLogger: { [key: string]: boolean | PinoLoggerOptions } = {
@@ -46,6 +47,7 @@ app.register(defaultJsonSchema);
 
 // registering the routes for action
 app.register(defaultRoutes, { prefix: '/api/default' });
+app.register(authRoutes, { prefix: '/api/auth' });
 
 // Run the server!
 app.listen({ 
