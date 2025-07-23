@@ -9,7 +9,7 @@
     "test:coverage": "NODE_ENV='test' jest --coverage",
     "build": "tsc && tsc-alias",
     "start": "node ./dist/index.js",
-    "dev": "NODE_ENV='development' node ./dist/index.js"
+    "dev": "cross-env NODE_ENV=development node ./dist/index.js"
   },
   "keywords": [],
   "author": "Rudrabhishek Infosystem Pvt. Ltd.",
@@ -19,7 +19,6 @@
     "@types/jest": "^29.5.14",
     "@types/node": "^22.6.1",
     "@types/react": "^18.3.12",
-    "dbmate": "^2.27.0",
     "jest": "^29.7.0",
     "jest-mock-extended": "^4.0.0-beta1",
     "ts-jest": "^29.3.4",
@@ -32,8 +31,9 @@
     "@google-cloud/storage": "^7.13.0",
     "@react-pdf/renderer": "^3.4.5",
     "@types/pg": "^8.11.10",
+    "cross-env": "^7.0.3",
     "crypto-js": "^4.2.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.6.1",
     "exceljs": "^4.4.0",
     "fastify": "^5.3.3",
     "fastify-plugin": "^5.0.1",

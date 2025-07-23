@@ -182,6 +182,44 @@ CREATE SEQUENCE public.tenant_id_seq
 
 ALTER SEQUENCE public.tenant_id_seq OWNED BY public.tenant.id;
 
+--
+-- Name: project id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+CREATE TABLE public.project (
+    id integer NOT NULL,
+    "createdOn" timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    name character varying(100) NOT NULL,
+    description text,
+    "projectCode" character varying(50) NOT NULL,
+    "startDate" date,
+    "endDate" date,
+    status character varying(20) DEFAULT 'pending',
+    "contactEmail" character varying(50),
+    "contactMobile" character varying(20),
+    "tenantId" integer,
+    "isBlocked" boolean DEFAULT false
+);
+
+-- Create the sequence for 'project.id'
+CREATE SEQUENCE public.project_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+-- Link the sequence to the 'project.id' column
+ALTER SEQUENCE public.project_id_seq OWNED BY public.project.id;
+
+-- Set default value for 'project.id' using the sequence
+ALTER TABLE ONLY public.project ALTER COLUMN id SET DEFAULT nextval('public.project_id_seq'::regclass);
+
+-- Optional: Add foreign key to tenant table
+ALTER TABLE ONLY public.project
+    ADD CONSTRAINT project_tenantId_fkey FOREIGN KEY ("tenantId") REFERENCES public.tenant(id) ON DELETE SET NULL;
+
 
 --
 -- Name: draft_entity id; Type: DEFAULT; Schema: public; Owner: -

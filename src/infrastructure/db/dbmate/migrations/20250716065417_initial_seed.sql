@@ -17,6 +17,32 @@ CREATE TABLE tenant (
     "isBlocked" BOOLEAN DEFAULT TRUE
 );
 
+-- migrate:up
+CREATE TABLE project (
+    -- default columns
+    "id" SERIAL PRIMARY KEY,
+    "createdOn" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    -- custom columns
+    "name" VARCHAR(100) NOT NULL,
+    "description" TEXT,
+    "projectCode" VARCHAR(50) UNIQUE NOT NULL,
+    "startDate" DATE,
+    "endDate" DATE,
+    "status" VARCHAR(20) DEFAULT 'pending', -- e.g., pending, active, completed
+
+    -- contact information
+    "contactEmail" VARCHAR(50),
+    "contactMobile" VARCHAR(20),
+
+    -- foreign key to tenant (optional, if you have multi-tenancy)
+    "tenantId" INTEGER REFERENCES tenant(id) ON DELETE SET NULL,
+
+    -- access control
+    "isBlocked" BOOLEAN DEFAULT FALSE
+);
+
+
 CREATE TABLE fh_user (
     -- default columns
     "id" SERIAL PRIMARY KEY,
