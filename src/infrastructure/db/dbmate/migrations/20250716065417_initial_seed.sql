@@ -20,6 +20,7 @@ CREATE TABLE tenant (
 CREATE TABLE project (
     -- default columns
     "id" SERIAL PRIMARY KEY,
+    "tenant" INT NOT NULL,
     "createdOn" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     -- custom columns
