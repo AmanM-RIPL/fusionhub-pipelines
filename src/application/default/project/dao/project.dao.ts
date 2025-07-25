@@ -12,7 +12,7 @@ export class ProjectDao implements IUnDeletableRepository<IProject> {
  }
   
   async findAll(limit: number, offset: number): Promise<Selectable<IProject>[]> {
-    return await this.db.selectFrom("public.project").selectAll().limit(limit).offset(offset).execute();
+    return await this.db.selectFrom("public.project").selectAll().where("tenant", "=", this.tenant).limit(limit).offset(offset).execute();
   }
 
   async create(entity: InsertableEntity<IProject>): Promise<Selectable<IProject>> {
@@ -30,6 +30,7 @@ export class ProjectDao implements IUnDeletableRepository<IProject> {
       .updateTable("public.project")
       .set(updatedObject)
       .where("id", "=", id)
+      .where("tenant", "=", this.tenant)
       .returningAll()
       .executeTakeFirst();
   }

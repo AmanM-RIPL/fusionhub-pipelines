@@ -2,11 +2,10 @@ import { Insertable, Selectable, Transaction } from "kysely";
 import { IUnDeletableRepository } from "../../common/repositories/base.repository";
 import { IProject } from "./project.model";
 import { UpdateableEntity } from "../../common/types/entity";
-import { IUserRepository } from "../user/user.repository";
-import { IUser } from "../user/user.model";
+import { IProjectRepository } from "../project/project.repository";
 
 export class ProjectService {
-  constructor(protected readonly projectRepository: IUnDeletableRepository<IProject>, protected readonly userRespository: IUserRepository) {}
+  constructor(protected readonly projectRepository: IUnDeletableRepository<IProject>, protected readonly projectRespository: IProjectRepository) {}
 
   async findById(id: number): Promise<Selectable<IProject> | undefined> {
     return await this.projectRepository.findById(id);

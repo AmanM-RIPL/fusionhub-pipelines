@@ -37,6 +37,10 @@ CREATE TABLE project (
 
     -- access control
     "isBlocked" BOOLEAN DEFAULT FALSE
+
+    -- foreign keys
+    CONSTRAINT fk_project_tenant FOREIGN KEY(tenant)
+        REFERENCES tenant(id) ON DELETE CASCADE
     
 );
 
