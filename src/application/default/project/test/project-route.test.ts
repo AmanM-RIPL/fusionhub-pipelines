@@ -52,7 +52,7 @@ describe('Default -> Project -> ProjectRoute', () => {
 
   test('should handle get tenant by id', async () => {
     const mockProject = { 
-      id: 1,
+        id: 1,
         name: 'HR Management System',
         createdOn: new Date(),
         description: 'A system to manage employee records, attendance, and payroll.',
@@ -62,8 +62,7 @@ describe('Default -> Project -> ProjectRoute', () => {
         status: 'active',
         contactEmail: 'project.manager@example.com',
         contactMobile: '9876543210',
-        isBlocked: false,
-        tenantId: 1
+        isBlocked: false
     } as Selectable<IProject>;
 
     tenantService.findById.mockResolvedValue(mockProject);
@@ -82,7 +81,7 @@ describe('Default -> Project -> ProjectRoute', () => {
 
   test('should handle get all tenants', async () => {
     const mockProjects = [{ 
-      id: 1,
+        id: 1,
         name: 'HR Management System',
         createdOn: new Date(),
         description: 'A system to manage employee records, attendance, and payroll.',
@@ -92,8 +91,7 @@ describe('Default -> Project -> ProjectRoute', () => {
         status: 'active',
         contactEmail: 'project.manager@example.com',
         contactMobile: '9876543210',
-        isBlocked: false,
-        tenantId: 1
+        isBlocked: false
     } as Selectable<IProject>];
     
     tenantService.findAll.mockResolvedValue(mockProjects);
@@ -113,7 +111,7 @@ describe('Default -> Project -> ProjectRoute', () => {
 
   test('should handle create tenant', async () => {
     const newProject = { 
-      id: 1,
+        id: 1,
         name: 'HR Management System',
         createdOn: new Date(),
         description: 'A system to manage employee records, attendance, and payroll.',
@@ -181,7 +179,7 @@ describe('Default -> Project -> ProjectRoute', () => {
 
   test('should handle tenant creation db error', async () => {
     const newProject = { 
-      id: 1,
+        id: 1,
         name: 'HR Management System',
         createdOn: new Date(),
         description: 'A system to manage employee records, attendance, and payroll.',
@@ -218,7 +216,7 @@ describe('Default -> Project -> ProjectRoute', () => {
     const updatedProject = { name: 'Updated Project', defaultEmail: 'sample@gmail.com', defaultMobile: '1234567890' } as UpdateableEntity<IProject>;
     tenantService.update.mockRejectedValue(new Error('Database error'));
     
-    const response = await fastify.inject({
+    const response = await fastify.inject({ 
       method: 'PATCH',
       url: '/tenant/1',
       headers: { authorization: 'Bearer test-token' },

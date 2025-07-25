@@ -39,7 +39,6 @@ describe('Default -> Project -> ProjectService', () => {
   test('findAll should call repository method with correct parameters', async () => {
     const mockProjects = [{
         name: 'HR Management System',
-        createdOn: new Date(),
         description: 'A system to manage employee records, attendance, and payroll.',
         projectCode: 'HRMS-001',
         startDate: new Date('2025-01-01'),
@@ -58,14 +57,13 @@ describe('Default -> Project -> ProjectService', () => {
   test('create should call repository method with correct parameters', async () => {
     const newProject = {
         name: 'HR Management System',
-        createdOn: new Date(),
         description: 'A system to manage employee records, attendance, and payroll.',
         projectCode: 'HRMS-001',
         startDate: new Date('2025-01-01'),
         endDate: new Date('2025-12-31'),
         status: 'active',
         contactEmail: 'project.manager@example.com',
-        contactMobile: '9876543210' } as (Insertable<IProject> & { adminUsername: string, adminPassword: string });
+        contactMobile: '9876543210' } as (Insertable<IProject>);
     
     const insertableProject = { name: newProject.name,
   description: newProject.description,
@@ -75,7 +73,7 @@ describe('Default -> Project -> ProjectService', () => {
   status: newProject.status,
   contactEmail: newProject.contactEmail,
   contactMobile: newProject.contactMobile,
-  tenantId: newProject.tenantId,
+  tenant: newProject.tenant,
   isBlocked: newProject.isBlocked
  } as Insertable<IProject>;
     const createdProject = { name: newProject.name,
@@ -86,7 +84,7 @@ describe('Default -> Project -> ProjectService', () => {
   status: newProject.status,
   contactEmail: newProject.contactEmail,
   contactMobile: newProject.contactMobile,
-  tenantId: newProject.tenantId,
+  tenant: newProject.tenant,
   isBlocked: newProject.isBlocked
  } as Selectable<IProject>;
     mockProjectRepository.create.mockResolvedValue(createdProject);

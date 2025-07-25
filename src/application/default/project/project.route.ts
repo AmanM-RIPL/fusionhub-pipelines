@@ -17,8 +17,8 @@ export default async function projectRoutes(fastify: FastifyInstance) {
           type: 'object',
          properties: {
             id: { type: 'integer' },
-            createdOn: { type: 'string', format: 'date-time' },
             name: { type: 'string' },
+            createdOn: { type: 'string', format: 'date-time' },
             description: { type: 'string', nullable: true },
             projectCode: { type: 'string' },
             startDate: { type: 'string', format: 'date' },
@@ -26,36 +26,17 @@ export default async function projectRoutes(fastify: FastifyInstance) {
             status: { type: 'string' },
             contactEmail: { type: 'string', nullable: true },
             contactMobile: { type: 'string', nullable: true },
-            tenantId: { type: 'integer', nullable: true },
+            tenant: { type: 'integer', nullable: true },
             isBlocked: { type: 'boolean' }
           },
-          required: ['id', 'createdOn', 'name', 'projectCode', 'startDate', 'status', 'isBlocked']
+          required: ['id', 'name', 'createdOn',  'projectCode', 'startDate', 'status', 'isBlocked']
         },
 
       insertable: {
         type: 'object',
         properties: {
-          createdOn: { type: 'string', format: 'date-time' },
-          name: { type: 'string' },
-          description: { type: 'string', nullable: true },
-          projectCode: { type: 'string' },
-          startDate: { type: 'string', format: 'date' },
-          endDate: { type: 'string', format: 'date', nullable: true },
-          status: { type: 'string' },
-          contactEmail: { type: 'string', nullable: true },
-          contactMobile: { type: 'string', nullable: true },
-          tenantId: { type: 'integer', nullable: true },
-          adminUsername: { type: 'string' },
-          adminPassword: { type: 'string' }
-        },
-        required: ['createdOn', 'name', 'projectCode', 'startDate', 'status', 'adminUsername','adminPassword']
-
-      },
-     updateable: {
-        type: 'object',
-        properties: {
-            createdOn: { type: 'string', format: 'date-time' },
             name: { type: 'string' },
+            createdOn: { type: 'string', format: 'date-time' },
             description: { type: 'string', nullable: true },
             projectCode: { type: 'string' },
             startDate: { type: 'string', format: 'date' },
@@ -63,7 +44,25 @@ export default async function projectRoutes(fastify: FastifyInstance) {
             status: { type: 'string' },
             contactEmail: { type: 'string', nullable: true },
             contactMobile: { type: 'string', nullable: true },
-            tenantId: { type: 'integer', nullable: true },
+            tenant: { type: 'integer', nullable: true },
+            isBlocked: { type: 'boolean' }
+          },
+          required: ['name', 'createdOn',  'projectCode', 'startDate', 'status', 'isBlocked']
+
+      },
+     updateable: {
+        type: 'object',
+        properties: {
+            name: { type: 'string' },
+            createdOn: { type: 'string', format: 'date-time' },
+            description: { type: 'string', nullable: true },
+            projectCode: { type: 'string' },
+            startDate: { type: 'string', format: 'date' },
+            endDate: { type: 'string', format: 'date', nullable: true },
+            status: { type: 'string' },
+            contactEmail: { type: 'string', nullable: true },
+            contactMobile: { type: 'string', nullable: true },
+            tenant: { type: 'integer', nullable: true },
             isBlocked: { type: 'boolean' }
           }
       },
@@ -95,11 +94,7 @@ export default async function projectRoutes(fastify: FastifyInstance) {
         }>,
         reply: FastifyReply
       ) => {
-        if ((request.user as RequestUser).user !== 1) {
-          throw new ForbiddenError('Forbidden: Only admin can access this endpoint');
-        }
-
-        const projectDetails = await request.getDecorator<ProjectService>('projectService').findById(request.params.projectId);
+         const projectDetails = await request.getDecorator<ProjectService>('projectService').findById(request.params.projectId);
 
         if (!projectDetails) {
           throw new NotFoundError('Project not found');
@@ -136,12 +131,7 @@ export default async function projectRoutes(fastify: FastifyInstance) {
         }>,
         reply: FastifyReply
       ) => {
-        if ((request.user as RequestUser).user !== 1) {
-          throw new ForbiddenError('Forbidden: Only admin can access this endpoint');
-        }
-
         const projectDetails = await request.getDecorator<ProjectService>('projectService').findAll(request.query.limit, request.query.offset);
-
         return reply.code(200).send(projectDetails);
       }
     }
@@ -160,15 +150,11 @@ export default async function projectRoutes(fastify: FastifyInstance) {
       },
       handler: async (
         request: FastifyRequest<{
-          Body: Insertable<IProject> & { adminUsername: string, adminPassword: string };
+          Body: Insertable<IProject>;
         }>,
         reply: FastifyReply
       ) => {
-        const newProject: Insertable<IProject> & { adminUsername: string, adminPassword: string } = request.body;
-
-        if ((request.user as RequestUser).user !== 1) {
-          throw new ForbiddenError('Forbidden: Only admin can access this endpoint');
-        }
+        const newProject: Insertable<IProject> = request.body;
 
         const projectDetails = await request.getDecorator<ProjectService>('projectService').create(newProject);
 
@@ -202,9 +188,6 @@ export default async function projectRoutes(fastify: FastifyInstance) {
         }>,
         reply: FastifyReply
       ) => {
-        if ((request.user as RequestUser).user !== 1) {
-          throw new ForbiddenError('Forbidden: Only admin can access this endpoint');
-        }
 
         const projectDetails = await request.getDecorator<ProjectService>('projectService').update(request.params.projectId, request.body);
 

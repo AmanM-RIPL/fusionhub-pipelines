@@ -16,23 +16,8 @@ export class ProjectService {
     return await this.projectRepository.findAll(limit, offset);
   }
 
-  async create(projectDetails: Insertable<IProject> & { adminUsername: string, adminPassword: string }): Promise<Selectable<IProject>> {
-    // need to remove additional properties from projectDetails
-    const { adminUsername, adminPassword, ...project } = projectDetails;
-    const newProject = await this.projectRepository.create(project);
-
-    // create the default user for the tenant
-    const insertableUser: Insertable<IUser> = {
-      username: projectDetails.adminUsername,
-      password: projectDetails.adminPassword,
-      tenant: newProject.id,
-      email: project.contactEmail ?? '',
-      firstName: 'Tenant Admin',
-      lastName: '',
-      mobile :  ''
-    };
-    const newUser = await this.userRespository.create(insertableUser);
-    return newProject;
+  async create(projectDetails: Insertable<IProject>): Promise<Selectable<IProject>> {
+    return await this.projectRepository.create(projectDetails);
   }
 
   async update(id: number, updatedProject: UpdateableEntity<IProject>): Promise<Selectable<IProject> | undefined> {

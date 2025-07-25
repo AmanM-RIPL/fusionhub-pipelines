@@ -17,7 +17,6 @@ CREATE TABLE tenant (
     "isBlocked" BOOLEAN DEFAULT TRUE
 );
 
--- migrate:up
 CREATE TABLE project (
     -- default columns
     "id" SERIAL PRIMARY KEY,
@@ -29,17 +28,15 @@ CREATE TABLE project (
     "projectCode" VARCHAR(50) UNIQUE NOT NULL,
     "startDate" DATE,
     "endDate" DATE,
-    "status" VARCHAR(20) DEFAULT 'pending', -- e.g., pending, active, completed
+    "status" VARCHAR(20) DEFAULT 'pending',
 
     -- contact information
     "contactEmail" VARCHAR(50),
     "contactMobile" VARCHAR(20),
 
-    -- foreign key to tenant (optional, if you have multi-tenancy)
-    "tenantId" INTEGER REFERENCES tenant(id) ON DELETE SET NULL,
-
     -- access control
     "isBlocked" BOOLEAN DEFAULT FALSE
+    
 );
 
 
@@ -111,4 +108,5 @@ CREATE TABLE draft_entity (
 DROP TABLE draft_entity;
 DROP TABLE permission;
 DROP TABLE fh_user;
+DROP TABLE project;
 DROP TABLE tenant;

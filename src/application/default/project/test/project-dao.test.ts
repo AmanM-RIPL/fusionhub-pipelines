@@ -11,18 +11,22 @@ type ProjectsUpdateReturningAllQueryBuilder = UpdateQueryBuilder<IDatabase, 'pub
 type ProjectsUpdateQueryBuilder = UpdateQueryBuilder<IDatabase, 'public.project', 'public.project', {}>;
 
 describe('Default -> Project -> ProjectDao', () => {
-  let mockKysely: DeepMockProxy<Kysely<IDatabase>>;
-  let projectDao: ProjectDao;
+    let mockKysely: DeepMockProxy<Kysely<IDatabase>>;
+    let projectDao: ProjectDao;
+    let projectDaoNoTenant: ProjectDao;
+    const tenantId = 1;
 
   beforeEach(() => {
-    mockKysely = mockDeep<Kysely<IDatabase>>();
-    projectDao = new ProjectDao(mockKysely);
+     mockKysely = mockDeep<Kysely<IDatabase>>();
+     projectDao = new ProjectDao(mockKysely, tenantId);
+     projectDaoNoTenant = new ProjectDao(mockKysely, null);
   });
 
   test('findById should call correct methods', async () => {
     // test data
     const mockProjects = {
-        id: 1,
+        id: 1, 
+        tenant: tenantId,
         name: 'HR Management System',
         createdOn: new Date(),
         description: 'A system to manage employee records, attendance, and payroll.',
@@ -55,7 +59,8 @@ describe('Default -> Project -> ProjectDao', () => {
   test('findById should return correct value', async () => {
     // test data
     const mockProjects = {
-        id: 1,
+        id: 1, 
+        tenant: tenantId,
         name: 'HR Management System',
         createdOn: new Date(),
         description: 'A system to manage employee records, attendance, and payroll.',
@@ -86,7 +91,8 @@ describe('Default -> Project -> ProjectDao', () => {
     // test data
     const mockProjects = [
     {
-      id: 1,
+        id: 1, 
+        tenant: tenantId,
         name: 'HR Management System',
         createdOn: new Date(),
         description: 'A system to manage employee records, attendance, and payroll.',
@@ -98,7 +104,8 @@ describe('Default -> Project -> ProjectDao', () => {
         contactMobile: '9876543210'
     },
     {
-      id: 1,
+        id: 1, 
+        tenant: tenantId,
         name: 'Inventory Tractor',
         createdOn: new Date(),
         description: 'A system to manage employee records, attendance, and payroll.',
@@ -134,7 +141,8 @@ describe('Default -> Project -> ProjectDao', () => {
   test('findAll should return correct value', async () => {
     // test data
     const mockProjects = [{
-      id: 1,
+        id: 1, 
+        tenant: tenantId,
         name: 'HR Management System',
         createdOn: new Date(),
         description: 'A system to manage employee records, attendance, and payroll.',
@@ -146,7 +154,8 @@ describe('Default -> Project -> ProjectDao', () => {
         contactMobile: '9876543210'
     },
     {
-      id: 1,
+        id: 1, 
+        tenant: tenantId,
         name: 'Inventory Tractor',
         createdOn: new Date(),
         description: 'A system to manage employee records, attendance, and payroll.',
@@ -177,7 +186,8 @@ describe('Default -> Project -> ProjectDao', () => {
   test('create should call correct methods', async () => {
     // test data
     const mockProjects = { 
-      id: 1,
+        id: 1, 
+        tenant: tenantId,
         name: 'HR Management System',
         createdOn: new Date(),
         description: 'A system to manage employee records, attendance, and payroll.',
@@ -187,8 +197,7 @@ describe('Default -> Project -> ProjectDao', () => {
         status: 'active',
         contactEmail: 'project.manager@example.com',
         contactMobile: '9876543210',
-        isBlocked: false,
-        tenantId: 1
+        isBlocked: false
     };
 
     // Mock the Kysely methods to return the expected results
@@ -213,7 +222,8 @@ describe('Default -> Project -> ProjectDao', () => {
   test('create should return correct value', async () => {
     // test data
     const mockProjects = { 
-      id: 1,
+        id: 1, 
+        tenant: tenantId,
         name: 'HR Management System',
         createdOn: new Date(),
         description: 'A system to manage employee records, attendance, and payroll.',
@@ -223,8 +233,7 @@ describe('Default -> Project -> ProjectDao', () => {
         status: 'active',
         contactEmail: 'project.manager@example.com',
         contactMobile: '9876543210',
-        isBlocked: false,
-        tenantId: 1
+        isBlocked: false
     };
 
     // Mock the Kysely methods to return the expected results
@@ -246,7 +255,8 @@ describe('Default -> Project -> ProjectDao', () => {
   test('update should call correct methods', async () => {
     // test data
     const mockProjects = { 
-      id: 1,
+        id: 1, 
+        tenant: tenantId,
         name: 'HR Management System',
         createdOn: new Date(),
         description: 'A system to manage employee records, attendance, and payroll.',
@@ -256,8 +266,7 @@ describe('Default -> Project -> ProjectDao', () => {
         status: 'active',
         contactEmail: 'project.manager@example.com',
         contactMobile: '9876543210',
-        isBlocked: false,
-        tenantId: 1
+        isBlocked: false
     };
 
     // Mock the Kysely methods to return the expected results
@@ -284,7 +293,8 @@ describe('Default -> Project -> ProjectDao', () => {
   test('update should return correct value', async () => {
     // test data
     const mockProjects = { 
-      id: 1,
+        id: 1, 
+        tenant: tenantId,
         name: 'HR Management System',
         createdOn: new Date(),
         description: 'A system to manage employee records, attendance, and payroll.',
@@ -294,9 +304,7 @@ describe('Default -> Project -> ProjectDao', () => {
         status: 'active',
         contactEmail: 'project.manager@example.com',
         contactMobile: '9876543210',
-        isBlocked: false,
-        tenantId: 1
-        
+        isBlocked: false  
     };
 
     // Mock the Kysely methods to return the expected results

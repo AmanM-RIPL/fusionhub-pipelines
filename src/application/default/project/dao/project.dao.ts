@@ -5,19 +5,25 @@ import { IDatabase } from "../../../../infrastructure/db/kysely/types";
 import { InsertableEntity, UpdateableEntity } from "../../../common/types/entity";
 
 export class ProjectDao implements IUnDeletableRepository<IProject> {
-  constructor(protected readonly db: Kysely<IDatabase>) {}
+   constructor(protected readonly db: Kysely<IDatabase>, protected readonly tenant: number | null) {} 
 
   async findById(id: number): Promise<Selectable<IProject> | undefined> {
-    return await this.db.selectFrom("public.project").selectAll().where("id", "=", id).executeTakeFirst();
-  }
-
+    return await this.db.selectFrom("public.project").selectAll().where("id", "=", id).where("tenant", "=", this.tenant).executeTakeFirst();
+ }
+  
   async findAll(limit: number, offset: number): Promise<Selectable<IProject>[]> {
     return await this.db.selectFrom("public.project").selectAll().limit(limit).offset(offset).execute();
   }
 
   async create(entity: InsertableEntity<IProject>): Promise<Selectable<IProject>> {
-    return await this.db.insertInto("public.project").values(entity).returningAll().executeTakeFirstOrThrow();
-  }
+      if (this.tenant === null) throw new Error("Tenant must be set before creating a user.");
+  
+      const entityToInsert: Insertable<IProject> = {
+        ...entity,
+        tenant: this.tenant // Ensure tenant is set
+      };
+      return await this.db.insertInto("public.project").values(entityToInsert).returningAll().executeTakeFirstOrThrow();
+    }
 
   async update(id: number, updatedObject: UpdateableEntity<IProject>): Promise<Selectable<IProject> | undefined> {
     return await this.db
