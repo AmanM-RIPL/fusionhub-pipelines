@@ -20,7 +20,6 @@ export class TenantService {
     // need to remove additional properties from tenantDetails
     const { adminUsername, adminPassword, ...tenant } = tenantDetails;
     const newTenant = await this.tenantRepository.create(tenant);
-
     // create the default user for the tenant
     const insertableUser: Insertable<IUser> = {
       username: tenantDetails.adminUsername,

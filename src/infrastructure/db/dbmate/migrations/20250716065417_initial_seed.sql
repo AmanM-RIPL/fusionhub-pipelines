@@ -17,6 +17,34 @@ CREATE TABLE tenant (
     "isBlocked" BOOLEAN DEFAULT TRUE
 );
 
+CREATE TABLE project (
+    -- default columns
+    "id" SERIAL PRIMARY KEY,
+    "tenant" INT NOT NULL,
+    "createdOn" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    -- custom columns
+    "name" VARCHAR(100) NOT NULL,
+    "description" TEXT,
+    "projectCode" VARCHAR(50) UNIQUE NOT NULL,
+    "startDate" DATE,
+    "endDate" DATE,
+    "status" VARCHAR(20) DEFAULT 'pending',
+
+    -- contact information
+    "contactEmail" VARCHAR(50),
+    "contactMobile" VARCHAR(20),
+
+    -- access control
+    "isBlocked" BOOLEAN DEFAULT FALSE
+
+    -- foreign keys
+    CONSTRAINT fk_project_tenant FOREIGN KEY(tenant)
+        REFERENCES tenant(id) ON DELETE CASCADE
+    
+);
+
+
 CREATE TABLE fh_user (
     -- default columns
     "id" SERIAL PRIMARY KEY,
@@ -85,4 +113,5 @@ CREATE TABLE draft_entity (
 DROP TABLE draft_entity;
 DROP TABLE permission;
 DROP TABLE fh_user;
+DROP TABLE project;
 DROP TABLE tenant;
