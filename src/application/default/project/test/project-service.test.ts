@@ -4,17 +4,14 @@ import { IUnDeletableRepository } from "../../../common/repositories/base.reposi
 import { IProject } from "../project.model";
 import { Insertable, Selectable, Transaction } from "kysely";
 import { UpdateableEntity } from "../../../common/types/entity";
-import { IUserRepository } from "../../user/user.repository";
 
 describe('Default -> Project -> ProjectService', () => {
   let projectService: ProjectService;
   let mockProjectRepository: DeepMockProxy<IUnDeletableRepository<IProject>>;
-  let mockUserRepository: DeepMockProxy<IUserRepository>;
 
   beforeEach(() => {
     mockProjectRepository = mockDeep<IUnDeletableRepository<IProject>>();
-    mockUserRepository = mockDeep<IUserRepository>();
-    projectService = new ProjectService(mockProjectRepository, mockUserRepository);
+    projectService = new ProjectService(mockProjectRepository, mockProjectRepository);
   });
 
   test('findById should call repository method with correct parameters', async () => {

@@ -24,7 +24,8 @@ export default async function permissionRoutes(fastify: FastifyInstance) {
           read: { anyOf: [{ type: 'boolean' }, { type: 'string', enum: ['self'] }] },
           update: { type: 'boolean' },
         },
-        required: ['create', 'read', 'update']
+        additionalProperties: false
+       // required: ['create', 'read', 'update']
       },
       selectable: {
         type: 'object',
@@ -32,18 +33,19 @@ export default async function permissionRoutes(fastify: FastifyInstance) {
           id: { type: 'integer' },
           createdOn: { type: 'string', format: 'date-time' },
           user: { type: 'number' },
-          entity: { type: 'number' },
+          project: { type: 'number' },
+          entity: { type: 'string' },
           approval: { type: 'array', items: { type: 'number' } },
           filter: { $ref: 'permission-object#/properties/filterSchema' },
           access: { $ref: 'permission-object#/properties/accessSchema' },
         },
-        required: ['id', 'createdOn', 'user', 'entity', 'approval', 'filter', 'access']
+        required: ['id', 'createdOn', 'user','project', 'entity', 'approval', 'filter', 'access']
       },
       insertable: {
         type: 'object',
         properties: {
           user: { type: 'number' },
-          entity: { type: 'number' },
+          entity: { type: 'string' },
           approval: { type: 'array', items: { type: 'number' } },
           filter: { $ref: 'permission-object#/properties/filterSchema' },
           access: { $ref: 'permission-object#/properties/accessSchema' },

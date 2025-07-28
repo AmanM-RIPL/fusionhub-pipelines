@@ -36,13 +36,13 @@ CREATE TABLE project (
     "contactMobile" VARCHAR(20),
 
     -- access control
-    "isBlocked" BOOLEAN DEFAULT FALSE
+    "isBlocked" BOOLEAN DEFAULT FALSE,
 
     -- foreign keys
     CONSTRAINT fk_project_tenant FOREIGN KEY(tenant)
         REFERENCES tenant(id) ON DELETE CASCADE
-    
 );
+
 
 
 CREATE TABLE fh_user (
@@ -72,7 +72,9 @@ CREATE TABLE permission (
 
     -- custom columns
     "user" INT NOT NULL,
+    "project" INT NOT NULL,
     "entity" VARCHAR(50) NOT NULL,
+    "permission_type" VARCHAR CHECK (permission_type IN ('CREATE', 'READ', 'UPDATE')),
     "approval" INT[] NOT NULL DEFAULT '{}', -- array of user IDs
     "filter" JSONB NOT NULL DEFAULT '{}', -- json of type {"field": integer[]}
     "access" JSONB NOT NULL DEFAULT '{}', -- json of type {"create": boolean, "read": boolean | "self", "update": boolean}

@@ -3,6 +3,7 @@ import { Generated } from "kysely";
 export interface IProject {
   id: Generated<number>;
   createdOn: Generated<Date>;
+  tenant: number;
   name: string;
   description: string | null;
   projectCode: string;
@@ -11,7 +12,6 @@ export interface IProject {
   status: string;
   contactEmail: string | null;
   contactMobile: string | null;
-  tenant: number;
   isBlocked: Generated<boolean>;
 }
 
