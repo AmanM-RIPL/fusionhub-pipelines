@@ -3,10 +3,13 @@ import { ChangeHistory, ColumnValue } from "../../common/types/entity";
 
 export interface IDraftEntity {
   id: Generated<number>;
-  tenant: number;
+  tenant: number; 
+  createdOn: Generated<Date>;
+  project: number;
+  entity: string;
   createdByUser: number;
   nextApprovingUser: number | null;
-  entitySchema: string;
+  entitySchema: JSONColumnType<any>; 
   associatedApprovedEntity: number | null;
   parentDraftEntity: number | null;
   changeHistory: JSONColumnType<ChangeHistory>;

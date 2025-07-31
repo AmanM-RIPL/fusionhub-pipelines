@@ -36,7 +36,7 @@ export class DraftEntityService {
         approvalHistory: []
       })
     };
-
+    console.log("checkkk:",await this.draftEntityRepository.create(entityToCreate));
     return await this.draftEntityRepository.create(entityToCreate);
   }
 

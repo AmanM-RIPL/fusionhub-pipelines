@@ -10,6 +10,7 @@ import fp from 'fastify-plugin';
 import permissionContextPlugin from "../permission/permission.context";
 import permissionRoutes from "../permission/permission.route";
 import draftEntityContextPlugin from "../draft-entity/draft-entity.context";
+import draftEntityRoutes from "../draft-entity/draft-entity.route";
 
 export default async function defaultRoutes(fastify: FastifyInstance) {
 
@@ -27,4 +28,5 @@ export default async function defaultRoutes(fastify: FastifyInstance) {
   await fastify.register(fp(projectRoutes));
   await fastify.register(fp(userRoutes));
   await fastify.register(fp(permissionRoutes));
+  await fastify.register(fp(draftEntityRoutes));
 }

@@ -24,12 +24,12 @@ export default async function permissionContextPlugin(fastify: FastifyInstance) 
       'permissionDao', 
       new PermissionDao(request.getDecorator<ControlledTransaction<IDatabase>>('dbTransaction'), tenantId)
     );
-
     // Services
     request.setDecorator<PermissionService>(
       'permissionService', 
       new PermissionService(
         request.getDecorator<PermissionDao>('permissionDao'),
+       
         request.getDecorator<UserDao>('userDao')
       )
     );
