@@ -36,13 +36,13 @@ CREATE TABLE project (
     "contactMobile" VARCHAR(20),
 
     -- access control
-    "isBlocked" BOOLEAN DEFAULT FALSE
+    "isBlocked" BOOLEAN DEFAULT FALSE,
 
     -- foreign keys
     CONSTRAINT fk_project_tenant FOREIGN KEY(tenant)
         REFERENCES tenant(id) ON DELETE CASCADE
-    
 );
+
 
 
 CREATE TABLE fh_user (
@@ -72,7 +72,9 @@ CREATE TABLE permission (
 
     -- custom columns
     "user" INT NOT NULL,
+    "project" INT NOT NULL,
     "entity" VARCHAR(50) NOT NULL,
+    "permission_type" VARCHAR CHECK (permission_type IN ('CREATE', 'READ', 'UPDATE')),
     "approval" INT[] NOT NULL DEFAULT '{}', -- array of user IDs
     "filter" JSONB NOT NULL DEFAULT '{}', -- json of type {"field": integer[]}
     "access" JSONB NOT NULL DEFAULT '{}', -- json of type {"create": boolean, "read": boolean | "self", "update": boolean}
@@ -91,10 +93,13 @@ CREATE TABLE draft_entity (
     -- default columns
     "id" SERIAL PRIMARY KEY,
     "tenant" INT NOT NULL,
+    "createdOn" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "createdByUser" INT NOT NULL,
+    "project" INT NOT NULL,
+    "entity" VARCHAR(50),
 
     -- custom columns
-    "entitySchema" VARCHAR(50) NOT NULL, -- reference to the entity schema
+    "entitySchema" JSONB NOT NULL DEFAULT '{}', -- reference to the entity schema
     "data" JSONB NOT NULL, -- json data of format {"fieldName": value}
     "associatedApprovedEntity" INT, -- this is the id of the approved system entity
     "nextApprovingUser" INT, -- this is the id of the next user who will approve the draft entity

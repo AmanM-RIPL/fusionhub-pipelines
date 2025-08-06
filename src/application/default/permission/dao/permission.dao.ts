@@ -21,8 +21,8 @@ export class PermissionDao implements IBaseRepository<IPermission> {
   }
 
   async findAll(limit: number, offset: number): Promise<Selectable<IPermission>[]> {
+       
     if (this.tenant === null) throw new Error("Tenant must be set before accessing an permission.");
-
     return await this.db.selectFrom("public.permission").where("tenant", "=", this.tenant).selectAll().limit(limit).offset(offset).execute();
   }
 

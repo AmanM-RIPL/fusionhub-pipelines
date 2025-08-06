@@ -24,7 +24,9 @@ describe('Default -> Permission -> PermissionService', () => {
   test('create - should create a permission with valid data', async () => {
     const permissionData: Omit<InsertableEntity<IPermission>, 'filter' | 'access'> & { filter: FilterPermission, access: AccessPermission } = {
       user: 1,
+      project: 1,
       entity: "WorkOrder",
+      permissionType: 'READ', // required ('CREATE' | 'READ' | 'UPDATE')
       approval: [2, 3],
       filter: { project: [1, 2] },
       access: { create: true, read: true, update: false },
@@ -48,8 +50,10 @@ describe('Default -> Permission -> PermissionService', () => {
   test('create - should throw error if approval contains duplicate users', async () => {
     const permissionData: Omit<InsertableEntity<IPermission>, 'filter' | 'access'> & { filter: FilterPermission, access: AccessPermission } = {
       user: 1,
+      project: 1,
       entity: "WorkOrder",
-      approval: [2, 2], // Duplicate user
+      permissionType: 'READ', // required ('CREATE' | 'READ' | 'UPDATE')
+      approval: [2, 2],
       filter: { project: [1, 2] },
       access: { create: true, read: true, update: false },
     };
@@ -60,8 +64,10 @@ describe('Default -> Permission -> PermissionService', () => {
   test('create - should throw error if approval contains non-existent users', async () => {
     const permissionData: Omit<InsertableEntity<IPermission>, 'filter' | 'access'> & { filter: FilterPermission, access: AccessPermission } = {
       user: 1,
+      project: 1,
       entity: "WorkOrder",
-      approval: [2, 3], // Assuming user 3 does not exist
+      permissionType: 'READ', // required ('CREATE' | 'READ' | 'UPDATE')
+      approval: [2, 3],
       filter: { project: [1, 2] },
       access: { create: true, read: true, update: false },
     };
@@ -72,6 +78,8 @@ describe('Default -> Permission -> PermissionService', () => {
 
   test('update - should update a permission with valid data', async () => {
     const updatedData: Omit<InsertableEntity<IPermission>, 'filter' | 'access' | 'user' | 'entity'> & { filter: FilterPermission, access: AccessPermission } = {
+      project: 1,
+      permissionType: 'READ',
       approval: [2, 3],
       filter: { project: [1, 2] },
       access: { create: true, read: true, update: false },
@@ -95,6 +103,8 @@ describe('Default -> Permission -> PermissionService', () => {
 
   test('update - should throw error if approval contains duplicate users', async () => {
     const updatedData: Omit<InsertableEntity<IPermission>, 'filter' | 'access' | 'user' | 'entity'> & { filter: FilterPermission, access: AccessPermission } = {
+      project: 1,
+      permissionType: 'UPDATE',
       approval: [2, 2], // Duplicate user
       filter: { project: [1, 2] },
       access: { create: true, read: true, update: false },
@@ -105,6 +115,8 @@ describe('Default -> Permission -> PermissionService', () => {
   
   test('update - should throw error if approval contains non-existent users', async () => {
     const updatedData: Omit<InsertableEntity<IPermission>, 'filter' | 'access' | 'user' | 'entity'> & { filter: FilterPermission, access: AccessPermission } = {
+      project: 1,
+      permissionType: 'READ',
       approval: [2, 3], // Assuming user 3 does not exist
       filter: { project: [1, 2] },
       access: { create: true, read: true, update: false },

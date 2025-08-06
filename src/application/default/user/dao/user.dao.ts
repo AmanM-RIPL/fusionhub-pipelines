@@ -23,6 +23,17 @@ export class UserDao implements IUserRepository {
 
   async validateIds(ids: number[]): Promise<boolean> {
     if (this.tenant === null) throw new Error("Tenant must be set before validating user ids.");
+
+    /*
+      ERROR:  syntax error at or near ")"
+      LINE 7:   AND "id" IN ()
+
+      this appears when ids is an empty array. Seems to be a kysley issue.
+    */
+
+    if (ids.length === 0) {
+      return true;
+    }
     const result = await this.db
       .selectFrom("public.fh_user")
       .select("id")

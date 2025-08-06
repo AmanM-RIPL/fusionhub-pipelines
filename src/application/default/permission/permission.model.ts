@@ -6,8 +6,10 @@ export interface IPermission {
   tenant: number;
   createdOn: Generated<Date>;
   user: number;
+  project: number;
   entity: string;
+  permissionType: 'CREATE' | 'READ' | 'UPDATE';
   approval: number[];
   filter: JSONColumnType<FilterPermission>;
-  access: JSONColumnType<AccessPermission>;
-};
+  access?: JSONColumnType<AccessPermission>;
+}
