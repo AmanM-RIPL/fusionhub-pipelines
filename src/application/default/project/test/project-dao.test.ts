@@ -26,16 +26,8 @@ describe('Default -> Project -> ProjectDao', () => {
     // test data
     const mockProjects = {
         id: 1, 
-        tenant: tenantId,
         name: 'HR Management System',
-        createdOn: new Date(),
-        description: 'A system to manage employee records, attendance, and payroll.',
-        projectCode: 'HRMS-001',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-12-31'),
-        status: 'active',
-        contactEmail: 'project.manager@example.com',
-        contactMobile: '9876543210'
+        description: 'A system to manage employee records, attendance, and payroll.'
       };
 
     // Mock the Kysely methods to return the expected results
@@ -60,16 +52,8 @@ describe('Default -> Project -> ProjectDao', () => {
     // test data
     const mockProjects = {
         id: 1, 
-        tenant: tenantId,
         name: 'HR Management System',
-        createdOn: new Date(),
-        description: 'A system to manage employee records, attendance, and payroll.',
-        projectCode: 'HRMS-001',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-12-31'),
-        status: 'active',
-        contactEmail: 'project.manager@example.com',
-        contactMobile: '9876543210'
+        description: 'A system to manage employee records, attendance, and payroll.'
       };
 
     // Mock the Kysely methods to return the expected results
@@ -90,38 +74,15 @@ describe('Default -> Project -> ProjectDao', () => {
   test('findAll should call correct methods', async () => {
     // test data
     const mockProjects = [
-    {
-        id: 1, 
-        tenant: tenantId,
-        name: 'HR Management System',
-        createdOn: new Date(),
-        description: 'A system to manage employee records, attendance, and payroll.',
-        projectCode: 'HRMS-001',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-12-31'),
-        status: 'active',
-        contactEmail: 'project.manager@example.com',
-        contactMobile: '9876543210'
-    },
-    {
-        id: 1, 
-        tenant: tenantId,
-        name: 'Inventory Tractor',
-        createdOn: new Date(),
-        description: 'A system to manage employee records, attendance, and payroll.',
-        projectCode: 'INVT-002',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-12-31'),
-        status: 'active',
-        contactEmail: 'project.manager@example.com',
-        contactMobile: '9876543210'
-    }
+    {id: 1, name: 'HR Management System',description: 'A system to manage employee records, attendance, and payroll.' },
+    {id: 2, name: 'CRM Management System',description: 'A system to manage records.' }
   ];
 
     // Mock the Kysely methods to return the expected results
     const mockSelect = mockDeep<ProjectsSelectQueryBuilder>();
     mockKysely.selectFrom.mockReturnValue(mockSelect);
     mockSelect.selectAll.mockReturnThis();
+    mockSelect.where.mockReturnThis();
     mockSelect.limit.mockReturnThis();
     mockSelect.offset.mockReturnThis();
     mockSelect.execute.mockResolvedValueOnce(mockProjects);
@@ -140,37 +101,15 @@ describe('Default -> Project -> ProjectDao', () => {
 
   test('findAll should return correct value', async () => {
     // test data
-    const mockProjects = [{
-        id: 1, 
-        tenant: tenantId,
-        name: 'HR Management System',
-        createdOn: new Date(),
-        description: 'A system to manage employee records, attendance, and payroll.',
-        projectCode: 'HRMS-001',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-12-31'),
-        status: 'active',
-        contactEmail: 'project.manager@example.com',
-        contactMobile: '9876543210'
-    },
-    {
-        id: 1, 
-        tenant: tenantId,
-        name: 'Inventory Tractor',
-        createdOn: new Date(),
-        description: 'A system to manage employee records, attendance, and payroll.',
-        projectCode: 'INVT-002',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-12-31'),
-        status: 'active',
-        contactEmail: 'project.manager@example.com',
-        contactMobile: '9876543210'
-    }];
+    const mockProjects = [
+    {id: 1, name: 'HR Management System',description: 'A system to manage employee records, attendance, and payroll.' },
+    {id: 2, name: 'CRM Management System',description: 'A system to manage records.' }];
 
     // Mock the Kysely methods to return the expected results
     const mockSelect = mockDeep<ProjectsSelectQueryBuilder>();
     mockKysely.selectFrom.mockReturnValue(mockSelect);
     mockSelect.selectAll.mockReturnThis();
+    mockSelect.where.mockReturnThis();
     mockSelect.limit.mockReturnThis();
     mockSelect.offset.mockReturnThis();
     mockSelect.execute.mockResolvedValueOnce(mockProjects);

@@ -1,7 +1,7 @@
 import Fastify, { FastifyInstance } from "fastify";
 import { DeepMockProxy, mockDeep } from "jest-mock-extended";
 import { ProjectService } from "../project.service";
-import tenantRoutes from "../project.route";
+import projectRoutes from "../project.route";
 import { Insertable, Selectable } from "kysely";
 import { IProject } from "../project.model";
 import { UpdateableEntity } from "../../../common/types/entity";
@@ -10,17 +10,17 @@ import { CustomError } from "../../../common/utils/custom-errors";
 
 describe('Default -> Project -> ProjectRoute', () => {
   let fastify: FastifyInstance;
-  let tenantService: DeepMockProxy<ProjectService>;
+  let projectService: DeepMockProxy<ProjectService>;
 
   beforeAll(async () => {
     fastify = Fastify() as unknown as FastifyInstance;
-    tenantService = mockDeep<ProjectService>();
+    projectService = mockDeep<ProjectService>();
 
-    // Mock the tenantService methods
-    fastify.decorateRequest('tenantService', null);
+    // Mock the projectService methods
+    fastify.decorateRequest('projectService', null);
     fastify.addHook('onRequest', async (request, reply) => {
       request.user = { user: 1, tenant: 1 } as RequestUser;
-      request.setDecorator<ProjectService>('tenantService', tenantService);
+      request.setDecorator<ProjectService>('projectService', projectService);
     });
     fastify.setErrorHandler(async (error: Error, request, reply) => {
 
@@ -35,7 +35,7 @@ describe('Default -> Project -> ProjectRoute', () => {
       reply.code(statusCode).send({ error: errorMessage });
     });
 
-    await tenantRoutes(fastify as FastifyInstance);
+    await projectRoutes(fastify as FastifyInstance);
     await fastify.ready();
   });
 
@@ -44,131 +44,142 @@ describe('Default -> Project -> ProjectRoute', () => {
     jest.clearAllMocks();
   });
 
-  test('should register tenant routes', async () => {
+  test('should register project routes', async () => {
     const routes = fastify.printRoutes();
-    expect(routes).toContain(':tenantId');
-    expect(routes).toContain('tenant');
+    expect(routes).toContain(':projectId');
+    expect(routes).toContain('project');
   });
 
-  test('should handle get tenant by id', async () => {
-    const mockProject = { 
-        id: 1,
-        name: 'HR Management System',
-        createdOn: new Date(),
-        description: 'A system to manage employee records, attendance, and payroll.',
-        projectCode: 'HRMS-001',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-12-31'),
-        status: 'active',
-        contactEmail: 'project.manager@example.com',
-        contactMobile: '9876543210',
-        isBlocked: false
+  test('should handle get project by id', async () => {
+    const mockProject = {
+      id: 1,
+      name: 'HRMS System',
+      createdOn: new Date(Date.parse('2025-04-11T10:00:00Z')),
+      description: 'A human resource management system for internal use.',
+      projectCode: 'HRMS001',
+      startDate: new Date('2025-01-01'),
+      endDate: new Date('2025-12-31'),
+      status: 'active',
+      contactEmail: 'hrms@company.com',
+      contactMobile: '+911234567890',
+      isBlocked: false
     } as Selectable<IProject>;
 
-    tenantService.findById.mockResolvedValue(mockProject);
+    projectService.findById.mockResolvedValue(mockProject);
 
     const response = await fastify.inject({
       method: 'GET',
-      url: '/tenant/1',
+      url: '/project/1',
       headers: { authorization: 'Bearer test-token' }
     });
 
     // Check the response
     expect(response.statusCode).toBe(200);
-    expect(JSON.parse(response.body)).toEqual({...mockProject, createdOn: mockProject.createdOn.toISOString()}); // to get date string format correct
-    expect(tenantService.findById).toHaveBeenCalledWith(1);
+    expect(JSON.parse(response.body)).toEqual({ ...mockProject, endDate: mockProject.endDate?.toISOString().split('T')[0], startDate: mockProject.startDate?.toISOString().split('T')[0], createdOn: mockProject.createdOn.toISOString() }); // to get date string format correct
+    expect(projectService.findById).toHaveBeenCalledWith(1);
   });
 
-  test('should handle get all tenants', async () => {
-    const mockProjects = [{ 
+  test('should handle get all projects', async () => {
+    const mockProjects = [
+      {
         id: 1,
-        name: 'HR Management System',
-        createdOn: new Date(),
-        description: 'A system to manage employee records, attendance, and payroll.',
-        projectCode: 'HRMS-001',
+        name: 'HRMS System',
+        createdOn: new Date(Date.parse('2025-04-11T10:00:00Z')),
+        description: 'A human resource management system for internal use.',
+        projectCode: 'HRMS001',
         startDate: new Date('2025-01-01'),
         endDate: new Date('2025-12-31'),
         status: 'active',
-        contactEmail: 'project.manager@example.com',
-        contactMobile: '9876543210',
+        contactEmail: 'hrms@company.com',
+        contactMobile: '+911234567890',
         isBlocked: false
-    } as Selectable<IProject>];
-    
-    tenantService.findAll.mockResolvedValue(mockProjects);
+      }
+    ] as Selectable<IProject>[];
+
+    projectService.findAll.mockResolvedValue(mockProjects);
 
     const response = await fastify.inject({
       method: 'GET',
-      url: '/tenant',
+      url: '/project',
       headers: { authorization: 'Bearer test-token' },
       query: { limit: '10', offset: '0' }
     });
 
-    // Check the response
     expect(response.statusCode).toBe(200);
-    expect(JSON.parse(response.body)).toEqual(mockProjects.map(tenant => ({ ...tenant, createdOn: tenant.createdOn.toISOString() }))); // to get date string format correct
-    expect(tenantService.findAll).toHaveBeenCalledWith(10, 0);
+    expect(JSON.parse(response.body)).toEqual(mockProjects.map(project => ({ ...project, endDate: project.endDate?.toISOString().split('T')[0], startDate: project.startDate?.toISOString().split('T')[0], createdOn: project.createdOn.toISOString() })));
+    expect(projectService.findAll).toHaveBeenCalledWith(10, 0);
   });
 
-  test('should handle create tenant', async () => {
-    const newProject = { 
-        id: 1,
-        name: 'HR Management System',
-        createdOn: new Date(),
-        description: 'A system to manage employee records, attendance, and payroll.',
-        projectCode: 'HRMS-001',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-12-31'),
-        status: 'active',
-        contactEmail: 'project.manager@example.com',
-        contactMobile: '9876543210'
-    } as Insertable<IProject>;
-    const requestPayload = { 
-      ...newProject, 
-      adminUsername: 'newuser', 
-      adminPassword: 'sample' 
-    } as Insertable<IProject> & { adminUsername: string, adminPassword: string };
-    const createdProject = { id: 2, ...newProject, createdOn: new Date(), isBlocked: false } as Selectable<IProject>;
-    
-    tenantService.create.mockResolvedValue(createdProject);
-    
+
+  test('should handle create project', async () => {
+    const newProject = {
+      tenant: 1,
+      name: 'HRMS System',
+      description: 'A human resource management system for internal use.',
+      projectCode: 'HRMS001',
+      startDate: new Date('2025-01-01'),
+      endDate: new Date('2025-12-31'),
+      status: 'active',
+      contactEmail: 'hrms@company.com',
+      contactMobile: '+911234567890'
+    }as Insertable<IProject>;
+        const requestPayload = { 
+          ...newProject
+        } as Insertable<IProject>
+
+    const createdProject = { id: 1, ...newProject, createdOn: new Date(), isBlocked: false } as Selectable<IProject>;
+
+    projectService.create.mockResolvedValue(createdProject);
+
     const response = await fastify.inject({
       method: 'POST',
-      url: '/tenant',
+      url: '/project',
       headers: { authorization: 'Bearer test-token' },
       payload: requestPayload
     });
 
-    expect(response.statusCode).toBe(201);
+     expect(response.statusCode).toBe(201);
     expect(JSON.parse(response.body)).toEqual({...createdProject, createdOn: createdProject.createdOn.toISOString()}); // to get date string format correct
-    expect(tenantService.create).toHaveBeenCalledWith(requestPayload);
+    expect(projectService.create).toHaveBeenCalledWith(requestPayload);
   });
 
-  test('should handle update tenant', async () => {
-    const updatedProject = { name: 'Updated Project', defaultEmail: 'sample@gmail.com', defaultMobile: '1234567890' } as UpdateableEntity<IProject>;
+  test('should handle update project', async () => {
+    const updatedProject = {
+      tenant: 1,
+      name: 'HRMS System',
+      createdOn: new Date(),
+      description: 'A human resource management system for internal use.',
+      projectCode: 'HRMS001',
+      startDate: new Date('2025-01-01'),
+      endDate: new Date('2025-12-31'),
+      status: 'active',
+      contactEmail: 'hrms@company.com',
+      contactMobile: '+911234567890'
+    } as UpdateableEntity<IProject>;
     const updatedProjectResult = { id: 1, ...updatedProject, createdOn: new Date(), isBlocked: false } as Selectable<IProject>;
+        
+        projectService.update.mockResolvedValue(updatedProjectResult);
+        
+        const response = await fastify.inject({
+          method: 'PATCH',
+          url: '/project/1',
+          headers: { authorization: 'Bearer test-token' },
+          payload: updatedProject
+        });
     
-    tenantService.update.mockResolvedValue(updatedProjectResult);
-    
-    const response = await fastify.inject({
-      method: 'PATCH',
-      url: '/tenant/1',
-      headers: { authorization: 'Bearer test-token' },
-      payload: updatedProject
-    });
-
-    // Check the response
-    expect(response.statusCode).toBe(200);
-    expect(JSON.parse(response.body)).toEqual({...updatedProjectResult, createdOn: updatedProjectResult.createdOn.toISOString()}); // to get date string format correct
-    expect(tenantService.update).toHaveBeenCalledWith(1, updatedProject);
+        // Check the response
+        expect(response.statusCode).toBe(200);
+        expect(JSON.parse(response.body)).toEqual({...updatedProjectResult, createdOn: updatedProjectResult.createdOn.toISOString()}); // to get date string format correct
+        expect(projectService.update).toHaveBeenCalledWith(1, updatedProject);
   });
 
-  test('should handle tenant not found', async () => {
-    tenantService.findById.mockResolvedValue(undefined);
+  test('should handle project not found', async () => {
+    projectService.findById.mockResolvedValue(undefined);
 
-    
+
     const response = await fastify.inject({
       method: 'GET',
-      url: '/tenant/999',
+      url: '/project/999',
       headers: { authorization: 'Bearer test-token' }
     });
 
@@ -177,31 +188,28 @@ describe('Default -> Project -> ProjectRoute', () => {
     expect(JSON.parse(response.body)).toEqual({ error: 'Project not found' });
   });
 
-  test('should handle tenant creation db error', async () => {
-    const newProject = { 
-        id: 1,
-        name: 'HR Management System',
-        createdOn: new Date(),
-        description: 'A system to manage employee records, attendance, and payroll.',
-        projectCode: 'HRMS-001',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-12-31'),
-        status: 'active',
-        contactEmail: 'project.manager@example.com',
-        contactMobile: '9876543210'
+  test('should handle project creation db error', async () => {
+    const newProject = {
+      tenant: 1,
+      name: 'HRMS System',
+      description: 'A human resource management system for internal use.',
+      projectCode: 'HRMS001',
+      startDate: new Date('2025-01-01'),
+      endDate: new Date('2025-12-31'),
+      status: 'active',
+      contactEmail: 'hrms@company.com',
+      contactMobile: '+911234567890'
     } as Insertable<IProject>;
-    const requestPayload = { 
-      ...newProject, 
-      adminUsername: 'newuser', 
-      adminPassword: 'sample' 
-    } as Insertable<IProject> & { adminUsername: string, adminPassword: string };
+    const requestPayload = {
+      ...newProject
+    } as Insertable<IProject>;
     const createdProject = { id: 2, ...newProject, createdOn: new Date(), isBlocked: false } as Selectable<IProject>;
-    
-    tenantService.create.mockRejectedValue(new Error('Database error'));
-    
+
+    projectService.create.mockRejectedValue(new Error('Database error'));
+
     const response = await fastify.inject({
       method: 'POST',
-      url: '/tenant',
+      url: '/project',
       headers: { authorization: 'Bearer test-token' },
       payload: requestPayload
     });
@@ -209,16 +217,26 @@ describe('Default -> Project -> ProjectRoute', () => {
     // Check the response
     expect(response.statusCode).toBe(500);
     expect(JSON.parse(response.body)).toEqual({ error: 'Internal Server Error' });
-    expect(tenantService.create).toHaveBeenCalledWith(requestPayload);
+    expect(projectService.create).toHaveBeenCalledWith(requestPayload);
   });
 
-  test('should handle tenant update db error', async () => {
-    const updatedProject = { name: 'Updated Project', defaultEmail: 'sample@gmail.com', defaultMobile: '1234567890' } as UpdateableEntity<IProject>;
-    tenantService.update.mockRejectedValue(new Error('Database error'));
-    
-    const response = await fastify.inject({ 
+  test('should handle project update db error', async () => {
+    const updatedProject = {
+      tenant: 1,
+      name: 'HRMS System',
+      description: 'A human resource management system for internal use.',
+      projectCode: 'HRMS001',
+      startDate: new Date('2025-01-01'),
+      endDate: new Date('2025-12-31'),
+      status: 'active',
+      contactEmail: 'hrms@company.com',
+      contactMobile: '+911234567890'
+    } as UpdateableEntity<IProject>;
+    projectService.update.mockRejectedValue(new Error('Database error'));
+
+    const response = await fastify.inject({
       method: 'PATCH',
-      url: '/tenant/1',
+      url: '/project/1',
       headers: { authorization: 'Bearer test-token' },
       payload: updatedProject
     });
@@ -226,23 +244,23 @@ describe('Default -> Project -> ProjectRoute', () => {
     // Check the response
     expect(response.statusCode).toBe(500);
     expect(JSON.parse(response.body)).toEqual({ error: 'Internal Server Error' });
-    expect(tenantService.update).toHaveBeenCalledWith(1, updatedProject);
+    expect(projectService.update).toHaveBeenCalledWith(1, updatedProject);
   });
 });
 
 describe('Default -> Project -> ProjectRoute : Forbidden', () => {
   let fastify: FastifyInstance;
-  let tenantService: DeepMockProxy<ProjectService>;
+  let projectService: DeepMockProxy<ProjectService>;
 
   beforeAll(async () => {
     fastify = Fastify() as unknown as FastifyInstance;
-    tenantService = mockDeep<ProjectService>();
+    projectService = mockDeep<ProjectService>();
 
-    // Mock the tenantService methods
-    fastify.decorateRequest('tenantService', null);
+    // Mock the projectService methods
+    fastify.decorateRequest('projectService', null);
     fastify.addHook('onRequest', async (request, reply) => {
-      request.user = { user: 2, tenant: 1 } as RequestUser;
-      request.setDecorator<ProjectService>('tenantService', tenantService);
+      request.user = { user: 1, tenant: 1 } as RequestUser;
+      request.setDecorator<ProjectService>('projectService', projectService);
     });
     fastify.setErrorHandler(async (error: Error, request, reply) => {
 
@@ -257,7 +275,7 @@ describe('Default -> Project -> ProjectRoute : Forbidden', () => {
       reply.code(statusCode).send({ error: errorMessage });
     });
 
-    await tenantRoutes(fastify as FastifyInstance);
+    await projectRoutes(fastify as FastifyInstance);
     await fastify.ready();
   });
 
@@ -266,10 +284,10 @@ describe('Default -> Project -> ProjectRoute : Forbidden', () => {
     jest.clearAllMocks();
   });
 
-  test('should handle get tenant by id', async () => {
+  test('should handle get project by id', async () => {
     const response = await fastify.inject({
       method: 'GET',
-      url: '/tenant/1',
+      url: '/project/1',
       headers: { authorization: 'Bearer test-token' }
     });
 
@@ -277,11 +295,11 @@ describe('Default -> Project -> ProjectRoute : Forbidden', () => {
     expect(response.statusCode).toBe(403);
   });
 
-  test('should handle get all tenants', async () => {
+  test('should handle get all projects', async () => {
 
     const response = await fastify.inject({
       method: 'GET',
-      url: '/tenant',
+      url: '/project',
       headers: { authorization: 'Bearer test-token' },
       query: { limit: '10', offset: '0' }
     });
@@ -290,30 +308,27 @@ describe('Default -> Project -> ProjectRoute : Forbidden', () => {
     expect(response.statusCode).toBe(403);
   });
 
-  test('should handle create tenant', async () => {
-    const newProject = { 
-        name: 'HR Management System',
-        createdOn: new Date(),
-        description: 'A system to manage employee records, attendance, and payroll.',
-        projectCode: 'HRMS-001',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-12-31'),
-        status: 'active',
-        contactEmail: 'project.manager@example.com',
-        contactMobile: '9876543210'
+  test('should handle create project', async () => {
+    const newProject = {
+      name: 'HRMS System',
+      description: 'A human resource management system for internal use.',
+      projectCode: 'HRMS001',
+      startDate: new Date('2025-01-01'),
+      endDate: new Date('2025-12-31'),
+      status: 'active',
+      contactEmail: 'hrms@company.com',
+      contactMobile: '+911234567890'
     } as Insertable<IProject>;
-    const requestPayload = { 
-      ...newProject, 
-      adminUsername: 'newuser', 
-      adminPassword: 'sample' 
-    } as Insertable<IProject> & { adminUsername: string, adminPassword: string };
+    const requestPayload = {
+      ...newProject
+    } as Insertable<IProject>;
     const createdProject = { id: 2, ...newProject, createdOn: new Date(), isBlocked: false } as Selectable<IProject>;
-    
-    tenantService.create.mockResolvedValue(createdProject);
-    
+
+    projectService.create.mockResolvedValue(createdProject);
+
     const response = await fastify.inject({
       method: 'POST',
-      url: '/tenant',
+      url: '/project',
       headers: { authorization: 'Bearer test-token' },
       payload: requestPayload
     });
@@ -321,15 +336,26 @@ describe('Default -> Project -> ProjectRoute : Forbidden', () => {
     expect(response.statusCode).toBe(403);
   });
 
-  test('should handle update tenant', async () => {
-    const updatedProject = { name: 'Updated Project', defaultEmail: 'sample@gmail.com', defaultMobile: '1234567890' } as UpdateableEntity<IProject>;
+  test('should handle update project', async () => {
+    const updatedProject = {
+      tenant: 1,
+      name: 'HRMS System',
+      description: 'A human resource management system for internal use.',
+      projectCode: 'HRMS001',
+      startDate: new Date('2025-01-01'),
+      endDate: new Date('2025-12-31'),
+      status: 'active',
+      contactEmail: 'hrms@company.com',
+      contactMobile: '+911234567890',
+      isBlocked: false
+    } as UpdateableEntity<IProject>;
     const updatedProjectResult = { id: 1, ...updatedProject, createdOn: new Date(), isBlocked: false } as Selectable<IProject>;
-    
-    tenantService.update.mockResolvedValue(updatedProjectResult);
-    
+
+    projectService.update.mockResolvedValue(updatedProjectResult);
+
     const response = await fastify.inject({
       method: 'PATCH',
-      url: '/tenant/1',
+      url: '/project/1',
       headers: { authorization: 'Bearer test-token' },
       payload: updatedProject
     });
