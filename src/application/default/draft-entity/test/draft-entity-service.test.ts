@@ -3,18 +3,19 @@ import { DraftEntityService } from "../draft-entity.service";
 import { IUnDeletableRepository } from "../../../common/repositories/base.repository";
 import { IDraftEntity } from "../draft-entity.model";
 import { Insertable, Selectable, Transaction } from "kysely";
-import { UpdateableEntity } from "../../../common/types/entity";
+import { ColumnValue, InsertableEntity, UpdateableEntity } from "../../../common/types/entity";
 import { IUserRepository } from "../../user/user.repository";
+import { IDraftEntityRepository } from "../draft-entity.repository";
 
 describe('Default -> DraftEntity -> DraftEntityService', () => {
   let draftEntityService: DraftEntityService;
-  let mockDraftEntityRepository: DeepMockProxy<IUnDeletableRepository<IDraftEntity>>;
+  let mockDraftEntityRepository: DeepMockProxy<IDraftEntityRepository>;
   let mockUserRepository: DeepMockProxy<IUserRepository>;
 
   beforeEach(() => {
-    mockDraftEntityRepository = mockDeep<IUnDeletableRepository<IDraftEntity>>();
+    mockDraftEntityRepository = mockDeep<IDraftEntityRepository>();
     mockUserRepository = mockDeep<IUserRepository>();
-    draftEntityService = new DraftEntityService(mockDraftEntityRepository, mockUserRepository);
+    draftEntityService = new DraftEntityService(mockDraftEntityRepository, 1);
   });
 
   test('findById should call repository method with correct parameters', async () => {
@@ -38,31 +39,17 @@ describe('Default -> DraftEntity -> DraftEntityService', () => {
   });
 
   test('create should call repository method with correct parameters', async () => {
-    const newDraftEntity = { 
-      tenant: 1,
-        project: 201,
-        entity: "employee",
-        entitySchema: JSON.stringify({}),
-        changeHistory: JSON.stringify({
-        user: 1,
-        changeType: "create",
-        description: "Test",
-        timestamp: new Date(),
-        approvalHistory: [
-            {
-            approvedBy: 2,
-            approvedOn: new Date(),
-            oldValue: "",
-            newValue: "Initial"
-            }
-        ]
-        }),
-        data: "{}",
-        createdByUser: 2,
-        nextApprovingUser: 2,
-        associatedApprovedEntity: null,
-        parentDraftEntity: null
-    } as (Insertable<IDraftEntity>);
+    const newDraftEntity
+    : Omit<InsertableEntity<IDraftEntity>, "createdByUser" | "nextApprovingUser" | "changeHistory" | "data"> & {
+    data: ColumnValue;
+  } = {
+      project: 201,
+      entity: "employee",
+      entitySchema: JSON.stringify({}),
+      data: {},
+      associatedApprovedEntity: null,
+      parentDraftEntity: null
+    }
     
     const insertableDraftEntity = { entity: newDraftEntity.entity,  } as Insertable<IDraftEntity>;
     const createdDraftEntity = { id: 2, entity: newDraftEntity.entity,  } as Selectable<IDraftEntity>;
@@ -75,7 +62,7 @@ describe('Default -> DraftEntity -> DraftEntityService', () => {
   });
 
   test('update should call repository method with correct parameters', async () => {
-    const updatedData = { entity: 'Updated tenant' } as UpdateableEntity<IDraftEntity>;
+    const updatedData: { data: ColumnValue; } = { data: { } };
     const updatedDraftEntity = { id: 1, ...updatedData } as Selectable<IDraftEntity>;
     mockDraftEntityRepository.update.mockResolvedValue(updatedDraftEntity);
 

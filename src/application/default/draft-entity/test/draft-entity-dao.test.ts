@@ -1,7 +1,8 @@
-import { InsertQueryBuilder, InsertResult, Kysely, Selectable, SelectQueryBuilder, Transaction, UpdateQueryBuilder } from "kysely";
+import { Insertable, InsertQueryBuilder, InsertResult, Kysely, Selectable, SelectQueryBuilder, Transaction, UpdateQueryBuilder } from "kysely";
 import { DraftEntityDao } from "../dao/draft-entity.dao";
 import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
 import { IDatabase } from "../../../../infrastructure/db/kysely/types";
+import { InsertableEntity, UpdateableEntity } from "../../../common/types/entity";
 
 // Helper types for the chained query builder objects
 type DraftEntitysSelectQueryBuilder = SelectQueryBuilder<IDatabase, 'public.draft_entity', {}>;
@@ -107,33 +108,60 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
 
   test('create should call correct methods', async () => {
     // test data
-    const mockDraftEntitys = { 
-         id: 1, 
-        tenant: 2, 
-        createdOn: new Date(),
-        project: 202,
-        entity: 'tenant', 
-        entitySchema: JSON.stringify({}),
-        changeHistory: JSON.stringify({
-        user: 1,
-        changeType: "create",
-        description: "Test",
-        timestamp: new Date(),
-        approvalHistory: [
-            {
-            approvedBy: 2,
-            approvedOn: new Date(),
-            oldValue: "",
-            newValue: "Initial"
-            }
+    const mockDraftEntitys: Selectable<IDatabase['public.draft_entity']> = { 
+      id: 1, 
+      tenant: 2, 
+      createdOn: new Date(),
+      project: 202,
+      entity: 'tenant', 
+      entitySchema: JSON.stringify({}),
+      changeHistory: {
+      user: 1,
+      changeType: "create",
+      description: "Test",
+      timestamp: new Date(),
+      approvalHistory: [
+          {
+            user: 2,
+            timestamp: new Date(12,12,2024),
+            description: "",
+            status: "approved"
+          }
         ]
-        }),
-        data: "{}",
-        createdByUser: 501,
-        nextApprovingUser: 502,
-        associatedApprovedEntity: 1,
-        parentDraftEntity: null,
-        isBlocked: false
+      },
+      data: {},
+      createdByUser: 501,
+      nextApprovingUser: 502,
+      associatedApprovedEntity: 1,
+      parentDraftEntity: null,
+      isBlocked: false
+    };
+
+    const mockDraftEntityInsertable: InsertableEntity<IDatabase['public.draft_entity']> = {
+      createdOn: new Date(),
+      project: 202,
+      entity: 'tenant', 
+      entitySchema: JSON.stringify({}),
+      changeHistory: JSON.stringify({
+      user: 1,
+      changeType: "create",
+      description: "Test",
+      timestamp: new Date(),
+      approvalHistory: [
+          {
+            user: 2,
+            timestamp: new Date(12,12,2024),
+            description: "",
+            status: "approved"
+          }
+        ]
+      }),
+      data: "{}",
+      createdByUser: 501,
+      nextApprovingUser: 502,
+      associatedApprovedEntity: 1,
+      parentDraftEntity: null,
+      isBlocked: false
     };
 
     // Mock the Kysely methods to return the expected results
@@ -146,7 +174,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
 
 
     // Call the method under test
-    const draftEntityResult = await draftEntityDao.create(mockDraftEntitys);
+    const draftEntityResult = await draftEntityDao.create(mockDraftEntityInsertable);
 
     // Add your assertions or method calls here
     expect(mockKysely.insertInto).toHaveBeenCalledWith("public.draftEntity");
@@ -157,33 +185,60 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
 
   test('create should return correct value', async () => {
     // test data
-    const mockDraftEntitys = { 
-        id: 1, 
-        tenant: 2, 
-        createdOn: new Date(),
-        project: 202,
-        entity: 'tenant', 
-        entitySchema: JSON.stringify({}),
-        changeHistory: JSON.stringify({
-        user: 1,
-        changeType: "create",
-        description: "Test",
-        timestamp: new Date(),
-        approvalHistory: [
-            {
-            approvedBy: 2,
-            approvedOn: new Date(),
-            oldValue: "",
-            newValue: "Initial"
-            }
+    const mockDraftEntitys: Selectable<IDatabase['public.draft_entity']> = { 
+      id: 1, 
+      tenant: 2, 
+      createdOn: new Date(),
+      project: 202,
+      entity: 'tenant', 
+      entitySchema: JSON.stringify({}),
+      changeHistory: {
+      user: 1,
+      changeType: "create",
+      description: "Test",
+      timestamp: new Date(),
+      approvalHistory: [
+          {
+            user: 2,
+            timestamp: new Date(12,12,2024),
+            description: "",
+            status: "approved"
+          }
         ]
-        }),
-        data: "{}",
-        createdByUser: 501,
-        nextApprovingUser: 502,
-        associatedApprovedEntity: 1,
-        parentDraftEntity: null,
-        isBlocked: false
+      },
+      data: {},
+      createdByUser: 501,
+      nextApprovingUser: 502,
+      associatedApprovedEntity: 1,
+      parentDraftEntity: null,
+      isBlocked: false
+    };
+
+    const mockDraftEntityInsertable: InsertableEntity<IDatabase['public.draft_entity']> = {
+      createdOn: new Date(),
+      project: 202,
+      entity: 'tenant', 
+      entitySchema: JSON.stringify({}),
+      changeHistory: JSON.stringify({
+      user: 1,
+      changeType: "create",
+      description: "Test",
+      timestamp: new Date(),
+      approvalHistory: [
+          {
+            user: 2,
+            timestamp: new Date(12,12,2024),
+            description: "",
+            status: "approved"
+          }
+        ]
+      }),
+      data: "{}",
+      createdByUser: 501,
+      nextApprovingUser: 502,
+      associatedApprovedEntity: 1,
+      parentDraftEntity: null,
+      isBlocked: false
     };
 
     // Mock the Kysely methods to return the expected results
@@ -196,7 +251,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
 
 
     // Call the method under test
-    const draftEntityResult = await draftEntityDao.create(mockDraftEntitys);
+    const draftEntityResult = await draftEntityDao.create(mockDraftEntityInsertable);
 
     // Add your assertions or method calls here
     expect(draftEntityResult).toEqual(mockDraftEntitys);
@@ -204,33 +259,60 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
 
   test('update should call correct methods', async () => {
     // test data
-    const mockDraftEntitys = { 
-        id: 1, 
-        tenant: 2, 
-        createdOn: new Date(),
-        project: 202,
-        entity: 'tenant', 
-        entitySchema: JSON.stringify({}),
-        changeHistory: JSON.stringify({
-        user: 1,
-        changeType: "create",
-        description: "Test",
-        timestamp: new Date(),
-        approvalHistory: [
-            {
-            approvedBy: 2,
-            approvedOn: new Date(),
-            oldValue: "",
-            newValue: "Initial"
-            }
+    const mockDraftEntitys: Selectable<IDatabase['public.draft_entity']> = { 
+      id: 1, 
+      tenant: 2, 
+      createdOn: new Date(),
+      project: 202,
+      entity: 'tenant', 
+      entitySchema: JSON.stringify({}),
+      changeHistory: {
+      user: 1,
+      changeType: "create",
+      description: "Test",
+      timestamp: new Date(),
+      approvalHistory: [
+          {
+            user: 2,
+            timestamp: new Date(12,12,2024),
+            description: "",
+            status: "approved"
+          }
         ]
-        }),
-        data: "{}",
-        createdByUser: 501,
-        nextApprovingUser: 502,
-        associatedApprovedEntity: 1,
-        parentDraftEntity: null,
-        isBlocked: false 
+      },
+      data: {},
+      createdByUser: 501,
+      nextApprovingUser: 502,
+      associatedApprovedEntity: 1,
+      parentDraftEntity: null,
+      isBlocked: false
+    };
+
+    const mockDraftEntityInsertable: 
+      Omit<
+        UpdateableEntity<IDatabase['public.draft_entity']>, 
+        "entitySchema" | "createdByUser" | "associatedApprovedEntity" | "parentDraftEntity"
+      > = {
+      createdOn: new Date(),
+      project: 202,
+      entity: 'tenant',
+      changeHistory: JSON.stringify({
+      user: 1,
+      changeType: "create",
+      description: "Test",
+      timestamp: new Date(),
+      approvalHistory: [
+          {
+            user: 2,
+            timestamp: new Date(12,12,2024),
+            description: "",
+            status: "approved"
+          }
+        ]
+      }),
+      data: "{}",
+      nextApprovingUser: 502,
+      isBlocked: false
     };
 
     // Mock the Kysely methods to return the expected results
@@ -244,7 +326,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     mockReturningAll.executeTakeFirst.mockResolvedValueOnce(mockDraftEntitys);    
 
     // Call the method under test
-    const draftEntityResult = await draftEntityDao.update(1, mockDraftEntitys);
+    const draftEntityResult = await draftEntityDao.update(1, mockDraftEntityInsertable);
 
     // Add your assertions or method calls here
     expect(mockKysely.updateTable).toHaveBeenCalledWith("public.draftEntity");
@@ -256,33 +338,60 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
 
   test('update should return correct value', async () => {
     // test data
-    const mockDraftEntitys = { 
-        id: 1, 
-        tenant: 2, 
-        createdOn: new Date(),
-        project: 202,
-        entity: 'tenant', 
-        entitySchema: JSON.stringify({}),
-        changeHistory: JSON.stringify({
-        user: 1,
-        changeType: "create",
-        description: "Test",
-        timestamp: new Date(),
-        approvalHistory: [
-            {
-            approvedBy: 2,
-            approvedOn: new Date(),
-            oldValue: "",
-            newValue: "Initial"
-            }
+    const mockDraftEntitys: Selectable<IDatabase['public.draft_entity']> = { 
+      id: 1, 
+      tenant: 2, 
+      createdOn: new Date(),
+      project: 202,
+      entity: 'tenant', 
+      entitySchema: JSON.stringify({}),
+      changeHistory: {
+      user: 1,
+      changeType: "create",
+      description: "Test",
+      timestamp: new Date(),
+      approvalHistory: [
+          {
+            user: 2,
+            timestamp: new Date(12,12,2024),
+            description: "",
+            status: "approved"
+          }
         ]
-        }),
-        data: "{}",
-        createdByUser: 501,
-        nextApprovingUser: 502,
-        associatedApprovedEntity: 1,
-        parentDraftEntity: null,
-        isBlocked: false
+      },
+      data: {},
+      createdByUser: 501,
+      nextApprovingUser: 502,
+      associatedApprovedEntity: 1,
+      parentDraftEntity: null,
+      isBlocked: false
+    };
+
+    const mockDraftEntityInsertable: 
+      Omit<
+        UpdateableEntity<IDatabase['public.draft_entity']>, 
+        "entitySchema" | "createdByUser" | "associatedApprovedEntity" | "parentDraftEntity"
+      > = {
+      createdOn: new Date(),
+      project: 202,
+      entity: 'tenant',
+      changeHistory: JSON.stringify({
+      user: 1,
+      changeType: "create",
+      description: "Test",
+      timestamp: new Date(),
+      approvalHistory: [
+          {
+            user: 2,
+            timestamp: new Date(12,12,2024),
+            description: "",
+            status: "approved"
+          }
+        ]
+      }),
+      data: "{}",
+      nextApprovingUser: 502,
+      isBlocked: false
     };
 
     // Mock the Kysely methods to return the expected results
@@ -295,7 +404,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     mockReturningAll.executeTakeFirst.mockResolvedValueOnce(mockDraftEntitys);    
 
     // Call the method under test
-    const draftEntityResult = await draftEntityDao.update(1, mockDraftEntitys);
+    const draftEntityResult = await draftEntityDao.update(1, mockDraftEntityInsertable);
 
     // Add your assertions or method calls here
     expect(draftEntityResult).toEqual(mockDraftEntitys);
