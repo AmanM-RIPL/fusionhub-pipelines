@@ -1,0 +1,52 @@
+# Build artifacts
+*.o
+*.obj
+*.exe
+*.dll
+*.dylib
+*.so
+*.a
+*.lib
+*.qm
+*.prl
+*.qmlc
+*.jsc
+Makefile*
+*build-*
+debug/
+release/
+temp/
+
+# Qt-specific generated files
+object_script.*.Release
+object_script.*.Debug
+*_plugin_import.cpp
+/.qmake.cache
+/.qmake.stash
+*.moc
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+
+# Qt Creator user-specific files
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+*.qmlproject.user
+*.qmlproject.user.*
+CMakeLists.txt.user*
+*creator.user*
+*.autosave
+
+# Qt unit tests
+target_wrapper.*
+
+# IDE-specific files (e.g., VS Code)
+.vscode/
+*.swp
+
+# project specific
+Qt_TDD.pdf
+build/
