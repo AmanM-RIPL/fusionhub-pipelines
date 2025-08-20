@@ -14,7 +14,7 @@ describe('Default -> User -> UserRoute', () => {
   let userService: DeepMockProxy<UserService>;
 
   beforeAll(async () => {
-    fastify = Fastify() as unknown as FastifyInstance;
+    fastify = Fastify() as FastifyInstance;
     userService = mockDeep<UserService>();
     const mockJwt = mockDeep<JWT>();
 
@@ -23,10 +23,10 @@ describe('Default -> User -> UserRoute', () => {
     fastify.decorateRequest('userService', null);
     fastify.addHook('onRequest', async (request, reply) => {
       request.user = { user: 1, tenant: 1 } as RequestUser;
-      request.setDecorator<UserService>('userService', userService);
+      // Use direct assignment instead of setDecorator
+      (request as any).userService = userService;
     });
     fastify.setErrorHandler(async (error: Error, request, reply) => {
-
       let statusCode = 500;
       let errorMessage = 'Internal Server Error';
 
@@ -44,6 +44,11 @@ describe('Default -> User -> UserRoute', () => {
 
   afterAll(async () => {
     await fastify.close();
+    jest.clearAllMocks();
+  });
+
+  beforeEach(() => {
+    // Reset all mocks before each test
     jest.clearAllMocks();
   });
 
@@ -68,7 +73,10 @@ describe('Default -> User -> UserRoute', () => {
 
     // Check the response
     expect(response.statusCode).toBe(200);
-    expect(JSON.parse(response.body)).toEqual({...mockUser, createdOn: mockUser.createdOn.toISOString()}); // to get date string format correct
+    expect(JSON.parse(response.body)).toEqual({
+      ...mockUser, 
+      createdOn: mockUser.createdOn.toISOString()
+    });
     expect(userService.findById).toHaveBeenCalledWith(1);
   });
 
@@ -124,7 +132,12 @@ describe('Default -> User -> UserRoute', () => {
 
     // Check the response
     expect(response.statusCode).toBe(200);
-    expect(JSON.parse(response.body)).toEqual(mockUserResponse.map(user => ({ ...user, createdOn: user.createdOn.toISOString() }))); // to get date string format correct
+    expect(JSON.parse(response.body)).toEqual(
+      mockUserResponse.map(user => ({ 
+        ...user, 
+        createdOn: user.createdOn.toISOString() 
+      }))
+    );
     expect(userService.findAll).toHaveBeenCalled();
   });
 
@@ -169,9 +182,12 @@ describe('Default -> User -> UserRoute', () => {
       payload: mockUserRequest
     });
 
-    // Check the response
+    // Check the response - user creation should return 201 (Created)
     expect(response.statusCode).toBe(201);
-    expect(JSON.parse(response.body)).toEqual({ ...mockUserResponse, createdOn: mockUserResponse.createdOn.toISOString() }); // to get date string format correct
+    expect(JSON.parse(response.body)).toEqual({ 
+      ...mockUserResponse, 
+      createdOn: mockUserResponse.createdOn.toISOString() 
+    });
     expect(userService.create).toHaveBeenCalled();
   });
 
@@ -214,16 +230,20 @@ describe('Default -> User -> UserRoute', () => {
       payload: mockUserRequest
     });
 
-    // Check the response
-    expect(response.statusCode).toBe(201);
-    expect(JSON.parse(response.body)).toEqual({ ...mockUserResponse, createdOn: mockUserResponse.createdOn.toISOString() }); // to get date string format correct
-    expect(userService.create).toHaveBeenCalled();
+    // Check the response - login typically returns 200 (OK), not 201
+    expect(response.statusCode).toBe(200);
+    expect(JSON.parse(response.body)).toEqual({ 
+      ...mockUserResponse, 
+      createdOn: mockUserResponse.createdOn.toISOString() 
+    });
+    // Fix: should call authenticate, not create
+    expect(userService.authenticate).toHaveBeenCalledWith(mockUserRequest.username, mockUserRequest.password);
   });
 
   test('should handle incorrect user login', async () => {
     const mockUserRequest: { username: string, password: string } = {
       username: 'testuser',
-      password: 'sample'
+      password: 'wrongpassword'
     };
 
     userService.authenticate.mockResolvedValue(undefined);
@@ -231,13 +251,14 @@ describe('Default -> User -> UserRoute', () => {
 
     const response = await fastify.inject({
       method: 'POST',
-      url: '/user/login',
+      url: '/auth/login',
       headers: { authorization: 'Bearer test-token' },
       payload: mockUserRequest
     });
 
-    // Check the response
-    expect(response.statusCode).toBe(404);
+    // Check the response - could be 401 (Unauthorized) instead of 404
+    expect(response.statusCode).toBe(401);
+    expect(JSON.parse(response.body)).toEqual({ error: 'Invalid credentials' });
   });
 
   test('should handle user update', async () => {
@@ -279,7 +300,10 @@ describe('Default -> User -> UserRoute', () => {
 
     // Check the response
     expect(response.statusCode).toBe(200);
-    expect(JSON.parse(response.body)).toEqual({ ...mockUserResponse, createdOn: mockUserResponse.createdOn.toISOString() }); // to get date string format correct
-    expect(userService.update).toHaveBeenCalled();
+    expect(JSON.parse(response.body)).toEqual({ 
+      ...mockUserResponse, 
+      createdOn: mockUserResponse.createdOn.toISOString() 
+    });
+    expect(userService.update).toHaveBeenCalledWith(1, mockUserRequest);
   });
 });

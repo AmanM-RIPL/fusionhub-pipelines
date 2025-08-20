@@ -23,11 +23,9 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
           nextApprovingUser: { type: ['number', 'null'] },
           entitySchema: { type: 'object' },
           associatedApprovedEntity: { type: ['number', 'null'] },
-          parentDraftEntity: { type: ['number', 'null'] },
-          changeHistory: { type: 'object' },
-          data: { type: 'object' }
+          changeHistory: { type: 'object' }
         },
-        required: ['id', 'tenant', 'createdOn', 'project', 'entity', 'createdByUser', 'entitySchema', 'changeHistory', 'data']
+        required: ['id', 'tenant', 'createdOn', 'project', 'entity', 'createdByUser', 'entitySchema', 'changeHistory']
       },
       insertable: {
         type: 'object',
@@ -37,11 +35,9 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
           entity: { type: 'string' },
           entitySchema: { type: 'object' },
           associatedApprovedEntity: { type: ['number', 'null'] },
-          parentDraftEntity: { type: ['number', 'null'] },
-          changeHistory: { type: 'object' },
-          data: { type: 'object' }
+          changeHistory: { type: 'object' }
         },
-        required: ['tenant', 'project', 'entity', 'entitySchema', 'changeHistory', 'data']
+        required: ['tenant', 'project', 'entity', 'entitySchema', 'changeHistory']
       },
       updateable: {
         type: 'object',
@@ -49,9 +45,7 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
           nextApprovingUser: { type: ['number', 'null'] },
           entitySchema: { type: 'object' },
           associatedApprovedEntity: { type: ['number', 'null'] },
-          parentDraftEntity: { type: ['number', 'null'] },
-          changeHistory: { type: 'object' },
-          data: { type: 'object' }
+          changeHistory: { type: 'object' }
         }
       }
     }
@@ -59,7 +53,7 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
   //Routes
   // findById
   fastify.get(
-    '/draftEntity/:draftEntityId',
+    '/draft-entity/:draftEntityId',
     {
       onRequest: fastify.authenticate,
       schema: {
@@ -93,7 +87,7 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
   );
  //Find All
   fastify.get(
-    '/draftEntity',
+    '/draft-entity',
     {
       onRequest: fastify.authenticate,
       schema: {
@@ -126,7 +120,7 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
   );
 // Create
   fastify.post(
-    '/draftEntity',
+    '/draft-entity',
     {
       onRequest: fastify.authenticate,
       schema: {
@@ -138,8 +132,7 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
       },
       handler: async (
         request: FastifyRequest<{
-          Body: Omit<InsertableEntity<IDraftEntity>, 'createdByUser' | 'changeHistory' | 'data' | 'nextApprovingUser'> & { 
-            data: ColumnValue;
+          Body: Omit<InsertableEntity<IDraftEntity>, 'createdByUser' | 'changeHistory' | 'data' | 'nextApprovingUser'> & {
             changeHistory: ChangeHistory;
           };
         }>,
@@ -155,7 +148,7 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
   );
 //Update
   fastify.patch(
-    '/draftEntity/:draftEntityId',
+    '/draft-entity/:draftEntityId',
     {
       onRequest: fastify.authenticate,
       schema: {
@@ -174,7 +167,7 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
       },
       handler: async (
         request: FastifyRequest<{
-          Body: Omit<InsertableEntity<IDraftEntity>, 'nextApprovingUser' | 'entitySchema' | 'associatedApprovedEntity' | 'parentDraftEntity'> & {changeHistory?: ChangeHistory; data?: ColumnValue;};
+          Body: Omit<InsertableEntity<IDraftEntity>, 'nextApprovingUser' | 'entitySchema' | 'associatedApprovedEntity'> & {changeHistory?: ChangeHistory;};
           Params: { draftEntityId: number };
         }>,
         reply: FastifyReply
@@ -189,34 +182,5 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
       }
     }
   );
-// Detele
-  fastify.delete(
-    '/draftEntity/:draftEntityId',
-    {
-      onRequest: fastify.authenticate,
-      schema: {
-        params: {
-          type: 'object',
-          properties: {
-            draftEntityId: { type: 'integer', minimum: 1 }
-          }
-        },
-        response: {
-          204: { type: 'null' },
-          404: { type: 'object', properties: { error: { type: 'string' } } },
-          500: { type: 'object', properties: { error: { type: 'string' } } }
-        }
-      },
-      handler: async (
-        request: FastifyRequest<{
-          Params: { draftEntityId: number };
-        }>,
-        reply: FastifyReply
-      ) => {
-        const result = await request.getDecorator<DraftEntityService>('draftEntityService').delete(request.params.draftEntityId);
 
-        return reply.code(204).send();
-      }
-    }
-  );
 }

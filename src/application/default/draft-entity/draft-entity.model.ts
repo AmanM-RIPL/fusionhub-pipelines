@@ -11,8 +11,6 @@ export interface IDraftEntity {
   nextApprovingUser: number | null;
   entitySchema: JSONColumnType<any>;
   associatedApprovedEntity: number | null;
-  parentDraftEntity: number | null;
   changeHistory: JSONColumnType<ChangeHistory>;
-  data: JSONColumnType<ColumnValue>;
   isBlocked: Generated<boolean>;
 }

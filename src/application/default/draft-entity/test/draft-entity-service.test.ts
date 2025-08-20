@@ -38,37 +38,43 @@ describe('Default -> DraftEntity -> DraftEntityService', () => {
     expect(result).toEqual(mockDraftEntitys);
   });
 
-  test('create should call repository method with correct parameters', async () => {
-    const newDraftEntity
-    : Omit<InsertableEntity<IDraftEntity>, "createdByUser" | "nextApprovingUser" | "changeHistory" | "data"> & {
-    data: ColumnValue;
-  } = {
-      project: 201,
-      entity: "employee",
-      entitySchema: JSON.stringify({}),
-      data: {},
-      associatedApprovedEntity: null,
-      parentDraftEntity: null
-    }
-    
-    const insertableDraftEntity = { entity: newDraftEntity.entity,  } as Insertable<IDraftEntity>;
-    const createdDraftEntity = { id: 2, entity: newDraftEntity.entity,  } as Selectable<IDraftEntity>;
-    mockDraftEntityRepository.create.mockResolvedValue(createdDraftEntity);
+ test('create should call repository method with correct parameters', async () => {
+  const newDraftEntity: Omit<InsertableEntity<IDraftEntity>, "createdByUser" | "nextApprovingUser" | "changeHistory"> = {
+    project: 201,
+    entity: "employee",
+    entitySchema: JSON.stringify({}),
+    associatedApprovedEntity: null
+  };
 
-    const result = await draftEntityService.create(newDraftEntity);
+  const insertableDraftEntity = {
+    project: 201,
+    entity: "employee",
+    entitySchema: "{}",
+    associatedApprovedEntity: null,
+    createdByUser: 1,
+    nextApprovingUser: null,
+    changeHistory: expect.stringMatching(/^\{"user":1,"description":"","timestamp":".*","approvalHistory":\[\]\}$/)
+  } as Insertable<IDraftEntity>;
 
-    expect(mockDraftEntityRepository.create).toHaveBeenCalledWith(insertableDraftEntity);
-    expect(result).toEqual(createdDraftEntity);
-  });
+  const createdDraftEntity = {
+    id: 2,
+    entity: newDraftEntity.entity,
+  } as Selectable<IDraftEntity>;
+
+  mockDraftEntityRepository.create.mockResolvedValue(createdDraftEntity);
+
+  const result = await draftEntityService.create(newDraftEntity);
+
+  expect(mockDraftEntityRepository.create).toHaveBeenCalledWith(insertableDraftEntity);
+  expect(result).toEqual(createdDraftEntity);
+});
 
   test('update should call repository method with correct parameters', async () => {
-    const updatedData: { data: ColumnValue; } = { data: { } };
-    const updatedDraftEntity = { id: 1, ...updatedData } as Selectable<IDraftEntity>;
-    mockDraftEntityRepository.update.mockResolvedValue(updatedDraftEntity);
-
-    const result = await draftEntityService.update(1, updatedData);
-
-    expect(mockDraftEntityRepository.update).toHaveBeenCalledWith(1, updatedData);
-    expect(result).toEqual(updatedDraftEntity);
-  });
+  const updatedData = { entity: 'tenant' } as UpdateableEntity<IDraftEntity>;
+  const updatedDraftEntity = { id: 1, entity: 'tenant' } as unknown as Selectable<IDraftEntity>;
+  mockDraftEntityRepository.update.mockResolvedValue(updatedDraftEntity);
+  const result = await draftEntityService.update(1, updatedData);
+  expect(mockDraftEntityRepository.update).toHaveBeenCalledWith(1, updatedData);
+  expect(result).toEqual(updatedDraftEntity);
+ });
 });
