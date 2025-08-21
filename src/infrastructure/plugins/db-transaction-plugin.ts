@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { ControlledTransaction } from "kysely";
 import { IDatabase } from "../../infrastructure/db/kysely/types";
-import { CustomError, ForbiddenError, NotFoundError, ValidationError } from "../../application/common/utils/custom-errors";
+import { CustomError, ForbiddenError, NotFoundError, UnauthorizedError, ValidationError } from "../../application/common/utils/custom-errors";
 
 export default async function dbTransactionPlugin(fastify: FastifyInstance) {
 
@@ -45,6 +45,9 @@ export default async function dbTransactionPlugin(fastify: FastifyInstance) {
       statusCode = error.statusCode;
       errorMessage = error.message;
     } else if (error instanceof NotFoundError) {
+      statusCode = error.statusCode;
+      errorMessage = error.message;
+    } else if (error instanceof UnauthorizedError) {
       statusCode = error.statusCode;
       errorMessage = error.message;
     } else if (error instanceof ValidationError) {
