@@ -2,7 +2,7 @@
 #define IFCDETAILREPOSITORY_H
 
 #include <QObject>
-#include "ifcdetail.h"
+#include "common/ifcdetail.h"
 #include <QList>
 
 class IFCDetailRepository : public QObject

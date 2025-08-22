@@ -14,6 +14,9 @@ Rectangle {
         anchors.fill: parent
         padding: 10
 
+        /*
+            Tool Bar
+        */
         Rectangle {
             width: parent.width - 20
             height: 75
@@ -105,15 +108,10 @@ Rectangle {
 
         }
 
-        Rectangle {
-            width: 100
-            height: 40
-            color: "#EDF1F4"
-        }
-
         Column {
             id: projectColumn
-            anchors.fill: parent
+            height: parent.height
+            width: parent.width
             padding: 10
 
             Text {
@@ -122,15 +120,16 @@ Rectangle {
                 font.family: "Segoe UI"
                 font.weight: 700
                 font.pixelSize: 44
-                leftPadding: 50
-                topPadding: 100
+                leftPadding: 10
+                topPadding: 20
+                bottomPadding: 10
             }
 
             Row {
                 width: parent.width
                 spacing: 10
-                leftPadding: 70
-                topPadding: 40
+                leftPadding: 10
+                // topPadding: 40
 
                 Text{
                     id: activeText
@@ -143,6 +142,7 @@ Rectangle {
 
                 Rectangle {
                     width: parent.width
+                    anchors.verticalCenter: parent.verticalCenter
                     height: 1
                     opacity: 0.44
                     color: "#8A888670"
@@ -161,11 +161,17 @@ Rectangle {
                 }
             }
 
+            Rectangle {
+                width: 100
+                height: 20
+                color: "#EDF1F4"
+            }
+
             Row {
                 width: parent.width
                 spacing: 10
-                leftPadding: 70
-                topPadding: 40
+                leftPadding: 10
+                // topPadding: 40
 
                 Text{
                     id: inActiveText
@@ -178,6 +184,7 @@ Rectangle {
 
                 Rectangle {
                     width: parent.width
+                    anchors.verticalCenter: parent.verticalCenter
                     height: 1
                     opacity: 0.44
                     color: "#8A888670"

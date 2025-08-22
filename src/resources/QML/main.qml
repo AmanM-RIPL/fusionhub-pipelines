@@ -1,10 +1,12 @@
 import QtQuick 2.15
 import QtQuick.Controls
+import QtQuick.Window
 
 ApplicationWindow {
     id: main
-    width: 1440
-    height: 1024
+    // width: 1440
+    // height: 1024
+    visibility: Window.Maximized
     visible: true
 
     LoginPage{

@@ -40,10 +40,15 @@ Rectangle {
             visible: pageName === "Material"
         }
 
-        PlannedBIMPage {
-            visible: pageName === "PlannedBIM" || pageName === "Gantt" || pageName === "Collision"
-            pageType: pageName
-        }
+        /*
+
+          To be added once BIM related stuff is added
+
+        */
+        // PlannedBIMPage {
+        //     visible: pageName === "PlannedBIM" || pageName === "Gantt" || pageName === "Collision"
+        //     pageType: pageName
+        // }
 
         Rectangle{
             id: taskBoard
