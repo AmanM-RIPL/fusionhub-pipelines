@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { TenantService } from "../tenant/tenant.service";
+import { UserService } from "../user/user.service";
 import { TenantDao } from "../tenant/dao/tenant.dao";
 import { UserDao } from "../user/dao/user.dao";
 import { ControlledTransaction } from "kysely";
@@ -9,7 +10,7 @@ export default async function tenantContextPlugin(fastify: FastifyInstance) {
 
   // Add DAO decorators
   fastify.decorateRequest('tenantDao', null);
-
+   
 
   // Add Service decorators
   fastify.decorateRequest('tenantService', null);

@@ -1,9 +1,11 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { Insertable, Selectable } from "kysely";
 import { ITenant } from "./tenant.model";
+import { IUser } from "../user/user.model";
 import { UpdateableEntity } from "../../common/types/entity";
 import { RequestUser } from "../../../infrastructure/types/fastify.types";
 import { TenantService } from "./tenant.service";
+import { UserService } from "../user/user.service";
 import { ForbiddenError, NotFoundError } from "../../common/utils/custom-errors";
 
 export default async function tenantRoutes(fastify: FastifyInstance) {
@@ -17,13 +19,14 @@ export default async function tenantRoutes(fastify: FastifyInstance) {
         type: 'object',
         properties: {
           id: { type: 'integer' },
+          createdOn: { type: 'string', format: 'date-time' }, 
           name: { type: 'string' },
-          createdOn: { type: 'string', format: 'date-time' },
           defaultEmail: { type: 'string' },
-          defaultMobile: { type: 'string' },
           defaultEmail1: { type: 'string', nullable: true },
-          defaultMobile1: { type: 'string', nullable: true },
           defaultEmail2: { type: 'string', nullable: true },
+          defaultMobile: { type: 'string' },
+          defaultMobile1: { type: 'string', nullable: true },
+          defaultMobile2: { type: 'string', nullable: true },
           isBlocked: { type: 'boolean' }
         },
         required: ['id', 'name', 'createdOn', 'defaultEmail', 'defaultMobile', 'isBlocked']
@@ -33,10 +36,12 @@ export default async function tenantRoutes(fastify: FastifyInstance) {
         properties: {
           name: { type: 'string' },
           defaultEmail: { type: 'string' },
-          defaultMobile: { type: 'string' },
           defaultEmail1: { type: 'string', nullable: true },
-          defaultMobile1: { type: 'string', nullable: true },
           defaultEmail2: { type: 'string', nullable: true },
+          defaultMobile: { type: 'string' },
+          defaultMobile1: { type: 'string', nullable: true },
+          defaultMobile2: { type: 'string', nullable: true },
+          isBlocked: { type: 'boolean' },
           adminUsername: { type: 'string' },
           adminPassword: { type: 'string' }
         },
@@ -47,10 +52,11 @@ export default async function tenantRoutes(fastify: FastifyInstance) {
         properties: {
           name: { type: 'string' },
           defaultEmail: { type: 'string' },
+          defaultEmail1: { type: 'string', nullable: true },
+          defaultEmail2: { type: 'string', nullable: true },
           defaultMobile: { type: 'string' },
-          defaultEmail1: { type: 'string' },
-          defaultMobile1: { type: 'string' },
-          defaultEmail2: { type: 'string' },
+          defaultMobile1: { type: 'string', nullable: true },
+          defaultMobile2: { type: 'string', nullable: true },
           isBlocked: { type: 'boolean' }
         },
       },

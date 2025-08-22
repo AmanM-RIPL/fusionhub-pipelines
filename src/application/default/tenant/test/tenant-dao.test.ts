@@ -111,10 +111,11 @@ describe('Default -> Tenant -> TenantDao', () => {
       name: 'John Doe', 
       createdOn: new Date(), 
       defaultEmail: 'sample@gmail.com',  
+      defaultEmail1: 'sample1@gmail.com',  
+      defaultEmail2: 'sample2@gmail.com',  
       defaultMobile: '1234567890',
-      defaultEmail1: null, 
       defaultMobile1: null, 
-      defaultEmail2: null, 
+      defaultMobile2: null, 
       isBlocked: false 
     };
 
@@ -141,13 +142,14 @@ describe('Default -> Tenant -> TenantDao', () => {
     // test data
     const mockTenants = { 
       id: 1, 
-      name: 'John Doe', 
+       name: 'John Doe', 
       createdOn: new Date(), 
       defaultEmail: 'sample@gmail.com',  
+      defaultEmail1: 'sample1@gmail.com',  
+      defaultEmail2: 'sample2@gmail.com',  
       defaultMobile: '1234567890',
-      defaultEmail1: null, 
       defaultMobile1: null, 
-      defaultEmail2: null, 
+      defaultMobile2: null, 
       isBlocked: false 
     };
 
@@ -173,11 +175,12 @@ describe('Default -> Tenant -> TenantDao', () => {
       id: 1, 
       name: 'John Doe', 
       createdOn: new Date(), 
-      defaultEmail: 'sample@gmail.com',  
-      defaultMobile: '1234567890',
+      defaultEmail: 'sample@gmail.com',
       defaultEmail1: null, 
-      defaultMobile1: null, 
       defaultEmail2: null, 
+      defaultMobile: '1234567890',
+      defaultMobile1: null, 
+      defaultMobile2: null, 
       isBlocked: false 
     };
 
@@ -208,11 +211,12 @@ describe('Default -> Tenant -> TenantDao', () => {
       id: 1, 
       name: 'John Doe', 
       createdOn: new Date(), 
-      defaultEmail: 'sample@gmail.com',  
-      defaultMobile: '1234567890',
+      defaultEmail: 'sample@gmail.com',
       defaultEmail1: null, 
-      defaultMobile1: null, 
       defaultEmail2: null, 
+      defaultMobile: '1234567890',
+      defaultMobile1: null, 
+      defaultMobile2: null, 
       isBlocked: false 
     };
 

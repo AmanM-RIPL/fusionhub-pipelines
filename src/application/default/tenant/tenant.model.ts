@@ -9,5 +9,6 @@ export interface ITenant {
   defaultEmail2: string | null;
   defaultMobile: string;
   defaultMobile1: string | null;
+  defaultMobile2?: string | null;
   isBlocked: Generated<boolean>;
 }

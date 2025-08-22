@@ -6,7 +6,7 @@ import { IUserRepository } from "../user/user.repository";
 import { IUser } from "../user/user.model";
 
 export class TenantService {
-  constructor(protected readonly tenantRepository: IUnDeletableRepository<ITenant>, protected readonly userRespository: IUserRepository) {}
+  constructor(protected readonly tenantRepository: IUnDeletableRepository<ITenant>, protected readonly userRepository: IUserRepository) {}
 
   async findById(id: number): Promise<Selectable<ITenant> | undefined> {
     return await this.tenantRepository.findById(id);
@@ -17,6 +17,7 @@ export class TenantService {
   }
 
   async create(tenantDetails: Insertable<ITenant> & { adminUsername: string, adminPassword: string }): Promise<Selectable<ITenant>> {
+    
     // need to remove additional properties from tenantDetails
     const { adminUsername, adminPassword, ...tenant } = tenantDetails;
     const newTenant = await this.tenantRepository.create(tenant);
@@ -30,9 +31,7 @@ export class TenantService {
       lastName: '',
       mobile: tenant.defaultMobile
     };
-    
-    const newUser = await this.userRespository.create(insertableUser);
-
+    //const newUser = await this.userRepository.create(insertableUser);
     return newTenant;
   }
 
