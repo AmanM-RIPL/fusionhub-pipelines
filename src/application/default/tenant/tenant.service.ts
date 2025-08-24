@@ -31,7 +31,7 @@ export class TenantService {
       lastName: '',
       mobile: tenant.defaultMobile
     };
-    //const newUser = await this.userRepository.create(insertableUser);
+    const newUser = await this.userRepository.create(insertableUser);
     return newTenant;
   }
 

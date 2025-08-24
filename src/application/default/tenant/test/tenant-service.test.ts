@@ -5,6 +5,7 @@ import { ITenant } from "../tenant.model";
 import { Insertable, Selectable, Transaction } from "kysely";
 import { UpdateableEntity } from "../../../common/types/entity";
 import { IUserRepository } from "../../user/user.repository";
+import { IUser } from "../../user/user.model";
 
 describe('Default -> Tenant -> TenantService', () => {
   let tenantService: TenantService;
@@ -54,6 +55,36 @@ describe('Default -> Tenant -> TenantService', () => {
 
     expect(mockTenantRepository.create).toHaveBeenCalledWith(insertableTenant);
     expect(result).toEqual(createdTenant);
+  });
+
+  test('create should call user-create repository method also', async () => {
+    const newTenant = { 
+      name: 'New Tenant', 
+      defaultEmail: 'sample@gmail.com', 
+      defaultMobile: '12345678', 
+      adminUsername: 'sample', 
+      adminPassword: 'sample' 
+    } as (Insertable<ITenant> & { adminUsername: string, adminPassword: string });
+    
+    const createdTenant = { id: 2, name: newTenant.name, defaultEmail: newTenant.defaultEmail, defaultMobile: newTenant.defaultMobile } as Selectable<ITenant>;
+    
+    const insertableUser: Insertable<IUser> = {
+      username: newTenant.adminUsername,
+      password: newTenant.adminPassword,
+      tenant: createdTenant.id,
+      email: createdTenant.defaultEmail,
+      firstName: 'Tenant Admin',
+      lastName: '',
+      mobile: createdTenant.defaultMobile
+    };
+    const createdUser: Selectable<IUser> = { id: 3, createdOn: new Date(), tenant: createdTenant.id, ...insertableUser };
+
+    mockUserRepository.create.mockResolvedValue(createdUser);
+    mockTenantRepository.create.mockResolvedValue(createdTenant);
+
+    const result = await tenantService.create(newTenant);
+
+    expect(mockUserRepository.create).toHaveBeenCalledWith(insertableUser);
   });
 
   test('update should call repository method with correct parameters', async () => {
