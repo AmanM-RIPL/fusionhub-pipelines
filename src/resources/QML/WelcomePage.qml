@@ -44,9 +44,19 @@ Rectangle {
 
                     MouseArea{
                         anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        hoverEnabled: true
+
+                        onEntered: {
+                            parent.color = "#f0f0f5";
+                        }
+
+                        onExited: {
+                            parent.color = "transparent";
+                        }
 
                         onClicked: {
-                            newProjectClicked()
+                            newProjectClicked();
                         }
                     }
                 }
@@ -67,6 +77,24 @@ Rectangle {
                     btnName: "User Settings"
                     btnNameColor: "black"
                     anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea{
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        hoverEnabled: true
+
+                        onEntered: {
+                            parent.color = "#f2f2f2";
+                        }
+
+                        onExited: {
+                            parent.color = "transparent";
+                        }
+
+                        onClicked: {
+                            //newProjectClicked();
+                        }
+                    }
                 }
 
                 CustomButton {
@@ -79,6 +107,24 @@ Rectangle {
                     btnName: "Organization Settings"
                     btnNameColor: "black"
                     anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea{
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        hoverEnabled: true
+
+                        onEntered: {
+                            parent.color = "#f2f2f2";
+                        }
+
+                        onExited: {
+                            parent.color = "transparent";
+                        }
+
+                        onClicked: {
+                            //newProjectClicked();
+                        }
+                    }
                 }
             }
 
