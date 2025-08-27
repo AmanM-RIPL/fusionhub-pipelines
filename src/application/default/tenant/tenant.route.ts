@@ -1,11 +1,9 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { Insertable, Selectable } from "kysely";
 import { ITenant } from "./tenant.model";
-import { IUser } from "../user/user.model";
 import { UpdateableEntity } from "../../common/types/entity";
 import { RequestUser } from "../../../infrastructure/types/fastify.types";
 import { TenantService } from "./tenant.service";
-import { UserService } from "../user/user.service";
 import { ForbiddenError, NotFoundError } from "../../common/utils/custom-errors";
 
 export default async function tenantRoutes(fastify: FastifyInstance) {
@@ -41,11 +39,9 @@ export default async function tenantRoutes(fastify: FastifyInstance) {
           defaultMobile: { type: 'string' },
           defaultMobile1: { type: 'string', nullable: true },
           defaultMobile2: { type: 'string', nullable: true },
-          isBlocked: { type: 'boolean' },
-          adminUsername: { type: 'string' },
-          adminPassword: { type: 'string' }
+          isBlocked: { type: 'boolean' }
         },
-        required: ['name', 'defaultEmail', 'defaultMobile', 'adminUsername', 'adminPassword']
+        required: ['name', 'defaultEmail', 'defaultMobile']
       },
       updateable: {
         type: 'object',

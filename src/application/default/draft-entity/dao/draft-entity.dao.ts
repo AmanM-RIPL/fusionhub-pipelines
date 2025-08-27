@@ -73,4 +73,19 @@ export class DraftEntityDao implements IDraftEntityRepository {
 
     await this.db.deleteFrom("public.draft_entity").where("id", "=", id).where("tenant", "=", this.tenant).execute();
   }
+
+   async approve(draftId: number, userIds: number[]): Promise<Selectable<IDraftEntity>> {
+  if (this.tenant === null) throw new Error("Tenant must be set before accessing an entity schema.");
+
+  return await this.db.updateTable("public.draft_entity").set({
+      //status: 'approved',
+       nextApprovingUser: null,
+       createdByUser: userIds[0],
+       createdOn: new Date(),
+    })
+    .where("id", "=", draftId)
+    .where("tenant", "=", this.tenant)
+    .returningAll()
+    .executeTakeFirstOrThrow();
+}
 }

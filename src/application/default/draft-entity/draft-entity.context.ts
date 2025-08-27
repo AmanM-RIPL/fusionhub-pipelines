@@ -21,13 +21,13 @@ export default async function draftEntityContextPlugin(fastify: FastifyInstance)
 
     // DAO
     request.setDecorator<DraftEntityDao>(
-      'draftEntityDao', 
+      'draftEntityDao',
       new DraftEntityDao(request.getDecorator<ControlledTransaction<IDatabase>>('dbTransaction'), tenantId)
     );
 
     // Services
     request.setDecorator<DraftEntityService>(
-      'draftEntityService', 
+      'draftEntityService',
       new DraftEntityService(
         request.getDecorator<DraftEntityDao>('draftEntityDao'),
         userId
