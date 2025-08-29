@@ -41,14 +41,13 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
       insertable: {
         type: 'object',
         properties: {
-          tenant: { type: 'number' },
           project: { type: 'number' },
           entity: { type: 'string' },
           entitySchema: { type: 'object' },
           associatedApprovedEntity: { type: ['number', 'null'] },
           changeHistory: { type: 'object' }
         },
-        required: ['tenant', 'project', 'entity', 'entitySchema', 'changeHistory']
+        required: ['project', 'entity', 'entitySchema', 'changeHistory', 'associatedApprovedEntity']
       },
       updateable: {
         type: 'object',
@@ -142,8 +141,9 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
       },
       handler: async (
         request: FastifyRequest<{
-          Body: Omit<InsertableEntity<IDraftEntity>, 'createdByUser' | 'changeHistory' | 'data' | 'nextApprovingUser'> & {
+          Body: Omit<InsertableEntity<IDraftEntity>, 'createdByUser' | 'changeHistory' | 'entitySchema' | 'nextApprovingUser'> & {
             changeHistory: ChangeHistory;
+            entitySchema: any
           };
         }>,
         reply: FastifyReply

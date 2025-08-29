@@ -106,10 +106,8 @@ describe('Default -> Tenant -> TenantRoute', () => {
       defaultMobile: '1234567890'
     } as Insertable<ITenant>;
     const requestPayload = { 
-      ...newTenant, 
-      adminUsername: 'newuser', 
-      adminPassword: 'sample' 
-    } as Insertable<ITenant> & { adminUsername: string, adminPassword: string };
+      ...newTenant 
+    } as Insertable<ITenant>;
     const createdTenant = { id: 2, ...newTenant, createdOn: new Date(), isBlocked: false } as Selectable<ITenant>;
     
     tenantService.create.mockResolvedValue(createdTenant);
@@ -167,10 +165,8 @@ describe('Default -> Tenant -> TenantRoute', () => {
       defaultMobile: '1234567890'
     } as Insertable<ITenant>;
     const requestPayload = { 
-      ...newTenant, 
-      adminUsername: 'newuser', 
-      adminPassword: 'sample' 
-    } as Insertable<ITenant> & { adminUsername: string, adminPassword: string };
+      ...newTenant
+    } as Insertable<ITenant>;
     const createdTenant = { id: 2, ...newTenant, createdOn: new Date(), isBlocked: false } as Selectable<ITenant>;
     
     tenantService.create.mockRejectedValue(new Error('Database error'));
@@ -273,10 +269,8 @@ describe('Default -> Tenant -> TenantRoute : Forbidden', () => {
       defaultMobile: '1234567890'
     } as Insertable<ITenant>;
     const requestPayload = { 
-      ...newTenant, 
-      adminUsername: 'newuser', 
-      adminPassword: 'sample' 
-    } as Insertable<ITenant> & { adminUsername: string, adminPassword: string };
+      ...newTenant
+    } as Insertable<ITenant>;
     const createdTenant = { id: 2, ...newTenant, createdOn: new Date(), isBlocked: false } as Selectable<ITenant>;
     
     tenantService.create.mockResolvedValue(createdTenant);

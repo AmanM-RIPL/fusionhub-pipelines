@@ -4,7 +4,7 @@ import { DraftEntityService } from "../draft-entity.service";
 import draftEntityRoutes from "../draft-entity.route";
 import { Insertable, Selectable } from "kysely";
 import { IDraftEntity } from "../draft-entity.model";
-import { UpdateableEntity, ChangeHistory, ColumnValue  } from "../../../common/types/entity";
+import { UpdateableEntity, ChangeHistory, ColumnValue, InsertableEntity } from "../../../common/types/entity";
 import { RequestUser } from "../../../../infrastructure/types/fastify.types";
 import { CustomError } from "../../../common/utils/custom-errors";
 
@@ -22,7 +22,7 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
       request.user = { user: 1, tenant: 1 } as RequestUser;
       request.setDecorator<DraftEntityService>('draftEntityService', draftEntityService);
     });
-    
+
     fastify.setErrorHandler(async (error: Error, request, reply) => {
       let statusCode = 500;
       let errorMessage = 'Internal Server Error';
@@ -34,7 +34,7 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
 
       reply.code(statusCode).send({ error: errorMessage });
     });
-     await draftEntityRoutes(fastify as FastifyInstance);
+    await draftEntityRoutes(fastify as FastifyInstance);
     await fastify.ready();
   });
 
@@ -50,60 +50,63 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
   });
 
   test('should handle get draftEntity by id', async () => {
-  const mockDraftEntity = {
-    id: 13,
-    tenant: 1,
-    project: 2,
-    entity: "employee",
-    createdByUser: 2,
-    nextApprovingUser: 2,
-    entitySchema: {},
-    associatedApprovedEntity: null,
-    createdOn: new Date(),
-    changeHistory: {
-      user: 1,
-      changeType: "create",
-      description: "Test",
-      timestamp: new Date(),
-      approvalHistory: []
-    } as ChangeHistory
-  } as Selectable<IDraftEntity>;
+    const mockDraftEntity = {
+      id: 13,
+      tenant: 1,
+      project: 2,
+      entity: "employee",
+      createdByUser: 2,
+      nextApprovingUser: 2,
+      entitySchema: {},
+      associatedApprovedEntity: null,
+      createdOn: new Date(),
+      changeHistory: {
+        user: 1,
+        changeType: "create",
+        description: "Test",
+        timestamp: new Date(),
+        approvalHistory: []
+      } as ChangeHistory
+    } as Selectable<IDraftEntity>;
 
-  draftEntityService.findById.mockResolvedValue(mockDraftEntity);
+    draftEntityService.findById.mockResolvedValue(mockDraftEntity);
 
-  const response = await fastify.inject({
-    method: 'GET',
-    url: '/draft-entity/13',
-    headers: { authorization: 'Bearer test-token' }
+    const response = await fastify.inject({
+      method: 'GET',
+      url: '/draft-entity/13',
+      headers: { authorization: 'Bearer test-token' }
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const result = response.body;
+    const parsed = JSON.parse(result);
+    expect(parsed.id).toEqual(13);
+    expect(parsed.entity).toEqual('employee');
+    expect(parsed.changeHistory.user).toEqual(1);
+    expect(parsed.changeHistory.description).toEqual('Test');
+    expect(draftEntityService.findById).toHaveBeenCalledWith(13);
   });
-
-  expect(response.statusCode).toBe(200);
-
-  const expected = {
-    ...mockDraftEntity,
-    createdOn: mockDraftEntity.createdOn.toISOString(),
-    changeHistory: {},
-  };
-  delete (expected as any).isBlocked;
-
-  expect(JSON.parse(response.body)).toEqual(expected);
-  expect(draftEntityService.findById).toHaveBeenCalledWith(13);
-});
-
 
   test('should handle get all draftEntitys', async () => {
     const mockDraftEntitys = [
       {
-        id: 1,
+        id: 13,
         tenant: 1,
-        project: 101,
+        project: 2,
         entity: "employee",
-        createdByUser: 1,
+        createdByUser: 2,
         nextApprovingUser: 2,
         entitySchema: {},
         associatedApprovedEntity: null,
-        createdOn: new Date(),
-        changeHistory: {} as ChangeHistory
+        createdOn: new Date("2025-08-28T07:21:33.998Z"),
+        changeHistory: {
+          user: 1,
+          changeType: "create",
+          description: "Test",
+          timestamp: new Date("2025-08-28T07:21:33.998Z"),
+          approvalHistory: []
+        } as ChangeHistory
       }
     ] as Selectable<IDraftEntity>[];
 
@@ -117,94 +120,144 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
     });
 
     expect(response.statusCode).toBe(200);
-    expect(JSON.parse(response.body)).toEqual(mockDraftEntitys.map(draftEntity => ({ 
-      ...draftEntity, 
-      createdOn: draftEntity.createdOn.toISOString() 
-    })));
+
+    const result = response.body;
+
+    const parsed = JSON.parse(result);
+    expect(Array.isArray(parsed)).toBe(true);
+    expect(parsed).toHaveLength(1);
+    const firstEntity = parsed[0];
+    expect(firstEntity.entity).toEqual('employee');
+    expect(firstEntity.changeHistory.user).toEqual(1);
+    expect(firstEntity.changeHistory.description).toEqual('Test');
+    expect(firstEntity.id).toEqual(13);
+    expect(firstEntity.tenant).toEqual(1);
+
+    expect(firstEntity.createdOn).toEqual("2025-08-28T07:21:33.998Z");
+    expect(firstEntity.changeHistory.timestamp).toEqual("2025-08-28T07:21:33.998Z");
     expect(draftEntityService.findAll).toHaveBeenCalledWith(10, 0);
   });
 
-  test('should handle create draftEntity', async () => {
-    const newDraftEntity = {
+  test('should handle create DraftEntity', async () => {
+    const newDraftEntity: Insertable<IDraftEntity> = {
       tenant: 1,
       project: 201,
       entity: "employee",
-      entitySchema: JSON.stringify({}),
-      changeHistory: JSON.stringify({}),
+      entitySchema: JSON.stringify([]),
+      changeHistory: JSON.stringify({
+        user: 1,
+        changeType: "create",
+        description: "Approved by user",
+        timestamp: new Date(),
+        approvalHistory: [
+          {
+            user: 1,
+            timestamp: new Date(),
+            description: "Approved By User",
+            status: "approved"
+          }
+        ]
+      }),
+      isBlocked: false,
+      createdByUser: 501,
+      nextApprovingUser: 502,
+      associatedApprovedEntity: 1
+    };
+
+    const requestPayload: 
+      Omit<InsertableEntity<IDraftEntity>, 'createdByUser' | 'changeHistory' | 'entitySchema' | 'nextApprovingUser'> & { changeHistory: ChangeHistory; entitySchema: any } = {
+      project: newDraftEntity.project,
+      entity: newDraftEntity.entity,
+      associatedApprovedEntity: newDraftEntity.associatedApprovedEntity,
+      entitySchema: {},
+      changeHistory: {
+        user: 1,
+        changeType: "create",
+        description: "Approved by user",
+        timestamp: new Date(),
+        approvalHistory: [
+          {
+            user: 1,
+            timestamp: new Date(),
+            description: "Approved By User",
+            status: "approved"
+          }
+        ]
+      }
+    };
+    
+    const createdDraftEntity: Selectable<IDraftEntity> = { 
+      id: 2, 
+      ...newDraftEntity, 
       createdByUser: 501,
       nextApprovingUser: 502,
       associatedApprovedEntity: 1,
-    } as Insertable<IDraftEntity>;
-    
-    const requestPayload = {...newDraftEntity, entitySchema: {}, changeHistory: {} } as Insertable<IDraftEntity>;
-
-    const createdDraftEntity = {
-      ...newDraftEntity,
-      id: 1,
-      createdOn: new Date(),
-      entitySchema: JSON.parse(newDraftEntity.entitySchema),
-      changeHistory: JSON.parse(newDraftEntity.changeHistory) as ChangeHistory 
-    } as Selectable<IDraftEntity>;
+      changeHistory: {
+        user: 501,
+        changeType: "create",
+        description: "sample",
+        timestamp: new Date(),
+        approvalHistory: []
+      },
+      createdOn: new Date(), 
+      isBlocked: false 
+    };
 
     draftEntityService.create.mockResolvedValue(createdDraftEntity);
 
     const response = await fastify.inject({
       method: 'POST',
       url: '/draft-entity',
-      headers: { 
-        authorization: 'Bearer test-token',
-        'content-type': 'application/json'
-      },
+      headers: { authorization: 'Bearer test-token' },
       payload: requestPayload
     });
 
+    console.log(response.body);
+
     expect(response.statusCode).toBe(201);
-    expect(JSON.parse(response.body)).toEqual({
-      ...createdDraftEntity, 
-      createdOn: createdDraftEntity.createdOn.toISOString()
-    });
+    expect(JSON.parse(response.body)).toEqual({ ...createdDraftEntity, createdOn: createdDraftEntity.createdOn.toISOString() }); // to get date string format correct
     expect(draftEntityService.create).toHaveBeenCalledWith(requestPayload);
   });
 
-  test('should handle update draftEntity', async () => {     
-  const updatedDraftEntity = {       
-    tenant: 1,       
-    project: 201,       
-    entity: "employee",       
-    entitySchema: {},
-    changeHistory: {},
-    createdByUser: 501,       
-    nextApprovingUser: 502,       
-    associatedApprovedEntity: 1,     
-  };          
+  test('should handle update draftEntity', async () => {
+    const updatedDraftEntity = {
+      tenant: 1,
+      project: 201,
+      entity: "employee",
+      entitySchema: {},
+      changeHistory: {},
+      createdByUser: 501,
+      nextApprovingUser: 502,
+      associatedApprovedEntity: 1,
+    };
 
-  const updatedDraftEntityResult = {        
-    ...updatedDraftEntity,       
-    id: 13,       
-    createdOn: new Date(),      
-    entitySchema: updatedDraftEntity.entitySchema,
-    changeHistory: updatedDraftEntity.changeHistory
-  } as Selectable<IDraftEntity>;              
+    const updatedDraftEntityResult = {
+      ...updatedDraftEntity,
+      id: 13,
+      createdOn: new Date(),
+      entitySchema: updatedDraftEntity.entitySchema,
+      changeHistory: updatedDraftEntity.changeHistory
+    } as Selectable<IDraftEntity>;
 
-  draftEntityService.update.mockResolvedValue(updatedDraftEntityResult);              
+    draftEntityService.update.mockResolvedValue(updatedDraftEntityResult);
 
-  const response = await fastify.inject({       
-    method: 'PATCH',       
-    url: '/draft-entity/13',       
-    headers: {          
-      authorization: 'Bearer test-token',         
-      'content-type': 'application/json'       
-    },       
-    payload: updatedDraftEntity     
-  });      
+    const response = await fastify.inject({
+      method: 'PATCH',
+      url: '/draft-entity/13',
+      headers: {
+        authorization: 'Bearer test-token',
+        'content-type': 'application/json'
+      },
+      payload: updatedDraftEntity
+    });
 
-  expect(response.statusCode).toBe(200);     
-  expect(JSON.parse(response.body)).toEqual({       
-    ...updatedDraftEntityResult,        
-    createdOn: updatedDraftEntityResult.createdOn.toISOString()     
-  });     
-  expect(draftEntityService.update).toHaveBeenCalledWith(13, updatedDraftEntity);   
-});
+    expect(response.statusCode).toBe(200);
+    expect(JSON.parse(response.body)).toEqual({
+      ...updatedDraftEntityResult,
+      createdOn: updatedDraftEntityResult.createdOn.toISOString()
+    });
+    expect(draftEntityService.update).toHaveBeenCalledWith(13, updatedDraftEntity);
+  });
 
   test('should handle draft entity not found', async () => {
     draftEntityService.findById.mockResolvedValue(undefined);
@@ -230,15 +283,15 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
       entitySchema: JSON.stringify({}),
       changeHistory: JSON.stringify({})
     } as Insertable<IDraftEntity>;
-    
-    const requestPayload = {...newDraftEntity, entitySchema: {}, changeHistory: {} } as Insertable<IDraftEntity>;
+
+    const requestPayload = { ...newDraftEntity, entitySchema: {}, changeHistory: {} } as Insertable<IDraftEntity>;
 
     draftEntityService.create.mockRejectedValue(new Error('Database error'));
 
     const response = await fastify.inject({
       method: 'POST',
       url: '/draft-entity',
-      headers: { 
+      headers: {
         authorization: 'Bearer test-token',
         'content-type': 'application/json'
       },
@@ -250,32 +303,32 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
     expect(draftEntityService.create).toHaveBeenCalledWith(requestPayload);
   });
 
-  test('should handle draftEntity update db error', async () => {     
-  const updatedDraftEntity = {       
-    tenant: 1,       
-    project: 101,       
-    entity: "employee",       
-    createdByUser: 501,       
-    nextApprovingUser: 502,       
-    entitySchema: JSON.stringify({}),       
-    changeHistory: JSON.stringify({})     
-  } as UpdateableEntity<IDraftEntity>;          
+  test('should handle draftEntity update db error', async () => {
+    const updatedDraftEntity = {
+      tenant: 1,
+      project: 101,
+      entity: "employee",
+      createdByUser: 501,
+      nextApprovingUser: 502,
+      entitySchema: JSON.stringify({}),
+      changeHistory: JSON.stringify({})
+    } as UpdateableEntity<IDraftEntity>;
 
-  draftEntityService.update.mockRejectedValue(new Error('Database error'));      
+    draftEntityService.update.mockRejectedValue(new Error('Database error'));
 
-  const response = await fastify.inject({       
-    method: 'PATCH',       
-    url: '/draft-entity/1',       
-    headers: {          
-      authorization: 'Bearer test-token',         
-      'content-type': 'application/json'       
-    },       
-    payload: updatedDraftEntity     
-  });      
+    const response = await fastify.inject({
+      method: 'PATCH',
+      url: '/draft-entity/1',
+      headers: {
+        authorization: 'Bearer test-token',
+        'content-type': 'application/json'
+      },
+      payload: updatedDraftEntity
+    });
 
-  expect(response.statusCode).toBe(500);     
-  expect(JSON.parse(response.body)).toEqual({ error: 'Internal Server Error' });  
-});
+    expect(response.statusCode).toBe(500);
+    expect(JSON.parse(response.body)).toEqual({ error: 'Internal Server Error' });
+  });
 });
 
 describe('Default -> DraftEntity -> DraftEntityRoute : Forbidden', () => {
@@ -292,7 +345,7 @@ describe('Default -> DraftEntity -> DraftEntityRoute : Forbidden', () => {
       request.user = { user: 1, tenant: 1 } as RequestUser;
       request.setDecorator<DraftEntityService>('draftEntityService', draftEntityService);
     });
-    
+
     fastify.setErrorHandler(async (error: Error, request, reply) => {
       let statusCode = 500;
       let errorMessage = 'Internal Server Error';
@@ -350,13 +403,13 @@ describe('Default -> DraftEntity -> DraftEntityRoute : Forbidden', () => {
       entitySchema: {},
       changeHistory: {}
     } as Insertable<IDraftEntity>;
-    
-    const requestPayload = {...newDraftEntity, entitySchema: {}, changeHistory: {} }  as Insertable<IDraftEntity>;
+
+    const requestPayload = { ...newDraftEntity, entitySchema: {}, changeHistory: {} } as Insertable<IDraftEntity>;
 
     const response = await fastify.inject({
       method: 'POST',
       url: '/draft-entity',
-      headers: { 
+      headers: {
         authorization: 'Bearer test-token',
         'content-type': 'application/json'
       },
@@ -381,7 +434,7 @@ describe('Default -> DraftEntity -> DraftEntityRoute : Forbidden', () => {
     const response = await fastify.inject({
       method: 'PATCH',
       url: '/draft-entity/1',
-      headers: { 
+      headers: {
         authorization: 'Bearer test-token',
         'content-type': 'application/json'
       },

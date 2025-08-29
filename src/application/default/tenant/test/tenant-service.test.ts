@@ -38,9 +38,7 @@ describe('Default -> Tenant -> TenantService', () => {
     const newTenant = {
       name: 'New Tenant',
       defaultEmail: 'sample@gmail.com',
-      defaultMobile: '12345678',
-      adminUsername: 'sample',
-      adminPassword: 'sample'
+      defaultMobile: '12345678'
     } as (Insertable<ITenant>);
 
     const insertableTenant = { name: newTenant.name, defaultEmail: newTenant.defaultEmail, defaultMobile: newTenant.defaultMobile } as Insertable<ITenant>;

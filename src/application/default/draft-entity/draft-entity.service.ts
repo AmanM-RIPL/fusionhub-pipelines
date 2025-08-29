@@ -7,15 +7,15 @@ export class DraftEntityService {
   constructor(
     protected readonly draftEntityRepository: IDraftEntityRepository,
     protected readonly user: number
-  ) {}
+  ) { }
 
   async findById(id: number): Promise<Selectable<IDraftEntity> | undefined> {
     return await this.draftEntityRepository.findById(id);
   }
 
   async findAll(limit: number, offset: number): Promise<Selectable<IDraftEntity>[]> {
-     const result = await this.draftEntityRepository.findAll(limit, offset);
-  
+    const result = await this.draftEntityRepository.findAll(limit, offset);
+
     return await this.draftEntityRepository.findAll(limit, offset);
   }
 
@@ -23,20 +23,27 @@ export class DraftEntityService {
     return await this.draftEntityRepository.findBy(filters);
   }
 
-  async create(
-    entity: Omit<InsertableEntity<IDraftEntity>, "createdByUser" | "nextApprovingUser" | "changeHistory">
-  ): Promise<Selectable<IDraftEntity>> {
+  async create(entity: Omit<InsertableEntity<IDraftEntity>, "createdByUser" | "nextApprovingUser" | "changeHistory">): Promise<Selectable<IDraftEntity>> {
     const entityToCreate: InsertableEntity<IDraftEntity> = {
       ...entity,
       createdByUser: this.user,
       nextApprovingUser: null,
       changeHistory: JSON.stringify({
-        user: this.user,
-        description: "",
-        timestamp: new Date(),
-        approvalHistory: []
-      })
+          user: this.user,
+          changeType: "create",
+          description: "Approved by user",
+          timestamp: new Date(),
+          approvalHistory: [
+            {
+              user: this.user,
+              timestamp: new Date(),
+              description: "Approved By User",
+              status: "approved"
+            }
+          ]
+        })
     };
+
     return await this.draftEntityRepository.create(entityToCreate);
   }
 
@@ -44,7 +51,7 @@ export class DraftEntityService {
     return await this.draftEntityRepository.update(id, updatedObject);
   }
 
-  // approvalHeirarcy = [1,2,3];
+
   async approve(id: number, approvalHierarcy: number[]): Promise<Selectable<IDraftEntity> | undefined> {
     const draftEntity = await this.draftEntityRepository.findById(id);
     if (!draftEntity) {
