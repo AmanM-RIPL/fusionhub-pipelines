@@ -4,7 +4,7 @@ import { DraftEntityService } from "../draft-entity.service";
 import draftEntityRoutes from "../draft-entity.route";
 import { Insertable, Selectable } from "kysely";
 import { IDraftEntity } from "../draft-entity.model";
-import { UpdateableEntity, ChangeHistory, ColumnValue, InsertableEntity } from "../../../common/types/entity";
+import { UpdateableEntity, ChangeHistory, ColumnValue, InsertableEntity, ChangeHistoryPayload } from "../../../common/types/entity";
 import { RequestUser } from "../../../../infrastructure/types/fastify.types";
 import { CustomError } from "../../../common/utils/custom-errors";
 
@@ -143,7 +143,7 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
       tenant: 1,
       project: 201,
       entity: "employee",
-      entitySchema: JSON.stringify([]),
+      entitySchema: JSON.stringify({}),
       changeHistory: JSON.stringify({
         user: 1,
         changeType: "create",
@@ -165,20 +165,21 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
     };
 
     const requestPayload: 
-      Omit<InsertableEntity<IDraftEntity>, 'createdByUser' | 'changeHistory' | 'entitySchema' | 'nextApprovingUser'> & { changeHistory: ChangeHistory; entitySchema: any } = {
+      Omit<InsertableEntity<IDraftEntity>, 'createdByUser' | 'changeHistory' | 'entitySchema' | 'nextApprovingUser'> & { changeHistory: ChangeHistoryPayload; entitySchema: any } = {
       project: newDraftEntity.project,
       entity: newDraftEntity.entity,
       associatedApprovedEntity: newDraftEntity.associatedApprovedEntity,
+      isBlocked: newDraftEntity.isBlocked,
       entitySchema: {},
       changeHistory: {
         user: 1,
         changeType: "create",
         description: "Approved by user",
-        timestamp: new Date(),
+        timestamp: (new Date()).toISOString(),
         approvalHistory: [
           {
             user: 1,
-            timestamp: new Date(),
+            timestamp: (new Date()).toISOString(),
             description: "Approved By User",
             status: "approved"
           }
@@ -192,6 +193,7 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
       createdByUser: 501,
       nextApprovingUser: 502,
       associatedApprovedEntity: 1,
+      entitySchema: {},
       changeHistory: {
         user: 501,
         changeType: "create",
@@ -199,8 +201,8 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
         timestamp: new Date(),
         approvalHistory: []
       },
-      createdOn: new Date(), 
-      isBlocked: false 
+      createdOn: new Date(),
+      isBlocked: false
     };
 
     draftEntityService.create.mockResolvedValue(createdDraftEntity);
@@ -212,32 +214,44 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
       payload: requestPayload
     });
 
-    console.log(response.body);
-
     expect(response.statusCode).toBe(201);
-    expect(JSON.parse(response.body)).toEqual({ ...createdDraftEntity, createdOn: createdDraftEntity.createdOn.toISOString() }); // to get date string format correct
+    expect(JSON.parse(response.body)).toEqual({ 
+      ...createdDraftEntity, 
+      createdOn: createdDraftEntity.createdOn.toISOString(),
+      changeHistory: { 
+        ...createdDraftEntity.changeHistory, 
+        timestamp: createdDraftEntity.changeHistory.timestamp.toISOString() 
+      }
+    }); // to get date string format correct for created on and timestamp
     expect(draftEntityService.create).toHaveBeenCalledWith(requestPayload);
   });
 
   test('should handle update draftEntity', async () => {
     const updatedDraftEntity = {
-      tenant: 1,
-      project: 201,
-      entity: "employee",
-      entitySchema: {},
-      changeHistory: {},
-      createdByUser: 501,
-      nextApprovingUser: 502,
-      associatedApprovedEntity: 1,
+      firstName: "John",
+      lastName: "Doe",
+      email: "john.doe@example.com"
     };
 
-    const updatedDraftEntityResult = {
-      ...updatedDraftEntity,
+    const updatedDraftEntityResult: Selectable<IDraftEntity> = {
       id: 13,
+      tenant: 1,
+      project: 2,
+      entity: "employee",
+      createdByUser: 2,
+      nextApprovingUser: 2,
+      entitySchema: updatedDraftEntity,
+      associatedApprovedEntity: null,
       createdOn: new Date(),
-      entitySchema: updatedDraftEntity.entitySchema,
-      changeHistory: updatedDraftEntity.changeHistory
-    } as Selectable<IDraftEntity>;
+      isBlocked: false,
+      changeHistory: {
+        user: 1,
+        changeType: "create",
+        description: "Test",
+        timestamp: new Date(),
+        approvalHistory: []
+      }
+    };
 
     draftEntityService.update.mockResolvedValue(updatedDraftEntityResult);
 
@@ -245,8 +259,7 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
       method: 'PATCH',
       url: '/draft-entity/13',
       headers: {
-        authorization: 'Bearer test-token',
-        'content-type': 'application/json'
+        authorization: 'Bearer test-token'
       },
       payload: updatedDraftEntity
     });
@@ -254,7 +267,11 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
     expect(response.statusCode).toBe(200);
     expect(JSON.parse(response.body)).toEqual({
       ...updatedDraftEntityResult,
-      createdOn: updatedDraftEntityResult.createdOn.toISOString()
+      createdOn: updatedDraftEntityResult.createdOn.toISOString(),
+      changeHistory: {
+        ...updatedDraftEntityResult.changeHistory,
+        timestamp: updatedDraftEntityResult.changeHistory.timestamp.toISOString()
+      }
     });
     expect(draftEntityService.update).toHaveBeenCalledWith(13, updatedDraftEntity);
   });
@@ -274,17 +291,35 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
   });
 
   test('should handle draftEntity creation db error', async () => {
-    const newDraftEntity = {
-      tenant: 1,
+    const newDraftEntity: Omit<InsertableEntity<IDraftEntity>, 'createdByUser' | 'changeHistory' | 'entitySchema' | 'nextApprovingUser'> & {
+      changeHistory: ChangeHistoryPayload;
+      entitySchema: any
+    } = {
       project: 201,
       entity: "employee",
-      createdByUser: 501,
-      nextApprovingUser: 502,
-      entitySchema: JSON.stringify({}),
-      changeHistory: JSON.stringify({})
-    } as Insertable<IDraftEntity>;
+      entitySchema: {},
+      associatedApprovedEntity: null,
+      changeHistory: {
+        user: 1,
+        changeType: "create",
+        description: "Approved by user",
+        timestamp: (new Date()).toISOString(),
+        approvalHistory: [
+          {
+            user: 1,
+            timestamp: (new Date()).toISOString(),
+            description: "Approved By User",
+            status: "approved"
+          }
+        ]
+      },
+      isBlocked: false,
+    };
 
-    const requestPayload = { ...newDraftEntity, entitySchema: {}, changeHistory: {} } as Insertable<IDraftEntity>;
+    const requestPayload: Omit<InsertableEntity<IDraftEntity>, 'createdByUser' | 'changeHistory' | 'entitySchema' | 'nextApprovingUser'> & {
+      changeHistory: ChangeHistoryPayload;
+      entitySchema: any
+    } = { ...newDraftEntity };
 
     draftEntityService.create.mockRejectedValue(new Error('Database error'));
 

@@ -56,12 +56,14 @@ export class DraftEntityDao implements IDraftEntityRepository {
     return await this.db.insertInto("public.draft_entity").values(entityToInsert).returningAll().executeTakeFirstOrThrow();
   }
 
-  async update(id: number, updatedObject: Omit<UpdateableEntity<IDraftEntity>, "entitySchema" | "createdByUser" | "associatedApprovedEntity">): Promise<Selectable<IDraftEntity> | undefined> {
+  async update(id: number, updatedObject: { [key: string]: unknown }): Promise<Selectable<IDraftEntity> | undefined> {
     if (this.tenant === null) throw new Error("Tenant must be set before updating an entity schema.");
 
     return await this.db
       .updateTable("public.draft_entity")
-      .set(updatedObject)
+      .set({
+        entitySchema: JSON.stringify(updatedObject)
+      })
       .where("id", "=", id)
       .where("tenant", "=", this.tenant)
       .returningAll()

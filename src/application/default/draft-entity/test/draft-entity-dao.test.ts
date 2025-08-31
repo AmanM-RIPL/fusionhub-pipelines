@@ -258,7 +258,11 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
       createdOn: new Date(),
       project: 202,
       entity: 'tenant', 
-      entitySchema: JSON.stringify({}),
+      entitySchema: JSON.stringify({
+        firstName: "John",
+        lastName: "Doe",
+        email: "john.doe@example.com"
+      }),
       changeHistory: {
         user: 1,
         changeType: "create",
@@ -279,30 +283,10 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
       isBlocked: false
     };
 
-    const mockDraftEntityUpdateable: 
-      Omit<
-        UpdateableEntity<IDatabase['public.draft_entity']>, 
-        "entitySchema" | "createdByUser" | "associatedApprovedEntity"
-      > = {
-      createdOn: new Date(),
-      project: 202,
-      entity: 'tenant',
-      changeHistory: JSON.stringify({
-        user: 1,
-        changeType: "create",
-        description: "Test",
-        timestamp: new Date(),
-        approvalHistory: [
-          {
-            user: 2,
-            timestamp: new Date(2024, 11, 12), // Fixed date constructor
-            description: "",
-            status: "approved"
-          }
-        ]
-      }),
-      nextApprovingUser: 502,
-      isBlocked: false
+    const mockDraftEntityUpdateable: { [key: string]: unknown } = {
+      firstName: "John",
+      lastName: "Doe",
+      email: "john.doe@example.com"
     };
 
     // Mock the Kysely methods to return the expected results
@@ -319,7 +303,9 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
 
     // Add your assertions or method calls here - FIXED: Use the updateable object, not the returned object
     expect(mockKysely.updateTable).toHaveBeenCalledWith("public.draft_entity");
-    expect(mockUpdate.set).toHaveBeenCalledWith(mockDraftEntityUpdateable);
+    expect(mockUpdate.set).toHaveBeenCalledWith({
+      entitySchema: JSON.stringify(mockDraftEntityUpdateable)
+    });
     expect(mockUpdate.where).toHaveBeenCalledWith("id", "=", 1);
     expect(mockUpdate.returningAll).toHaveBeenCalled();
     expect(mockReturningAll.executeTakeFirst).toHaveBeenCalled();

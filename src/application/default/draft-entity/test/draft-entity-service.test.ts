@@ -18,6 +18,10 @@ describe('Default -> DraftEntity -> DraftEntityService', () => {
     draftEntityService = new DraftEntityService(mockDraftEntityRepository, 1);
   });
 
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   test('findById should call repository method with correct parameters', async () => {
     const mockDraftEntity = { id: 1, entity: 'tenant' } as Selectable<IDraftEntity>;
     mockDraftEntityRepository.findById.mockResolvedValue(mockDraftEntity);
@@ -39,6 +43,10 @@ describe('Default -> DraftEntity -> DraftEntityService', () => {
   });
 
   test('create should call repository method with correct parameters', async () => {
+    // mock date-time
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2023-01-01T10:00:00Z'));
+    
     const newDraftEntity: InsertableEntity<IDraftEntity> = {
       project: 201,
       entity: "employee",
@@ -93,12 +101,7 @@ describe('Default -> DraftEntity -> DraftEntityService', () => {
 
     const result = await draftEntityService.create(insertableDraftEntity);
 
-    // expect(mockDraftEntityRepository.create).toHaveBeenCalledWith(newDraftEntity);
-    /*
-    
-    CHECK HOW TO TEST FOR toHaveBeenCalledWith without the date parameter
-    
-    */
+    expect(mockDraftEntityRepository.create).toHaveBeenCalledWith(newDraftEntity);
     expect(result).toEqual(createdDraftEntity);
   });
 

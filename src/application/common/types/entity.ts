@@ -37,3 +37,20 @@ export type ChangeHistory = {
   timestamp: Date;
   approvalHistory: ApprovalHistory[];
 };
+
+// for ApprovalHistory sent back in draft-entity endpoints
+export type ApprovalHistoryPayload = {
+  user: number;
+  timestamp: string;
+  description: string;
+  status: "approved" | "rejected";
+};
+
+// for ChangeHistory sent back in draft-entity endpoints
+export type ChangeHistoryPayload = {
+  user: number;
+  changeType: "create" | "update";
+  description: string;
+  timestamp: string;
+  approvalHistory: ApprovalHistoryPayload[];
+};
