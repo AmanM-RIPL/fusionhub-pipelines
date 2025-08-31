@@ -17,13 +17,14 @@ export default async function tenantRoutes(fastify: FastifyInstance) {
         type: 'object',
         properties: {
           id: { type: 'integer' },
+          createdOn: { type: 'string', format: 'date-time' }, 
           name: { type: 'string' },
-          createdOn: { type: 'string', format: 'date-time' },
           defaultEmail: { type: 'string' },
-          defaultMobile: { type: 'string' },
           defaultEmail1: { type: 'string', nullable: true },
-          defaultMobile1: { type: 'string', nullable: true },
           defaultEmail2: { type: 'string', nullable: true },
+          defaultMobile: { type: 'string' },
+          defaultMobile1: { type: 'string', nullable: true },
+          defaultMobile2: { type: 'string', nullable: true },
           isBlocked: { type: 'boolean' }
         },
         required: ['id', 'name', 'createdOn', 'defaultEmail', 'defaultMobile', 'isBlocked']
@@ -33,24 +34,25 @@ export default async function tenantRoutes(fastify: FastifyInstance) {
         properties: {
           name: { type: 'string' },
           defaultEmail: { type: 'string' },
-          defaultMobile: { type: 'string' },
           defaultEmail1: { type: 'string', nullable: true },
-          defaultMobile1: { type: 'string', nullable: true },
           defaultEmail2: { type: 'string', nullable: true },
-          adminUsername: { type: 'string' },
-          adminPassword: { type: 'string' }
+          defaultMobile: { type: 'string' },
+          defaultMobile1: { type: 'string', nullable: true },
+          defaultMobile2: { type: 'string', nullable: true },
+          isBlocked: { type: 'boolean' }
         },
-        required: ['name', 'defaultEmail', 'defaultMobile', 'adminUsername', 'adminPassword']
+        required: ['name', 'defaultEmail', 'defaultMobile']
       },
       updateable: {
         type: 'object',
         properties: {
           name: { type: 'string' },
           defaultEmail: { type: 'string' },
+          defaultEmail1: { type: 'string', nullable: true },
+          defaultEmail2: { type: 'string', nullable: true },
           defaultMobile: { type: 'string' },
-          defaultEmail1: { type: 'string' },
-          defaultMobile1: { type: 'string' },
-          defaultEmail2: { type: 'string' },
+          defaultMobile1: { type: 'string', nullable: true },
+          defaultMobile2: { type: 'string', nullable: true },
           isBlocked: { type: 'boolean' }
         },
       },

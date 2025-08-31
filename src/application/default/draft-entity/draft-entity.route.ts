@@ -1,8 +1,9 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { InsertableEntity, UpdateableEntity, ChangeHistory, ColumnValue } from "../../common/types/entity";
+import { InsertableEntity, UpdateableEntity, ChangeHistory, ColumnValue, ChangeHistoryPayload } from "../../common/types/entity";
 import { NotFoundError } from "../../common/utils/custom-errors";
 import { DraftEntityService } from "./draft-entity.service";
 import { IDraftEntity } from "./draft-entity.model";
+import { timeStamp } from "console";
 
 export default async function draftEntityRoutes(fastify: FastifyInstance) {
 
@@ -21,53 +22,65 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
           entity: { type: 'string' },
           createdByUser: { type: 'number' },
           nextApprovingUser: { type: ['number', 'null'] },
-          entitySchema: { type: 'object' },
+          entitySchema: { 
+            type: 'object',
+            additionalProperties: true
+          },
           associatedApprovedEntity: { type: ['number', 'null'] },
-          parentDraftEntity: { type: ['number', 'null'] },
-          changeHistory: { type: 'object' },
-          data: { type: 'object' }
+          isBlocked: { type: 'boolean' },
+          changeHistory: {
+            type: 'object',
+            properties: {
+              user: { type: 'number' },
+              changeType: { type: 'string' },
+              description: { type: 'string' },
+              timestamp: { type: 'string', format: 'date-time' },
+              approvalHistory: { type: 'array' }
+            },
+            required:['user', 'changeType', 'timestamp', 'approvalHistory']
+          }
         },
-        required: ['id', 'tenant', 'createdOn', 'project', 'entity', 'createdByUser', 'entitySchema', 'changeHistory', 'data']
+        required: ['id', 'tenant', 'createdOn', 'project', 'entity', 'createdByUser', 'entitySchema', 'changeHistory']
       },
       insertable: {
         type: 'object',
         properties: {
-          tenant: { type: 'number' },
           project: { type: 'number' },
           entity: { type: 'string' },
           entitySchema: { type: 'object' },
           associatedApprovedEntity: { type: ['number', 'null'] },
-          parentDraftEntity: { type: ['number', 'null'] },
-          changeHistory: { type: 'object' },
-          data: { type: 'object' }
+          changeHistory: {
+            type: 'object',
+            properties: {
+              user: { type: 'number' },
+              changeType: { type: 'string' },
+              description: { type: 'string' },
+              timestamp: { type: 'string', format: 'date-time' },
+              approvalHistory: { type: 'array' }
+            },
+            required:['user', 'changeType', 'timestamp', 'approvalHistory']
+          }
         },
-        required: ['tenant', 'project', 'entity', 'entitySchema', 'changeHistory', 'data']
+        required: ['project', 'entity', 'entitySchema', 'changeHistory', 'associatedApprovedEntity']
       },
       updateable: {
-        type: 'object',
-        properties: {
-          nextApprovingUser: { type: ['number', 'null'] },
-          entitySchema: { type: 'object' },
-          associatedApprovedEntity: { type: ['number', 'null'] },
-          parentDraftEntity: { type: ['number', 'null'] },
-          changeHistory: { type: 'object' },
-          data: { type: 'object' }
-        }
+        type: 'object'
       }
     }
   });
+
   //Routes
   // findById
   fastify.get(
-    '/draftEntity/:draftEntityId',
+    '/draft-entity/:draftEntityId',
     {
       onRequest: fastify.authenticate,
       schema: {
-        params: { 
-          type: 'object', 
-          properties: { 
-            draftEntityId: { type: 'integer', minimum: 1 } 
-          } 
+        params: {
+          type: 'object',
+          properties: {
+            draftEntityId: { type: 'integer', minimum: 1 }
+          }
         },
         response: {
           200: { $ref: 'draftEntity-object#/properties/selectable' },
@@ -91,15 +104,16 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
       }
     }
   );
- //Find All
+
+  //Find All
   fastify.get(
-    '/draftEntity',
+    '/draft-entity',
     {
       onRequest: fastify.authenticate,
       schema: {
-        querystring: { 
-          type: 'object', 
-          properties: { 
+        querystring: {
+          type: 'object',
+          properties: {
             limit: { type: 'integer', default: 10, minimum: 1, maximum: 20 },
             offset: { type: 'integer', default: 0, minimum: 0 }
           }
@@ -119,14 +133,14 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
         reply: FastifyReply
       ) => {
         const draftEntities = await request.getDecorator<DraftEntityService>('draftEntityService').findAll(request.query.limit, request.query.offset);
-
         return reply.code(200).send(draftEntities);
       }
     }
   );
-// Create
+
+  // Create
   fastify.post(
-    '/draftEntity',
+    '/draft-entity',
     {
       onRequest: fastify.authenticate,
       schema: {
@@ -138,9 +152,9 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
       },
       handler: async (
         request: FastifyRequest<{
-          Body: Omit<InsertableEntity<IDraftEntity>, 'createdByUser' | 'changeHistory' | 'data' | 'nextApprovingUser'> & { 
-            data: ColumnValue;
-            changeHistory: ChangeHistory;
+          Body: Omit<InsertableEntity<IDraftEntity>, 'createdByUser' | 'changeHistory' | 'entitySchema' | 'nextApprovingUser'> & {
+            changeHistory: ChangeHistoryPayload;
+            entitySchema: any
           };
         }>,
         reply: FastifyReply
@@ -153,9 +167,10 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
       }
     }
   );
-//Update
+
+  //Update
   fastify.patch(
-    '/draftEntity/:draftEntityId',
+    '/draft-entity/:draftEntityId',
     {
       onRequest: fastify.authenticate,
       schema: {
@@ -174,7 +189,7 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
       },
       handler: async (
         request: FastifyRequest<{
-          Body: Omit<InsertableEntity<IDraftEntity>, 'nextApprovingUser' | 'entitySchema' | 'associatedApprovedEntity' | 'parentDraftEntity'> & {changeHistory?: ChangeHistory; data?: ColumnValue;};
+          Body: { [key: string]: unknown };
           Params: { draftEntityId: number };
         }>,
         reply: FastifyReply
@@ -189,34 +204,5 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
       }
     }
   );
-// Detele
-  fastify.delete(
-    '/draftEntity/:draftEntityId',
-    {
-      onRequest: fastify.authenticate,
-      schema: {
-        params: {
-          type: 'object',
-          properties: {
-            draftEntityId: { type: 'integer', minimum: 1 }
-          }
-        },
-        response: {
-          204: { type: 'null' },
-          404: { type: 'object', properties: { error: { type: 'string' } } },
-          500: { type: 'object', properties: { error: { type: 'string' } } }
-        }
-      },
-      handler: async (
-        request: FastifyRequest<{
-          Params: { draftEntityId: number };
-        }>,
-        reply: FastifyReply
-      ) => {
-        const result = await request.getDecorator<DraftEntityService>('draftEntityService').delete(request.params.draftEntityId);
 
-        return reply.code(204).send();
-      }
-    }
-  );
 }

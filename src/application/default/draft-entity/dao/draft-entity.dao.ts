@@ -30,7 +30,7 @@ export class DraftEntityDao implements IDraftEntityRepository {
   }
 
   async findBy(
-    filters: { createdByUser?: number; entitySchema?: string; associatedApprovedEntity?: number; parentDraftEntity?: number; nextApprovingUser?: number },
+    filters: { createdByUser?: number; entitySchema?: string; associatedApprovedEntity?: number; nextApprovingUser?: number },
   ): Promise<Selectable<IDraftEntity>[]> {
     if (this.tenant === null) throw new Error("Tenant must be set before accessing an entity schema.");
 
@@ -39,7 +39,6 @@ export class DraftEntityDao implements IDraftEntityRepository {
     if (filters.createdByUser) query = query.where("createdByUser", "=", filters.createdByUser);
     if (filters.entitySchema) query = query.where("entitySchema", "=", filters.entitySchema);
     if (filters.associatedApprovedEntity) query = query.where("associatedApprovedEntity", "=", filters.associatedApprovedEntity);
-    if (filters.parentDraftEntity) query = query.where("parentDraftEntity", "=", filters.parentDraftEntity);
     if (filters.nextApprovingUser) query = query.where("nextApprovingUser", "=", filters.nextApprovingUser);
 
     query = query.where("tenant", "=", this.tenant);
@@ -57,12 +56,14 @@ export class DraftEntityDao implements IDraftEntityRepository {
     return await this.db.insertInto("public.draft_entity").values(entityToInsert).returningAll().executeTakeFirstOrThrow();
   }
 
-  async update(id: number, updatedObject: Omit<UpdateableEntity<IDraftEntity>, "entitySchema" | "createdByUser" | "associatedApprovedEntity" | "parentDraftEntity">): Promise<Selectable<IDraftEntity> | undefined> {
+  async update(id: number, updatedObject: { [key: string]: unknown }): Promise<Selectable<IDraftEntity> | undefined> {
     if (this.tenant === null) throw new Error("Tenant must be set before updating an entity schema.");
 
     return await this.db
       .updateTable("public.draft_entity")
-      .set(updatedObject)
+      .set({
+        entitySchema: JSON.stringify(updatedObject)
+      })
       .where("id", "=", id)
       .where("tenant", "=", this.tenant)
       .returningAll()
@@ -74,4 +75,19 @@ export class DraftEntityDao implements IDraftEntityRepository {
 
     await this.db.deleteFrom("public.draft_entity").where("id", "=", id).where("tenant", "=", this.tenant).execute();
   }
+
+   async approve(draftId: number, userIds: number[]): Promise<Selectable<IDraftEntity>> {
+  if (this.tenant === null) throw new Error("Tenant must be set before accessing an entity schema.");
+
+  return await this.db.updateTable("public.draft_entity").set({
+      //status: 'approved',
+       nextApprovingUser: null,
+       createdByUser: userIds[0],
+       createdOn: new Date(),
+    })
+    .where("id", "=", draftId)
+    .where("tenant", "=", this.tenant)
+    .returningAll()
+    .executeTakeFirstOrThrow();
+}
 }

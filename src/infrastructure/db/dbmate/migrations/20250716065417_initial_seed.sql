@@ -94,16 +94,15 @@ CREATE TABLE draft_entity (
     "id" SERIAL PRIMARY KEY,
     "tenant" INT NOT NULL,
     "createdOn" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "createdByUser" INT NOT NULL,
-    "project" INT NOT NULL,
-    "entity" VARCHAR(50),
 
     -- custom columns
-    "entitySchema" JSONB NOT NULL DEFAULT '{}', -- reference to the entity schema
-    "data" JSONB NOT NULL, -- json data of format {"fieldName": value}
-    "associatedApprovedEntity" INT, -- this is the id of the approved system entity
-    "nextApprovingUser" INT, -- this is the id of the next user who will approve the draft entity
-    "changeHistory" JSONB NOT NULL DEFAULT '{}', -- json of type ChangeHistory take a look at src/common/types
+    "project" INT NOT NULL,
+    "entity" VARCHAR(50),
+    "entitySchema" JSONB NOT NULL DEFAULT '{}',
+    "associatedApprovedEntity" INT,
+    "nextApprovingUser" INT,
+    "createdByUser" INT NOT NULL,
+    "changeHistory" JSONB NOT NULL DEFAULT '{}',
 
     -- foreign keys
     CONSTRAINT fk_draft_entity_tenant FOREIGN KEY(tenant)

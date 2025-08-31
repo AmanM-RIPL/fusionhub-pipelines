@@ -68,11 +68,19 @@ export class UserDao implements IUserRepository {
 
   async create(entity: InsertableEntity<IUser>): Promise<Selectable<IUser>> {
     if (this.tenant === null) throw new Error("Tenant must be set before creating a user.");
-
     const entityToInsert: Insertable<IUser> = {
       ...entity,
       tenant: this.tenant // Ensure tenant is set
     };
+    //console.log("CreateDao",entity);
+    return await this.db.insertInto("public.fh_user").values(entityToInsert).returningAll().executeTakeFirstOrThrow();
+  }
+
+  async adminCreate(entity: InsertableEntity<IUser>): Promise<Selectable<IUser>> {
+    const entityToInsert: Insertable<IUser> = {
+      ...entity
+    };
+    //console.log("adminCreateDao",entity);
     return await this.db.insertInto("public.fh_user").values(entityToInsert).returningAll().executeTakeFirstOrThrow();
   }
 

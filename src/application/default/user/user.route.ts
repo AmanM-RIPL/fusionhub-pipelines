@@ -23,7 +23,20 @@ export default async function userRoutes(fastify: FastifyInstance) {
           lastName: { type: 'string' },
           mobile: { type: 'string' },
         },
-        required: ['id', 'username', 'email', 'firstName', 'lastName', 'mobile', 'createdOn']
+        required: ['id', 'username', 'email', 'firstName', 'lastName', 'mobile', 'createdOn'],
+      },
+      adminSelectable: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer' },
+          createdOn: { type: 'string', format: 'date-time' },
+          username: { type: 'string' },
+          email: { type: 'string' },
+          firstName: { type: 'string' },
+          lastName: { type: 'string' },
+          mobile: { type: 'string' },
+        },
+        required: ['id', 'username', 'email', 'firstName', 'lastName', 'mobile', 'createdOn'],
       },
       authenticate: {
         type: 'object',
@@ -31,7 +44,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
           username: { type: 'string' },
           password: { type: 'string' },
         },
-        required: ['username', 'password']
+        required: ['username', 'password'],
       },
       insertable: {
         type: 'object',
@@ -43,7 +56,20 @@ export default async function userRoutes(fastify: FastifyInstance) {
           lastName: { type: 'string' },
           mobile: { type: 'string' },
         },
-        required: ['username', 'password', 'email', 'firstName', 'lastName', 'mobile']
+        required: ['username', 'password', 'email', 'firstName', 'lastName', 'mobile'],
+      },
+      adminInsertable: {
+        type: 'object',
+        properties: {
+          tenant: { type: 'integer' },
+          username: { type: 'string' },
+          password: { type: 'string' },
+          email: { type: 'string' },
+          firstName: { type: 'string' },
+          lastName: { type: 'string' },
+          mobile: { type: 'string' },
+        },
+        required: ['tenant', 'username', 'password', 'email', 'firstName', 'lastName', 'mobile'],
       },
       updateable: {
         type: 'object',
@@ -52,11 +78,23 @@ export default async function userRoutes(fastify: FastifyInstance) {
           email: { type: 'string' },
           firstName: { type: 'string' },
           lastName: { type: 'string' },
-          mobile: { type: 'string' }
+          mobile: { type: 'string' },
         },
       },
-    }
+      adminUpdateable: {
+        type: 'object',
+        properties: {
+          tenant: { type: 'integer' },
+          username: { type: 'string' },
+          email: { type: 'string' },
+          firstName: { type: 'string' },
+          lastName: { type: 'string' },
+          mobile: { type: 'string' },
+        },
+      },
+    },
   });
+
 
 
   // Routes
@@ -65,11 +103,11 @@ export default async function userRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
-        params: { 
-          type: 'object', 
-          properties: { 
-            userId: { type: 'integer', minimum: 1 } 
-          } 
+        params: {
+          type: 'object',
+          properties: {
+            userId: { type: 'integer', minimum: 1 }
+          }
         },
         response: {
           200: { $ref: 'user-object#/properties/selectable' },
@@ -99,9 +137,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
-        querystring: { 
-          type: 'object', 
-          properties: { 
+        querystring: {
+          type: 'object',
+          properties: {
             limit: { type: 'integer', default: 10, minimum: 1, maximum: 20 },
             offset: { type: 'integer', default: 0, minimum: 0 }
           }
@@ -153,17 +191,43 @@ export default async function userRoutes(fastify: FastifyInstance) {
     }
   );
 
+  fastify.post(
+    '/admin-user',
+    {
+      onRequest: fastify.authenticate,
+      schema: {
+        body: { $ref: 'user-object#/properties/adminInsertable' },
+        response: {
+          201: { $ref: 'user-object#/properties/adminSelectable' },
+          500: { type: 'object', properties: { error: { type: 'string' } } }
+        }
+      },
+      handler: async (
+        request: FastifyRequest<{
+          Body: Insertable<IUser>;
+        }>,
+        reply: FastifyReply
+      ) => {
+        const newTenant: Insertable<IUser> = request.body;
+
+        const adminUserDetails = await request.getDecorator<UserService>('userService').adminCreate(newTenant);
+
+        return reply.code(201).send(adminUserDetails);
+      }
+    }
+  );
+
   fastify.patch(
     '/user/:userId',
     {
       onRequest: fastify.authenticate,
       schema: {
         body: { $ref: 'user-object#/properties/updateable' },
-        params: { 
-          type: 'object', 
-          properties: { 
-            userId: { type: 'integer', minimum: 1 } 
-          } 
+        params: {
+          type: 'object',
+          properties: {
+            userId: { type: 'integer', minimum: 1 }
+          }
         },
         response: {
           200: { $ref: 'user-object#/properties/selectable' },

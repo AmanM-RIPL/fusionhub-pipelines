@@ -4,17 +4,14 @@ import { IUnDeletableRepository } from "../../../common/repositories/base.reposi
 import { ITenant } from "../tenant.model";
 import { Insertable, Selectable, Transaction } from "kysely";
 import { UpdateableEntity } from "../../../common/types/entity";
-import { IUserRepository } from "../../user/user.repository";
 
 describe('Default -> Tenant -> TenantService', () => {
   let tenantService: TenantService;
   let mockTenantRepository: DeepMockProxy<IUnDeletableRepository<ITenant>>;
-  let mockUserRepository: DeepMockProxy<IUserRepository>;
 
   beforeEach(() => {
     mockTenantRepository = mockDeep<IUnDeletableRepository<ITenant>>();
-    mockUserRepository = mockDeep<IUserRepository>();
-    tenantService = new TenantService(mockTenantRepository, mockUserRepository);
+    tenantService = new TenantService(mockTenantRepository);
   });
 
   test('findById should call repository method with correct parameters', async () => {
@@ -38,14 +35,12 @@ describe('Default -> Tenant -> TenantService', () => {
   });
 
   test('create should call repository method with correct parameters', async () => {
-    const newTenant = { 
-      name: 'New Tenant', 
-      defaultEmail: 'sample@gmail.com', 
-      defaultMobile: '12345678', 
-      adminUsername: 'sample', 
-      adminPassword: 'sample' 
-    } as (Insertable<ITenant> & { adminUsername: string, adminPassword: string });
-    
+    const newTenant = {
+      name: 'New Tenant',
+      defaultEmail: 'sample@gmail.com',
+      defaultMobile: '12345678'
+    } as (Insertable<ITenant>);
+
     const insertableTenant = { name: newTenant.name, defaultEmail: newTenant.defaultEmail, defaultMobile: newTenant.defaultMobile } as Insertable<ITenant>;
     const createdTenant = { id: 2, name: newTenant.name, defaultEmail: newTenant.defaultEmail, defaultMobile: newTenant.defaultMobile } as Selectable<ITenant>;
     mockTenantRepository.create.mockResolvedValue(createdTenant);
@@ -53,6 +48,33 @@ describe('Default -> Tenant -> TenantService', () => {
     const result = await tenantService.create(newTenant);
 
     expect(mockTenantRepository.create).toHaveBeenCalledWith(insertableTenant);
+    expect(result).toEqual(createdTenant);
+  });
+
+  test('create should call create repository method also', async () => {
+    const newTenant: Insertable<ITenant> = {
+      name: 'New Tenant',
+      defaultEmail: 'sample@gmail.com',
+      defaultMobile: '12345678'
+    };
+
+    const createdTenant: Selectable<ITenant> = {
+      id: 2,
+      createdOn: new Date(),
+      name: newTenant.name,
+      defaultEmail: newTenant.defaultEmail,
+      defaultEmail1: null,
+      defaultEmail2: null,
+      defaultMobile: newTenant.defaultMobile,
+      defaultMobile1: null,
+      defaultMobile2: null,
+      isBlocked: false,
+    };
+    mockTenantRepository.create.mockResolvedValue(createdTenant);
+
+    const result = await tenantService.create(newTenant);
+
+    expect(mockTenantRepository.create).toHaveBeenCalledWith(newTenant);
     expect(result).toEqual(createdTenant);
   });
 

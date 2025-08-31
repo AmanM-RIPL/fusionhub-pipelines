@@ -198,7 +198,7 @@ describe('Default -> User -> UserDao', () => {
     // test data
     const mockUser = { 
       id: 1, 
-      tenant: 2,
+      tenant: 1,
       createdOn: new Date(),
       username: 'JohnDoe', 
       password: 'password123', 

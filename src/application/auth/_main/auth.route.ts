@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { UserService } from "../../default/user/user.service";
-import { NotFoundError } from "../../common/utils/custom-errors";
+import { NotFoundError, UnauthorizedError } from "../../common/utils/custom-errors";
 import dbTransactionPlugin from "../../../infrastructure/plugins/db-transaction-plugin";
 import fp from 'fastify-plugin';
 import { UserDao } from "../../default/user/dao/user.dao";
@@ -31,7 +31,18 @@ export default async function authRoutes(fastify: FastifyInstance) {
     // Services
     request.setDecorator<UserService>('userService', new UserService(request.getDecorator<UserDao>('userDao')));
   });
-  
+
+  // Registering routes
+  await fastify.register(fp(userAuthRoutes));
+}
+
+
+/*
+
+Needed to separate the routes and schema's so that unit testing can be done with proper mocking
+
+*/
+export async function userAuthRoutes(fastify: FastifyInstance) {
   // adding schema
   fastify.addSchema({
     $id: 'user-object',
@@ -91,7 +102,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
       schema: {
         body: { $ref: 'user-object#/properties/authenticate' },
         response: {
-          201: {
+          200: {
             allOf: [
               { $ref: 'user-object#/properties/selectable' },
               {
@@ -115,7 +126,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
         const userDetails = await request.getDecorator<UserService>('userService').authenticate(request.body.username, request.body.password);
 
         if (!userDetails) {
-          throw new NotFoundError('Invalid username or password');
+          throw new UnauthorizedError('Invalid username or password');
         }
 
         const token = fastify.jwt.sign({
@@ -123,7 +134,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
           tenant: userDetails.tenant
         });
 
-        return reply.code(201).send({ ...userDetails, token });
+        return reply.code(200).send({ ...userDetails, token });
       }
     }
   );

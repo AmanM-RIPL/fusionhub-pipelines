@@ -46,8 +46,8 @@ app.register(kyselyPlugin);
 app.register(defaultJsonSchema);
 
 // registering the routes for action
-app.register(defaultRoutes, { prefix: '/api/default' });
-app.register(authRoutes, { prefix: '/api/auth' });
+app.register(defaultRoutes, { prefix: '/api/v1/default' });
+app.register(authRoutes, { prefix: '/api/v1/auth' });
 
 // Run the server!
 app.listen({ 

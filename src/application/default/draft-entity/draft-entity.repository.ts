@@ -8,8 +8,8 @@ export interface IDraftEntityRepository extends IBaseRepository<IDraftEntity> {
       createdByUser?: number; 
       entitySchema?: string; 
       associatedApprovedEntity?: number; 
-      parentDraftEntity?: number; 
       nextApprovingUser?: number 
     }
   ): Promise<Selectable<IDraftEntity>[]>;
+  approve(id: number, approvalHierarcy: number[]): Promise<Selectable<IDraftEntity>>;
 }

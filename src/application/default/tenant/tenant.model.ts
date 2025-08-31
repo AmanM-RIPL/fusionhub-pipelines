@@ -5,9 +5,10 @@ export interface ITenant {
   createdOn: Generated<Date>;
   name: string;
   defaultEmail: string;
-  defaultEmail1: string | null;
-  defaultEmail2: string | null;
+  defaultEmail1?: string | null;
+  defaultEmail2?: string | null;
   defaultMobile: string;
-  defaultMobile1: string | null;
+  defaultMobile1?: string | null;
+  defaultMobile2?: string | null;
   isBlocked: Generated<boolean>;
 }

@@ -1,7 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { TenantService } from "../tenant/tenant.service";
 import { TenantDao } from "../tenant/dao/tenant.dao";
-import { UserDao } from "../user/dao/user.dao";
 import { ControlledTransaction } from "kysely";
 import { IDatabase } from "../../../infrastructure/db/kysely/types";
 
@@ -9,7 +8,7 @@ export default async function tenantContextPlugin(fastify: FastifyInstance) {
 
   // Add DAO decorators
   fastify.decorateRequest('tenantDao', null);
-
+   
 
   // Add Service decorators
   fastify.decorateRequest('tenantService', null);
@@ -20,6 +19,7 @@ export default async function tenantContextPlugin(fastify: FastifyInstance) {
     request.setDecorator<TenantDao>('tenantDao', new TenantDao(request.getDecorator<ControlledTransaction<IDatabase>>('dbTransaction')));
 
     // Services
-    request.setDecorator<TenantService>('tenantService', new TenantService(request.getDecorator<TenantDao>('tenantDao'), request.getDecorator<UserDao>('userDao')));
-  });
+     request.setDecorator<TenantService>('tenantService', new TenantService(request.getDecorator<TenantDao>('tenantDao'))); 
+     
+    });
 }

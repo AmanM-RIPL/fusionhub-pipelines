@@ -24,6 +24,15 @@ export class UserService {
     return await this.userRepository.create(user);
   }
 
+  async adminCreate(adminUser: Insertable<IUser>): Promise<Selectable<IUser>> {
+    // find a user with that username
+    const existingAdminUser = await this.userRepository.findByUsername(adminUser.username);
+    if (existingAdminUser) {
+      throw new Error('Admin User already exists');
+    }
+    return await this.userRepository.adminCreate(adminUser);
+  }
+
   async update(id: number, updatedUser: UpdateableEntity<IUser>): Promise<Selectable<IUser> | undefined> {
     // if updated user has a new username then check if that username exists first
     if (updatedUser.username) {
