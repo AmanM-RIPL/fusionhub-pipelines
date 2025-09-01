@@ -26,11 +26,6 @@ const envToLogger: { [key: string]: boolean | PinoLoggerOptions } = {
 // registering the main application
 const app = Fastify({
   logger: envToLogger[process.env.NODE_ENV || 'development'],
-  // ajv: {
-  //   customOptions: {
-  //     coerceTypes: false  // Ensure types are not coerced
-  //   }
-  // }
 });
 
 // Register JWT
@@ -39,24 +34,27 @@ app.register(fastifyJwt, {
 });
 app.register(jwtAuth);
 
+
+
 // Register kysely for connection pooling
 app.register(kyselyPlugin);
 
-// Registering the default JSON schema
+// Register default JSON schema
 app.register(defaultJsonSchema);
 
-// registering the routes for action
+// Register routes
 app.register(defaultRoutes, { prefix: '/api/v1/default' });
 app.register(authRoutes, { prefix: '/api/v1/auth' });
 
-// Run the server!
-app.listen({ 
-  port: process.env.FASTIFY_PORT !== undefined ? parseInt(process.env.FASTIFY_PORT) : 3000, 
-  host: process.env.FASTIFY_HOST 
+
+// Run the server
+app.listen({
+  port: process.env.FASTIFY_PORT !== undefined ? parseInt(process.env.FASTIFY_PORT) : 3000,
+  host: process.env.FASTIFY_HOST
 }, (err: any, address: any) => {
   if (err) {
-    app.log.error(err)
-    process.exit(1)
+    app.log.error(err);
+    process.exit(1);
   }
-  app.log.info(`server listening on ${address}`)
-})
+  app.log.info(`server listening on ${address}`);
+});
