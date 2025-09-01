@@ -7,6 +7,8 @@ import defaultJsonSchema from './infrastructure/plugins/default-json-schema';
 import defaultRoutes from './application/default/_main/default.routes';
 import { PinoLoggerOptions } from 'fastify/types/logger';
 import authRoutes from './application/auth/_main/auth.route';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 
 // logger configuration
 const envToLogger: { [key: string]: boolean | PinoLoggerOptions } = {
@@ -41,6 +43,33 @@ app.register(kyselyPlugin);
 
 // Register default JSON schema
 app.register(defaultJsonSchema);
+
+await app.register(swagger, {
+  openapi: {
+    info: {
+      title: 'FusionHub - APIs',
+      version: 'v1',
+    },
+  },
+  hideUntagged: true,
+});
+
+await app.register(swaggerUi, {
+  routePrefix: '/documentation',
+  uiConfig: {
+    docExpansion: 'none',
+    deepLinking: true,
+    defaultModelExpandDepth: -1
+  },
+  uiHooks: {
+    onRequest: function (request, reply, next) { next() },
+    preHandler: function (request, reply, next) { next() }
+  },
+  staticCSP: true,
+  transformStaticCSP: (header) => header,
+  transformSpecification: (swaggerObject, request, reply) => { return swaggerObject },
+  transformSpecificationClone: true
+});
 
 // Register routes
 app.register(defaultRoutes, { prefix: '/api/v1/default' });

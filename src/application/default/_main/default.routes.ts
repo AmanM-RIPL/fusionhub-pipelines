@@ -1,6 +1,5 @@
 import { FastifyInstance } from "fastify";
 import tenantRoutes from "../tenant/tenant.route";
-import { tenantSwagger } from "../tenant/tenant.swagger";
 import projectRoutes from "../project/project.route";
 import userRoutes from "../user/user.route";
 import tenantContextPlugin from "../tenant/tenant.context";
@@ -30,7 +29,4 @@ export default async function defaultRoutes(fastify: FastifyInstance) {
   await fastify.register(fp(userRoutes));
   await fastify.register(fp(permissionRoutes));
   await fastify.register(fp(draftEntityRoutes));
-
-  // Swagger per module
-  await fastify.register(tenantSwagger);
 }

@@ -66,6 +66,9 @@ export default async function tenantRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Get tenant by id field',
+        tags: ['tenant'],
+        summary: 'Get tenant by ID',
         params: { 
           type: 'object', 
           properties: { 
