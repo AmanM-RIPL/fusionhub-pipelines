@@ -17,9 +17,8 @@ describe('Default -> Project -> ProjectService', () => {
   test('findById should call repository method with correct parameters', async () => {
     const mockProject = {
       id: 1,
-      name: 'HRMS System',
-      description: 'A human resource management system for internal use.',
-      projectCode: 'HRMS001'
+      projectName: 'HRMS System',
+      description: 'A human resource management system for internal use.'
       } as Selectable<IProject>;
     mockProjectRepository.findById.mockResolvedValue(mockProject);
 
@@ -32,9 +31,8 @@ describe('Default -> Project -> ProjectService', () => {
   test('findAll should call repository method with correct parameters', async () => {
     const mockProjects = [{
       id: 1,
-      name: 'HRMS System',
-      description: 'A human resource management system for internal use.',
-      projectCode: 'HRMS001'
+      projectName: 'HRMS System',
+      description: 'A human resource management system for internal use.'
       }] as Selectable<IProject>[];
     mockProjectRepository.findAll.mockResolvedValue(mockProjects);
 
@@ -46,13 +44,12 @@ describe('Default -> Project -> ProjectService', () => {
 
   test('create should call repository method with correct parameters', async () => {
     const newProject = {
-      name: 'HRMS System',
-      description: 'A human resource management system for internal use.',
-      projectCode: 'HRMS001'
+      projectName: 'HRMS System',
+      description: 'A human resource management system for internal use.'
       } as (Insertable<IProject>);
     
-    const insertableProject = { name: newProject.name,description: newProject.description,projectCode: newProject.projectCode} as Insertable<IProject>;
-    const createdProject = { id: 2, name: newProject.name,description: newProject.description,projectCode: newProject.projectCode } as Selectable<IProject>;
+    const insertableProject = { projectName: newProject.projectName,description: newProject.description} as Insertable<IProject>;
+    const createdProject = { id: 2, projectName: newProject.projectName,description: newProject.description } as Selectable<IProject>;
     mockProjectRepository.create.mockResolvedValue(createdProject);
 
     const result = await projectService.create(newProject);
@@ -62,7 +59,7 @@ describe('Default -> Project -> ProjectService', () => {
   });
 
   test('update should call repository method with correct parameters', async () => {
-    const updatedData = { name: 'Updated Project' } as UpdateableEntity<IProject>;
+    const updatedData = { projectName: 'Updated Project' } as UpdateableEntity<IProject>;
     const updatedProject = { id: 1, ...updatedData } as Selectable<IProject>;
     mockProjectRepository.update.mockResolvedValue(updatedProject);
 

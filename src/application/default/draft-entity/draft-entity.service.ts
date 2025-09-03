@@ -97,4 +97,8 @@ export class DraftEntityService {
       });
     }
   }
+  
+  async delete(id: number): Promise<void> {
+    await this.draftEntityRepository.delete(id);
+  }
 }

@@ -58,15 +58,15 @@ describe('Default -> Project -> ProjectRoute', () => {
   test('should handle get project by id', async () => {
     const mockProject = {
       id: 1,
-      name: 'HRMS System',
+      projectName: 'HRMS System',
       createdOn: new Date(Date.parse('2025-04-11T10:00:00Z')),
       description: 'A human resource management system for internal use.',
-      projectCode: 'HRMS001',
       startDate: new Date('2025-01-01'),
       endDate: new Date('2025-12-31'),
       status: 'active',
-      contactEmail: 'hrms@company.com',
-      contactMobile: '+911234567890',
+      customerName: 'company',
+      customerEmail: 'hrms@company.com',
+      customerMobile: '+911234567890',
       isBlocked: false
     } as Selectable<IProject>;
     projectService.findById.mockResolvedValue(mockProject);
@@ -76,8 +76,7 @@ describe('Default -> Project -> ProjectRoute', () => {
       url: '/project/1',
       headers: { authorization: 'Bearer test-token' }
     });
-
-    // Check the response
+    console.log(response.body);
     expect(response.statusCode).toBe(200);
     expect(JSON.parse(response.body)).toEqual({ 
       ...mockProject, 
@@ -91,17 +90,18 @@ describe('Default -> Project -> ProjectRoute', () => {
   test('should handle get all projects', async () => {
     const mockProjects = [
       {
-        id: 1,
-        name: 'HRMS System',
-        createdOn: new Date(Date.parse('2025-04-11T10:00:00Z')),
-        description: 'A human resource management system for internal use.',
-        projectCode: 'HRMS001',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-12-31'),
-        status: 'active',
-        contactEmail: 'hrms@company.com',
-        contactMobile: '+911234567890',
-        isBlocked: false
+      id: 1,
+      projectName: 'HRMS System',
+      createdOn: new Date(Date.parse('2025-04-11T10:00:00Z')),
+      description: 'A human resource management system for internal use.',
+      startDate: new Date('2025-01-01'),
+      endDate: new Date('2025-12-31'),
+      status: 'active',
+      customerName: 'company',
+      customerEmail: 'hrms@company.com',
+      customerMobile: '+911234567890',
+      lastChangeLogId: 1,
+      isBlocked: false
       }
     ] as Selectable<IProject>[];
 
@@ -126,16 +126,18 @@ describe('Default -> Project -> ProjectRoute', () => {
 
  test('should handle create project', async () => { 
   const newProject = {
-    tenant: 1,
-    name: 'HRMS System',
-    description: 'A human resource management system for internal use.',
-    projectCode: 'HRMS001',
-    startDate: new Date('2025-01-01'),
-    endDate: new Date('2025-12-31'),
-    status: 'active',
-    contactEmail: 'hrms@company.com',
-    contactMobile: '+911234567899',
-    createdOn: new Date('2025-01-01'),
+      tenant: 1,
+      projectName: 'HRMS System',
+      createdOn: new Date(Date.parse('2025-04-11T10:00:00Z')),
+      description: 'A human resource management system for internal use.',
+      startDate: new Date('2025-01-01'),
+      endDate: new Date('2025-12-31'),
+      status: 'active',
+      customerName: 'company',
+      customerEmail: 'hrms@company.com',
+      customerMobile: '+911234567890',
+      lastChangeLogId: 1,
+      isBlocked: false
   } as Insertable<IProject>;
 
   const requestPayload = {
@@ -174,14 +176,15 @@ describe('Default -> Project -> ProjectRoute', () => {
 
   expect(projectService.create).toHaveBeenCalledWith(expect.objectContaining({
     tenant: 1,
-    name: 'HRMS System',
+    projectName: 'HRMS System',
     description: 'A human resource management system for internal use.',
-    projectCode: 'HRMS001',
     startDate: "2025-01-01",
     endDate: "2025-12-31",
     status: 'active',
-    contactEmail: 'hrms@company.com',
-    contactMobile: '+911234567899',
+    customerName: 'company',
+    customerEmail: 'hrms@company.com',
+    customerMobile: '+911234567890',
+    lastChangeLogId: 1,
     createdOn: "2025-01-01T00:00:00.000Z",
     isBlocked: false 
   }));
@@ -190,14 +193,15 @@ describe('Default -> Project -> ProjectRoute', () => {
   test('should handle update project', async () => {
     const updatedProject = {
       tenant: 1,
-      name: 'HRMS System',
+      projectName: 'HRMS System',
       description: 'A human resource management system for internal use.',
-      projectCode: 'HRMS001',
       startDate: new Date('2025-01-01'),
       endDate: new Date('2025-12-31'),
       status: 'active',
-      contactEmail: 'hrms@company.com',
-      contactMobile: '+911234567890'
+      customerName: 'company',
+      customerEmail: 'hrms@company.com',
+      customerMobile: '+911234567890',
+      lastChangeLogId: 1,
     } as UpdateableEntity<IProject>;
     
     const requestPayload = {
@@ -258,15 +262,15 @@ describe('Default -> Project -> ProjectRoute', () => {
   test('should handle project creation db error', async () => {
     const newProject = {
       tenant: 1,
-      name: 'HRMS System',
+      projectName: 'HRMS System',
       description: 'A human resource management system for internal use.',
-      projectCode: 'HRMS001',
       startDate: new Date('2025-01-01'),
       endDate: new Date('2025-12-31'),
       isBlocked:false,
       status: 'active',
-      contactEmail: 'hrms@company.com',
-      contactMobile: '+911234567899',
+      customerName: 'company',
+      customerEmail: 'hrms@company.com',
+      customerMobile: '+911234567890',
       createdOn: new Date('2025-01-01'),
     } as Insertable<IProject>;
     
@@ -294,14 +298,14 @@ describe('Default -> Project -> ProjectRoute', () => {
     expect(JSON.parse(response.body)).toEqual({ error: 'Internal Server Error' });
     expect(projectService.create).toHaveBeenCalledWith(expect.objectContaining({
     tenant: 1,
-    name: 'HRMS System',
+    projectName: 'HRMS System',
     description: 'A human resource management system for internal use.',
-    projectCode: 'HRMS001',
     startDate: "2025-01-01",
     endDate: "2025-12-31",
     status: 'active',
-    contactEmail: 'hrms@company.com',
-    contactMobile: '+911234567899',
+    customerName: 'company',
+    customerEmail: 'hrms@company.com',
+    customerMobile: '+911234567890',
     createdOn: "2025-01-01T00:00:00.000Z",
     isBlocked: false 
     }));
@@ -310,14 +314,15 @@ describe('Default -> Project -> ProjectRoute', () => {
   test('should handle project update db error', async () => {
     const updatedProject = {
       tenant: 1,
-      name: 'HRMS System',
+      projectName: 'HRMS System',
       description: 'A human resource management system for internal use.',
-      projectCode: 'HRMS001',
       startDate: new Date('2025-01-01'),
       endDate: new Date('2025-12-31'),
       status: 'active',
-      contactEmail: 'hrms@company.com',
-      contactMobile: '+911234567890'
+      customerName: 'company',
+      customerEmail: 'hrms@company.com',
+      customerMobile: '+911234567890',
+      lastChangeLogId: 1,
     } as UpdateableEntity<IProject>;
     
     // Convert dates to strings for the request payload
@@ -419,14 +424,15 @@ describe('Default -> Project -> ProjectRoute : Forbidden', () => {
   test('should handle update project', async () => {
     const updatedProject = {
       tenant: 1,
-      name: 'HRMS System',
+      projectName: 'HRMS System',
       description: 'A human resource management system for internal use.',
-      projectCode: 'HRMS001',
       startDate: '2025-01-01',
       endDate: '2025-12-31',
       status: 'active',
-      contactEmail: 'hrms@company.com',
-      contactMobile: '+911234567890',
+      customerName: 'company',
+      customerEmail: 'hrms@company.com',
+      customerMobile: '+911234567890',
+      lastChangeLogId: 1,
       isBlocked: false
     };
 

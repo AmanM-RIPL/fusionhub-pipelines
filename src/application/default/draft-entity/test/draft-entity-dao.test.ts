@@ -1,4 +1,4 @@
-import { Insertable, InsertQueryBuilder, InsertResult, Kysely, Selectable, SelectQueryBuilder, Transaction, UpdateQueryBuilder } from "kysely";
+import { Insertable, InsertQueryBuilder, InsertResult, Kysely, Selectable, SelectQueryBuilder, DeleteQueryBuilder, Transaction, UpdateQueryBuilder } from "kysely";
 import { DraftEntityDao } from "../dao/draft-entity.dao";
 import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
 import { IDatabase } from "../../../../infrastructure/db/kysely/types";
@@ -6,6 +6,7 @@ import { InsertableEntity, UpdateableEntity } from "../../../common/types/entity
 
 // Helper types for the chained query builder objects
 type DraftEntitysSelectQueryBuilder = SelectQueryBuilder<IDatabase, 'public.draft_entity', {}>;
+type DraftEntitysDeleteQueryBuilder = DeleteQueryBuilder<IDatabase, 'public.draft_entity', {}>;
 type DraftEntitysInsertQueryBuilder = InsertQueryBuilder<IDatabase, keyof IDatabase, InsertResult>;
 type DraftEntitysInsertReturningAllQueryBuilder = InsertQueryBuilder<IDatabase, keyof IDatabase, Selectable<IDatabase['public.draft_entity']>>;
 type DraftEntitysUpdateReturningAllQueryBuilder = UpdateQueryBuilder<IDatabase, 'public.draft_entity', 'public.draft_entity', Selectable<IDatabase['public.draft_entity']>>;
@@ -15,10 +16,11 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
   let mockKysely: DeepMockProxy<Kysely<IDatabase>>;
   let draftEntityDao: DraftEntityDao;
   let tenant = 2;
+  let user = 2;
 
   beforeEach(() => {
     mockKysely = mockDeep<Kysely<IDatabase>>();
-    draftEntityDao = new DraftEntityDao(mockKysely, tenant);
+    draftEntityDao = new DraftEntityDao(mockKysely, tenant, user);
   });
 
   test('findById should call correct methods', async () => {
@@ -65,7 +67,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
 
     // Mock the Kysely methods with a simplified approach
     const mockQueryBuilder = mockDeep<DraftEntitysSelectQueryBuilder>();
-    
+
     mockKysely.selectFrom.mockReturnValue(mockQueryBuilder);
     mockQueryBuilder.where.mockReturnThis();
     mockQueryBuilder.selectAll.mockReturnThis();
@@ -85,35 +87,14 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     expect(mockQueryBuilder.execute).toHaveBeenCalled();
   });
 
-  test('findAll should return correct value', async () => {
-    // test data
-    const mockDraftEntitys = [{ id: 1, entity: 'tenant' }, { id: 2, entity: 'tenant' }];
-
-    // Mock the Kysely methods with a simplified approach
-    const mockQueryBuilder = mockDeep<DraftEntitysSelectQueryBuilder>();
-    
-    mockKysely.selectFrom.mockReturnValue(mockQueryBuilder);
-    mockQueryBuilder.where.mockReturnThis();
-    mockQueryBuilder.selectAll.mockReturnThis();
-    mockQueryBuilder.limit.mockReturnThis();
-    mockQueryBuilder.offset.mockReturnThis();
-    mockQueryBuilder.execute.mockResolvedValueOnce(mockDraftEntitys);
-
-    // Call the method under test
-    const draftEntityResult = await draftEntityDao.findAll(10, 0);
-
-    // Add your assertions or method calls here
-    expect(draftEntityResult).toEqual(mockDraftEntitys);
-  });
-
   test('create should call correct methods', async () => {
     // test data
-    const mockDraftEntitys: Selectable<IDatabase['public.draft_entity']> = { 
-      id: 1, 
-      tenant: 2, 
+    const mockDraftEntitys: Selectable<IDatabase['public.draft_entity']> = {
+      id: 1,
+      tenant: 2,
       createdOn: new Date(),
       project: 202,
-      entity: 'tenant', 
+      entity: 'tenant',
       entitySchema: JSON.stringify({}),
       changeHistory: {
         user: 1,
@@ -131,14 +112,13 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
       },
       createdByUser: 501,
       nextApprovingUser: 502,
-      associatedApprovedEntity: 1,
-      isBlocked: false
+      associatedApprovedEntity: 1
     };
 
     const mockDraftEntityInsertable: InsertableEntity<IDatabase['public.draft_entity']> = {
       createdOn: new Date(),
       project: 202,
-      entity: 'tenant', 
+      entity: 'tenant',
       entitySchema: JSON.stringify({}),
       changeHistory: JSON.stringify({
         user: 1,
@@ -156,8 +136,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
       }),
       createdByUser: 501,
       nextApprovingUser: 502,
-      associatedApprovedEntity: 1,
-      isBlocked: false
+      associatedApprovedEntity: 1
     };
 
     // Mock the Kysely methods to return the expected results
@@ -183,12 +162,12 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
 
   test('create should return correct value', async () => {
     // test data
-    const mockDraftEntitys: Selectable<IDatabase['public.draft_entity']> = { 
-      id: 1, 
-      tenant: 2, 
+    const mockDraftEntitys: Selectable<IDatabase['public.draft_entity']> = {
+      id: 1,
+      tenant: 2,
       createdOn: new Date(),
       project: 202,
-      entity: 'tenant', 
+      entity: 'tenant',
       entitySchema: JSON.stringify({}),
       changeHistory: {
         user: 1,
@@ -206,14 +185,13 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
       },
       createdByUser: 501,
       nextApprovingUser: 502,
-      associatedApprovedEntity: 1,
-      isBlocked: false
+      associatedApprovedEntity: 1
     };
 
     const mockDraftEntityInsertable: InsertableEntity<IDatabase['public.draft_entity']> = {
       createdOn: new Date(),
       project: 202,
-      entity: 'tenant', 
+      entity: 'tenant',
       entitySchema: JSON.stringify({}),
       changeHistory: JSON.stringify({
         user: 1,
@@ -231,8 +209,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
       }),
       createdByUser: 501,
       nextApprovingUser: 502,
-      associatedApprovedEntity: 1,
-      isBlocked: false
+      associatedApprovedEntity: 1
     };
 
     // Mock the Kysely methods to return the expected results
@@ -252,12 +229,12 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
 
   test('update should call correct methods', async () => {
     // test data
-    const mockDraftEntitys: Selectable<IDatabase['public.draft_entity']> = { 
-      id: 1, 
-      tenant: 2, 
+    const mockDraftEntitys: Selectable<IDatabase['public.draft_entity']> = {
+      id: 1,
+      tenant: 2,
       createdOn: new Date(),
       project: 202,
-      entity: 'tenant', 
+      entity: 'tenant',
       entitySchema: JSON.stringify({
         firstName: "John",
         lastName: "Doe",
@@ -279,8 +256,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
       },
       createdByUser: 501,
       nextApprovingUser: 502,
-      associatedApprovedEntity: 1,
-      isBlocked: false
+      associatedApprovedEntity: 1
     };
 
     const mockDraftEntityUpdateable: { [key: string]: unknown } = {
@@ -296,7 +272,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     mockUpdate.where.mockReturnThis();
     const mockReturningAll = mockDeep<DraftEntitysUpdateReturningAllQueryBuilder>();
     mockUpdate.returningAll.mockReturnValue(mockReturningAll);
-    mockReturningAll.executeTakeFirst.mockResolvedValueOnce(mockDraftEntitys);    
+    mockReturningAll.executeTakeFirst.mockResolvedValueOnce(mockDraftEntitys);
 
     // Call the method under test
     const draftEntityResult = await draftEntityDao.update(1, mockDraftEntityUpdateable);
@@ -313,12 +289,12 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
 
   test('update should return correct value', async () => {
     // test data
-    const mockDraftEntitys: Selectable<IDatabase['public.draft_entity']> = { 
-      id: 1, 
-      tenant: 2, 
+    const mockDraftEntitys: Selectable<IDatabase['public.draft_entity']> = {
+      id: 1,
+      tenant: 2,
       createdOn: new Date(),
       project: 202,
-      entity: 'tenant', 
+      entity: 'tenant',
       entitySchema: JSON.stringify({}),
       changeHistory: {
         user: 1,
@@ -336,13 +312,12 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
       },
       createdByUser: 501,
       nextApprovingUser: 502,
-      associatedApprovedEntity: 1,
-      isBlocked: false
+      associatedApprovedEntity: 1
     };
 
-    const mockDraftEntityUpdateable: 
+    const mockDraftEntityUpdateable:
       Omit<
-        UpdateableEntity<IDatabase['public.draft_entity']>, 
+        UpdateableEntity<IDatabase['public.draft_entity']>,
         "entitySchema" | "createdByUser" | "associatedApprovedEntity"
       > = {
       createdOn: new Date(),
@@ -362,8 +337,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
           }
         ]
       }),
-      nextApprovingUser: 502,
-      isBlocked: false
+      nextApprovingUser: 502
     };
 
     // Mock the Kysely methods to return the expected results
@@ -373,7 +347,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     mockUpdate.where.mockReturnThis();
     const mockReturningAll = mockDeep<DraftEntitysUpdateReturningAllQueryBuilder>();
     mockUpdate.returningAll.mockReturnValue(mockReturningAll);
-    mockReturningAll.executeTakeFirst.mockResolvedValueOnce(mockDraftEntitys);    
+    mockReturningAll.executeTakeFirst.mockResolvedValueOnce(mockDraftEntitys);
 
     // Call the method under test
     const draftEntityResult = await draftEntityDao.update(1, mockDraftEntityUpdateable);
@@ -381,4 +355,24 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     // Add your assertions or method calls here
     expect(draftEntityResult).toEqual(mockDraftEntitys);
   });
+
+  // test('delete should call correct methods', async () => {
+  //   const draftEntityId = 1;
+
+  //   const mockDelete = mockDeep<DraftEntitysDeleteQueryBuilder>();
+  //   mockKysely.deleteFrom.mockReturnValue(mockDelete);
+  //   mockDelete.where.mockReturnThis();
+  //   mockDelete.executeTakeFirstOrThrow.mockResolvedValueOnce({ numDeletedRows: 1 });
+
+
+  //   const result = await draftEntityDao.delete(draftEntityId);
+
+  //   // Assertions
+  //   expect(mockKysely.deleteFrom).toHaveBeenCalledWith("public.draft_entity");
+  //   expect(mockDelete.where).toHaveBeenCalledWith("id", "=", draftEntityId);
+  //   expect(mockDelete.where).toHaveBeenCalledWith("tenant", "=", tenant);
+  //   expect(mockDelete.executeTakeFirstOrThrow).toHaveBeenCalled();
+  //   expect(result).toEqual({ numDeletedRows: 1 });
+  // });
+
 });

@@ -71,6 +71,9 @@ export default async function permissionRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Get permission by id field',
+        tags: ['permission'],
+        summary: 'Get permission By ID',
         params: { 
           type: 'object', 
           properties: { 
@@ -105,6 +108,9 @@ export default async function permissionRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Get permission all field',
+        tags: ['permission'],
+        summary: 'Get permission all',
         querystring: { 
           type: 'object', 
           properties: { 
@@ -138,6 +144,9 @@ export default async function permissionRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Create permission field',
+        tags: ['permission'],
+        summary: 'Create permission',
         body: { $ref: 'permission-object#/properties/insertable' },
         response: {
           201: { $ref: 'permission-object#/properties/selectable' },
@@ -164,6 +173,9 @@ export default async function permissionRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Update permission by id field',
+        tags: ['permission'],
+        summary: 'Update permission By ID',
         body: { $ref: 'permission-object#/properties/updateable' },
         params: {
           type: 'object',
@@ -200,6 +212,9 @@ export default async function permissionRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Delete permission by id field',
+        tags: ['permission'],
+        summary: 'Delete permission By ID',
         params: {
           type: 'object',
           properties: {

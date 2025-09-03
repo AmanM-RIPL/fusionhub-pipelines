@@ -103,6 +103,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Get user by id field',
+        tags: ['user'],
+        summary: 'Get user By id field',
         params: {
           type: 'object',
           properties: {
@@ -137,6 +140,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Get user all field',
+        tags: ['user'],
+        summary: 'Get user all field',
         querystring: {
           type: 'object',
           properties: {
@@ -170,6 +176,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Create user field',
+        tags: ['user'],
+        summary: 'Create user field',
         body: { $ref: 'user-object#/properties/insertable' },
         response: {
           201: { $ref: 'user-object#/properties/selectable' },
@@ -196,6 +205,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Create Admin User field',
+        tags: ['admin-user'],
+        summary: 'Create admin user field',
         body: { $ref: 'user-object#/properties/adminInsertable' },
         response: {
           201: { $ref: 'user-object#/properties/adminSelectable' },
@@ -222,6 +234,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Update user by id field',
+        tags: ['user'],
+        summary: 'Update user By ID',
         body: { $ref: 'user-object#/properties/updateable' },
         params: {
           type: 'object',

@@ -59,7 +59,8 @@ await app.register(swaggerUi, {
   uiConfig: {
     docExpansion: 'none',
     deepLinking: true,
-    defaultModelExpandDepth: -1
+    defaultModelsExpandDepth: -1,
+    supportedSubmitMethods: []
   },
   uiHooks: {
     onRequest: function (request, reply, next) { next() },
@@ -67,7 +68,7 @@ await app.register(swaggerUi, {
   },
   staticCSP: true,
   transformStaticCSP: (header) => header,
-  transformSpecification: (swaggerObject, request, reply) => { return swaggerObject },
+  transformSpecification: (swaggerObject, request, reply) => swaggerObject,
   transformSpecificationClone: true
 });
 

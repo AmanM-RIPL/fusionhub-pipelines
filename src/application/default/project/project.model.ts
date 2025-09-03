@@ -3,14 +3,15 @@ import { Generated } from "kysely";
 export interface IProject {
   id: Generated<number>;
   tenant: number;
-  name: string;
+  projectName: string;
   description: string | null;
-  projectCode: string;
   startDate: Date | null;
   endDate: Date | null;
   status: string;
-  contactEmail: string | null;
-  contactMobile: string | null;
+  customerName: string;
+  customerEmail: string | null;
+  customerMobile: string | null;
+  lastChangeLogId:number | null,
   createdOn: Generated<Date>;
   isBlocked: Generated<boolean>;
 }

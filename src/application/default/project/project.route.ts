@@ -17,52 +17,55 @@ export default async function projectRoutes(fastify: FastifyInstance) {
           type: 'object',
          properties: {
             id: { type: 'integer' },
-            name: { type: 'string' },
+            projectName: { type: 'string' },
             createdOn: { type: 'string', format: 'date-time' },
             description: { type: 'string', nullable: true },
-            projectCode: { type: 'string' },
             startDate: { type: 'string', format: 'date' },
             endDate: { type: 'string', format: 'date', nullable: true },
             status: { type: 'string' },
-            contactEmail: { type: 'string', nullable: true },
-            contactMobile: { type: 'string', nullable: true },
+            customerName: { type: 'string', nullable: true },
+            customerEmail: { type: 'string', nullable: true },
+            customerMobile: { type: 'string', nullable: true },
             tenant: { type: 'integer', nullable: true },
+            lastChangeLogId: { type: 'integer', nullable: true },
             isBlocked: { type: 'boolean' }
           },
-          required: ['id', 'name', 'createdOn',  'projectCode', 'startDate', 'status', 'isBlocked']
+          required: ['id', 'projectName', 'createdOn', 'startDate', 'status', 'isBlocked']
         },
 
       insertable: {
         type: 'object',
         properties: {
-            name: { type: 'string' },
+            projectName: { type: 'string' },
             createdOn: { type: 'string', format: 'date-time' },
             description: { type: 'string', nullable: true },
-            projectCode: { type: 'string' },
             startDate: { type: 'string', format: 'date' },
             endDate: { type: 'string', format: 'date', nullable: true },
             status: { type: 'string' },
-            contactEmail: { type: 'string', nullable: true },
-            contactMobile: { type: 'string', nullable: true },
+            customerName: { type: 'string', nullable: true },
+            customerEmail: { type: 'string', nullable: true },
+            customerMobile: { type: 'string', nullable: true },
             tenant: { type: 'integer', nullable: true },
+            lastChangeLogId: { type: 'integer', nullable: true },
             isBlocked: { type: 'boolean' }
           },
-          required: ['name', 'createdOn',  'projectCode', 'startDate', 'status', 'isBlocked']
+          required: ['projectName', 'createdOn', 'startDate', 'status', 'isBlocked']
 
       },
      updateable: {
         type: 'object',
         properties: {
-            name: { type: 'string' },
+            projectName: { type: 'string' },
             createdOn: { type: 'string', format: 'date-time' },
             description: { type: 'string', nullable: true },
-            projectCode: { type: 'string' },
             startDate: { type: 'string', format: 'date' },
             endDate: { type: 'string', format: 'date', nullable: true },
             status: { type: 'string' },
-            contactEmail: { type: 'string', nullable: true },
-            contactMobile: { type: 'string', nullable: true },
+            customerName: { type: 'string', nullable: true },
+            customerEmail: { type: 'string', nullable: true },
+            customerMobile: { type: 'string', nullable: true },
             tenant: { type: 'integer', nullable: true },
+            lastChangeLogId: { type: 'integer', nullable: true },
             isBlocked: { type: 'boolean' }
           }
       },
@@ -76,6 +79,9 @@ export default async function projectRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Get project by id field',
+        tags: ['project'],
+        summary: 'Get project by ID',
         params: { 
           type: 'object', 
           properties: { 
@@ -110,6 +116,9 @@ export default async function projectRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Get project all field',
+        tags: ['project'],
+        summary: 'Get project all',
         querystring: { 
           type: 'object', 
           properties: { 
@@ -142,6 +151,9 @@ export default async function projectRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Create project field',
+        tags: ['project'],
+        summary: 'Create project field',
         body: { $ref: 'project-object#/properties/insertable' },
         response: {
           201: { $ref: 'project-object#/properties/selectable' },
@@ -168,6 +180,9 @@ export default async function projectRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Update project by id field',
+        tags: ['project'],
+        summary: 'Update project by ID',
         body: { $ref: 'project-object#/properties/updateable' },
         params: { 
           type: 'object', 

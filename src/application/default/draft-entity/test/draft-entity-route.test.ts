@@ -158,7 +158,6 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
           }
         ]
       }),
-      isBlocked: false,
       createdByUser: 501,
       nextApprovingUser: 502,
       associatedApprovedEntity: 1
@@ -169,7 +168,6 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
       project: newDraftEntity.project,
       entity: newDraftEntity.entity,
       associatedApprovedEntity: newDraftEntity.associatedApprovedEntity,
-      isBlocked: newDraftEntity.isBlocked,
       entitySchema: {},
       changeHistory: {
         user: 1,
@@ -202,7 +200,6 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
         approvalHistory: []
       },
       createdOn: new Date(),
-      isBlocked: false
     };
 
     draftEntityService.create.mockResolvedValue(createdDraftEntity);
@@ -243,7 +240,6 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
       entitySchema: updatedDraftEntity,
       associatedApprovedEntity: null,
       createdOn: new Date(),
-      isBlocked: false,
       changeHistory: {
         user: 1,
         changeType: "create",
@@ -313,7 +309,6 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
           }
         ]
       },
-      isBlocked: false,
     };
 
     const requestPayload: Omit<InsertableEntity<IDraftEntity>, 'createdByUser' | 'changeHistory' | 'entitySchema' | 'nextApprovingUser'> & {
@@ -364,6 +359,110 @@ describe('Default -> DraftEntity -> DraftEntityRoute', () => {
     expect(response.statusCode).toBe(500);
     expect(JSON.parse(response.body)).toEqual({ error: 'Internal Server Error' });
   });
+
+  test('should successfully delete draft entity when validation passes', async () => {
+    const mockDraftEntity = {
+      id: 13,
+      tenant: 1,
+      createdOn: new Date(),
+      project: 2,
+      entity: "employee",
+      createdByUser: 2,
+      nextApprovingUser: null, // No approving user assigned
+      entitySchema: {},
+      associatedApprovedEntity: null,
+      changeHistory: {
+        user: 1,
+        changeType: "create",
+        description: "Test",
+        timestamp: new Date(),
+        approvalHistory: []
+      }
+    } as Selectable<IDraftEntity>;
+
+    draftEntityService.findById.mockResolvedValue(mockDraftEntity);
+    draftEntityService.delete.mockResolvedValue(undefined);
+
+    const response = await fastify.inject({
+      method: 'DELETE',
+      url: '/draft-entity/13',
+      headers: { authorization: 'Bearer test-token' }
+    });
+
+    expect(response.statusCode).toBe(204);
+    expect(draftEntityService.delete).toHaveBeenCalledWith(13);
+  });
+
+  test('should return 500 when draft entity has next approving user assigned', async () => {
+    const mockDraftEntity = {
+      id: 13,
+      tenant: 1,
+      createdOn: new Date(),
+      project: 2,
+      entity: "employee",
+      createdByUser: 2,
+      nextApprovingUser: 3, // Has approving user assigned - block deletion
+      entitySchema: {},
+      associatedApprovedEntity: null,
+      changeHistory: {
+        user: 1,
+        changeType: "create",
+        description: "Test",
+        timestamp: new Date(),
+        approvalHistory: []
+      }
+    } as Selectable<IDraftEntity>;
+
+    draftEntityService.findById.mockResolvedValue(mockDraftEntity);
+    draftEntityService.delete.mockRejectedValue(
+      new Error("Cannot delete draft entity 13 because it has a next approving user assigned.")
+    );
+
+    const response = await fastify.inject({
+      method: 'DELETE',
+      url: '/draft-entity/13',
+      headers: { authorization: 'Bearer test-token' }
+    });
+
+    expect(response.statusCode).toBe(500);
+    const result = JSON.parse(response.body);
+    expect(result.error).toBe("Internal Server Error");
+  });
+
+  test('should return 500 when user is not the creator of the draft', async () => {
+    const mockDraftEntity = {
+      id: 13,
+      tenant: 1,
+      createdOn: new Date(),
+      project: 2,
+      entity: "employee",
+      createdByUser: 5, // Different user created it - only creator can delete
+      nextApprovingUser: null,
+      entitySchema: {},
+      associatedApprovedEntity: null,
+      changeHistory: {
+        user: 1,
+        changeType: "create",
+        description: "Test",
+        timestamp: new Date(),
+        approvalHistory: []
+      }
+    } as Selectable<IDraftEntity>;
+
+    draftEntityService.findById.mockResolvedValue(mockDraftEntity);
+    draftEntityService.delete.mockRejectedValue(new Error("Only the user who created this draft (User ID: 5) can delete it."));
+
+    const response = await fastify.inject({
+      method: 'DELETE',
+      url: '/draft-entity/13',
+      headers: { authorization: 'Bearer test-token' }
+    });
+
+    expect(response.statusCode).toBe(500);
+    const result = JSON.parse(response.body);
+    expect(result.error).toBe("Internal Server Error");
+  });
+
 });
 
 describe('Default -> DraftEntity -> DraftEntityRoute : Forbidden', () => {
@@ -479,4 +578,5 @@ describe('Default -> DraftEntity -> DraftEntityRoute : Forbidden', () => {
     expect(response.statusCode).toBe(403);
     expect(JSON.parse(response.body)).toEqual({ error: 'Forbidden' });
   });
+
 });

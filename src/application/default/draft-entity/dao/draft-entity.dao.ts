@@ -14,7 +14,8 @@ export class DraftEntityDao implements IDraftEntityRepository {
 
   constructor(
     protected readonly db: Kysely<IDatabase>, 
-    protected readonly tenant: number | null
+    protected readonly tenant: number | null,
+    protected readonly user: number | null
   ) {}
 
   async findById(id: number): Promise<Selectable<IDraftEntity> | undefined> {
@@ -71,23 +72,47 @@ export class DraftEntityDao implements IDraftEntityRepository {
   }
 
   async delete(id: number): Promise<void> {
-    if (this.tenant === null) throw new Error("Tenant must be set before deleting an entity schema.");
+    if (this.tenant === null) { throw new Error("Tenant must be set before deleting a draft entity."); }
 
-    await this.db.deleteFrom("public.draft_entity").where("id", "=", id).where("tenant", "=", this.tenant).execute();
+    const draft = await this.db
+      .selectFrom("public.draft_entity")
+      .select(["id", "nextApprovingUser" , "createdByUser"])
+      .where("id", "=", id)
+      .where("tenant", "=", this.tenant)
+      .executeTakeFirst();
+
+    if (!draft) { throw new Error(`Draft entity with ID ${id} not found.`); }
+
+    // Validate nextApprovingUser
+    if (draft.nextApprovingUser !== null) {
+      throw new Error(
+        "Cannot delete draft entity ${id} because it has a next approving user assigned."
+      );
+    }
+    if (draft.createdByUser !== this.user) {
+      throw new Error(
+        `Only the user who created this draft (User ID: ${draft.createdByUser}) can delete it.`
+      );
+    }
+    await this.db
+      .deleteFrom("public.draft_entity")
+      .where("id", "=", id)
+      .where("tenant", "=", this.tenant)
+      .execute();
   }
 
-   async approve(draftId: number, userIds: number[]): Promise<Selectable<IDraftEntity>> {
-  if (this.tenant === null) throw new Error("Tenant must be set before accessing an entity schema.");
+  async approve(draftId: number, userIds: number[]): Promise<Selectable<IDraftEntity>> {
+    if (this.tenant === null) throw new Error("Tenant must be set before accessing an entity schema.");
 
-  return await this.db.updateTable("public.draft_entity").set({
+    return await this.db.updateTable("public.draft_entity").set({
       //status: 'approved',
-       nextApprovingUser: null,
-       createdByUser: userIds[0],
-       createdOn: new Date(),
+      nextApprovingUser: null,
+      createdByUser: userIds[0],
+      createdOn: new Date(),
     })
-    .where("id", "=", draftId)
-    .where("tenant", "=", this.tenant)
-    .returningAll()
-    .executeTakeFirstOrThrow();
-}
+      .where("id", "=", draftId)
+      .where("tenant", "=", this.tenant)
+      .returningAll()
+      .executeTakeFirstOrThrow();
+  }
 }
