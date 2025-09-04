@@ -1,4 +1,4 @@
-import { Insertable, InsertQueryBuilder, InsertResult, Kysely, Selectable, SelectQueryBuilder, DeleteQueryBuilder, Transaction, UpdateQueryBuilder } from "kysely";
+import { Insertable, InsertQueryBuilder, InsertResult, Kysely, Selectable, SelectQueryBuilder, DeleteQueryBuilder, Transaction, UpdateQueryBuilder, DeleteResult } from "kysely";
 import { DraftEntityDao } from "../dao/draft-entity.dao";
 import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
 import { IDatabase } from "../../../../infrastructure/db/kysely/types";
@@ -6,7 +6,7 @@ import { InsertableEntity, UpdateableEntity } from "../../../common/types/entity
 
 // Helper types for the chained query builder objects
 type DraftEntitysSelectQueryBuilder = SelectQueryBuilder<IDatabase, 'public.draft_entity', {}>;
-type DraftEntitysDeleteQueryBuilder = DeleteQueryBuilder<IDatabase, 'public.draft_entity', {}>;
+type DraftEntitysDeleteQueryBuilder = DeleteQueryBuilder<IDatabase, 'public.draft_entity', DeleteResult>;
 type DraftEntitysInsertQueryBuilder = InsertQueryBuilder<IDatabase, keyof IDatabase, InsertResult>;
 type DraftEntitysInsertReturningAllQueryBuilder = InsertQueryBuilder<IDatabase, keyof IDatabase, Selectable<IDatabase['public.draft_entity']>>;
 type DraftEntitysUpdateReturningAllQueryBuilder = UpdateQueryBuilder<IDatabase, 'public.draft_entity', 'public.draft_entity', Selectable<IDatabase['public.draft_entity']>>;
@@ -356,23 +356,32 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     expect(draftEntityResult).toEqual(mockDraftEntitys);
   });
 
-  // test('delete should call correct methods', async () => {
-  //   const draftEntityId = 1;
+  test('delete should call correct methods', async () => {
+    const draftEntityId = 1;
 
-  //   const mockDelete = mockDeep<DraftEntitysDeleteQueryBuilder>();
-  //   mockKysely.deleteFrom.mockReturnValue(mockDelete);
-  //   mockDelete.where.mockReturnThis();
-  //   mockDelete.executeTakeFirstOrThrow.mockResolvedValueOnce({ numDeletedRows: 1 });
+    // Mock the select query builder
+    const mockDraftEntity = { id: 1, entity: 'tenant', entitySchema: {}, nextApprovingUser: null, createdByUser: 2 };
 
+    const mockSelect = mockDeep<DraftEntitysSelectQueryBuilder>();
+    mockKysely.selectFrom.mockReturnValue(mockSelect);
+    mockSelect.select.mockReturnThis();
+    mockSelect.where.mockReturnThis();
+    mockSelect.executeTakeFirst.mockResolvedValueOnce(mockDraftEntity);
 
-  //   const result = await draftEntityDao.delete(draftEntityId);
+    // Mock the delete query builder
+    const mockDelete = mockDeep<DraftEntitysDeleteQueryBuilder>();
+    mockKysely.deleteFrom.mockReturnValueOnce(mockDelete);
+    mockDelete.where.mockReturnThis();
+    mockDelete.execute.mockResolvedValueOnce([{ numDeletedRows: BigInt(1) }]);
 
-  //   // Assertions
-  //   expect(mockKysely.deleteFrom).toHaveBeenCalledWith("public.draft_entity");
-  //   expect(mockDelete.where).toHaveBeenCalledWith("id", "=", draftEntityId);
-  //   expect(mockDelete.where).toHaveBeenCalledWith("tenant", "=", tenant);
-  //   expect(mockDelete.executeTakeFirstOrThrow).toHaveBeenCalled();
-  //   expect(result).toEqual({ numDeletedRows: 1 });
-  // });
+    const result = await draftEntityDao.delete(draftEntityId);
+
+    // Assertions
+    expect(mockKysely.deleteFrom).toHaveBeenCalledWith("public.draft_entity");
+    expect(mockDelete.where).toHaveBeenCalledWith("id", "=", draftEntityId);
+    expect(mockDelete.where).toHaveBeenCalledWith("tenant", "=", tenant);
+    expect(mockDelete.execute).toHaveBeenCalled();
+    expect(result).toBeUndefined();
+  });
 
 });

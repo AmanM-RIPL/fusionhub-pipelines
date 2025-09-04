@@ -8,11 +8,11 @@
     "test-coverage": "NODE_ENV=test npx jest --coverage",
     "cross-env-test": "cross-env NODE_ENV=test jest --silent=false",
     "test:coverage": "NODE_ENV='test' jest --coverage",
-    "build": "tsc && tsc-alias",
+    "build": "node --max-old-space-size=4096 node_modules/typescript/bin/tsc && tsc-alias",
     "start": "node ./dist/index.js",
     "cross-env-dev": "cross-env NODE_ENV=development node ./dist/index.js",
     "dev": "NODE_ENV=development node ./dist/index.js",
-    "test": "NODE_ENV=test jest --silent=false",
+    "test": "node --max-old-space-size=4096 node_modules/jest/bin/jest.js --silent=false",
     "cross-env-test-coverage": "cross-env NODE_ENV=test npx jest --coverage"
   },
   "keywords": [],

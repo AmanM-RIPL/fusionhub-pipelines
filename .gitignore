@@ -4,6 +4,7 @@ node_modules/
 .vscode/
 src/infrastructure/db/default
 gcp_secret/
+*.tsbuildinfo
 
 # local env files
 .env
