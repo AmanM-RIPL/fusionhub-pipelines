@@ -21,7 +21,7 @@ describe('Default -> Tenant -> TenantDao', () => {
 
   test('findById should call correct methods', async () => {
     // test data
-    const mockTenant = { id: 1, name: 'John Doe' };;
+    const mockTenant = { id: 1, name: 'NMBPL' };;
 
     // Mock the Kysely methods to return the expected results
     const mockSelect = mockDeep<TenantsSelectQueryBuilder>();
@@ -43,7 +43,7 @@ describe('Default -> Tenant -> TenantDao', () => {
 
   test('findById should return correct value', async () => {
     // test data
-    const mockTenant = { id: 1, name: 'John Doe' };;
+    const mockTenant = { id: 1, name: 'NMBPL' };;
 
     // Mock the Kysely methods to return the expected results
     const mockSelect = mockDeep<TenantsSelectQueryBuilder>();
@@ -62,7 +62,7 @@ describe('Default -> Tenant -> TenantDao', () => {
 
   test('findAll should call correct methods', async () => {
     // test data
-    const mockTenants = [{ id: 1, name: 'John Doe' }, { id: 2, name: 'Jane Doe' }];
+    const mockTenants = [{ id: 1, name: 'NMBPL' }, { id: 2, name: 'NMBPL' }];
 
     // Mock the Kysely methods to return the expected results
     const mockSelect = mockDeep<TenantsSelectQueryBuilder>();
@@ -86,7 +86,7 @@ describe('Default -> Tenant -> TenantDao', () => {
 
   test('findAll should return correct value', async () => {
     // test data
-    const mockTenants = [{ id: 1, name: 'John Doe' }, { id: 2, name: 'Jane Doe' }];
+    const mockTenants = [{ id: 1, name: 'NMBPL' }, { id: 2, name: 'NMBPL' }];
 
     // Mock the Kysely methods to return the expected results
     const mockSelect = mockDeep<TenantsSelectQueryBuilder>();
@@ -108,7 +108,7 @@ describe('Default -> Tenant -> TenantDao', () => {
     // test data
     const mockTenants = { 
       id: 1, 
-      name: 'John Doe', 
+      name: 'NMBPL', 
       createdOn: new Date(), 
       defaultEmail: 'sample@gmail.com',  
       defaultEmail1: 'sample1@gmail.com',  
@@ -142,7 +142,7 @@ describe('Default -> Tenant -> TenantDao', () => {
     // test data
     const mockTenants = { 
       id: 1, 
-       name: 'John Doe', 
+       name: 'NMBPL', 
       createdOn: new Date(), 
       defaultEmail: 'sample@gmail.com',  
       defaultEmail1: 'sample1@gmail.com',  
@@ -173,7 +173,7 @@ describe('Default -> Tenant -> TenantDao', () => {
     // test data
     const mockTenants = { 
       id: 1, 
-      name: 'John Doe', 
+      name: 'NMBPL', 
       createdOn: new Date(), 
       defaultEmail: 'sample@gmail.com',
       defaultEmail1: null, 
@@ -209,7 +209,7 @@ describe('Default -> Tenant -> TenantDao', () => {
     // test data
     const mockTenants = { 
       id: 1, 
-      name: 'John Doe', 
+      name: 'NMBPL', 
       createdOn: new Date(), 
       defaultEmail: 'sample@gmail.com',
       defaultEmail1: null, 

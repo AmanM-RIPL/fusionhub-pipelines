@@ -15,6 +15,9 @@ export default async function permissionRoutes(fastify: FastifyInstance) {
         type: 'object',
         properties: {
           project: { type: 'array', items: { type: 'number' } },
+          subProject: { type: 'array', items: { type: 'number' } },
+          businessEntityBranch: { type: 'array', items: { type: 'number' } },
+          financialYear: { type: 'array', items: { type: 'number' } },
         }
       },
       accessSchema: {
@@ -33,8 +36,10 @@ export default async function permissionRoutes(fastify: FastifyInstance) {
           id: { type: 'integer' },
           createdOn: { type: 'string', format: 'date-time' },
           user: { type: 'number' },
+          tenant: { type: 'number' },
           project: { type: 'number' },
           entity: { type: 'string' },
+          permissionType: { type: 'string' },
           approval: { type: 'array', items: { type: 'number' } },
           filter: { $ref: 'permission-object#/properties/filterSchema' },
           access: { $ref: 'permission-object#/properties/accessSchema' },

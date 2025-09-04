@@ -76,7 +76,6 @@ describe('Default -> Project -> ProjectRoute', () => {
       url: '/project/1',
       headers: { authorization: 'Bearer test-token' }
     });
-    console.log(response.body);
     expect(response.statusCode).toBe(200);
     expect(JSON.parse(response.body)).toEqual({ 
       ...mockProject, 
