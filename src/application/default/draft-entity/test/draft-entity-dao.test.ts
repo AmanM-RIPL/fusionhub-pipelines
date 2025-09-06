@@ -1,33 +1,40 @@
-import { Insertable, InsertQueryBuilder, InsertResult, Kysely, Selectable, SelectQueryBuilder, DeleteQueryBuilder, Transaction, UpdateQueryBuilder, DeleteResult } from "kysely";
+import { Kysely, Selectable } from "kysely";
 import { DraftEntityDao } from "../dao/draft-entity.dao";
-import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
 import { IDatabase } from "../../../../infrastructure/db/kysely/types";
 import { InsertableEntity, UpdateableEntity } from "../../../common/types/entity";
-
-// Helper types for the chained query builder objects
-type DraftEntitysSelectQueryBuilder = SelectQueryBuilder<IDatabase, 'public.draft_entity', {}>;
-type DraftEntitysDeleteQueryBuilder = DeleteQueryBuilder<IDatabase, 'public.draft_entity', DeleteResult>;
-type DraftEntitysInsertQueryBuilder = InsertQueryBuilder<IDatabase, keyof IDatabase, InsertResult>;
-type DraftEntitysInsertReturningAllQueryBuilder = InsertQueryBuilder<IDatabase, keyof IDatabase, Selectable<IDatabase['public.draft_entity']>>;
-type DraftEntitysUpdateReturningAllQueryBuilder = UpdateQueryBuilder<IDatabase, 'public.draft_entity', 'public.draft_entity', Selectable<IDatabase['public.draft_entity']>>;
-type DraftEntitysUpdateQueryBuilder = UpdateQueryBuilder<IDatabase, 'public.draft_entity', 'public.draft_entity', {}>;
+import { MockKysely, MockKyselyDeleteQueryBuilder, MockKyselyInsertQueryBuilder, MockKyselySelectQueryBuilder, MockKyselyUpdateQueryBuilder } from "../../../common/types/test";
 
 describe('Default -> DraftEntity -> DraftEntityDao', () => {
-  let mockKysely: DeepMockProxy<Kysely<IDatabase>>;
+  let mockKysely: MockKysely;
   let draftEntityDao: DraftEntityDao;
   let tenant = 2;
   let user = 2;
 
   beforeEach(() => {
-    mockKysely = mockDeep<Kysely<IDatabase>>();
-    draftEntityDao = new DraftEntityDao(mockKysely, tenant, user);
+    mockKysely = {
+      selectFrom: jest.fn(),
+      deleteFrom: jest.fn(),
+      insertInto: jest.fn(),
+      updateTable: jest.fn(),
+    };
+
+    draftEntityDao = new DraftEntityDao(mockKysely  as unknown as Kysely<IDatabase>, tenant, user);
   });
 
   test('findById should call correct methods', async () => {
     const mockDraftEntity = { id: 1, entity: 'tenant' };
 
     // Mock the Kysely methods to return the expected results
-    const mockSelect = mockDeep<DraftEntitysSelectQueryBuilder>();
+    const mockSelect: MockKyselySelectQueryBuilder = {
+      selectAll: jest.fn(),
+      select: jest.fn(),
+      where: jest.fn(),
+      limit: jest.fn(),
+      offset: jest.fn(),
+      executeTakeFirst: jest.fn(),
+      executeTakeFirstOrThrow: jest.fn(),
+      execute: jest.fn(),
+    };
     mockKysely.selectFrom.mockReturnValue(mockSelect);
     mockSelect.selectAll.mockReturnThis();
     mockSelect.where.mockReturnThis();
@@ -48,7 +55,16 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     const mockDraftEntity = { id: 1, entity: 'tenant' };
 
     // Mock the Kysely methods to return the expected results
-    const mockSelect = mockDeep<DraftEntitysSelectQueryBuilder>();
+    const mockSelect: MockKyselySelectQueryBuilder = {
+      selectAll: jest.fn(),
+      select: jest.fn(),
+      where: jest.fn(),
+      limit: jest.fn(),
+      offset: jest.fn(),
+      executeTakeFirst: jest.fn(),
+      executeTakeFirstOrThrow: jest.fn(),
+      execute: jest.fn(),
+    };
     mockKysely.selectFrom.mockReturnValue(mockSelect);
     mockSelect.selectAll.mockReturnThis();
     mockSelect.where.mockReturnThis();
@@ -66,7 +82,16 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     const mockDraftEntitys = [{ id: 1, entity: 'Create' }, { id: 2, entity: 'Create' }];
 
     // Mock the Kysely methods with a simplified approach
-    const mockQueryBuilder = mockDeep<DraftEntitysSelectQueryBuilder>();
+    const mockQueryBuilder: MockKyselySelectQueryBuilder = {
+      selectAll: jest.fn(),
+      select: jest.fn(),
+      where: jest.fn(),
+      limit: jest.fn(),
+      offset: jest.fn(),
+      executeTakeFirst: jest.fn(),
+      executeTakeFirstOrThrow: jest.fn(),
+      execute: jest.fn(),
+    };
 
     mockKysely.selectFrom.mockReturnValue(mockQueryBuilder);
     mockQueryBuilder.where.mockReturnThis();
@@ -140,12 +165,16 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     };
 
     // Mock the Kysely methods to return the expected results
-    const mockInsert = mockDeep<DraftEntitysInsertQueryBuilder>();
+    const mockInsert: MockKyselyInsertQueryBuilder = {
+      values: jest.fn(),
+      returningAll: jest.fn(),
+      executeTakeFirstOrThrow: jest.fn(),
+    };
+
     mockKysely.insertInto.mockReturnValue(mockInsert);
     mockInsert.values.mockReturnThis();
-    const mockReturningAll = mockDeep<DraftEntitysInsertReturningAllQueryBuilder>();
-    mockInsert.returningAll.mockReturnValue(mockReturningAll);
-    mockReturningAll.executeTakeFirstOrThrow.mockResolvedValueOnce(mockDraftEntitys);
+    mockInsert.returningAll.mockReturnThis();
+    mockInsert.executeTakeFirstOrThrow.mockResolvedValueOnce(mockDraftEntitys);
 
     // Call the method under test
     const draftEntityResult = await draftEntityDao.create(mockDraftEntityInsertable);
@@ -157,7 +186,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
       tenant: tenant // The DAO adds the tenant field
     });
     expect(mockInsert.returningAll).toHaveBeenCalled();
-    expect(mockReturningAll.executeTakeFirstOrThrow).toHaveBeenCalled();
+    expect(mockInsert.executeTakeFirstOrThrow).toHaveBeenCalled();
   });
 
   test('create should return correct value', async () => {
@@ -213,12 +242,15 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     };
 
     // Mock the Kysely methods to return the expected results
-    const mockInsert = mockDeep<DraftEntitysInsertQueryBuilder>();
+    const mockInsert: MockKyselyInsertQueryBuilder = {
+      values: jest.fn(),
+      returningAll: jest.fn(),
+      executeTakeFirstOrThrow: jest.fn(),
+    };
     mockKysely.insertInto.mockReturnValue(mockInsert);
     mockInsert.values.mockReturnThis();
-    const mockReturningAll = mockDeep<DraftEntitysInsertReturningAllQueryBuilder>();
-    mockInsert.returningAll.mockReturnValue(mockReturningAll);
-    mockReturningAll.executeTakeFirstOrThrow.mockResolvedValueOnce(mockDraftEntitys);
+    mockInsert.returningAll.mockReturnThis();
+    mockInsert.executeTakeFirstOrThrow.mockResolvedValueOnce(mockDraftEntitys);
 
     // Call the method under test
     const draftEntityResult = await draftEntityDao.create(mockDraftEntityInsertable);
@@ -266,13 +298,18 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     };
 
     // Mock the Kysely methods to return the expected results
-    const mockUpdate = mockDeep<DraftEntitysUpdateQueryBuilder>();
+    const mockUpdate: MockKyselyUpdateQueryBuilder = {
+      set: jest.fn(),
+      where: jest.fn(),
+      returningAll: jest.fn(),
+      executeTakeFirstOrThrow: jest.fn(),
+      executeTakeFirst: jest.fn(),
+    };
     mockKysely.updateTable.mockReturnValue(mockUpdate);
     mockUpdate.set.mockReturnThis();
     mockUpdate.where.mockReturnThis();
-    const mockReturningAll = mockDeep<DraftEntitysUpdateReturningAllQueryBuilder>();
-    mockUpdate.returningAll.mockReturnValue(mockReturningAll);
-    mockReturningAll.executeTakeFirst.mockResolvedValueOnce(mockDraftEntitys);
+    mockUpdate.returningAll.mockReturnThis();
+    mockUpdate.executeTakeFirst.mockResolvedValueOnce(mockDraftEntitys);
 
     // Call the method under test
     const draftEntityResult = await draftEntityDao.update(1, mockDraftEntityUpdateable);
@@ -284,7 +321,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     });
     expect(mockUpdate.where).toHaveBeenCalledWith("id", "=", 1);
     expect(mockUpdate.returningAll).toHaveBeenCalled();
-    expect(mockReturningAll.executeTakeFirst).toHaveBeenCalled();
+    expect(mockUpdate.executeTakeFirst).toHaveBeenCalled();
   });
 
   test('update should return correct value', async () => {
@@ -341,13 +378,18 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     };
 
     // Mock the Kysely methods to return the expected results
-    const mockUpdate = mockDeep<DraftEntitysUpdateQueryBuilder>();
+    const mockUpdate: MockKyselyUpdateQueryBuilder = {
+      set: jest.fn(),
+      where: jest.fn(),
+      returningAll: jest.fn(),
+      executeTakeFirstOrThrow: jest.fn(),
+      executeTakeFirst: jest.fn(),
+    };
     mockKysely.updateTable.mockReturnValue(mockUpdate);
     mockUpdate.set.mockReturnThis();
     mockUpdate.where.mockReturnThis();
-    const mockReturningAll = mockDeep<DraftEntitysUpdateReturningAllQueryBuilder>();
-    mockUpdate.returningAll.mockReturnValue(mockReturningAll);
-    mockReturningAll.executeTakeFirst.mockResolvedValueOnce(mockDraftEntitys);
+    mockUpdate.returningAll.mockReturnThis();
+    mockUpdate.executeTakeFirst.mockResolvedValueOnce(mockDraftEntitys);
 
     // Call the method under test
     const draftEntityResult = await draftEntityDao.update(1, mockDraftEntityUpdateable);
@@ -362,14 +404,29 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     // Mock the select query builder
     const mockDraftEntity = { id: 1, entity: 'tenant', entitySchema: {}, nextApprovingUser: null, createdByUser: 2 };
 
-    const mockSelect = mockDeep<DraftEntitysSelectQueryBuilder>();
+    const mockSelect: MockKyselySelectQueryBuilder = {
+      selectAll: jest.fn(),
+      select: jest.fn(),
+      where: jest.fn(),
+      limit: jest.fn(),
+      offset: jest.fn(),
+      executeTakeFirst: jest.fn(),
+      executeTakeFirstOrThrow: jest.fn(),
+      execute: jest.fn(),
+    };
     mockKysely.selectFrom.mockReturnValue(mockSelect);
     mockSelect.select.mockReturnThis();
     mockSelect.where.mockReturnThis();
     mockSelect.executeTakeFirst.mockResolvedValueOnce(mockDraftEntity);
 
     // Mock the delete query builder
-    const mockDelete = mockDeep<DraftEntitysDeleteQueryBuilder>();
+    const mockDelete: MockKyselyDeleteQueryBuilder = {
+      where: jest.fn(),
+      returningAll: jest.fn(),
+      executeTakeFirstOrThrow: jest.fn(),
+      executeTakeFirst: jest.fn(),
+      execute: jest.fn(),
+    };
     mockKysely.deleteFrom.mockReturnValueOnce(mockDelete);
     mockDelete.where.mockReturnThis();
     mockDelete.execute.mockResolvedValueOnce([{ numDeletedRows: BigInt(1) }]);
@@ -383,5 +440,4 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     expect(mockDelete.execute).toHaveBeenCalled();
     expect(result).toBeUndefined();
   });
-
 });
