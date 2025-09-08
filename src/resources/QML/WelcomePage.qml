@@ -203,7 +203,8 @@ Rectangle {
 
             ActiveProjectList {
                 onProjectClicked: {
-                    newProjectClicked();
+                    //newProjectClicked();
+                   baseLayout.visible = true
                 }
             }
 

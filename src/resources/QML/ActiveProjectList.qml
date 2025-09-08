@@ -1,5 +1,9 @@
 import QtQuick 2.15
 import QtQuick.Controls
+import com.fh.controllers;
+
+
+
 
 Rectangle {
     width: 300 *(activeProjectsView.count) + 13 * (activeProjectsView.count - 1)
@@ -8,9 +12,13 @@ Rectangle {
 
     signal projectClicked();
 
+    readonly property string jsonData: projectController.getProjectList().toString();
+
+
     ListModel{
         id: activeProjectsModel
 
+        /*
         ListElement{
             projectName: "Project Name"
             dateData: "June 05"
@@ -34,6 +42,7 @@ Rectangle {
             dateData: "June 05"
             customerName: "Customer Name"
         }
+        */
     }
 
 
@@ -45,10 +54,16 @@ Rectangle {
         clip: true
         orientation: ListView.Horizontal
         delegate: activeProjectDelegate
+
+
+        ProjectController {
+            id: projectController
+        }
     }
 
     Component{
-        id: activeProjectDelegate
+
+        id: activeProjectDelegate        
 
         Rectangle{
             width: 300
@@ -106,8 +121,8 @@ Rectangle {
 
             Text{
                 width: 275
-                height: 42
-                text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+                height: 42               
+                text:description
                 color: "#323130"
                 font.family: "Segoe UI"
                 font.weight: 400
@@ -135,8 +150,30 @@ Rectangle {
                 anchors.top: parent.top
                 anchors.topMargin: 131
             }
-
         }
     }
+
+    Component.onCompleted: {
+                parseAndPopulate(jsonData);
+            }
+
+    function parseAndPopulate(jsonString) {
+                try {
+                    var dataArray = JSON.parse(jsonString);
+                    if (dataArray && Array.isArray(dataArray)) {
+                        activeProjectsModel.clear();
+                        for (var i = 0; i < dataArray.length; i++) {
+                            activeProjectsModel.append(dataArray[i]);
+                        }
+
+                        if(activeProjectsModel.count() < 1)
+                        {
+                            //activeProjectsModel.append()
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error parsing JSON:", e);
+                }
+            }
 
 }

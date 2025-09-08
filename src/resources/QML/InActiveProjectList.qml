@@ -2,14 +2,20 @@ import QtQuick 2.15
 import QtQuick.Controls
 
 Rectangle {
-    width: 300 *(inActiveProjectsView.count) + 13 * (inActiveProjectsView.count - 1)
+   // width: 300 *(inActiveProjectsView.count) + 13 * (inActiveProjectsView.count - 1)
+    width: parent.width
     height: 164
     color: "#EDF1F4"
 
     ListModel{
         id: activeProjectsModel
 
+
         ListElement{
+            inactiveText: "There is no inactive project at this moment."
+        }
+
+       /* ListElement{
             projectName: "Project Name"
             dateData: "June 05"
             customerName: "Customer Name"
@@ -26,12 +32,7 @@ Rectangle {
             dateData: "June 05"
             customerName: "Customer Name"
         }
-
-        ListElement{
-            projectName: "Project Name"
-            dateData: "June 05"
-            customerName: "Customer Name"
-        }
+        */
     }
 
 
@@ -48,7 +49,28 @@ Rectangle {
     Component{
         id: activeProjectDelegate
 
-        Rectangle{
+        Rectangle {
+            width: parent.width
+            height: 164
+            radius: 0
+            color: "#EDF1F4"
+
+
+            Text{
+                text: inactiveText
+                color: "#323130"
+                font.family: "Segoe UI"
+                font.weight: 700
+                font.pixelSize: 40
+                anchors.left: parent.left
+                //anchors.leftMargin: 51
+                anchors.leftMargin: 0
+                anchors.top: parent.top
+                anchors.topMargin: 16 - 4
+            }
+        }
+
+       /* Rectangle{
             width: 300
             height: 164
             radius: 8
@@ -126,7 +148,7 @@ Rectangle {
                 anchors.topMargin: 131
             }
 
-        }
+        }*/
     }
 
 }
