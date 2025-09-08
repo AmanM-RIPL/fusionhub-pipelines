@@ -52,5 +52,6 @@
         <file>resources/images/measure_icon.png</file>
         <file>resources/images/screenshot_icon.png</file>
         <file>resources/QML/PlannedBIMPage.qml</file>
+        <file>resources/QML/NewProjectPage.qml</file>
     </qresource>
 </RCC>

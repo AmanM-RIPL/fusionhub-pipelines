@@ -25,6 +25,7 @@
 #include "repositories/ifcdetailrepository.h"
 
 #include "controllers/user_controller.h"
+#include "controllers/project_controller.h"
 
 #include "models/user.h"
 #include "models/unit_of_measurement.h"
@@ -356,6 +357,7 @@ int main(int argc, char *argv[])
         IFC CODE EXECUTION DONE
     */
     
+    /*
     auto dbManager = DatabaseManager::getInstance();
     if (!dbManager->initializeDatabase("TestProject")) {
         qDebug() << "Failed to initialize database";
@@ -364,6 +366,7 @@ int main(int argc, char *argv[])
     
     qDebug() << "Database initialized successfully!";
     qDebug() << "Project path:" << dbManager->getProjectPath();
+   */
     
     BudgetHeadRepository* budgetHeadRepository = new BudgetHeadRepository(&engine);
     UnitOfMeasurementRepository* unitOfMeasurementRepository = new UnitOfMeasurementRepository(&engine);
@@ -449,6 +452,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<ScheduleSetup>("com.fh.models", 1, 0, "ScheduleSetup");
 
     qmlRegisterType<UserController>("com.fh.controllers", 1, 0, "UserController");
+    qmlRegisterType<ProjectController>("com.fh.controllers", 1, 0, "ProjectController");
     
     const QUrl url(QStringLiteral("qrc:/resources/QML/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
