@@ -32,15 +32,19 @@ bool DatabaseManager::initializeDatabase(const QString& projectName)
 
 bool DatabaseManager::createProjectFolder(const QString& projectName)
 {
-    QString documentsPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    projectPath = documentsPath + "/ConstructionMgmt/" + projectName;
+   // QString documentsPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+   // projectPath = documentsPath + "/ConstructionMgmt/" + projectName;
+
+
+
+
+   projectPath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\" + projectName;
     
     QDir dir;
     if (!dir.mkpath(projectPath)) {
         qDebug() << "Failed to create project folder:" << projectPath;
         return false;
-    }
-    
+    }       
     return true;
 }
 
@@ -83,7 +87,7 @@ QString DatabaseManager::getProjectPath() const
 bool DatabaseManager::createTables()
 {
     QStringList tableNames = {
-        "User", "UnitOfMeasurement", "Vendor", "Material", "BudgetHead",
+        "User", /*"Project",*/ "UnitOfMeasurement", "Vendor", "Material", "BudgetHead",
         "ScheduleSetup", "Task", "TaskImage", "TaskMeasurement", "File",
         "FilePermission", "ScheduleOfRates", "ScheduleOfRatesLine",
         "BillOfQuantity", "BillOfQuantityLine", "ProjectBudget", "WorkOrder",
@@ -91,7 +95,7 @@ bool DatabaseManager::createTables()
         "PurchaseOrderLine", "GoodReceivedNote", "MaterialIndent"
     };
     
-    for (const QString& tableName : tableNames) {
+    for(const QString& tableName: tableNames) {
         QString createQuery = getCreateTableQuery(tableName);
         if (!executeQuery(createQuery)) {
             return false;
@@ -114,6 +118,24 @@ QString DatabaseManager::getCreateTableQuery(const QString& tableName)
             )
         )";
     }
+    /*else if (tableName == "Project") {
+        return R"(
+            CREATE TABLE IF NOT EXISTS Project (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                global_id TEXT NOT NULL,
+                approval_status BOOLEAN DEFAULT 1,
+                projectname TEXT NOT NULL,
+                customername TEXT NOT NULL,
+                contactname TEXT NOT NULL,
+                phonenumber TEXT NOT NULL,
+                emailid TEXT NOT NULL,
+                totaldollarvalue TEXT NOT NULL,
+                description TEXT NOT NULL,
+                isBlocked BOOLEAN DEFAULT 0
+            )
+        )";
+    }*/
+
     else if (tableName == "UnitOfMeasurement") {
         return R"(
             CREATE TABLE IF NOT EXISTS UnitOfMeasurement (
