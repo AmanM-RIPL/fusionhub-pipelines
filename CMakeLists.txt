@@ -2,6 +2,33 @@ cmake_minimum_required(VERSION 3.16)
 
 project(FusionHubQt VERSION 1.0.0 LANGUAGES CXX)
 
+set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type")
+#set(CMAKE_CONFIGURATION_TYPES "Release;Debug")
+
+set(LONG_PATH "C:\\Users\\RIPL\\Documents\\ODA")
+file(TO_CMAKE_PATH "${LONG_PATH}" SHORT_PATH)
+
+
+#add_custom_command(TARGET your_target_name POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#        "${PROJECT_SOURCE_DIR}/ThirdLib/Lib2/lib/Lib2.dll"
+#        "$<TARGET_FILE_DIR:your_target_name>"
+#    )
+
+#add_custom_target("deploy")
+#add_custom_command(TARGET "deploy" POST_BUILD <some command>)
+
+#add_custom_target("deploy")
+#add_custom_command(TARGET your_target_name POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#        "C:\\Users\\RIPL\\Documents\\ODA\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Alloc_26.7_17.dll"
+#        "deploy"
+#    )
+
+
+
+
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -10,10 +37,13 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDebugDLL")
 # set(CMAKE_GENERATOR_PLATFORM x64)  not required if using Ninja but required if using VS 2022 as CMAKE Generator
 
 add_compile_options(-w)
-add_compile_options(-I "C:\\Users\\RIPL\\Documents\\ODA\\IFC_vc17_amd64dll_26.6\\Sdai\\Include")
+#add_compile_options(-I "C:\\Users\\RIPL\\Documents\\ODA\\IFC_vc17_amd64dll_26.7\\Sdai\\Include")
+add_compile_options(-I "${LONG_PATH}\\IFC_vc17_amd64dll_26.7\\Sdai\\Include")
 
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Sql Qml Quick Charts)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
@@ -51,6 +81,7 @@ set(SOURCES
     src/models/material_indent.cpp
     src/repositories/abstract_repository.cpp
     src/repositories/user_repository.cpp
+     src/repositories/project_repository.cpp
     src/repositories/unit_of_measurement_repository.cpp
     src/repositories/vendor_repository.cpp
     src/repositories/material_repository.cpp
@@ -107,6 +138,7 @@ set(HEADERS
     src/models/material_indent.h
     src/repositories/abstract_repository.h
     src/repositories/user_repository.h
+    src/repositories/project_repository.h
     src/repositories/unit_of_measurement_repository.h
     src/repositories/vendor_repository.h
     src/repositories/material_repository.h
@@ -138,8 +170,9 @@ set(HEADERS
 add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/Resources.qrc
     src/common/repository_locator.h src/common/repository_locator.cpp
-    src/controllers/user_controller.h src/controllers/user_controller.cpp
-
+    src/controllers/user_controller.h src/controllers/user_controller.cpp    
+    src/controllers/project_controller.h src/controllers/project_controller.cpp
+    src/models/project.h src/models/project.cpp
 )
 
 target_include_directories(FusionHubQt PRIVATE src)
@@ -167,47 +200,88 @@ if(APPLE)
     )
 endif()
 
+#All include directory path
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\Kernel\\Include")
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\FacetModeler\\include")
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\KernelBase\\Include")
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\ThirdParty\\activation")
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\Kernel\\Extensions\\ExServices")
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\FacetModeler\\include\\Modeler")
 
-target_include_directories(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Kernel_vc17_amd64dll_26.6\\Kernel\\Include")
-target_include_directories(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Kernel_vc17_amd64dll_26.6\\FacetModeler\\include")
-target_include_directories(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Kernel_vc17_amd64dll_26.6\\FacetModeler\\include\\Modeler")
-target_include_directories(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Visualize_vc17_amd64dll_26.6\\Visualize\\Include")
-target_include_directories(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\IFC_vc17_amd64dll_26.6\\Sdai\\Include")
-target_include_directories(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\IFC_vc17_amd64dll_26.6\\Ifc\\Include")
-target_include_directories(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\IFC_vc17_amd64dll_26.6\\Ifc\\Include\\Common")
-target_include_directories(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\IFC_vc17_amd64dll_26.6\\Ifc\\Examples\\Common")
-target_include_directories(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\IFC_vc17_amd64dll_26.6\\Ifc\\Extensions\\ExServices")
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\Visualize\\Include")
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\ThirdParty\\activation")
 
-target_include_directories(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Kernel_vc17_amd64dll_26.6\\KernelBase\\Include")
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Sdai\\Include")
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Ifc\\Include")
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Ifc\\Include\\Common")
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Ifc\\Examples\\Common")
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Ifc\\Extensions\\ExServices")
+#End
 
-target_include_directories(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Kernel_vc17_amd64dll_26.6\\ThirdParty\\activation")
-target_include_directories(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Visualize_vc17_amd64dll_26.6\\ThirdParty\\activation")
+#All Source Path
+target_sources(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\Kernel\\Extensions\\ExServices\\ExSystemServices.cpp")
+target_sources(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\Kernel\\Extensions\\ExServices\\RxSystemServicesImpl.cpp")
+target_sources(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\Kernel\\Extensions\\ExServices\\OdFileBuf.cpp")
 
-target_include_directories(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Kernel_vc17_amd64dll_26.6\\Kernel\\Extensions\\ExServices")
+target_sources(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Ifc\\Extensions\\ExServices\\ExIfcHostAppServices.cpp")
+#End
 
-target_link_libraries(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Kernel_vc17_amd64dll_26.6\\lib\\vc17_amd64dll\\TD_Alloc.lib")
-target_link_libraries(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Kernel_vc17_amd64dll_26.6\\lib\\vc17_amd64dll\\TD_Root.lib")
-target_link_libraries(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Kernel_vc17_amd64dll_26.6\\lib\\vc17_amd64dll\\TD_DbRoot.lib")
-target_link_libraries(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Kernel_vc17_amd64dll_26.6\\lib\\vc17_amd64dll\\TD_Br.lib")
-target_link_libraries(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Kernel_vc17_amd64dll_26.6\\lib\\vc17_amd64dll\\TD_Gi.lib")
-target_link_libraries(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Kernel_vc17_amd64dll_26.6\\lib\\vc17_amd64dll\\FacetModeler.lib")
+#All Link library Path
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_Alloc.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_Root.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_DbRoot.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_Br.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_Gi.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\FacetModeler.lib")
 
-target_link_libraries(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Visualize_vc17_amd64dll_26.6\\lib\\vc17_amd64dll\\TD_Ge.lib")
-target_link_libraries(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Visualize_vc17_amd64dll_26.6\\lib\\vc17_amd64dll\\TV_CoreDb.lib")
-target_link_libraries(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Visualize_vc17_amd64dll_26.6\\lib\\vc17_amd64dll\\TV_DbCore.lib")
-target_link_libraries(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Visualize_vc17_amd64dll_26.6\\lib\\vc17_amd64dll\\TV_Visualize.lib")
-target_link_libraries(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Visualize_vc17_amd64dll_26.6\\lib\\vc17_amd64dll\\TV_VisualizeTools.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_Ge.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TV_CoreDb.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TV_DbCore.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TV_Visualize.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TV_VisualizeTools.lib")
 
-target_sources(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Kernel_vc17_amd64dll_26.6\\Kernel\\Extensions\\ExServices\\ExSystemServices.cpp")
-target_sources(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Kernel_vc17_amd64dll_26.6\\Kernel\\Extensions\\ExServices\\RxSystemServicesImpl.cpp")
-target_sources(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\Kernel_vc17_amd64dll_26.6\\Kernel\\Extensions\\ExServices\\OdFileBuf.cpp")
-target_sources(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\IFC_vc17_amd64dll_26.6\\Ifc\\Extensions\\ExServices\\ExIfcHostAppServices.cpp")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\IfcCore.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\IfcCoreTools.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\IfcGeom.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\hdf5.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\sdai.lib")
 
-target_link_libraries(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\IFC_vc17_amd64dll_26.6\\lib\\vc17_amd64dll\\IfcCore.lib")
-target_link_libraries(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\IFC_vc17_amd64dll_26.6\\lib\\vc17_amd64dll\\IfcCoreTools.lib")
-target_link_libraries(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\IFC_vc17_amd64dll_26.6\\lib\\vc17_amd64dll\\IfcGeom.lib")
-target_link_libraries(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\IFC_vc17_amd64dll_26.6\\lib\\vc17_amd64dll\\hdf5.lib")
-target_link_libraries(FusionHubQt PRIVATE "C:\\Users\\RIPL\\Documents\\ODA\\IFC_vc17_amd64dll_26.6\\lib\\vc17_amd64dll\\sdai.lib")
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+#End
+
+
+file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Alloc_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Root_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_DbRoot_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Gi_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_BrepRenderer_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_BrepBuilderFiller_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\RxCommonDataAccess_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\tinyxml.dll DESTINATION ${CMAKE_BINARY_DIR})
+
+
+file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TV_Visualize_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_SpatialIndex_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Ge_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TV_CoreDb_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TV_DbCore_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TV_CoreDbIO_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TV_ISM_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TV_SCENEOE_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TV_Tf_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\OdTvDbPartialViewing_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\OdBrepModeler_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_BrepBuilder_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Gs_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Br_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Zlib.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TV_DbIO_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
+
+
+file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcCore_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\sdai_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
+
