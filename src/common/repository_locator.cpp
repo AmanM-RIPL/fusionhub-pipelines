@@ -2,6 +2,7 @@
 
 RepositoryLocator::RepositoryLocator() {
     m_userRepository = std::make_unique<UserRepository>();
+    m_projectRepository = std::make_unique<ProjectRepository>();
 }
 
 RepositoryLocator &RepositoryLocator::instance()
@@ -13,4 +14,10 @@ RepositoryLocator &RepositoryLocator::instance()
 UserRepository *RepositoryLocator::userRepository()
 {
     return m_userRepository.get();
+}
+
+
+ProjectRepository *RepositoryLocator::projectRepository()
+{
+    return m_projectRepository.get();
 }
