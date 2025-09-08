@@ -166,10 +166,10 @@ Rectangle {
                             activeProjectsModel.append(dataArray[i]);
                         }
 
-                        if(activeProjectsModel.count() < 1)
+                        /*if(activeProjectsModel.count() < 1)
                         {
                             //activeProjectsModel.append()
-                        }
+                        }*/
                     }
                 } catch (e) {
                     console.error("Error parsing JSON:", e);
