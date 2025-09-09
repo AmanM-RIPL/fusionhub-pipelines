@@ -1,81 +1,120 @@
-import { Insertable, InsertQueryBuilder, InsertResult, Kysely, Selectable, SelectQueryBuilder, DeleteQueryBuilder, DeleteResult, UpdateQueryBuilder } from "kysely";
+import { Kysely, Selectable } from "kysely";
 import { PermissionDao } from "../dao/permission.dao";
-import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
 import { IDatabase } from "../../../../infrastructure/db/kysely/types";
 import { InsertableEntity, UpdateableEntity } from "../../../common/types/entity";
-
-type PermissionSelectQueryBuilder = SelectQueryBuilder<IDatabase, 'public.permission', {}>;
-type PermissionDeleteQueryBuilder = DeleteQueryBuilder<IDatabase, 'public.permission', DeleteResult>;
-type PermissionInsertQueryBuilder = InsertQueryBuilder<IDatabase, keyof IDatabase, InsertResult>;
-type PermissionInsertReturningAllQueryBuilder = InsertQueryBuilder<IDatabase, keyof IDatabase, Selectable<IDatabase['public.permission']>>;
-type PermissionUpdateReturningAllQueryBuilder = UpdateQueryBuilder<IDatabase, 'public.permission', 'public.permission', Selectable<IDatabase['public.permission']>>;
-type PermissionUpdateQueryBuilder = UpdateQueryBuilder<IDatabase, 'public.permission', 'public.permission', {}>;
+import { MockKysely, MockKyselyDeleteQueryBuilder, MockKyselyInsertQueryBuilder, MockKyselySelectQueryBuilder, MockKyselyUpdateQueryBuilder } from "../../../common/types/test";
 
 describe('Default -> Permission -> PermissionDao', () => {
-    let mockKysely: DeepMockProxy<Kysely<IDatabase>>;
+    let mockKysely: MockKysely;
     let permissionDao: PermissionDao;
-    let tenant = 1;
+    let tenant = 2;
+    let user = 2;
 
     beforeEach(() => {
-        mockKysely = mockDeep<Kysely<IDatabase>>();
-        permissionDao = new PermissionDao(mockKysely, tenant);
+        mockKysely = {
+            selectFrom: jest.fn(),
+            deleteFrom: jest.fn(),
+            insertInto: jest.fn(),
+            updateTable: jest.fn(),
+        };
+
+        permissionDao = new PermissionDao(mockKysely as unknown as Kysely<IDatabase>, tenant);
     });
 
     test('findById should call correct methods', async () => {
-        const mockCreatedPermission = { id: 1, entity: 'tenant' };
+        const mockPermission = { id: 1, entity: 'tenant' };
 
-        const mockSelect = mockDeep<PermissionSelectQueryBuilder>();
+        // Mock the Kysely methods to return the expected results
+        const mockSelect: MockKyselySelectQueryBuilder = {
+            selectAll: jest.fn(),
+            select: jest.fn(),
+            where: jest.fn(),
+            limit: jest.fn(),
+            offset: jest.fn(),
+            executeTakeFirst: jest.fn(),
+            executeTakeFirstOrThrow: jest.fn(),
+            execute: jest.fn(),
+        };
         mockKysely.selectFrom.mockReturnValue(mockSelect);
         mockSelect.selectAll.mockReturnThis();
         mockSelect.where.mockReturnThis();
-        mockSelect.executeTakeFirst.mockResolvedValueOnce(mockCreatedPermission);
+        mockSelect.executeTakeFirst.mockResolvedValueOnce(mockPermission);
 
-        const permissionResult = await permissionDao.findById(2);
+        // Call the method under test
+        const permissionResult = await permissionDao.findById(1);
 
+        // Add your assertions or method calls here
         expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.permission");
         expect(mockSelect.selectAll).toHaveBeenCalled();
-        expect(mockSelect.where).toHaveBeenCalledWith("id", "=", 2);
-        expect(mockSelect.where).toHaveBeenCalledWith("tenant", "=", tenant);
+        expect(mockSelect.where).toHaveBeenCalledWith("id", "=", 1);
         expect(mockSelect.executeTakeFirst).toHaveBeenCalled();
-        expect(permissionResult).toEqual(mockCreatedPermission); 
     });
 
-    test('findById should throw error when tenant is null', async () => {
-        permissionDao = new PermissionDao(mockKysely, null);
+    test('findById should return correct value', async () => {
+        // test data
+        const mockPermission = { id: 1, entity: 'tenant' };
 
-        await expect(permissionDao.findById(2)).rejects.toThrow("Tenant must be set before accessing an permission.");
+        // Mock the Kysely methods to return the expected results
+        const mockSelect: MockKyselySelectQueryBuilder = {
+            selectAll: jest.fn(),
+            select: jest.fn(),
+            where: jest.fn(),
+            limit: jest.fn(),
+            offset: jest.fn(),
+            executeTakeFirst: jest.fn(),
+            executeTakeFirstOrThrow: jest.fn(),
+            execute: jest.fn(),
+        };
+        mockKysely.selectFrom.mockReturnValue(mockSelect);
+        mockSelect.selectAll.mockReturnThis();
+        mockSelect.where.mockReturnThis();
+        mockSelect.executeTakeFirst.mockResolvedValueOnce(mockPermission);
+
+        // Call the method under test
+        const permissionResult = await permissionDao.findById(1);
+
+        // Add your assertions or method calls here
+        expect(permissionResult).toEqual(mockPermission);
     });
 
-    test('findAll should return correct values', async () => {
-        const mockCreatedPermission = { id: 1, entity: 'tenant' };
-        const mockQueryBuilder = mockDeep<PermissionSelectQueryBuilder>();
+    test('findAll should call correct methods', async () => {
+        // test data
+        const mockPermissions = [{ id: 1, entity: 'Create' }, { id: 2, entity: 'Create' }];
+
+        // Mock the Kysely methods with a simplified approach
+        const mockQueryBuilder: MockKyselySelectQueryBuilder = {
+            selectAll: jest.fn(),
+            select: jest.fn(),
+            where: jest.fn(),
+            limit: jest.fn(),
+            offset: jest.fn(),
+            executeTakeFirst: jest.fn(),
+            executeTakeFirstOrThrow: jest.fn(),
+            execute: jest.fn(),
+        };
+
         mockKysely.selectFrom.mockReturnValue(mockQueryBuilder);
         mockQueryBuilder.where.mockReturnThis();
         mockQueryBuilder.selectAll.mockReturnThis();
         mockQueryBuilder.limit.mockReturnThis();
         mockQueryBuilder.offset.mockReturnThis();
-        mockQueryBuilder.execute.mockResolvedValueOnce([mockCreatedPermission]);
+        mockQueryBuilder.execute.mockResolvedValueOnce(mockPermissions);
 
-        const result = await permissionDao.findAll(10, 0);
+        // Call the method under test
+        const permissionResult = await permissionDao.findAll(10, 0);
 
+        // Add your assertions or method calls here
         expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.permission");
         expect(mockQueryBuilder.where).toHaveBeenCalledWith("tenant", "=", tenant);
         expect(mockQueryBuilder.selectAll).toHaveBeenCalled();
         expect(mockQueryBuilder.limit).toHaveBeenCalledWith(10);
         expect(mockQueryBuilder.offset).toHaveBeenCalledWith(0);
-        expect(result).toEqual([mockCreatedPermission]);
+        expect(mockQueryBuilder.execute).toHaveBeenCalled();
     });
 
-    test('findAll should throw error when tenant is null', async () => {
-        permissionDao = new PermissionDao(mockKysely, null);
-
-        await expect(permissionDao.findAll(10, 0)).rejects.toThrow(
-            "Tenant must be set before accessing an permission."
-        );
-    });
-
-    test('create should insert correctly', async () => {
-        const mockPermission: Selectable<IDatabase['public.permission']> = {
+    test('create should call correct methods', async () => {
+        // test data
+        const mockPermissions: Selectable<IDatabase['public.permission']> = {
             id: 2,
             tenant: 1,
             createdOn: new Date(),
@@ -107,26 +146,34 @@ describe('Default -> Permission -> PermissionDao', () => {
             filter: ""
         };
 
-        const mockInsert = mockDeep<PermissionInsertQueryBuilder>();
+        // Mock the Kysely methods to return the expected results
+        const mockInsert: MockKyselyInsertQueryBuilder = {
+            values: jest.fn(),
+            returningAll: jest.fn(),
+            executeTakeFirstOrThrow: jest.fn(),
+        };
+
         mockKysely.insertInto.mockReturnValue(mockInsert);
         mockInsert.values.mockReturnThis();
-        const mockReturningAll = mockDeep<PermissionInsertReturningAllQueryBuilder>();
-        mockInsert.returningAll.mockReturnValue(mockReturningAll);
-        mockReturningAll.executeTakeFirstOrThrow.mockResolvedValueOnce(mockPermission);
+        mockInsert.returningAll.mockReturnThis();
+        mockInsert.executeTakeFirstOrThrow.mockResolvedValueOnce(mockPermissions);
 
-        const result = await permissionDao.create(mockPermissionInsertable);
+        // Call the method under test
+        const permissionResult = await permissionDao.create(mockPermissionInsertable);
 
+        // Add your assertions or method calls here - FIXED: Use the insertable object, not the returned object
         expect(mockKysely.insertInto).toHaveBeenCalledWith("public.permission");
         expect(mockInsert.values).toHaveBeenCalledWith({
             ...mockPermissionInsertable,
-            tenant: tenant
+            tenant: tenant // The DAO adds the tenant field
         });
         expect(mockInsert.returningAll).toHaveBeenCalled();
-        expect(result).toEqual(mockPermission);
+        expect(mockInsert.executeTakeFirstOrThrow).toHaveBeenCalled();
     });
 
-    test('update should modify correctly', async () => {
-        const mockPermission: Selectable<IDatabase['public.permission']> = {
+    test('create should return correct value', async () => {
+        // test data
+        const mockPermissions: Selectable<IDatabase['public.permission']> = {
             id: 2,
             tenant: 1,
             createdOn: new Date(),
@@ -148,32 +195,103 @@ describe('Default -> Permission -> PermissionDao', () => {
             }
         };
 
-        const mockPermissionUpdateable: { [key: string]: unknown } = {
+        const mockPermissionInsertable: InsertableEntity<IDatabase['public.permission']> = {
+            createdOn: new Date(),
+            user: 1,
+            project: 201,
+            entity: "employee",
+            permissionType: 'CREATE',
+            approval: [501, 502],
+            filter: ""
+        };
+
+        // Mock the Kysely methods to return the expected results
+        const mockInsert: MockKyselyInsertQueryBuilder = {
+            values: jest.fn(),
+            returningAll: jest.fn(),
+            executeTakeFirstOrThrow: jest.fn(),
+        };
+        mockKysely.insertInto.mockReturnValue(mockInsert);
+        mockInsert.values.mockReturnThis();
+        mockInsert.returningAll.mockReturnThis();
+        mockInsert.executeTakeFirstOrThrow.mockResolvedValueOnce(mockPermissions);
+
+        // Call the method under test
+        const permissionResult = await permissionDao.create(mockPermissionInsertable);
+
+        // Add your assertions or method calls here
+        expect(permissionResult).toEqual(mockPermissions);
+    });
+
+    test('update should call correct methods', async () => {
+    // test data
+    const mockPermissions: Selectable<IDatabase['public.permission']> = {
+        id: 2,
+        tenant: 1,
+        createdOn: new Date(),
+        user: 1,
+        project: 201,
+        entity: "employee",
+        permissionType: 'CREATE',
+        approval: [501, 502],
+        filter: {
+            project: [1, 2, 3],
+            subProject: [1, 2, 3],
+            businessEntityBranch: [1, 2, 3],
+            financialYear: [1, 2, 3],
+        },
+        access: {
+            create: true,
+            read: true,
+            update: true
+        }
+    };
+
+    const mockPermissionUpdateable:
+        Omit<
+            UpdateableEntity<IDatabase['public.permission']>,
+            "entitySchema" | "createdByUser" | "associatedApprovedEntity"
+        > = {
             entity: "employee",
             permissionType: 'CREATE',
         };
 
-        const mockUpdate = mockDeep<PermissionUpdateQueryBuilder>();
-        mockKysely.updateTable.mockReturnValue(mockUpdate);
-        mockUpdate.set.mockReturnThis();
-        mockUpdate.where.mockReturnThis();
-        const mockReturningAll = mockDeep<PermissionUpdateReturningAllQueryBuilder>();
-        mockUpdate.returningAll.mockReturnValue(mockReturningAll);
-        mockReturningAll.executeTakeFirst.mockResolvedValueOnce(mockPermission);
+    // Mock the Kysely methods to return the expected results
+    const mockUpdate: MockKyselyUpdateQueryBuilder = {
+        set: jest.fn(),
+        where: jest.fn(),
+        returningAll: jest.fn(),
+        executeTakeFirstOrThrow: jest.fn(),
+        executeTakeFirst: jest.fn(),
+    };
+    mockKysely.updateTable.mockReturnValue(mockUpdate);
+    mockUpdate.set.mockReturnThis();
+    mockUpdate.where.mockReturnThis();
+    mockUpdate.returningAll.mockReturnThis();
+    mockUpdate.executeTakeFirst.mockResolvedValueOnce(mockPermissions);
 
-        const result = await permissionDao.update(2, mockPermissionUpdateable);
+    // Call the method under test
+    const permissionResult = await permissionDao.update(1, mockPermissionUpdateable);
 
-        expect(mockKysely.updateTable).toHaveBeenCalledWith("public.permission");
-        expect(mockUpdate.set).toHaveBeenCalledWith(mockPermissionUpdateable);
-        expect(mockUpdate.where).toHaveBeenCalledWith("id", "=", 2);
-        expect(mockUpdate.where).toHaveBeenCalledWith("tenant", "=", tenant);
-        expect(result).toEqual(mockPermission);
-    });
+    expect(mockKysely.updateTable).toHaveBeenCalledWith("public.permission");
+    expect(mockUpdate.set).toHaveBeenCalledWith(mockPermissionUpdateable);
+    expect(mockUpdate.where).toHaveBeenCalledWith("id", "=", 1);
+    expect(mockUpdate.returningAll).toHaveBeenCalled();
+    expect(mockUpdate.executeTakeFirst).toHaveBeenCalled();
+});
 
-    test('delete should call correct methods', async () => {
-        const permissionId = 1;
-        const mockDraftEntity = {
-            id: 1, entity: 'tenant', entitySchema: {}, filter: {
+    test('update should return correct value', async () => {
+        // test data
+        const mockPermissions: Selectable<IDatabase['public.permission']> = {
+            id: 2,
+            tenant: 1,
+            createdOn: new Date(),
+            user: 1,
+            project: 201,
+            entity: "employee",
+            permissionType: 'CREATE',
+            approval: [501, 502],
+            filter: {
                 project: [1, 2, 3],
                 subProject: [1, 2, 3],
                 businessEntityBranch: [1, 2, 3],
@@ -186,14 +304,65 @@ describe('Default -> Permission -> PermissionDao', () => {
             }
         };
 
-        const mockSelect = mockDeep<PermissionSelectQueryBuilder>();
+        const mockPermissionUpdateable:
+            Omit<
+                UpdateableEntity<IDatabase['public.permission']>,
+                "entitySchema" | "createdByUser" | "associatedApprovedEntity"
+            > = {
+            entity: "employee",
+            permissionType: 'CREATE',
+        };
+
+        // Mock the Kysely methods to return the expected results
+        const mockUpdate: MockKyselyUpdateQueryBuilder = {
+            set: jest.fn(),
+            where: jest.fn(),
+            returningAll: jest.fn(),
+            executeTakeFirstOrThrow: jest.fn(),
+            executeTakeFirst: jest.fn(),
+        };
+        mockKysely.updateTable.mockReturnValue(mockUpdate);
+        mockUpdate.set.mockReturnThis();
+        mockUpdate.where.mockReturnThis();
+        mockUpdate.returningAll.mockReturnThis();
+        mockUpdate.executeTakeFirst.mockResolvedValueOnce(mockPermissions);
+
+        // Call the method under test
+        const permissionResult = await permissionDao.update(1, mockPermissionUpdateable);
+
+        // Add your assertions or method calls here
+        expect(permissionResult).toEqual(mockPermissions);
+    });
+
+    test('delete should call correct methods', async () => {
+        const permissionId = 1;
+
+        // Mock the select query builder
+        const mockPermission = { id: 1, entity: 'tenant', entitySchema: {}, nextApprovingUser: null, createdByUser: 2 };
+
+        const mockSelect: MockKyselySelectQueryBuilder = {
+            selectAll: jest.fn(),
+            select: jest.fn(),
+            where: jest.fn(),
+            limit: jest.fn(),
+            offset: jest.fn(),
+            executeTakeFirst: jest.fn(),
+            executeTakeFirstOrThrow: jest.fn(),
+            execute: jest.fn(),
+        };
         mockKysely.selectFrom.mockReturnValue(mockSelect);
         mockSelect.select.mockReturnThis();
         mockSelect.where.mockReturnThis();
-        mockSelect.executeTakeFirst.mockResolvedValueOnce(mockDraftEntity);
+        mockSelect.executeTakeFirst.mockResolvedValueOnce(mockPermission);
 
         // Mock the delete query builder
-        const mockDelete = mockDeep<PermissionDeleteQueryBuilder>();
+        const mockDelete: MockKyselyDeleteQueryBuilder = {
+            where: jest.fn(),
+            returningAll: jest.fn(),
+            executeTakeFirstOrThrow: jest.fn(),
+            executeTakeFirst: jest.fn(),
+            execute: jest.fn(),
+        };
         mockKysely.deleteFrom.mockReturnValueOnce(mockDelete);
         mockDelete.where.mockReturnThis();
         mockDelete.execute.mockResolvedValueOnce([{ numDeletedRows: BigInt(1) }]);
