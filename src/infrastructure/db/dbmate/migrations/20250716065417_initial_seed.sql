@@ -24,16 +24,18 @@ CREATE TABLE project (
     "createdOn" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     -- custom columns
-    "name" VARCHAR(100) NOT NULL,
+    "projectName" VARCHAR(100) NOT NULL,
     "description" TEXT,
-    "projectCode" VARCHAR(50) UNIQUE NOT NULL,
     "startDate" DATE,
     "endDate" DATE,
     "status" VARCHAR(20) DEFAULT 'pending',
 
     -- contact information
-    "contactEmail" VARCHAR(50),
-    "contactMobile" VARCHAR(20),
+    "customerName" VARCHAR(50),
+    "customerEmail" VARCHAR(50),
+    "customerMobile" VARCHAR(20),
+
+    "lastChangeLogId" INT NULL,
 
     -- access control
     "isBlocked" BOOLEAN DEFAULT FALSE,

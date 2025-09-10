@@ -6,13 +6,13 @@
   "type": "module",
   "scripts": {
     "test-coverage": "NODE_ENV=test npx jest --coverage",
-    "cross-env-test": "cross-env NODE_ENV=test jest --silent=false",
+    "cross-env-test": "cross-env NODE_ENV=test node node_modules/jest/bin/jest.js --silent=false",
     "test:coverage": "NODE_ENV='test' jest --coverage",
     "build": "tsc && tsc-alias",
     "start": "node ./dist/index.js",
     "cross-env-dev": "cross-env NODE_ENV=development node ./dist/index.js",
     "dev": "NODE_ENV=development node ./dist/index.js",
-    "test": "NODE_ENV=test jest --silent=false",
+    "test": "node --max-old-space-size=4096 node_modules/jest/bin/jest.js --silent=false",
     "cross-env-test-coverage": "cross-env NODE_ENV=test npx jest --coverage"
   },
   "keywords": [],
@@ -33,6 +33,8 @@
   },
   "dependencies": {
     "@fastify/jwt": "^9.0.1",
+    "@fastify/swagger": "^9.5.1",
+    "@fastify/swagger-ui": "^5.2.3",
     "@google-cloud/storage": "^7.13.0",
     "@react-pdf/renderer": "^3.4.5",
     "@types/pg": "^8.11.10",

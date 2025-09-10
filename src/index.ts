@@ -7,6 +7,8 @@ import defaultJsonSchema from './infrastructure/plugins/default-json-schema';
 import defaultRoutes from './application/default/_main/default.routes';
 import { PinoLoggerOptions } from 'fastify/types/logger';
 import authRoutes from './application/auth/_main/auth.route';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 
 // logger configuration
 const envToLogger: { [key: string]: boolean | PinoLoggerOptions } = {
@@ -26,11 +28,6 @@ const envToLogger: { [key: string]: boolean | PinoLoggerOptions } = {
 // registering the main application
 const app = Fastify({
   logger: envToLogger[process.env.NODE_ENV || 'development'],
-  // ajv: {
-  //   customOptions: {
-  //     coerceTypes: false  // Ensure types are not coerced
-  //   }
-  // }
 });
 
 // Register JWT
@@ -39,24 +36,55 @@ app.register(fastifyJwt, {
 });
 app.register(jwtAuth);
 
+
+
 // Register kysely for connection pooling
 app.register(kyselyPlugin);
 
-// Registering the default JSON schema
+// Register default JSON schema
 app.register(defaultJsonSchema);
 
-// registering the routes for action
+await app.register(swagger, {
+  openapi: {
+    info: {
+      title: 'FusionHub - APIs',
+      version: 'v1',
+    },
+  },
+  hideUntagged: true,
+});
+
+await app.register(swaggerUi, {
+  routePrefix: '/documentation',
+  uiConfig: {
+    docExpansion: 'none',
+    deepLinking: true,
+    defaultModelsExpandDepth: -1,
+    supportedSubmitMethods: []
+  },
+  uiHooks: {
+    onRequest: function (request, reply, next) { next() },
+    preHandler: function (request, reply, next) { next() }
+  },
+  staticCSP: true,
+  transformStaticCSP: (header) => header,
+  transformSpecification: (swaggerObject, request, reply) => swaggerObject,
+  transformSpecificationClone: true
+});
+
+// Register routes
 app.register(defaultRoutes, { prefix: '/api/v1/default' });
 app.register(authRoutes, { prefix: '/api/v1/auth' });
 
-// Run the server!
-app.listen({ 
-  port: process.env.FASTIFY_PORT !== undefined ? parseInt(process.env.FASTIFY_PORT) : 3000, 
-  host: process.env.FASTIFY_HOST 
+
+// Run the server
+app.listen({
+  port: process.env.FASTIFY_PORT !== undefined ? parseInt(process.env.FASTIFY_PORT) : 3000,
+  host: process.env.FASTIFY_HOST
 }, (err: any, address: any) => {
   if (err) {
-    app.log.error(err)
-    process.exit(1)
+    app.log.error(err);
+    process.exit(1);
   }
-  app.log.info(`server listening on ${address}`)
-})
+  app.log.info(`server listening on ${address}`);
+});

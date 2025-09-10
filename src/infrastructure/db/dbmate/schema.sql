@@ -191,7 +191,6 @@ CREATE TABLE public.project (
     "createdOn" timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     name character varying(100) NOT NULL,
     description text,
-    "projectCode" character varying(50) NOT NULL,
     "startDate" date,
     "endDate" date,
     status character varying(20) DEFAULT 'pending',

@@ -1,44 +1,40 @@
-import { InsertQueryBuilder, InsertResult, Kysely, Selectable, SelectQueryBuilder, UpdateQueryBuilder } from "kysely";
-import { IDatabase } from "../../../../infrastructure/db/kysely/types";
-import { DeepMockProxy, mockDeep } from "jest-mock-extended";
+import { Kysely, Selectable } from "kysely";
 import { UserDao } from "../dao/user.dao";
-import { IUser } from "../user.model";
-
-// Helper types for the chained query builder objects
-type UsersSelectQueryBuilder = SelectQueryBuilder<IDatabase, 'public.fh_user', {}>;
-type UsersInsertQueryBuilder = InsertQueryBuilder<IDatabase, keyof IDatabase, InsertResult>;
-type UsersInsertReturningAllQueryBuilder = InsertQueryBuilder<IDatabase, keyof IDatabase, Selectable<IDatabase['public.fh_user']>>;
-type UsersUpdateReturningAllQueryBuilder = UpdateQueryBuilder<IDatabase, 'public.fh_user', 'public.fh_user', Selectable<IDatabase['public.fh_user']>>;
-type UsersUpdateQueryBuilder = UpdateQueryBuilder<IDatabase, 'public.fh_user', 'public.fh_user', {}>;
+import { IDatabase } from "../../../../infrastructure/db/kysely/types";
+import { InsertableEntity, UpdateableEntity } from "../../../common/types/entity";
+import { MockKysely, MockKyselyDeleteQueryBuilder, MockKyselyInsertQueryBuilder, MockKyselySelectQueryBuilder, MockKyselyUpdateQueryBuilder } from "../../../common/types/test";
 
 describe('Default -> User -> UserDao', () => {
-  let mockKysely: DeepMockProxy<Kysely<IDatabase>>;
-  let userDao: UserDao;
-  let userDaoNoTenant: UserDao;
-  const tenantId = 1;
+    let mockKysely: MockKysely;
+    let userDao: UserDao;
+    let userDaoNoTenant: UserDao;
+    let tenant = 2;
+    let user = 2;
 
   beforeEach(() => {
-    mockKysely = mockDeep<Kysely<IDatabase>>();
-    userDao = new UserDao(mockKysely, tenantId);
-    userDaoNoTenant = new UserDao(mockKysely, null);
+    mockKysely = {
+      selectFrom: jest.fn(),
+      deleteFrom: jest.fn(),
+      insertInto: jest.fn(),
+      updateTable: jest.fn(),
+    };
+    
+    userDao = new UserDao(mockKysely  as unknown as Kysely<IDatabase>, tenant);
+    userDaoNoTenant = new UserDao(mockKysely  as unknown as Kysely<IDatabase>, null);  
   });
 
   test('findById should call correct methods', async () => {
-    // test data
-    const mockUser: Selectable<IUser> = { 
-      id: 1, 
-      tenant: tenantId,
-      createdOn: new Date(),
-      username: 'JohnDoe', 
-      password: 'password123', 
-      email: 'sample@gmail.com', 
-      firstName: 'John', 
-      lastName: 'Doe', 
-      mobile: '1234567890' 
+    const mockUser = { id: 1, entity: 'tenant' };
+    const mockSelect: MockKyselySelectQueryBuilder = {
+      selectAll: jest.fn(),
+      select: jest.fn(),
+      where: jest.fn(),
+      limit: jest.fn(),
+      offset: jest.fn(),
+      executeTakeFirst: jest.fn(),
+      executeTakeFirstOrThrow: jest.fn(),
+      execute: jest.fn(),
     };
-
-    // Mock the Kysely methods to return the expected results
-    const mockSelect = mockDeep<UsersSelectQueryBuilder>();
     mockKysely.selectFrom.mockReturnValue(mockSelect);
     mockSelect.selectAll.mockReturnThis();
     mockSelect.where.mockReturnThis();
@@ -54,134 +50,122 @@ describe('Default -> User -> UserDao', () => {
     expect(mockSelect.executeTakeFirst).toHaveBeenCalled();
   });
 
-  test('findById should return correct value', async () => {
-    // test data
-    const mockUser: Selectable<IUser> = { 
+  test('findById should call correct value', async () => {
+    const mockUser = {  
       id: 1, 
-      tenant: tenantId,
+      tenant: tenant,
       createdOn: new Date(),
       username: 'JohnDoe', 
       password: 'password123', 
       email: 'sample@gmail.com', 
       firstName: 'John', 
       lastName: 'Doe', 
-      mobile: '1234567890' 
-    };
+      mobile: '1234567890' };
 
     // Mock the Kysely methods to return the expected results
-    const mockSelect = mockDeep<UsersSelectQueryBuilder>();
+    const mockSelect: MockKyselySelectQueryBuilder = {
+      selectAll: jest.fn(),
+      select: jest.fn(),
+      where: jest.fn(),
+      limit: jest.fn(),
+      offset: jest.fn(),
+      executeTakeFirst: jest.fn(),
+      executeTakeFirstOrThrow: jest.fn(),
+      execute: jest.fn(),
+    };
     mockKysely.selectFrom.mockReturnValue(mockSelect);
     mockSelect.selectAll.mockReturnThis();
     mockSelect.where.mockReturnThis();
     mockSelect.executeTakeFirst.mockResolvedValueOnce(mockUser);
 
-    // Call the method under test
     const userResult = await userDao.findById(1);
 
     // Add your assertions or method calls here
+    expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.fh_user");
+    expect(mockSelect.selectAll).toHaveBeenCalled();
+    expect(mockSelect.where).toHaveBeenCalledWith("id", "=", 1);
+    expect(mockSelect.executeTakeFirst).toHaveBeenCalled();
+
     expect(userResult).toEqual(mockUser);
+
   });
 
   test('findById should return error if tenant = null', async () => {
-    // Call the method under test
     async function userResult() {
       await userDaoNoTenant.findById(1);
     }
 
-    // Add your assertions or method calls here
     await expect(userResult).rejects.toThrow("Tenant must be set before accessing a user.");
   });
 
-  test('findAll should call correct methods', async () => {
+   test('findAll should call correct methods', async () => {
     // test data
-    const mockUsers: Selectable<IUser>[] = [
-      { 
-        id: 1, 
-        tenant: tenantId,
-        createdOn: new Date(),
-        username: 'JohnDoe', 
-        password: 'password123', 
-        email: 'sample@gmail.com', 
-        firstName: 'John', 
-        lastName: 'Doe', 
-        mobile: '1234567890' 
-      },
-      { 
-        id: 2, 
-        tenant: tenantId,
-        createdOn: new Date(),
-        username: 'JohnDoe1', 
-        password: 'password1234', 
-        email: 'sample@gmail.com', 
-        firstName: 'John', 
-        lastName: 'Doe', 
-        mobile: '1234567890' 
-      }
-    ];
+    const mockUsers = [{ id: 1, entity: 'Create' }, { id: 2, entity: 'Create' }];
 
-    // Mock the Kysely methods to return the expected results
-    const mockSelect = mockDeep<UsersSelectQueryBuilder>();
-    mockKysely.selectFrom.mockReturnValue(mockSelect);
-    mockSelect.selectAll.mockReturnThis();
-    mockSelect.limit.mockReturnThis();
-    mockSelect.offset.mockReturnThis();
-    mockSelect.where.mockReturnThis();
-    mockSelect.execute.mockResolvedValueOnce(mockUsers);
+    // Mock the Kysely methods with a simplified approach
+    const mockQueryBuilder: MockKyselySelectQueryBuilder = {
+      selectAll: jest.fn(),
+      select: jest.fn(),
+      where: jest.fn(),
+      limit: jest.fn(),
+      offset: jest.fn(),
+      executeTakeFirst: jest.fn(),
+      executeTakeFirstOrThrow: jest.fn(),
+      execute: jest.fn(),
+    };
 
+    mockKysely.selectFrom.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.where.mockReturnThis();
+    mockQueryBuilder.selectAll.mockReturnThis();
+    mockQueryBuilder.limit.mockReturnThis();
+    mockQueryBuilder.offset.mockReturnThis();
+    mockQueryBuilder.execute.mockResolvedValueOnce(mockUsers);
 
     // Call the method under test
     const userResult = await userDao.findAll(10, 0);
 
     // Add your assertions or method calls here
     expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.fh_user");
-    expect(mockSelect.selectAll).toHaveBeenCalled();
-    expect(mockSelect.limit).toHaveBeenCalledWith(10);
-    expect(mockSelect.offset).toHaveBeenCalledWith(0);
-    expect(mockSelect.execute).toHaveBeenCalled();
+    expect(mockQueryBuilder.where).toHaveBeenCalledWith("tenant", "=", tenant);
+    expect(mockQueryBuilder.selectAll).toHaveBeenCalled();
+    expect(mockQueryBuilder.limit).toHaveBeenCalledWith(10);
+    expect(mockQueryBuilder.offset).toHaveBeenCalledWith(0);
+    expect(mockQueryBuilder.execute).toHaveBeenCalled();
   });
 
-  test('findAll should return correct value', async () => {
+  test('findAll should call correct value', async () => {
     // test data
-    const mockUsers: Selectable<IUser>[] = [
-      { 
-        id: 1, 
-        tenant: tenantId,
-        createdOn: new Date(),
-        username: 'JohnDoe', 
-        password: 'password123', 
-        email: 'sample@gmail.com', 
-        firstName: 'John', 
-        lastName: 'Doe', 
-        mobile: '1234567890' 
-      },
-      { 
-        id: 2, 
-        tenant: tenantId,
-        createdOn: new Date(),
-        username: 'JohnDoe1', 
-        password: 'password1234', 
-        email: 'sample@gmail.com', 
-        firstName: 'John', 
-        lastName: 'Doe', 
-        mobile: '1234567890' 
-      }
-    ];
+    const mockUsers = [{ id: 1, entity: 'Create' }, { id: 2, entity: 'Create' }];
 
-    // Mock the Kysely methods to return the expected results
-    const mockSelect = mockDeep<UsersSelectQueryBuilder>();
-    mockKysely.selectFrom.mockReturnValue(mockSelect);
-    mockSelect.selectAll.mockReturnThis();
-    mockSelect.limit.mockReturnThis();
-    mockSelect.offset.mockReturnThis();
-    mockSelect.where.mockReturnThis();
-    mockSelect.execute.mockResolvedValueOnce(mockUsers);
+    // Mock the Kysely methods with a simplified approach
+    const mockQueryBuilder: MockKyselySelectQueryBuilder = {
+      selectAll: jest.fn(),
+      select: jest.fn(),
+      where: jest.fn(),
+      limit: jest.fn(),
+      offset: jest.fn(),
+      executeTakeFirst: jest.fn(),
+      executeTakeFirstOrThrow: jest.fn(),
+      execute: jest.fn(),
+    };
 
+    mockKysely.selectFrom.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.where.mockReturnThis();
+    mockQueryBuilder.selectAll.mockReturnThis();
+    mockQueryBuilder.limit.mockReturnThis();
+    mockQueryBuilder.offset.mockReturnThis();
+    mockQueryBuilder.execute.mockResolvedValueOnce(mockUsers);
 
     // Call the method under test
     const userResult = await userDao.findAll(10, 0);
 
     // Add your assertions or method calls here
-    expect(userResult).toEqual(mockUsers);
+    expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.fh_user");
+    expect(mockQueryBuilder.where).toHaveBeenCalledWith("tenant", "=", tenant);
+    expect(mockQueryBuilder.selectAll).toHaveBeenCalled();
+    expect(mockQueryBuilder.limit).toHaveBeenCalledWith(10);
+    expect(mockQueryBuilder.offset).toHaveBeenCalledWith(0);
+    expect(mockQueryBuilder.execute).toHaveBeenCalled();
   });
 
   test('findAll should return error if tenant = null', async () => {
@@ -194,158 +178,197 @@ describe('Default -> User -> UserDao', () => {
     await expect(userResult).rejects.toThrow("Tenant must be set before accessing a user.");
   });
 
-  test('create should call correct methods', async () => {
+   test('create should call correct methods', async () => {
     // test data
-    const mockUser = { 
-      id: 1, 
-      tenant: 1,
-      createdOn: new Date(),
-      username: 'JohnDoe', 
-      password: 'password123', 
-      email: 'sample@gmail.com', 
-      firstName: 'John', 
-      lastName: 'Doe', 
-      mobile: '1234567890' 
+    const mockUsers: Selectable<IDatabase['public.fh_user']> = {
+        id: 1, 
+        tenant: tenant,
+        createdOn: new Date(),
+        username: 'JohnDoe', 
+        password: 'password123', 
+        email: 'sample@gmail.com', 
+        firstName: 'John', 
+        lastName: 'Doe', 
+        mobile: '1234567890'
+    };
+
+    const mockUserInsertable: InsertableEntity<IDatabase['public.fh_user']> = {
+        createdOn: new Date(),
+        username: 'JohnDoe', 
+        password: 'password123', 
+        email: 'sample@gmail.com', 
+        firstName: 'John', 
+        lastName: 'Doe', 
+        mobile: '1234567890'
     };
 
     // Mock the Kysely methods to return the expected results
-    const mockInsert = mockDeep<UsersInsertQueryBuilder>();
+    const mockInsert: MockKyselyInsertQueryBuilder = {
+      values: jest.fn(),
+      returningAll: jest.fn(),
+      executeTakeFirstOrThrow: jest.fn(),
+    };
+
     mockKysely.insertInto.mockReturnValue(mockInsert);
     mockInsert.values.mockReturnThis();
-    const mockReturningAll = mockDeep<UsersInsertReturningAllQueryBuilder>();
-    mockInsert.returningAll.mockReturnValue(mockReturningAll);
-    mockReturningAll.executeTakeFirstOrThrow.mockResolvedValueOnce({...mockUser, tenant: tenantId});
-
+    mockInsert.returningAll.mockReturnThis();
+    mockInsert.executeTakeFirstOrThrow.mockResolvedValueOnce(mockUsers);
 
     // Call the method under test
-    const userResult = await userDao.create(mockUser);
+    const userResult = await userDao.create(mockUserInsertable);
 
-    // Add your assertions or method calls here
     expect(mockKysely.insertInto).toHaveBeenCalledWith("public.fh_user");
-    expect(mockInsert.values).toHaveBeenCalledWith({...mockUser, tenant: tenantId});
+    expect(mockInsert.values).toHaveBeenCalledWith({
+      ...mockUserInsertable,
+      tenant: tenant
+    });
     expect(mockInsert.returningAll).toHaveBeenCalled();
-    expect(mockReturningAll.executeTakeFirstOrThrow).toHaveBeenCalled();
+    expect(mockInsert.executeTakeFirstOrThrow).toHaveBeenCalled();
   });
 
   test('create should return correct value', async () => {
     // test data
-    const mockUser = { 
-      id: 1, 
-      tenant: 2,
-      createdOn: new Date(),
-      username: 'JohnDoe', 
-      password: 'password123', 
-      email: 'sample@gmail.com', 
-      firstName: 'John', 
-      lastName: 'Doe', 
-      mobile: '1234567890' 
+    const mockUsers: Selectable<IDatabase['public.fh_user']> = {
+        id: 1, 
+        tenant: tenant,
+        createdOn: new Date(),
+        username: 'JohnDoe', 
+        password: 'password123', 
+        email: 'sample@gmail.com', 
+        firstName: 'John', 
+        lastName: 'Doe', 
+        mobile: '1234567890'
+    };
+
+    const mockUserInsertable: InsertableEntity<IDatabase['public.fh_user']> = {
+        createdOn: new Date(),
+        username: 'JohnDoe', 
+        password: 'password123', 
+        email: 'sample@gmail.com', 
+        firstName: 'John', 
+        lastName: 'Doe', 
+        mobile: '1234567890'
     };
 
     // Mock the Kysely methods to return the expected results
-    const mockInsert = mockDeep<UsersInsertQueryBuilder>();
+    const mockInsert: MockKyselyInsertQueryBuilder = {
+      values: jest.fn(),
+      returningAll: jest.fn(),
+      executeTakeFirstOrThrow: jest.fn(),
+    };
     mockKysely.insertInto.mockReturnValue(mockInsert);
     mockInsert.values.mockReturnThis();
-    const mockReturningAll = mockDeep<UsersInsertReturningAllQueryBuilder>();
-    mockInsert.returningAll.mockReturnValue(mockReturningAll);
-    mockReturningAll.executeTakeFirstOrThrow.mockResolvedValueOnce({...mockUser, tenant: tenantId});
-
+    mockInsert.returningAll.mockReturnThis();
+    mockInsert.executeTakeFirstOrThrow.mockResolvedValueOnce(mockUsers);
 
     // Call the method under test
-    const userResult = await userDao.create(mockUser);
+    const userResult = await userDao.create(mockUserInsertable);
 
     // Add your assertions or method calls here
-    expect(userResult).toEqual({...mockUser, tenant: tenantId});
+    expect(userResult).toEqual(mockUsers);
   });
 
-  test('create should return error if tenant = null', async () => {
+
+   test('update should call correct methods', async () => {
     // test data
-    const mockUser = { 
-      id: 1, 
-      tenant: 2,
-      createdOn: new Date(),
-      username: 'JohnDoe', 
-      password: 'password123', 
-      email: 'sample@gmail.com', 
-      firstName: 'John', 
-      lastName: 'Doe', 
-      mobile: '1234567890' 
+    const mockUsers: Selectable<IDatabase['public.fh_user']> = {
+        id: 1, 
+        tenant: tenant,
+        createdOn: new Date(),
+        username: 'JohnDoe', 
+        password: 'password123', 
+        email: 'sample@gmail.com', 
+        firstName: 'John', 
+        lastName: 'Doe', 
+        mobile: '1234567890'
     };
 
-    // Call the method under test
-    async function userResult() {
-      await userDaoNoTenant.create(mockUser);
-    }
-
-    // Add your assertions or method calls here
-    await expect(userResult).rejects.toThrow("Tenant must be set before creating a user.");
-  });
-
-  test('update should call correct methods', async () => {
-    // test data
-    const mockUser = { 
-      id: 1, 
-      tenant: 2,
-      createdOn: new Date(),
-      username: 'JohnDoe', 
-      password: 'password123', 
-      email: 'sample@gmail.com', 
-      firstName: 'John', 
-      lastName: 'Doe', 
-      mobile: '1234567890' 
+    const mockUserUpdateable: UpdateableEntity<IDatabase['public.fh_user']> = {
+        createdOn: new Date(),
+        username: 'JohnDoe', 
+        password: 'password123', 
+        email: 'sample@gmail.com', 
+        firstName: 'John', 
+        lastName: 'Doe', 
+        mobile: '1234567890'
     };
 
     // Mock the Kysely methods to return the expected results
-    const mockUpdate = mockDeep<UsersUpdateQueryBuilder>();
-    //@ts-ignore
+    const mockUpdate: MockKyselyUpdateQueryBuilder = {
+      set: jest.fn(),
+      where: jest.fn(),
+      returningAll: jest.fn(),
+      executeTakeFirstOrThrow: jest.fn(),
+      executeTakeFirst: jest.fn(),
+    };
     mockKysely.updateTable.mockReturnValue(mockUpdate);
     mockUpdate.set.mockReturnThis();
     mockUpdate.where.mockReturnThis();
-    const mockReturningAll = mockDeep<UsersUpdateReturningAllQueryBuilder>();
-    mockUpdate.returningAll.mockReturnValue(mockReturningAll);
-    mockReturningAll.executeTakeFirst.mockResolvedValueOnce(mockUser);    
+    mockUpdate.returningAll.mockReturnThis();
+    mockUpdate.executeTakeFirst.mockResolvedValueOnce(mockUsers);
 
     // Call the method under test
-    const userResult = await userDao.update(1, mockUser);
+    const userResult = await userDao.update(1, mockUserUpdateable);
 
-    // Add your assertions or method calls here
     expect(mockKysely.updateTable).toHaveBeenCalledWith("public.fh_user");
-    expect(mockUpdate.set).toHaveBeenCalledWith(mockUser);
+    expect(mockUpdate.set).toHaveBeenCalledWith(mockUserUpdateable);
     expect(mockUpdate.where).toHaveBeenCalledWith("id", "=", 1);
     expect(mockUpdate.returningAll).toHaveBeenCalled();
-    expect(mockReturningAll.executeTakeFirst).toHaveBeenCalled();
+    expect(mockUpdate.executeTakeFirst).toHaveBeenCalled();
   });
 
-  test('update should return correct value', async () => {
+  test('update should call correct Value', async () => {
     // test data
-    const mockUser = { 
-      id: 1, 
-      tenant: 2,
-      createdOn: new Date(),
-      username: 'JohnDoe', 
-      password: 'password123', 
-      email: 'sample@gmail.com', 
-      firstName: 'John', 
-      lastName: 'Doe', 
-      mobile: '1234567890' 
+    const mockUsers: Selectable<IDatabase['public.fh_user']> = {
+        id: 1, 
+        tenant: tenant,
+        createdOn: new Date(),
+        username: 'JohnDoe', 
+        password: 'password123', 
+        email: 'sample@gmail.com', 
+        firstName: 'John', 
+        lastName: 'Doe', 
+        mobile: '1234567890'
+    };
+
+    const mockUserUpdateable: UpdateableEntity<IDatabase['public.fh_user']> = {
+        createdOn: new Date(),
+        username: 'JohnDoe', 
+        password: 'password123', 
+        email: 'sample@gmail.com', 
+        firstName: 'John', 
+        lastName: 'Doe', 
+        mobile: '1234567890'
     };
 
     // Mock the Kysely methods to return the expected results
-    const mockUpdate = mockDeep<UsersUpdateQueryBuilder>();
+    const mockUpdate: MockKyselyUpdateQueryBuilder = {
+      set: jest.fn(),
+      where: jest.fn(),
+      returningAll: jest.fn(),
+      executeTakeFirstOrThrow: jest.fn(),
+      executeTakeFirst: jest.fn(),
+    };
     mockKysely.updateTable.mockReturnValue(mockUpdate);
     mockUpdate.set.mockReturnThis();
     mockUpdate.where.mockReturnThis();
-    const mockReturningAll = mockDeep<UsersUpdateReturningAllQueryBuilder>();
-    mockUpdate.returningAll.mockReturnValue(mockReturningAll);
-
-    // tenantId is set to 1 in the UserDao constructor, so we need to ensure the mock reflects that
-    mockReturningAll.executeTakeFirst.mockResolvedValueOnce({...mockUser, tenant: tenantId});    
+    mockUpdate.returningAll.mockReturnThis();
+    mockUpdate.executeTakeFirst.mockResolvedValueOnce(mockUsers);
 
     // Call the method under test
-    const userResult = await userDao.update(1, mockUser);
+    const userResult = await userDao.update(1, mockUserUpdateable);
+
+    expect(mockKysely.updateTable).toHaveBeenCalledWith("public.fh_user");
+    expect(mockUpdate.set).toHaveBeenCalledWith(mockUserUpdateable);
+    expect(mockUpdate.where).toHaveBeenCalledWith("id", "=", 1);
+    expect(mockUpdate.returningAll).toHaveBeenCalled();
+    expect(mockUpdate.executeTakeFirst).toHaveBeenCalled();   
 
     // Add your assertions or method calls here
-    expect(userResult).toEqual({...mockUser, tenant: tenantId});
+    expect(userResult).toEqual({...mockUsers, tenant: tenant});
   });
+
+  
 
   test('update should return error if tenant = null', async () => {
     // test data

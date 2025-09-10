@@ -12,5 +12,4 @@ export interface IDraftEntity {
   entitySchema: JSONColumnType<any>;
   associatedApprovedEntity: number | null;
   changeHistory: JSONColumnType<ChangeHistory>;
-  isBlocked: Generated<boolean>;
 }

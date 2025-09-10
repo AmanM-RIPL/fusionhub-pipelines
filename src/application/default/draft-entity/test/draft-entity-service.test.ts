@@ -65,12 +65,11 @@ describe('Default -> DraftEntity -> DraftEntityService', () => {
           }
         ]
       }),
-      isBlocked: false,
       createdByUser: 1,
       nextApprovingUser: null
     };
 
-    const insertableDraftEntity: Omit<InsertableEntity<IDraftEntity>, "createdByUser" | "nextApprovingUser" | "changeHistory"> = { project: newDraftEntity.project, entity: newDraftEntity.entity, entitySchema: newDraftEntity.entitySchema, isBlocked: false };
+    const insertableDraftEntity: Omit<InsertableEntity<IDraftEntity>, "createdByUser" | "nextApprovingUser" | "changeHistory"> = { project: newDraftEntity.project, entity: newDraftEntity.entity, entitySchema: newDraftEntity.entitySchema};
     const createdDraftEntity: Selectable<IDraftEntity> = { 
       ...newDraftEntity,
       id: 2,
@@ -94,7 +93,6 @@ describe('Default -> DraftEntity -> DraftEntityService', () => {
       createdByUser: 1,
       nextApprovingUser: null,
       associatedApprovedEntity: null,
-      isBlocked: false
     };
 
     mockDraftEntityRepository.create.mockResolvedValue(createdDraftEntity);
@@ -162,7 +160,6 @@ describe('Default -> DraftEntity -> DraftEntityService', () => {
       id,
       tenant: 1,
       createdOn: changeDate,
-      isBlocked: false,
       project: 201,
       entity: "employee",
       entitySchema: "{}",
@@ -197,4 +194,43 @@ describe('Default -> DraftEntity -> DraftEntityService', () => {
     expect(result?.changeHistory.approvalHistory).toHaveLength(1);
     expect(result?.changeHistory.approvalHistory[0].description).toEqual("Approved by user");
   });
+
+ test('deleteById should call repository method with correct parameters', async () => {
+  mockDraftEntityRepository.delete.mockResolvedValue(undefined);
+
+  const result = await draftEntityService.delete(1);
+
+  expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(1);
+  expect(result).toBeUndefined();
+ });
+
+ test('should call repository delete method with correct id', async () => {
+    const id = 1;
+    mockDraftEntityRepository.delete.mockResolvedValue(undefined);
+
+    await draftEntityService.delete(id);
+
+    expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(id);
+    expect(mockDraftEntityRepository.delete).toHaveBeenCalledTimes(1);
+ });
+
+ test('should handle repository delete method throwing error', async () => {
+    const id = 1;
+    const error = new Error('Database error');
+    mockDraftEntityRepository.delete.mockRejectedValue(error);
+
+    await expect(draftEntityService.delete(id)).rejects.toThrow('Database error');
+    expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(id);
+ });
+
+ test('should not return anything when delete is successful', async () => {
+    const id = 1;
+    mockDraftEntityRepository.delete.mockResolvedValue(undefined);
+
+    const result = await draftEntityService.delete(id);
+
+    expect(result).toBeUndefined();
+    expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(id);
+ });
+
 });

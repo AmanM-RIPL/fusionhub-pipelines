@@ -66,6 +66,9 @@ export default async function tenantRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Get tenant by id field',
+        tags: ['tenant'],
+        summary: 'Get tenant by ID',
         params: { 
           type: 'object', 
           properties: { 
@@ -104,6 +107,9 @@ export default async function tenantRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Get tenant all field',
+        tags: ['tenant'],
+        summary: 'Get tenant all',
         querystring: { 
           type: 'object', 
           properties: { 
@@ -141,6 +147,9 @@ export default async function tenantRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Create tenant field',
+        tags: ['tenant'],
+        summary: 'Create tenant fields',
         body: { $ref: 'tenant-object#/properties/insertable' },
         response: {
           201: { $ref: 'tenant-object#/properties/selectable' },
@@ -171,6 +180,9 @@ export default async function tenantRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Update tenant by id field',
+        tags: ['tenant'],
+        summary: 'Update tenant fields',
         body: { $ref: 'tenant-object#/properties/updateable' },
         params: { 
           type: 'object', 

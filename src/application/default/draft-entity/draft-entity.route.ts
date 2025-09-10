@@ -27,7 +27,6 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
             additionalProperties: true
           },
           associatedApprovedEntity: { type: ['number', 'null'] },
-          isBlocked: { type: 'boolean' },
           changeHistory: {
             type: 'object',
             properties: {
@@ -76,6 +75,9 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Get draftEntity by id field',
+        tags: ['draft-entity'],
+        summary: 'Get draftEntity By ID',
         params: {
           type: 'object',
           properties: {
@@ -111,6 +113,9 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Get draftEntity all field',
+        tags: ['draft-entity'],
+        summary: 'Get draftEntity all',
         querystring: {
           type: 'object',
           properties: {
@@ -144,6 +149,9 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Create draftEntity field',
+        tags: ['draft-entity'],
+        summary: 'Create draftEntity',
         body: { $ref: 'draftEntity-object#/properties/insertable' },
         response: {
           201: { $ref: 'draftEntity-object#/properties/selectable' },
@@ -174,6 +182,9 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
     {
       onRequest: fastify.authenticate,
       schema: {
+        description: 'Update draftEntity by id field',
+        tags: ['draft-entity'],
+        summary: 'Update draftEntity By ID',
         body: { $ref: 'draftEntity-object#/properties/updateable' },
         params: {
           type: 'object',
@@ -205,4 +216,35 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
     }
   );
 
+  fastify.delete(
+    '/draft-entity/:draftEntityId',
+    {
+      onRequest: fastify.authenticate,
+      schema: {
+        description: 'Delete draft-entity by id field',
+        tags: ['draft-entity'],
+        summary: 'Delete draft-entity By ID',
+        params: {
+          type: 'object',
+          properties: {
+            draftEntityId: { type: 'integer', minimum: 1 }
+          }
+        },
+        response: {
+          404: { type: 'object', properties: { error: { type: 'string' } } },
+          500: { type: 'object', properties: { error: { type: 'string' } } }
+        }
+      },
+      handler: async (
+        request: FastifyRequest<{
+          Params: { draftEntityId: number };
+        }>,
+        reply: FastifyReply
+      ) => {
+        await request.getDecorator<DraftEntityService>('draftEntityService').delete(request.params.draftEntityId);
+
+        return reply.code(204).send();
+      }
+    }
+  );
 }
