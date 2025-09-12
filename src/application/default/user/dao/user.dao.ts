@@ -24,13 +24,6 @@ export class UserDao implements IUserRepository {
   async validateIds(ids: number[]): Promise<boolean> {
     if (this.tenant === null) throw new Error("Tenant must be set before validating user ids.");
 
-    /*
-      ERROR:  syntax error at or near ")"
-      LINE 7:   AND "id" IN ()
-
-      this appears when ids is an empty array. Seems to be a kysley issue.
-    */
-
     if (ids.length === 0) {
       return true;
     }
@@ -70,9 +63,8 @@ export class UserDao implements IUserRepository {
     if (this.tenant === null) throw new Error("Tenant must be set before creating a user.");
     const entityToInsert: Insertable<IUser> = {
       ...entity,
-      tenant: this.tenant // Ensure tenant is set
+      tenant: this.tenant
     };
-    //console.log("CreateDao",entity);
     return await this.db.insertInto("public.fh_user").values(entityToInsert).returningAll().executeTakeFirstOrThrow();
   }
 
@@ -80,7 +72,6 @@ export class UserDao implements IUserRepository {
     const entityToInsert: Insertable<IUser> = {
       ...entity
     };
-    //console.log("adminCreateDao",entity);
     return await this.db.insertInto("public.fh_user").values(entityToInsert).returningAll().executeTakeFirstOrThrow();
   }
 

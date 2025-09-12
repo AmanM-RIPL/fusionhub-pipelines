@@ -43,7 +43,7 @@ describe('Default -> User -> UserDao', () => {
     // Call the method under test
     const userResult = await userDao.findById(1);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.fh_user");
     expect(mockSelect.selectAll).toHaveBeenCalled();
     expect(mockSelect.where).toHaveBeenCalledWith("id", "=", 1);
@@ -80,7 +80,7 @@ describe('Default -> User -> UserDao', () => {
 
     const userResult = await userDao.findById(1);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.fh_user");
     expect(mockSelect.selectAll).toHaveBeenCalled();
     expect(mockSelect.where).toHaveBeenCalledWith("id", "=", 1);
@@ -124,7 +124,7 @@ describe('Default -> User -> UserDao', () => {
     // Call the method under test
     const userResult = await userDao.findAll(10, 0);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.fh_user");
     expect(mockQueryBuilder.where).toHaveBeenCalledWith("tenant", "=", tenant);
     expect(mockQueryBuilder.selectAll).toHaveBeenCalled();
@@ -159,7 +159,7 @@ describe('Default -> User -> UserDao', () => {
     // Call the method under test
     const userResult = await userDao.findAll(10, 0);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.fh_user");
     expect(mockQueryBuilder.where).toHaveBeenCalledWith("tenant", "=", tenant);
     expect(mockQueryBuilder.selectAll).toHaveBeenCalled();
@@ -174,7 +174,7 @@ describe('Default -> User -> UserDao', () => {
       await userDaoNoTenant.findAll(10, 0);
     }
 
-    // Add your assertions or method calls here
+    // Add assertions.
     await expect(userResult).rejects.toThrow("Tenant must be set before accessing a user.");
   });
 
@@ -264,7 +264,7 @@ describe('Default -> User -> UserDao', () => {
     // Call the method under test
     const userResult = await userDao.create(mockUserInsertable);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(userResult).toEqual(mockUsers);
   });
 
@@ -364,7 +364,7 @@ describe('Default -> User -> UserDao', () => {
     expect(mockUpdate.returningAll).toHaveBeenCalled();
     expect(mockUpdate.executeTakeFirst).toHaveBeenCalled();   
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(userResult).toEqual({...mockUsers, tenant: tenant});
   });
 
@@ -389,7 +389,7 @@ describe('Default -> User -> UserDao', () => {
       await userDaoNoTenant.update(1, mockUser);
     }
 
-    // Add your assertions or method calls here
+    // Add assertions.
     await expect(userResult).rejects.toThrow("Tenant must be set before updating a user.");
   });
 });

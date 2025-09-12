@@ -28,6 +28,7 @@ export default async function projectRoutes(fastify: FastifyInstance) {
             customerMobile: { type: 'string', nullable: true },
             tenant: { type: 'integer', nullable: true },
             lastChangeLogId: { type: 'integer', nullable: true },
+            lastSyncId: { type: 'integer', nullable: true },
             isBlocked: { type: 'boolean' }
           },
           required: ['id', 'projectName', 'createdOn', 'startDate', 'status', 'isBlocked']
@@ -47,6 +48,7 @@ export default async function projectRoutes(fastify: FastifyInstance) {
             customerMobile: { type: 'string', nullable: true },
             tenant: { type: 'integer', nullable: true },
             lastChangeLogId: { type: 'integer', nullable: true },
+            lastSyncId: { type: 'integer', nullable: true },
             isBlocked: { type: 'boolean' }
           },
           required: ['projectName', 'createdOn', 'startDate', 'status', 'isBlocked']
@@ -66,6 +68,7 @@ export default async function projectRoutes(fastify: FastifyInstance) {
             customerMobile: { type: 'string', nullable: true },
             tenant: { type: 'integer', nullable: true },
             lastChangeLogId: { type: 'integer', nullable: true },
+            lastSyncId: { type: 'integer', nullable: true },
             isBlocked: { type: 'boolean' }
           }
       },

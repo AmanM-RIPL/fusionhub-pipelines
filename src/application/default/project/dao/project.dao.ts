@@ -16,7 +16,7 @@ export class ProjectDao implements IUnDeletableRepository<IProject> {
   }
 
   async create(entity: InsertableEntity<IProject>): Promise<Selectable<IProject>> {
-      if (this.tenant === null) throw new Error("Tenant must be set before creating a user.");
+      if (this.tenant === null) throw new Error("Tenant must be set before creating a project.");
   
       const entityToInsert: Insertable<IProject> = {
         ...entity,

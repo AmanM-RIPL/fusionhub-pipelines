@@ -43,7 +43,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     // Call the method under test
     const draftEntityResult = await draftEntityDao.findById(1);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.draft_entity");
     expect(mockSelect.selectAll).toHaveBeenCalled();
     expect(mockSelect.where).toHaveBeenCalledWith("id", "=", 1);
@@ -73,7 +73,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     // Call the method under test
     const draftEntityResult = await draftEntityDao.findById(1);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(draftEntityResult).toEqual(mockDraftEntity);
   });
 
@@ -103,7 +103,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     // Call the method under test
     const draftEntityResult = await draftEntityDao.findAll(10, 0);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.draft_entity");
     expect(mockQueryBuilder.where).toHaveBeenCalledWith("tenant", "=", tenant);
     expect(mockQueryBuilder.selectAll).toHaveBeenCalled();
@@ -179,7 +179,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     // Call the method under test
     const draftEntityResult = await draftEntityDao.create(mockDraftEntityInsertable);
 
-    // Add your assertions or method calls here - FIXED: Use the insertable object, not the returned object
+    // Add assertions or method calls here
     expect(mockKysely.insertInto).toHaveBeenCalledWith("public.draft_entity");
     expect(mockInsert.values).toHaveBeenCalledWith({
       ...mockDraftEntityInsertable,
@@ -255,7 +255,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     // Call the method under test
     const draftEntityResult = await draftEntityDao.create(mockDraftEntityInsertable);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(draftEntityResult).toEqual(mockDraftEntitys);
   });
 
@@ -268,9 +268,9 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
       project: 202,
       entity: 'tenant',
       entitySchema: JSON.stringify({
-        firstName: "John",
-        lastName: "Doe",
-        email: "john.doe@example.com"
+        firstName: "Test",
+        lastName: "TestLastName",
+        email: "test@example.com"
       }),
       changeHistory: {
         user: 1,
@@ -292,9 +292,9 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     };
 
     const mockDraftEntityUpdateable: { [key: string]: unknown } = {
-      firstName: "John",
-      lastName: "Doe",
-      email: "john.doe@example.com"
+      firstName: "Test",
+      lastName: "TestLastName",
+      email: "test@example.com"
     };
 
     // Mock the Kysely methods to return the expected results
@@ -314,7 +314,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     // Call the method under test
     const draftEntityResult = await draftEntityDao.update(1, mockDraftEntityUpdateable);
 
-    // Add your assertions or method calls here - FIXED: Use the updateable object, not the returned object
+    // Add assertions or method calls here
     expect(mockKysely.updateTable).toHaveBeenCalledWith("public.draft_entity");
     expect(mockUpdate.set).toHaveBeenCalledWith({
       entitySchema: JSON.stringify(mockDraftEntityUpdateable)
@@ -394,8 +394,88 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     // Call the method under test
     const draftEntityResult = await draftEntityDao.update(1, mockDraftEntityUpdateable);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(draftEntityResult).toEqual(mockDraftEntitys);
+  });
+
+  test('approve should insert into change_log and delete draft when nextApprovingUser is null', async () => {
+    // Test data
+    const mockDraftEntity: Selectable<IDatabase['public.draft_entity']> = {
+      id: 1,
+      tenant: 2,
+      createdOn: new Date(),
+      project: 202,
+      entity: 'tenant',
+      entitySchema: JSON.stringify({
+        firstName: "Test",
+        lastName: "TestLastName",
+        email: "test@example.com"
+      }),
+      changeHistory: {
+        user: 1,
+        changeType: "create",
+        description: "Test",
+        timestamp: new Date(),
+        approvalHistory: [
+          {
+            user: 2,
+            timestamp: new Date(2024, 11, 12),
+            description: "",
+            status: "approved"
+          }
+        ]
+      },
+      createdByUser: 501,
+      nextApprovingUser: null,
+      associatedApprovedEntity: 1
+    };
+
+    // Mock UPDATE
+    const mockUpdate = {
+      set: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      returningAll: jest.fn().mockReturnThis(),
+      executeTakeFirstOrThrow: jest.fn().mockResolvedValueOnce(mockDraftEntity),
+    };
+    mockKysely.updateTable.mockReturnValueOnce(mockUpdate);
+
+    // Mock INSERT into change_log.
+    const mockInsert = {
+      values: jest.fn().mockReturnThis(),
+      execute: jest.fn().mockResolvedValueOnce([{ id: 100 }]),
+    };
+    mockKysely.insertInto.mockReturnValueOnce(mockInsert);
+
+    // Mock DELETE from draft_entity
+    const mockDelete = {
+      where: jest.fn().mockReturnThis(),
+      execute: jest.fn().mockResolvedValueOnce([{ numDeletedRows: BigInt(1) }]),
+    };
+    mockKysely.deleteFrom.mockReturnValueOnce(mockDelete);
+
+    const draftEntityResult = await draftEntityDao.approve(1, [501]);
+
+    // Add  Assertions for INSERT
+    expect(mockKysely.insertInto).toHaveBeenCalledWith('public.change_log');
+    expect(mockInsert.values).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenant: mockDraftEntity.tenant,
+        entity: mockDraftEntity.entity,
+        project: mockDraftEntity.project,
+        createdByUser: mockDraftEntity.createdByUser,
+        changeHistory: JSON.stringify(mockDraftEntity.changeHistory),
+      })
+    );
+    expect(mockInsert.execute).toHaveBeenCalled();
+
+    // Assertions for DELETE
+    expect(mockKysely.deleteFrom).toHaveBeenCalledWith('public.draft_entity');
+    expect(mockDelete.where).toHaveBeenCalledWith("id", "=", 1);
+    expect(mockDelete.where).toHaveBeenCalledWith("tenant", "=", mockDraftEntity.tenant);
+    expect(mockDelete.execute).toHaveBeenCalled();
+
+    // Final Result
+    expect(draftEntityResult).toEqual(mockDraftEntity);
   });
 
   test('delete should call correct methods', async () => {
@@ -440,4 +520,5 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     expect(mockDelete.execute).toHaveBeenCalled();
     expect(result).toBeUndefined();
   });
+  
 });
