@@ -9,13 +9,38 @@ import com.fh.controllers;
 
 ApplicationWindow {
 
-
-
     id: main
     // width: 1440
     // height: 1024
     visibility: Window.Maximized
-    visible: true    
+    visible: true
+
+
+    AddUserPage{
+        id: addUserPage
+        anchors.fill: parent
+
+        onLogOutClicked: {
+            loginPage.visible = true
+            welcomePage.visible = false
+            addUserPage.visible = false
+        }
+
+        /*onNewAddUserClicked:{
+            idCreateNewUserDialog.open()
+        }*/
+
+    }
+
+    OrganizationSettingsPage{
+        id: organizationSettingsPage
+        anchors.fill: parent
+        onLogOutClicked: {
+            loginPage.visible = true
+            welcomePage.visible = false
+            organizationSettingsPage.visible = false
+        }       
+    }
 
     LoginPage{
         id: loginPage
@@ -23,6 +48,7 @@ ApplicationWindow {
 
         onLoginClicked: {
             welcomePage.visible = true
+            organizationSettingsPage.visible = false
         }
     }
 
@@ -34,13 +60,33 @@ ApplicationWindow {
         onLogOutClicked: {
             loginPage.visible = true
             welcomePage.visible = false
+            organizationSettingsPage.visible = false
         }
 
         onNewProjectClicked: {
             //baseLayout.visible = true
             baseLayout.visible = false
             idCreateNewProjectDialog.open()
+            organizationSettingsPage.visible = false
         }
+
+
+        onUserSettingsClicked:{
+            //baseLayout.visible = false
+            //loginPage.visible = false
+            //welcomePage.visible = false
+            //userSettingsPage.visible = true
+        }
+
+        onOrganizationSettingsClicked:{
+            baseLayout.visible = false
+            loginPage.visible = false
+            welcomePage.visible = false
+            organizationSettingsPage.visible = true
+        }
+
+
+        /*******************CreateNewProjectDialog*******************/
 
 
         Dialog {
@@ -172,9 +218,6 @@ ApplicationWindow {
                             }
                         }
                     }
-
-
-
 
                     Rectangle{
                         width: parent.width
@@ -323,10 +366,181 @@ ApplicationWindow {
                 console.log("Cancel button clicked")
             }
         }
-    }
 
-    BaseLayout{        
 
+        ///////////////
+        /*
+        FHPopup {
+            id: idCreateNewProjectDialog
+            popupWidth: 500
+            popupHeight: 500
+            title: "New Project"
+
+            ProjectController {
+                id: projectController
+            }
+
+            onAcceptCallback: function () {
+                projectController.create(projectNameTextBox.text, customerNameTextBox.text, contactNameTextBox.text,
+                                         phoneNumberTextBox.text, emaiTextBox.text, totalDollarValueTextBox.text,
+                                         descriptionTextBox.text);
+
+
+                projectNameTextBox.text = "";
+                customerNameTextBox.text = "";
+                contactNameTextBox.text = "";
+                phoneNumberTextBox.text = "";
+                emaiTextBox.text = "";
+                totalDollarValueTextBox.text = "";
+                descriptionTextBox.text = "";
+
+                userRoot.userList = userController.getUserList();
+            }
+
+            onCancelCallback: function () {
+                projectNameTextBox.text = "";
+                customerNameTextBox.text = "";
+                contactNameTextBox.text = "";
+                phoneNumberTextBox.text = "";
+                emaiTextBox.text = "";
+                totalDollarValueTextBox.text = "";
+                descriptionTextBox.text = "";
+            }
+
+
+           // Column {
+             content: Column{
+                width: parent.width
+                height:500;//parent.height //30 for each top bottom
+
+                Text{
+                    id: projectNameLabel
+                    text: "Proejct Name:"
+                    color: "#323130"
+                    font.weight: 700
+                    font.pixelSize: 14
+                    font.family: "Segoe UI"
+                    topPadding: 10
+                }
+                CustomTextBox{
+                    id: projectNameTextBox
+                    placeholderText: "Proejct Name"
+                    text: ""
+                    color: "#323130"
+                }
+
+
+                Text{
+                    id: customerNameLabel
+                    text: "Customer Name:"
+                    color: "#323130"
+                    font.weight: 700
+                    font.pixelSize: 14
+                    font.family: "Segoe UI"
+                    topPadding: 10
+                }
+                CustomTextBox{
+                    id: customerNameTextBox
+                    placeholderText: "Customer Name"
+                    text: ""
+                    color: "#323130"
+                }
+
+
+                Text{
+                    id: contactNameLabel
+                    text: "Contact Name:"
+                    color: "#323130"
+                    font.weight: 700
+                    font.pixelSize: 14
+                    font.family: "Segoe UI"
+                    topPadding: 10
+                }
+                CustomTextBox{
+                    id: contactNameTextBox
+                    placeholderText: "Contact Name"
+                    text: ""
+                    color: "#323130"
+                }
+
+
+                Text{
+                    id: phoneNumberLabel
+                    text: "Phone Number:"
+                    color: "#323130"
+                    font.weight: 700
+                    font.pixelSize: 14
+                    font.family: "Segoe UI"
+                    topPadding: 10
+                }
+                CustomTextBox{
+                    id: phoneNumberTextBox
+                    placeholderText: "phone number"
+                    text: ""
+                    color: "#323130"
+                }
+
+
+                Text{
+                    id: emailLabel
+                    text: "Email:"
+                    color: "#323130"
+                    font.weight: 700
+                    font.pixelSize: 14
+                    font.family: "Segoe UI"
+                    topPadding: 10
+                }
+                CustomTextBox{
+                    id: emailTextBox
+                    placeholderText: "Email"
+                    text: ""
+                    color: "#323130"
+                }
+
+
+                Text{
+                    id: totalDollarLabel
+                    text: "Total Dolar Value:"
+                    color: "#323130"
+                    font.weight: 700
+                    font.pixelSize: 14
+                    font.family: "Segoe UI"
+                    topPadding: 10
+                }
+                CustomTextBox{
+                    id: totalDollarTextBox
+                    placeholderText: "Total Dollar Value"
+                    text: ""
+                    color: "#323130"
+                }
+
+
+                Text{
+                    id: descriptionLabel
+                    text: "Description:"
+                    color: "#323130"
+                    font.weight: 700
+                    font.pixelSize: 14
+                    font.family: "Segoe UI"
+                    topPadding: 10
+                }
+                CustomTextBox{
+                    id: descriptionTextBox
+                    placeholderText: "Description"
+                    text: ""
+                    color: "#323130"
+                }
+            }
+        }
+        */
+   }
+/////
+
+    /*******************End of CreateNewProjectDialog*******************/    
+
+
+
+    BaseLayout{
         id: baseLayout
         anchors.fill: parent
         visible: false

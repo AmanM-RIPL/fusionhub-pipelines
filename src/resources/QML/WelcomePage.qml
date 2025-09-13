@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls
+import com.fh.models 1.0
 
 Rectangle {
     // width: 1440
@@ -9,6 +10,8 @@ Rectangle {
 
     signal logOutClicked()
     signal newProjectClicked()
+    signal userSettingsClicked()
+    signal organizationSettingsClicked()
 
     Column {
         anchors.fill: parent
@@ -56,7 +59,7 @@ Rectangle {
                         }
 
                         onClicked: {
-                            newProjectClicked();
+                           newProjectClicked();
                         }
                     }
                 }
@@ -92,7 +95,7 @@ Rectangle {
                         }
 
                         onClicked: {
-                            //newProjectClicked();
+                            userSettingsClicked();
                         }
                     }
                 }
@@ -123,6 +126,7 @@ Rectangle {
 
                         onClicked: {
                             //newProjectClicked();
+                            organizationSettingsClicked();
                         }
                     }
                 }

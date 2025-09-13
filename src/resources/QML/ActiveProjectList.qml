@@ -2,9 +2,6 @@ import QtQuick 2.15
 import QtQuick.Controls
 import com.fh.controllers;
 
-
-
-
 Rectangle {
     width: 300 *(activeProjectsView.count) + 13 * (activeProjectsView.count - 1)
     height: 164
