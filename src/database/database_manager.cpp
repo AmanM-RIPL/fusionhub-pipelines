@@ -35,9 +35,6 @@ bool DatabaseManager::createProjectFolder(const QString& projectName)
    // QString documentsPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
    // projectPath = documentsPath + "/ConstructionMgmt/" + projectName;
 
-
-
-
    projectPath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\" + projectName;
     
     QDir dir;
@@ -114,7 +111,16 @@ QString DatabaseManager::getCreateTableQuery(const QString& tableName)
                 global_id TEXT NOT NULL,
                 approval_status BOOLEAN DEFAULT 1,
                 user_id TEXT NOT NULL,
-                username TEXT NOT NULL
+                user_fullname TEXT NOT NULL,
+                user_name TEXT NOT NULL,
+                user_mobile1 TEXT NOT NULL,
+                user_mobile2 TEXT NOT NULL,
+                user_email1 TEXT NOT NULL,
+                user_email2 TEXT NOT NULL,
+                user_jobTitle TEXT NOT NULL,
+                user_startDate TEXT NOT NULL,
+                user_endDate TEXT NOT NULL,
+                user_monthlyDeskCostValue TEXT NOT NULL
             )
         )";
     }
