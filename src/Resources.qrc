@@ -53,5 +53,7 @@
         <file>resources/images/screenshot_icon.png</file>
         <file>resources/QML/PlannedBIMPage.qml</file>
         <file>resources/QML/NewProjectPage.qml</file>
+        <file>resources/QML/OrganizationSettingsPage.qml</file>
+        <file>resources/QML/AddUserPage.qml</file>
     </qresource>
 </RCC>

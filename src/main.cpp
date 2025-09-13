@@ -357,7 +357,8 @@ int main(int argc, char *argv[])
         IFC CODE EXECUTION DONE
     */
     
-    /*
+
+
     auto dbManager = DatabaseManager::getInstance();
     if (!dbManager->initializeDatabase("TestProject")) {
         qDebug() << "Failed to initialize database";
@@ -366,11 +367,14 @@ int main(int argc, char *argv[])
     
     qDebug() << "Database initialized successfully!";
     qDebug() << "Project path:" << dbManager->getProjectPath();
-   */
+
+
+
     
     BudgetHeadRepository* budgetHeadRepository = new BudgetHeadRepository(&engine);
     UnitOfMeasurementRepository* unitOfMeasurementRepository = new UnitOfMeasurementRepository(&engine);
     VendorRepository* vendorRepository = new VendorRepository(&engine);
+    UserRepository* userRepository = new UserRepository(&engine);    
     MaterialRepository* materialRepository = new MaterialRepository(&engine);
     ScheduleSetupRepository* scheduleSetupRepository = new ScheduleSetupRepository(&engine);
     // IFCDetailRepository* ifcDetailRepository = new IFCDetailRepository(ifcDetailList, &engine);
@@ -441,6 +445,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("budgetHeadRepository", budgetHeadRepository);
     engine.rootContext()->setContextProperty("unitOfMeasurementRepository", unitOfMeasurementRepository);
     engine.rootContext()->setContextProperty("vendorRepository", vendorRepository);
+    engine.rootContext()->setContextProperty("userRepository", userRepository);   
     engine.rootContext()->setContextProperty("materialRepository", materialRepository);
     engine.rootContext()->setContextProperty("scheduleSetupRepository", scheduleSetupRepository);
 
@@ -449,6 +454,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<UnitOfMeasurement>("com.fh.models", 1, 0, "UnitOfMeasurement");
     qmlRegisterType<Material>("com.fh.models", 1, 0, "Material");
     qmlRegisterType<Vendor>("com.fh.models", 1, 0, "Vendor");
+    qmlRegisterType<User>("com.fh.models", 1, 0, "User");   
     qmlRegisterType<ScheduleSetup>("com.fh.models", 1, 0, "ScheduleSetup");
 
     qmlRegisterType<UserController>("com.fh.controllers", 1, 0, "UserController");
