@@ -9,6 +9,8 @@ Rectangle {
     property string btnName: "Text"
     property string btnSource: ""
     property string btnNameColor: "#FFFFFF"
+    property int btnNamePixelSize:14
+    property string btnNameFontFamily:"Segoe UI"
 
     Rectangle{
         width: btnImg.width + btnText.width + ((btnImg.source === "") ? 0 : 8)
@@ -26,7 +28,9 @@ Rectangle {
             text: btnName
             color: btnNameColor
             font.weight: 700
-            font.pixelSize: 14
+            //font.pixelSize: 14
+            font.pixelSize: btnNamePixelSize
+            font.family: btnNameFontFamily
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
         }
