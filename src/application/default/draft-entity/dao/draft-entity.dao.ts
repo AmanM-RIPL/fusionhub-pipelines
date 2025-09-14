@@ -137,6 +137,4 @@ export class DraftEntityDao implements IDraftEntityRepository {
 
   return draft;
   }
-
-  
 }

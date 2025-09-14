@@ -51,7 +51,6 @@ export class DraftEntityService {
     return await this.draftEntityRepository.update(id, updatedObject);
   }
 
-
   async approve(id: number, approvalHierarcy: number[]): Promise<Selectable<IDraftEntity> | undefined> {
     const draftEntity = await this.draftEntityRepository.findById(id);
     if (!draftEntity) {

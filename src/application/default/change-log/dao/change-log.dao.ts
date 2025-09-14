@@ -40,9 +40,16 @@ export class ChangeLogDao implements IChangeLogRepository {
     return await this.db.insertInto("public.change_log").values(entityToInsert).returningAll().executeTakeFirstOrThrow();
   }
 
+  /*
+    Not needed as of now. Will implement later if needed.
+  */
   update(id: number, updatedObject: UpdateableEntity<IChangeLog>): Promise<{ id: number; tenant: number; createdOn: Date; project: number; entity: string; createdByUser: number; entitySchema: any; associatedApprovedEntity: number | null; changeHistory: ChangeHistory; } | undefined> {
     throw new Error("Method not implemented.");
   }
+
+  /*
+    Not needed as of now. Will implement later if needed.
+  */
   delete(id: number): Promise<void> {
     throw new Error("Method not implemented.");
   }

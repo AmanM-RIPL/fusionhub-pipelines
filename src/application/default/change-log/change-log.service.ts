@@ -14,11 +14,12 @@ export class ChangeLogService {
   }
 
   async findAll(limit: number, offset: number): Promise<Selectable<IChangeLog>[]> {
-    const result = await this.changeLogRepository.findAll(limit, offset);
-
     return await this.changeLogRepository.findAll(limit, offset);
   }
 
+  /*
+    Added for just now. Will remove later. Change log need to automatically created in draftEntityService.approved
+  */
   async create(entity: Omit<InsertableEntity<IChangeLog>, "createdByUser" | "changeHistory">): Promise<Selectable<IChangeLog>> {
     const entityToCreate: InsertableEntity<IChangeLog> = {
       ...entity,

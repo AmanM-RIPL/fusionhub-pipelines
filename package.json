@@ -12,7 +12,7 @@
     "start": "node ./dist/index.js",
     "cross-env-dev": "cross-env NODE_ENV=development node ./dist/index.js",
     "dev": "NODE_ENV=development node ./dist/index.js",
-    "test": "node --max-old-space-size=4096 node_modules/jest/bin/jest.js --silent=false",
+    "test": "NODE_ENV=test npx jest --silent=false",
     "cross-env-test-coverage": "cross-env NODE_ENV=test npx jest --coverage"
   },
   "keywords": [],
