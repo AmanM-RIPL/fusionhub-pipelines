@@ -27,7 +27,7 @@ export class ChangeLogService {
       changeHistory: JSON.stringify({
           user: this.user,
           changeType: "create",
-          description: "Approved by user",
+          description: "Approved By User",
           timestamp: new Date(),
           approvalHistory: [
             {

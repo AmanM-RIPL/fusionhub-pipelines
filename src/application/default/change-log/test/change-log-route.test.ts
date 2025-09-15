@@ -145,7 +145,7 @@ describe('Default -> ChangeLog -> ChangeLogRoute', () => {
       changeHistory: JSON.stringify({
         user: 1,
         changeType: "create",
-        description: "Approved by user",
+        description: "Approved By User",
         timestamp: new Date(),
         approvalHistory: [
           {
@@ -169,7 +169,7 @@ describe('Default -> ChangeLog -> ChangeLogRoute', () => {
       changeHistory: {
         user: 1,
         changeType: "create",
-        description: "Approved by user",
+        description: "Approved By User",
         timestamp: (new Date()).toISOString(),
         approvalHistory: [
           {
@@ -246,7 +246,7 @@ describe('Default -> ChangeLog -> ChangeLogRoute', () => {
       changeHistory: {
         user: 1,
         changeType: "create",
-        description: "Approved by user",
+        description: "Approved By User",
         timestamp: (new Date()).toISOString(),
         approvalHistory: [
           {

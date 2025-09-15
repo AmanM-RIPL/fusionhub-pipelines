@@ -12,7 +12,6 @@ export interface IProject {
   customerEmail: string | null;
   customerMobile: string | null;
   lastChangeLogId:number | null,
-  lastSyncId:number | null,
   createdOn: Generated<Date>;
   isBlocked: Generated<boolean>;
 }

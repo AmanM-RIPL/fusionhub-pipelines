@@ -174,7 +174,6 @@ describe('Default -> Project -> ProjectDao', () => {
         customerEmail: 'project.manager@example.com',
         customerMobile: '9876543210',
         lastChangeLogId: 1,
-        lastSyncId: 1,
         isBlocked: false
     };
 
@@ -189,7 +188,6 @@ describe('Default -> Project -> ProjectDao', () => {
         customerEmail: 'project.manager@example.com',
         customerMobile: '9876543210',
         lastChangeLogId: 1,
-        lastSyncId: 1,
         isBlocked: false
     };
 
@@ -229,7 +227,6 @@ describe('Default -> Project -> ProjectDao', () => {
         customerEmail: 'project.manager@example.com',
         customerMobile: '9876543210',
         lastChangeLogId: 1,
-        lastSyncId: 1,
         isBlocked: false
     };
 
@@ -244,7 +241,6 @@ describe('Default -> Project -> ProjectDao', () => {
         customerEmail: 'project.manager@example.com',
         customerMobile: '9876543210',
         lastChangeLogId: 1,
-        lastSyncId: 1,
         isBlocked: false
     };
 
@@ -323,7 +319,6 @@ describe('Default -> Project -> ProjectDao', () => {
         customerEmail: 'project.manager@example.com',
         customerMobile: '9876543210',
         lastChangeLogId: 1,
-        lastSyncId: 1,
         isBlocked: false
     };
 
@@ -342,7 +337,6 @@ describe('Default -> Project -> ProjectDao', () => {
         customerEmail: 'project.manager@example.com',
         customerMobile: '9876543210',
         lastChangeLogId: 1,
-        lastSyncId: 1,
     };
 
      // Mock the Kysely methods to return the expected results

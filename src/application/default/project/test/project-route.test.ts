@@ -100,7 +100,6 @@ describe('Default -> Project -> ProjectRoute', () => {
       customerEmail: 'hrms@company.com',
       customerMobile: '+911234567890',
       lastChangeLogId: 1,
-      lastSyncId: 1,
       isBlocked: false
       }
     ] as Selectable<IProject>[];
@@ -137,7 +136,6 @@ describe('Default -> Project -> ProjectRoute', () => {
       customerEmail: 'hrms@company.com',
       customerMobile: '+911234567890',
       lastChangeLogId: 1,
-      lastSyncId: 1,
       isBlocked: false
   } as Insertable<IProject>;
 
@@ -186,7 +184,6 @@ describe('Default -> Project -> ProjectRoute', () => {
     customerEmail: 'hrms@company.com',
     customerMobile: '+911234567890',
     lastChangeLogId: 1,
-    lastSyncId: 1,
     createdOn: "2025-01-01T00:00:00.000Z",
     isBlocked: false 
   }));
@@ -204,7 +201,6 @@ describe('Default -> Project -> ProjectRoute', () => {
       customerEmail: 'hrms@company.com',
       customerMobile: '+911234567890',
       lastChangeLogId: 1,
-      lastSyncId: 1,
     } as UpdateableEntity<IProject>;
     
     const requestPayload = {
@@ -326,7 +322,6 @@ describe('Default -> Project -> ProjectRoute', () => {
       customerEmail: 'hrms@company.com',
       customerMobile: '+911234567890',
       lastChangeLogId: 1,
-      lastSyncId: 1,
     } as UpdateableEntity<IProject>;
     
     // Convert dates to strings for the request payload
@@ -437,7 +432,6 @@ describe('Default -> Project -> ProjectRoute : Forbidden', () => {
       customerEmail: 'hrms@company.com',
       customerMobile: '+911234567890',
       lastChangeLogId: 1,
-      lastSyncId: 1,
       isBlocked: false
     };
 

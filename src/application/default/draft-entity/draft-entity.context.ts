@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { DraftEntityService } from "../draft-entity/draft-entity.service";
 import { DraftEntityDao } from "../draft-entity/dao/draft-entity.dao";
+import { ChangeLogDao } from "../change-log/dao/change-log.dao";
 import { RequestUser } from "../../../infrastructure/types/fastify.types";
 import { ControlledTransaction } from "kysely";
 import { IDatabase } from "../../../infrastructure/db/kysely/types";
@@ -30,7 +31,8 @@ export default async function draftEntityContextPlugin(fastify: FastifyInstance)
       'draftEntityService',
       new DraftEntityService(
         request.getDecorator<DraftEntityDao>('draftEntityDao'),
-        userId
+        request.getDecorator<ChangeLogDao>('changeLogDao'),
+        userId,
       )
     );
   });

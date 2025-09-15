@@ -101,40 +101,4 @@ export class DraftEntityDao implements IDraftEntityRepository {
       .execute();
   }
 
-  async approve(draftId: number, userIds: number[]): Promise<Selectable<IDraftEntity>> {
-  // 1. Draft update
-  const draft = await this.db
-    .updateTable("public.draft_entity")
-    .set({
-      nextApprovingUser: null,
-      createdByUser: userIds[0],
-      createdOn: new Date(),
-    })
-    .where("id", "=", draftId)
-    .where("tenant", "=", this.tenant)
-    .returningAll()
-    .executeTakeFirstOrThrow();
-
-  // 2. if nextApprovingUser NULL then → insert into change_log, delete draft
-  if (draft.nextApprovingUser === null) {
-    await this.db.insertInto("public.change_log").values({
-      tenant: draft.tenant,
-      createdOn: draft.createdOn,
-      project: draft.project,
-      entity: draft.entity,
-      entitySchema: draft.entitySchema,
-      associatedApprovedEntity: draft.associatedApprovedEntity ?? null,
-      createdByUser: draft.createdByUser,
-      changeHistory: JSON.stringify(draft.changeHistory),
-    }).execute();
-
-    await this.db
-      .deleteFrom("public.draft_entity")
-      .where("id", "=", draftId)
-      .where("tenant", "=", this.tenant)
-      .execute();
-  }
-
-  return draft;
-  }
 }

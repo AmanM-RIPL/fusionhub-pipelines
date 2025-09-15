@@ -11,5 +11,4 @@ export interface IDraftEntityRepository extends IBaseRepository<IDraftEntity> {
       nextApprovingUser?: number 
     }
   ): Promise<Selectable<IDraftEntity>[]>;
-  approve(id: number, approvalHierarcy: number[]): Promise<Selectable<IDraftEntity>>;
 }

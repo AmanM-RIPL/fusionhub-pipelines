@@ -53,7 +53,7 @@ describe('Default -> ChangeLog -> ChangeLogService', () => {
       changeHistory: JSON.stringify({
         user: 1,
         changeType: "create",
-        description: "Approved by user",
+        description: "Approved By User",
         timestamp: new Date(),
         approvalHistory: [
           {
@@ -75,7 +75,7 @@ describe('Default -> ChangeLog -> ChangeLogService', () => {
       changeHistory: {
         user: 1,
         changeType: "create",
-        description: "Approved by user",
+        description: "Approved By User",
         timestamp: new Date(),
         approvalHistory: [
           {

@@ -36,7 +36,6 @@ CREATE TABLE project (
     "customerMobile" VARCHAR(20),
 
     "lastChangeLogId" INT NULL,
-    "lastSyncId" INT NULL,
 
     -- access control
     "isBlocked" BOOLEAN DEFAULT FALSE,
@@ -134,6 +133,10 @@ CREATE TABLE change_log (
     CONSTRAINT fk_change_log_created_by_user FOREIGN KEY("createdByUser")
         REFERENCES fh_user(id) ON DELETE CASCADE
 );
+
+ALTER TABLE project ADD CONSTRAINT fk_project_last_change_log FOREIGN KEY ("lastChangeLogId")
+REFERENCES change_log("id") ON DELETE SET NULL;
+
 
 -- migrate:down
 DROP TABLE draft_entity;
