@@ -66,7 +66,7 @@ export class DraftEntityService {
       );
     }
 
-    //1: Last approver
+    // Last approver
     if (approvalHierarchy.length === 0 || approvalHierarchy[approvalHierarchy.length - 1] === this.user) {
       const changeLog = await this.changeLogRepository.create({
         project: draftEntity.project,
@@ -91,32 +91,15 @@ export class DraftEntityService {
       return changeLog;
     }
 
-    // 2: Still needs next approver
+    // if Next approver
     const currentIndex = approvalHierarchy.indexOf(this.user);
     if (currentIndex === -1 || !approvalHierarchy[currentIndex + 1]) {
       throw new Error(`Invalid approval hierarchy for user ${this.user}`);
     }
-    const nextUser = approvalHierarchy[currentIndex + 1];
+    const nextApprovingUser = approvalHierarchy[currentIndex + 1];
 
-    await this.draftEntityRepository.update(id, {
-      nextApprovingUser: nextUser,
-      changeHistory: JSON.stringify({
-        ...draftEntity.changeHistory,
-        approvalHistory: [
-          ...draftEntity.changeHistory.approvalHistory,
-          {
-            user: this.user,
-            timestamp: new Date(),
-            description: "Approved By User",
-            status: "approved"
-          }
-        ],
-      }),
-    });
-
-    return {
-      ...draftEntity,
-      nextApprovingUser: nextUser,
+   return await this.draftEntityRepository.approvingUpdate(id, {
+      nextApprovingUser,
       changeHistory: {
         ...draftEntity.changeHistory,
         approvalHistory: [
@@ -129,7 +112,7 @@ export class DraftEntityService {
           }
         ],
       },
-    };
+    });
   }
  
   async delete(id: number): Promise<void> {

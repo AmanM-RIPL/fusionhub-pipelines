@@ -214,4 +214,38 @@ export default async function projectRoutes(fastify: FastifyInstance) {
       }
     }
   );
+
+  fastify.get(
+    '/projectSync/:projectId',
+    {
+      onRequest: fastify.authenticate,
+      schema: {
+        description: 'Get project by id field',
+        tags: ['project'],
+        summary: 'Get project by ID',
+        params: { 
+          type: 'object', 
+          properties: { 
+            projectId: { type: 'integer', minimum: 1 } 
+          } 
+        },
+        response: {
+          200: { $ref: 'project-object#/properties/selectable' },
+          404: { type: 'object', properties: { error: { type: 'string' } } },
+          500: { type: 'object', properties: { error: { type: 'string' } } }
+        }
+      },
+      handler: async (
+        request: FastifyRequest<{
+          Params: { projectId: number };
+        }>,
+        reply: FastifyReply
+      ) => {
+         const projectDetails = await request.getDecorator<ProjectService>('projectService').syncProject(request.params.projectId);
+
+        return reply.code(200).send(projectDetails);
+      }
+    }
+  );
+  
 }

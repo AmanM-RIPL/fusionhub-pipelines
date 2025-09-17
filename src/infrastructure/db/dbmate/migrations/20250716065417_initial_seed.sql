@@ -140,8 +140,8 @@ REFERENCES change_log("id") ON DELETE SET NULL;
 
 -- migrate:down
 DROP TABLE draft_entity;
-DROP TABLE change_log;
 DROP TABLE permission;
-DROP TABLE fh_user;
 DROP TABLE project;
+DROP TABLE change_log;
+DROP TABLE fh_user;
 DROP TABLE tenant;

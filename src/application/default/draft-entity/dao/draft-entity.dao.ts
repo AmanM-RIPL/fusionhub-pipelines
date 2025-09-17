@@ -1,8 +1,9 @@
 import { Insertable, Kysely, Selectable, sql } from "kysely";
 import { IDatabase } from "../../../../infrastructure/db/kysely/types";
-import { InsertableEntity, UpdateableEntity } from "../../../common/types/entity";
+import { ChangeHistory, InsertableEntity, UpdateableEntity } from "../../../common/types/entity";
 import { IDraftEntity } from "../draft-entity.model";
 import { IDraftEntityRepository } from "../draft-entity.repository";
+import { IChangeLog } from "../../change-log/change-log.model";
 
 /*
 
@@ -64,6 +65,21 @@ export class DraftEntityDao implements IDraftEntityRepository {
       .updateTable("public.draft_entity")
       .set({
         entitySchema: JSON.stringify(updatedObject)
+      })
+      .where("id", "=", id)
+      .where("tenant", "=", this.tenant)
+      .returningAll()
+      .executeTakeFirst();
+  }
+
+  async approvingUpdate (id: number, updatedObject: { nextApprovingUser: number, changeHistory: ChangeHistory }): Promise<Selectable<IDraftEntity> | undefined> {
+    if (this.tenant === null) throw new Error("Tenant must be set before updating an entity schema.");
+
+    return await this.db
+      .updateTable("public.draft_entity")
+      .set({
+        nextApprovingUser: updatedObject.nextApprovingUser,
+        changeHistory: JSON.stringify(updatedObject.changeHistory)
       })
       .where("id", "=", id)
       .where("tenant", "=", this.tenant)

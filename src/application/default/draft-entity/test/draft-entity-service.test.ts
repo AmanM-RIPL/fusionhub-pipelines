@@ -130,40 +130,59 @@ describe('Default -> DraftEntity -> DraftEntityService', () => {
   });
 
   test('approve should update draft when not final approver', async () => {
-  const id = 2;
-  const approvalHierarchy = [1, 2];
-  const user = 1;
+    const id = 2;
+    const approvalHierarchy = [1, 2];
+    const user = 1;
 
-  const mockDraftEntity: Selectable<IDraftEntity> = {
-    id,
-    tenant: 1,
-    createdOn: new Date(),
-    project: 201,
-    entity: "employee",
-    entitySchema: "{}",
-    associatedApprovedEntity: null,
-    createdByUser: 2,
-    nextApprovingUser: user,
-    changeHistory: { user, description: '', changeType: 'create', timestamp: new Date(), approvalHistory: [] }
-  };
+    const mockDraftEntity: Selectable<IDraftEntity> = {
+      id,
+      tenant: 1,
+      createdOn: new Date(),
+      project: 201,
+      entity: "employee",
+      entitySchema: "{}",
+      associatedApprovedEntity: null,
+      createdByUser: 2,
+      nextApprovingUser: user,
+      changeHistory: { user, description: '', changeType: 'create', timestamp: new Date(), approvalHistory: [] }
+    };
 
-  mockDraftEntityRepository.findById.mockResolvedValue(mockDraftEntity);
-  mockDraftEntityRepository.update.mockResolvedValue(undefined);
-
-  const result = await draftEntityService.approve(id, approvalHierarchy);
-
-  expect(mockDraftEntityRepository.findById).toHaveBeenCalledWith(id);
-  expect(mockDraftEntityRepository.update).toHaveBeenCalledWith(
-    id,
-    expect.objectContaining({
+    const updatedDraftEntity: Selectable<IDraftEntity> = {
+      ...mockDraftEntity,
       nextApprovingUser: 2,
-    })
-  );
-//  expect(result?.nextApprovingUser).toBe(2);
-  expect(result?.changeHistory.approvalHistory).toHaveLength(1);
-  expect(result?.changeHistory.approvalHistory[0].description).toBe("Approved By User");
-});
+      changeHistory: {
+        ...mockDraftEntity.changeHistory,
+        approvalHistory: [
+          {
+            user,
+            timestamp: expect.any(Date),
+            description: "Approved By User",
+            status: "approved"
+          }
+        ]
+      }
+    };
 
+    mockDraftEntityRepository.findById.mockResolvedValue(mockDraftEntity);
+    mockDraftEntityRepository.approvingUpdate.mockResolvedValue(updatedDraftEntity);
+
+    const result = await draftEntityService.approve(id, approvalHierarchy);
+
+    expect(mockDraftEntityRepository.findById).toHaveBeenCalledWith(id);
+    expect(mockDraftEntityRepository.approvingUpdate).toHaveBeenCalledWith(
+      id,
+      expect.objectContaining({
+        nextApprovingUser: 2,
+      })
+    );
+
+    const draftResult = result as Selectable<IDraftEntity>;
+
+    expect(draftResult?.nextApprovingUser).toBe(2);
+    expect(draftResult?.changeHistory.approvalHistory).toHaveLength(1);
+    expect(draftResult?.changeHistory.approvalHistory[0].description).toBe("Approved By User");
+    expect(draftResult?.changeHistory.approvalHistory[0].status).toBe("approved");
+  });
 
   test('approve should insert into changeLog and delete draft when final approver', async () => {
   const id = 2;
@@ -219,49 +238,48 @@ describe('Default -> DraftEntity -> DraftEntityService', () => {
   expect(mockChangeLogRepository.create).toHaveBeenCalled();
   expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(id);
 
-  // result is the changeLog
   expect(result).toEqual(mockChangeLog);
 
   expect(result?.changeHistory.approvalHistory).toHaveLength(1);
   expect(result?.changeHistory.approvalHistory[0].description).toEqual("Approved By User");
   });
 
- test('deleteById should call repository method with correct parameters', async () => {
-  mockDraftEntityRepository.delete.mockResolvedValue(undefined);
-
-  const result = await draftEntityService.delete(1);
-
-  expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(1);
-  expect(result).toBeUndefined();
- });
-
- test('should call repository delete method with correct id', async () => {
-    const id = 1;
+  test('deleteById should call repository method with correct parameters', async () => {
     mockDraftEntityRepository.delete.mockResolvedValue(undefined);
 
-    await draftEntityService.delete(id);
+    const result = await draftEntityService.delete(1);
 
-    expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(id);
-    expect(mockDraftEntityRepository.delete).toHaveBeenCalledTimes(1);
- });
-
- test('should handle repository delete method throwing error', async () => {
-    const id = 1;
-    const error = new Error('Database error');
-    mockDraftEntityRepository.delete.mockRejectedValue(error);
-
-    await expect(draftEntityService.delete(id)).rejects.toThrow('Database error');
-    expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(id);
- });
-
- test('should not return anything when delete is successful', async () => {
-    const id = 1;
-    mockDraftEntityRepository.delete.mockResolvedValue(undefined);
-
-    const result = await draftEntityService.delete(id);
-
+    expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(1);
     expect(result).toBeUndefined();
-    expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(id);
- });
+  });
+
+  test('should call repository delete method with correct id', async () => {
+      const id = 1;
+      mockDraftEntityRepository.delete.mockResolvedValue(undefined);
+
+      await draftEntityService.delete(id);
+
+      expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(id);
+      expect(mockDraftEntityRepository.delete).toHaveBeenCalledTimes(1);
+  });
+
+  test('should handle repository delete method throwing error', async () => {
+      const id = 1;
+      const error = new Error('Database error');
+      mockDraftEntityRepository.delete.mockRejectedValue(error);
+
+      await expect(draftEntityService.delete(id)).rejects.toThrow('Database error');
+      expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(id);
+  });
+
+  test('should not return anything when delete is successful', async () => {
+      const id = 1;
+      mockDraftEntityRepository.delete.mockResolvedValue(undefined);
+
+      const result = await draftEntityService.delete(id);
+
+      expect(result).toBeUndefined();
+      expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(id);
+  });
 
 });

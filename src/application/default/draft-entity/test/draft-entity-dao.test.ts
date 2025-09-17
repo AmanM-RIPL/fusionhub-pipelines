@@ -368,7 +368,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
         approvalHistory: [
           {
             user: 2,
-            timestamp: new Date(2024, 11, 12), // Fixed date constructor
+            timestamp: new Date(2024, 11, 12),
             description: "",
             status: "approved"
           }
@@ -397,8 +397,6 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     // Add assertions.
     expect(draftEntityResult).toEqual(mockDraftEntitys);
   });
-
- 
 
   test('delete should call correct methods', async () => {
     const draftEntityId = 1;
