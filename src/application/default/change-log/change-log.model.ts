@@ -6,7 +6,7 @@ export interface IChangeLog {
   tenant: number;
   createdOn:  Generated<Date>;
   project: number;
-  entity: string;
+  entity: string; //UnitOfMeasurement, Vendor, 
   createdByUser: number;
   entitySchema: JSONColumnType<any>;
   associatedApprovedEntity: number | null;

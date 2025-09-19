@@ -145,3 +145,17 @@ export class ProjectService {
 
 
 }
+
+/*
+Project Sync process:
+1) Postgresql query Project table.
+2) Get lastChangeLogId from Postgresql. (integer)
+3) Query ChangeLog Table with WHERE id > $1 AND project = $2
+4) Save changelog query result in an array
+5) Load sqlite database in sqlitedb variable
+
+6) Loop over all entries in array
+  Check entitiy name and create and update using DAO
+
+7) Save sqlite
+*/
