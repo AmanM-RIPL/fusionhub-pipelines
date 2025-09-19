@@ -5,6 +5,7 @@ node_modules/
 src/infrastructure/db/default
 gcp_secret/
 *.tsbuildinfo
+src/infrastructure/sqlite
 
 # local env files
 .env
