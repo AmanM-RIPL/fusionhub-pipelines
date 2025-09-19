@@ -3,6 +3,7 @@ import { IDatabase } from "../../../../infrastructure/db/kysely/types";
 import { ChangeHistory, InsertableEntity, UpdateableEntity } from "../../../common/types/entity";
 import { IChangeLog } from "../change-log.model";
 import { IChangeLogRepository } from "../change-log.repository";
+import { IProject } from "../../project/project.model";
 
 /*
 
@@ -22,6 +23,18 @@ export class ChangeLogDao implements IChangeLogRepository {
     if (this.tenant === null) throw new Error("Tenant must be set before accessing an entity schema.");
 
     return await this.db.selectFrom("public.change_log").selectAll().where("id", "=", id).where("tenant", "=", this.tenant).executeTakeFirst();
+  }
+
+ async findAllWithChangeLogGreaterThan( projectId: number, lastChangeLogId: number, limit: number, offset: number): Promise<Selectable<IChangeLog>[]> {
+    return await this.db
+    .selectFrom("public.change_log")
+    .selectAll()
+    .where("project", "=", projectId)
+    .where("tenant", "=", this.tenant)
+    .where("id", ">", lastChangeLogId)
+    .limit(limit)
+    .offset(offset)
+    .execute();
   }
 
   async findAll(limit: number, offset: number): Promise<Selectable<IChangeLog>[]> {

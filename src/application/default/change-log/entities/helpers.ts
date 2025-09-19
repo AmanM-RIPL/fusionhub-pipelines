@@ -1,3 +1,25 @@
-const entityNameMap = {
-    "UnitOfMeasurement": "unit-of-measurement"
-}
+export const entityNameMap: Record<string, string> = {
+    UnitOfMeasurement: "unit-of-measurement",
+    Vendor: "vendor",
+    Material: "material",
+    BudgetHead: "budget-head",
+    ProjectBudget: "project-budget",
+    ScheduleSetup: "schedule-setup",
+    ScheduleOfRates: "schedule-of-rates",
+    ScheduleOfRatesLine: "schedule-of-rates-line",
+    Task: "task",
+    TaskImage: "task-image",
+    TaskMeasurement: "task-measurement",
+    BillOfQuantity: "bill-of-quantity",
+    BillOfQuantityLine: "bill-of-quantity-line",
+    File: "file",
+    FilePermission: "file-permission",
+    PurchaseOrder: "purchase-order",
+    PurchaseOrderLine: "purchase-order-line",
+    GoodReceivedNote: "good-received-note",
+    MaterialIndent: "material-indent",
+    WorkOrder: "work-order",
+    WorkOrderLine: "work-order-line",
+    WorkBilling: "work-billing",
+    WorkBillingLine: "work-billing-line"
+};

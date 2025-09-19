@@ -175,4 +175,41 @@ export default async function changeLogRoutes(fastify: FastifyInstance) {
     }
   );
 
+  fastify.get(
+    '/change-log-Sync/:projectId',
+    {
+      onRequest: fastify.authenticate,
+      schema: {
+        description: 'Get changeLog by id field',
+        tags: ['change-log'],
+        summary: 'Get changeLog By ID',
+        params: {
+          type: 'object',
+          properties: {
+            changeLogId: { type: 'integer', minimum: 1 }
+          }
+        },
+        response: {
+          200: { $ref: 'changeLog-object#/properties/selectable' },
+          404: { type: 'object', properties: { error: { type: 'string' } } },
+          500: { type: 'object', properties: { error: { type: 'string' } } }
+        }
+      },
+      handler: async (
+        request: FastifyRequest<{
+          Params: { projectId: number };
+        }>,
+        reply: FastifyReply
+      ) => {
+        const changeLog = await request.getDecorator<ChangeLogService>('changeLogService').ChangeLogSync(request.params.projectId);
+
+        if (changeLog === null) {
+          throw new NotFoundError('Change log not found.');
+        }
+
+        return reply.code(200).send(changeLog);
+      }
+    }
+  );
+
 }

@@ -19,10 +19,10 @@ export default async function defaultRoutes(fastify: FastifyInstance) {
   // Registering the plugins
   await fastify.register(fp(dbTransactionPlugin));
   await fastify.register(fp(draftEntityContextPlugin));
-  await fastify.register(fp(changeLogContextPlugin));
   
   await fastify.register(fp(tenantContextPlugin));
   await fastify.register(fp(projectContextPlugin));
+  await fastify.register(fp(changeLogContextPlugin));
   await fastify.register(fp(userContextPlugin));
   await fastify.register(fp(permissionContextPlugin));
 

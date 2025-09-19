@@ -4,6 +4,7 @@ import { ChangeLogDao } from "../change-log/dao/change-log.dao";
 import { RequestUser } from "../../../infrastructure/types/fastify.types";
 import { ControlledTransaction } from "kysely";
 import { IDatabase } from "../../../infrastructure/db/kysely/types";
+import { ProjectDao } from "../project/dao/project.dao";
 
 export default async function changeLogContextPlugin(fastify: FastifyInstance) {
 
@@ -30,6 +31,7 @@ export default async function changeLogContextPlugin(fastify: FastifyInstance) {
       'changeLogService',
       new ChangeLogService(
         request.getDecorator<ChangeLogDao>('changeLogDao'),
+        request.getDecorator<ProjectDao>('projectDao'),
         userId
       )
     );

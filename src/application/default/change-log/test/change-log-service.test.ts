@@ -5,17 +5,22 @@ import { Insertable, Selectable, Transaction } from "kysely";
 import { ColumnValue, InsertableEntity, UpdateableEntity } from "../../../common/types/entity";
 import { IUserRepository } from "../../user/user.repository";
 import { IChangeLogRepository } from "../change-log.repository";
+import { IProjectRepository } from "../../project/project.repository";
 
 describe('Default -> ChangeLog -> ChangeLogService', () => {
   let changeLogService: ChangeLogService;
   let mockChangeLogRepository: DeepMockProxy<IChangeLogRepository>;
+  let mockProjectRepository: DeepMockProxy<IProjectRepository>;
   let mockUserRepository: DeepMockProxy<IUserRepository>;
 
-  beforeEach(() => {
-    mockChangeLogRepository = mockDeep<IChangeLogRepository>();
-    mockUserRepository = mockDeep<IUserRepository>();
-    changeLogService = new ChangeLogService(mockChangeLogRepository, 1);
-  });
+    beforeEach(() => {
+        mockChangeLogRepository = mockDeep<IChangeLogRepository>();
+        mockProjectRepository = mockDeep<IProjectRepository>();
+        mockUserRepository = mockDeep<IUserRepository>();
+
+        changeLogService = new ChangeLogService( mockChangeLogRepository, mockProjectRepository, 3);
+      });
+
 
   afterEach(() => {
     jest.useRealTimers();
