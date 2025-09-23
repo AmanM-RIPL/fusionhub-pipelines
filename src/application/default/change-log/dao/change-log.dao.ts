@@ -18,6 +18,9 @@ export class ChangeLogDao implements IChangeLogRepository {
     protected readonly tenant: number | null,
     protected readonly user: number | null
   ) {}
+  insert(projectId: number): Promise<Selectable<IChangeLog>[]> {
+    throw new Error("Method not implemented.");
+  }
 
   async findById(id: number): Promise<Selectable<IChangeLog> | undefined> {
     if (this.tenant === null) throw new Error("Tenant must be set before accessing an entity schema.");

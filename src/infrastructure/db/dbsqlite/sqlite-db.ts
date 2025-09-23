@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 
 const DB_FILE = path.join(
-  __dirname,"C:/code/fhapi_service/src/infrastructure/sqlite/projects/"
+  __dirname,"C:/code/fhapi_service/src/infrastructure/sqlite/"
 );
 
 fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });

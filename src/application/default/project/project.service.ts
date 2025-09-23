@@ -19,7 +19,7 @@ export class ProjectService {
   }
 
   async create(projectDetails: Insertable<IProject>): Promise<Selectable<IProject>> {
-    const __dirname = 'C:/code/fhapi_service/src/infrastructure/sqlite/projects/';
+    const __dirname = 'C:/code/fhapi_service/src/infrastructure/sqlite/';
     const project = await this.projectRepository.create(projectDetails);
     const dbPath = path.join(__dirname, `project_${project.id}.db`);
     fs.mkdirSync(path.dirname(dbPath), { recursive: true });
@@ -38,6 +38,7 @@ export class ProjectService {
       console.error("Database creation failed:", error.message);
       // If something failed, delete the incomplete database file
       if (fs.existsSync(dbPath)) {
+        sqliteDb.close();
         fs.unlinkSync(dbPath);
         console.log(`Deleted failed database file: ${dbPath}`);
       }

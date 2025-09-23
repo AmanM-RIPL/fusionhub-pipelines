@@ -3,18 +3,15 @@ import { IProjectRepository } from "../project/project.repository";
 import { IChangeLogRepository } from "./change-log.repository";
 import { IChangeLog } from "./change-log.model";
 import { IProject } from "../project/project.model";
-import { InsertableEntity, UpdateableEntity } from "../../common/types/entity";
-import sqliteDb from "../../../infrastructure/db/dbsqlite/sqlite-db";
-import path from "path";
-import fs from "fs";
-import Database from "better-sqlite3";
+import { InsertableEntity } from "../../common/types/entity";
+import { SQLiteSyncDao } from "./entities/dao/sqlite-sync.dao";
 
 export class ChangeLogService {
   constructor(
     private readonly changeLogRepository: IChangeLogRepository,
     private readonly projectRepository: IProjectRepository,
     private readonly user: number
-  ) { }
+  ) {}
 
   async findById(id: number): Promise<Selectable<IChangeLog> | undefined> {
     return await this.changeLogRepository.findById(id);
@@ -24,69 +21,61 @@ export class ChangeLogService {
     return await this.changeLogRepository.findAll(limit, offset);
   }
 
-  /*
-    Added for just now. Will remove later. Change log need to automatically created in draftEntityService.approved
-  */
   async create(entity: Omit<InsertableEntity<IChangeLog>, "createdByUser" | "changeHistory">): Promise<Selectable<IChangeLog>> {
     const entityToCreate: InsertableEntity<IChangeLog> = {
       ...entity,
       createdByUser: this.user,
       changeHistory: JSON.stringify({
-          user: this.user,
-          changeType: "create",
-          description: "Approved By User",
-          timestamp: new Date(),
-          approvalHistory: [
-            {
-              user: this.user,
-              timestamp: new Date(),
-              description: "Approved By User",
-              status: "approved"
-            }
-          ]
-        })
+        user: this.user,
+        changeType: "create",
+        description: "Approved By User",
+        timestamp: new Date(),
+        approvalHistory: [
+          {
+            user: this.user,
+            timestamp: new Date(),
+            description: "Approved By User",
+            status: "approved"
+          }
+        ]
+      })
     };
 
     return await this.changeLogRepository.create(entityToCreate);
   }
 
-  async ChangeLogSync(projectId: number): Promise<Selectable<IProject> | undefined> {
+  /**
+   * Sync change logs from Postgres to SQLite
+   */
+   async ChangeLogSync(projectId: number): Promise<void> {
+    // 1. Get project from Postgres
     const pgProject = await this.projectRepository.findById(projectId);
+    if (!pgProject) throw new Error(`Project ${projectId} not found in Postgres.`);
 
-    if (!pgProject) {
-      throw new Error(`Project ${projectId} not found in Postgres.`);
-    }
+    const lastChangeLogId = pgProject.lastChangeLogId ?? 0;
 
-    const lastChangeLogId = pgProject.lastChangeLogId ?? null;
-
-    if (lastChangeLogId === null) {
-      throw new Error(`Project ${projectId} has null lastChangeLogId`);
-    }
-
+    // 2. Fetch new change logs from Postgres
     const entitiesToSync = await this.changeLogRepository.findAllWithChangeLogGreaterThan(
       projectId,
       lastChangeLogId,
-      10,
+      50,
       0
     );
 
     if (entitiesToSync.length === 0) {
-      console.log(`No new entities found for project ${projectId}.`);
+      console.log(`No new change logs for project ${projectId}`);
       return;
     }
 
-    // Sync to SQLite
-    for (const entity of entitiesToSync) {
-      const existing = await this.changeLogRepository.findById(entity.id);
-
-      if (!existing) {
-        console.log(`Inserting new entity ${entity.id} into SQLite...`);
-        await this.changeLogRepository.upsert(entity);
-      }
-
-      console.log(`Synced ${entitiesToSync.length} entities to SQLite for project ${projectId}.`);
-
-      return pgProject;
-    }
+    // 3. Sync into SQLite
+    console.log(`Starting sync of ${entitiesToSync.length} entities for project ${projectId}`);
+    const sqliteSync: SQLiteSyncDao = new SQLiteSyncDao("C:/code/fhapi_service/src/infrastructure/sqlite/" + "project_" + projectId + ".db");
+    const syncResults = await sqliteSync.syncEntityArrayToSQLite(entitiesToSync);
+    
+    console.log(`   Sync completed for project ${projectId}:`);
+    console.log(`   Inserted: ${syncResults.inserted}`);
+    console.log(`   Updated:  ${syncResults.updated}`);
+    console.log(`   Skipped:  ${syncResults.skipped}`);
   }
+
 }
