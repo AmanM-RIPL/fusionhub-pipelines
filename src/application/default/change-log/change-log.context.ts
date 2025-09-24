@@ -5,7 +5,6 @@ import { RequestUser } from "../../../infrastructure/types/fastify.types";
 import { ControlledTransaction } from "kysely";
 import { IDatabase } from "../../../infrastructure/db/kysely/types";
 import { ProjectDao } from "../project/dao/project.dao";
-import { SQLiteSyncDao } from "./entities/dao/sqlite-sync.dao";
 
 export default async function changeLogContextPlugin(fastify: FastifyInstance) {
 

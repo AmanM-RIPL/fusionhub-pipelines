@@ -201,7 +201,7 @@ export default async function changeLogRoutes(fastify: FastifyInstance) {
         }>,
         reply: FastifyReply
       ) => {
-        const changeLog = await request.getDecorator<ChangeLogService>('changeLogService').ChangeLogSync(request.params.projectId);
+        const changeLog = await request.getDecorator<ChangeLogService>('changeLogService').changeLogSync(request.params.projectId);
 
         if (changeLog === null) {
           throw new NotFoundError('Change log not found.');

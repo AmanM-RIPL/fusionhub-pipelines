@@ -4,7 +4,9 @@ import { IChangeLogRepository } from "./change-log.repository";
 import { IChangeLog } from "./change-log.model";
 import { IProject } from "../project/project.model";
 import { InsertableEntity } from "../../common/types/entity";
-import { SQLiteSyncDao } from "./entities/dao/sqlite-sync.dao";
+import { SQLiteSync } from "./entities/_main/sqlite.factory";
+import path from "path";
+import Database from "better-sqlite3";
 
 export class ChangeLogService {
   constructor(
@@ -47,7 +49,7 @@ export class ChangeLogService {
   /**
    * Sync change logs from Postgres to SQLite
    */
-   async ChangeLogSync(projectId: number): Promise<void> {
+   async changeLogSync(projectId: number): Promise<void> {
     // 1. Get project from Postgres
     const pgProject = await this.projectRepository.findById(projectId);
     if (!pgProject) throw new Error(`Project ${projectId} not found in Postgres.`);
@@ -69,13 +71,25 @@ export class ChangeLogService {
 
     // 3. Sync into SQLite
     console.log(`Starting sync of ${entitiesToSync.length} entities for project ${projectId}`);
-    const sqliteSync: SQLiteSyncDao = new SQLiteSyncDao("C:/code/fhapi_service/src/infrastructure/sqlite/" + "project_" + projectId + ".db");
-    const syncResults = await sqliteSync.syncEntityArrayToSQLite(entitiesToSync);
+    const dbFilePath = path.resolve("C:/code/fhapi_service/src/infrastructure/sqlite/" + "project_" + projectId + ".db");
+    const sqliteDb = new Database(dbFilePath);
     
-    console.log(`   Sync completed for project ${projectId}:`);
-    console.log(`   Inserted: ${syncResults.inserted}`);
-    console.log(`   Updated:  ${syncResults.updated}`);
-    console.log(`   Skipped:  ${syncResults.skipped}`);
+    try {
+      const sqliteSync: SQLiteSync = new SQLiteSync(sqliteDb);
+      await sqliteSync.syncSqlite(entitiesToSync);
+    } catch (error) {
+      console.error("Error during SQLite sync:", error);
+      sqliteDb.close();
+      throw error;
+    }
+
+    // close sqlite database
+    sqliteDb.close();
+    
+    // console.log(`   Sync completed for project ${projectId}:`);
+    // console.log(`   Inserted: ${syncResults.inserted}`);
+    // console.log(`   Updated:  ${syncResults.updated}`);
+    // console.log(`   Skipped:  ${syncResults.skipped}`);
   }
 
 }

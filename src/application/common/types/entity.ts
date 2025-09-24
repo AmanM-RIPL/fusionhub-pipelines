@@ -1,4 +1,5 @@
 import { Insertable, Updateable } from "kysely";
+import { IProjectEntityBaseRepository } from "../repositories/project-entity.repository";
 
 export type EntityType = "draft" | "approved" | "updated-draft";
 
