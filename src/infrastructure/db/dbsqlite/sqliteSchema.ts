@@ -11,7 +11,7 @@ export const sqliteTable: string[] = [
                     conversion_to_cubic_meter REAL,
                     conversion_to_meter REAL,
                     conversion_to_kilogram REAL,
-                    changeHistory TEXT CHECK(changeHistory IS NULL OR json_valid(changeHistory))
+                    change_history TEXT CHECK(change_history IS NULL OR json_valid(change_history))
                 );`,
 
     // Vendor Management
@@ -24,7 +24,7 @@ export const sqliteTable: string[] = [
                     vendor_contact_person TEXT,
                     vendor_mobile TEXT,
                     vendor_email TEXT,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory))
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history))
                 );`,
 
     // Material Management
@@ -35,7 +35,7 @@ export const sqliteTable: string[] = [
                     material_name TEXT NOT NULL,
                     category TEXT,
                     unit_of_measurement_id INTEGER,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory)),
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
                     FOREIGN KEY (unit_of_measurement_id) REFERENCES UnitOfMeasurement(id)
                 );`,
 
@@ -45,7 +45,7 @@ export const sqliteTable: string[] = [
                     global_id INTEGER GENERATED ALWAYS AS (id) STORED,
                     approval_status BOOLEAN DEFAULT 1,
                     description TEXT NOT NULL,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory))
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history))
                 );`,
 
     `CREATE TABLE ProjectBudget (
@@ -54,7 +54,7 @@ export const sqliteTable: string[] = [
                     approval_status BOOLEAN DEFAULT 1,
                     budget_head_id INTEGER NOT NULL,
                     dollar_value REAL,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory)),
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
                     FOREIGN KEY (budget_head_id) REFERENCES BudgetHead(id)
                 );`,
 
@@ -67,7 +67,7 @@ export const sqliteTable: string[] = [
                     description TEXT,
                     cost_parameter TEXT,
                     resource_parameter TEXT,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory))
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history))
                 );`,
 
     `CREATE TABLE ScheduleOfRates (
@@ -75,7 +75,7 @@ export const sqliteTable: string[] = [
                     global_id INTEGER GENERATED ALWAYS AS (id) STORED,
                     approval_status BOOLEAN DEFAULT 1,
                     schedule_name TEXT NOT NULL,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory))
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history))
                 );`,
 
     `CREATE TABLE ScheduleOfRatesLine (
@@ -86,7 +86,7 @@ export const sqliteTable: string[] = [
                     schedule_type_id INTEGER NOT NULL,
                     cost TEXT,
                     resource TEXT,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory)),
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
                     FOREIGN KEY (schedule_id) REFERENCES ScheduleOfRates(id),
                     FOREIGN KEY (schedule_type_id) REFERENCES ScheduleSetup(id)
                 );`,
@@ -101,7 +101,7 @@ export const sqliteTable: string[] = [
                     bim_element TEXT,
                     start_date TEXT,
                     end_date TEXT,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory))
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history))
                 );`,
 
     `CREATE TABLE TaskImage (
@@ -111,7 +111,7 @@ export const sqliteTable: string[] = [
                     task_id INTEGER NOT NULL,
                     image_url TEXT,
                     image_local_path TEXT,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory)),
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
                     FOREIGN KEY (task_id) REFERENCES Task(id)
                 );`,
 
@@ -133,7 +133,7 @@ export const sqliteTable: string[] = [
                     volume_unit_id INTEGER,
                     surface_area REAL,
                     surface_area_unit_id INTEGER,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory)),
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
                     FOREIGN KEY (task_id) REFERENCES Task(id),
                     FOREIGN KEY (length_unit_id) REFERENCES UnitOfMeasurement(id),
                     FOREIGN KEY (width_unit_id) REFERENCES UnitOfMeasurement(id),
@@ -150,7 +150,7 @@ export const sqliteTable: string[] = [
                     approval_status BOOLEAN DEFAULT 1,
                     schedule_id INTEGER NOT NULL,
                     description TEXT,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory)),
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
                     FOREIGN KEY (schedule_id) REFERENCES ScheduleOfRates(id)
                 );`,
 
@@ -162,7 +162,7 @@ export const sqliteTable: string[] = [
                     description TEXT,
                     dollar_value REAL,
                     task_id INTEGER,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory)),
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
                     FOREIGN KEY (bill_of_quantity_id) REFERENCES BillOfQuantity(id),
                     FOREIGN KEY (task_id) REFERENCES Task(id)
                     
@@ -176,7 +176,7 @@ export const sqliteTable: string[] = [
                     description TEXT,
                     file_url TEXT,
                     file_local_path TEXT,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory))
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history))
                 );`,
 
     `CREATE TABLE FilePermission (
@@ -186,7 +186,7 @@ export const sqliteTable: string[] = [
                     user_id INTEGER NOT NULL,
                     file_id INTEGER NOT NULL,
                     permission_type TEXT NOT NULL,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory)),
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
                     FOREIGN KEY (user_id) REFERENCES User(id),
                     FOREIGN KEY (file_id) REFERENCES File(id)  
                 );`,
@@ -197,7 +197,7 @@ export const sqliteTable: string[] = [
                     global_id INTEGER GENERATED ALWAYS AS (id) STORED,
                     approval_status BOOLEAN DEFAULT 1,
                     vendor_id INTEGER NOT NULL,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory)),
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
                     FOREIGN KEY (vendor_id) REFERENCES Vendor(id)
                 );`,
 
@@ -212,7 +212,7 @@ export const sqliteTable: string[] = [
                     dollar_value REAL,
                     tax_amount REAL,
                     tax_withholding REAL,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory)),
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
                     FOREIGN KEY (purchase_order_id) REFERENCES PurchaseOrder(id),
                     FOREIGN KEY (material_id) REFERENCES Material(id),
                     FOREIGN KEY (unit_of_measurement_id) REFERENCES UnitOfMeasurement(id)
@@ -224,7 +224,7 @@ export const sqliteTable: string[] = [
                     approval_status BOOLEAN DEFAULT 1,
                     purchase_order_line_id INTEGER NOT NULL,
                     amount_of_material_received REAL,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory)),
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
                     FOREIGN KEY (purchase_order_line_id) REFERENCES PurchaseOrderLine(id)
                 );`,
 
@@ -236,7 +236,7 @@ export const sqliteTable: string[] = [
                     material_id INTEGER NOT NULL,
                     total_quantity REAL,
                     task_id INTEGER,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory)),
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
                     FOREIGN KEY (material_id) REFERENCES Material(id),
                     FOREIGN KEY (task_id) REFERENCES Task(id)
                 );`,
@@ -248,7 +248,7 @@ export const sqliteTable: string[] = [
                     approval_status BOOLEAN DEFAULT 1,
                     vendor_id INTEGER NOT NULL,
                     description TEXT,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory)),
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
                     FOREIGN KEY (vendor_id) REFERENCES Vendor(id)
                 );`,
 
@@ -263,7 +263,7 @@ export const sqliteTable: string[] = [
                     tax_withholding_amount REAL,
                     task_id INTEGER,
                     retention_amount REAL,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory)),
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
                     FOREIGN KEY (work_order_id) REFERENCES WorkOrder(id),
                     FOREIGN KEY (task_id) REFERENCES Task(id)
                 );`,
@@ -274,7 +274,7 @@ export const sqliteTable: string[] = [
                     global_id INTEGER GENERATED ALWAYS AS (id) STORED,
                     approval_status BOOLEAN DEFAULT 1,
                     work_order_id INTEGER NOT NULL,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory)),
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
                     FOREIGN KEY (work_order_id) REFERENCES WorkOrder(id)
                 );`,
 
@@ -287,7 +287,7 @@ export const sqliteTable: string[] = [
                     tax_amount REAL,
                     tax_withholding_amount REAL,
                     retention_amount REAL,
-                    changeHistory TEXT CHECK (changeHistory IS NULL OR json_valid(changeHistory)),
+                    change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
                     FOREIGN KEY (work_order_line_id) REFERENCES WorkOrderLine(id)
                 );`
 ];

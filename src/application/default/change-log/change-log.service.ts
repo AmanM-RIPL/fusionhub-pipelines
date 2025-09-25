@@ -85,11 +85,6 @@ export class ChangeLogService {
 
     // close sqlite database
     sqliteDb.close();
-    
-    // console.log(`   Sync completed for project ${projectId}:`);
-    // console.log(`   Inserted: ${syncResults.inserted}`);
-    // console.log(`   Updated:  ${syncResults.updated}`);
-    // console.log(`   Skipped:  ${syncResults.skipped}`);
   }
 
 }

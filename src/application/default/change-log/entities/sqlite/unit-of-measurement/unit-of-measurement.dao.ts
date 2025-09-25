@@ -11,7 +11,7 @@ export default class UnitOfMeasurementDao implements IProjectEntityBaseRepositor
   public create(changeLog: Selectable<IChangeLog>): void {
     const entitySchema: IUnitOfMeasurement = changeLog.entitySchema as IUnitOfMeasurement;
 
-    const statement = this.db.prepare("INSERT INTO UnitOfMeasurement (uom_name, unit_type, conversion_to_sqm, conversion_to_cubic_meter, conversion_to_meter, conversion_to_kilogram, changeHistory) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    const statement = this.db.prepare("INSERT INTO UnitOfMeasurement (uom_name, unit_type, conversion_to_sqm, conversion_to_cubic_meter, conversion_to_meter, conversion_to_kilogram, change_history) VALUES (?, ?, ?, ?, ?, ?, ?)");
 
     statement.run(
       entitySchema.uom_name,
@@ -20,14 +20,15 @@ export default class UnitOfMeasurementDao implements IProjectEntityBaseRepositor
       entitySchema.conversion_to_cubic_meter,
       entitySchema.conversion_to_meter,
       entitySchema.conversion_to_kilogram,
-      entitySchema.change_history
+      JSON.stringify(entitySchema.change_history)
     );
+
   }
 
   public update(changeLog: Selectable<IChangeLog>): void {
     const entitySchema: IUnitOfMeasurement = changeLog.entitySchema as IUnitOfMeasurement;
-    const statement = this.db.prepare("UPDATE UnitOfMeasurement SET uom_name = ?, unit_type = ?, conversion_to_sqm = ?, conversion_to_cubic_meter = ?, conversion_to_meter = ?, conversion_to_kilogram = ?, changeHistory = ? WHERE id = ?");
-
+    const statement = this.db.prepare("UPDATE UnitOfMeasurement SET uom_name = ?, unit_type = ?, conversion_to_sqm = ?, conversion_to_cubic_meter = ?, conversion_to_meter = ?, conversion_to_kilogram = ?, change_history = ? WHERE id = ?");
+    
     statement.run(
       entitySchema.uom_name,
       entitySchema.unit_type,
