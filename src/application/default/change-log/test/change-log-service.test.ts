@@ -32,7 +32,6 @@ describe("Default -> ChangeLog -> ChangeLogService", () => {
   let mockUserRepository: DeepMockProxy<IUserRepository>;
 
   const MockedDatabase = Database as jest.MockedClass<typeof Database>;
-  const MockedSQLiteSync = SQLiteSync as jest.MockedClass<typeof SQLiteSync>;
   const mockUser = 1;
 
   beforeEach(() => {
