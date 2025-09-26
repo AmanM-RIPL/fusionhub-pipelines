@@ -6,16 +6,20 @@ import { Insertable, Selectable, Transaction } from "kysely";
 import { ColumnValue, InsertableEntity, UpdateableEntity } from "../../../common/types/entity";
 import { IUserRepository } from "../../user/user.repository";
 import { IDraftEntityRepository } from "../draft-entity.repository";
+import { IChangeLogRepository } from "../../change-log/change-log.repository";
+import { IChangeLog } from "../../change-log/change-log.model";
 
 describe('Default -> DraftEntity -> DraftEntityService', () => {
   let draftEntityService: DraftEntityService;
   let mockDraftEntityRepository: DeepMockProxy<IDraftEntityRepository>;
+  let mockChangeLogRepository: DeepMockProxy<IChangeLogRepository>;
   let mockUserRepository: DeepMockProxy<IUserRepository>;
 
   beforeEach(() => {
     mockDraftEntityRepository = mockDeep<IDraftEntityRepository>();
+    mockChangeLogRepository = mockDeep<IChangeLogRepository>();
     mockUserRepository = mockDeep<IUserRepository>();
-    draftEntityService = new DraftEntityService(mockDraftEntityRepository, 1);
+    draftEntityService = new DraftEntityService(mockDraftEntityRepository, mockChangeLogRepository,1);
   });
 
   afterEach(() => {
@@ -54,7 +58,7 @@ describe('Default -> DraftEntity -> DraftEntityService', () => {
       changeHistory: JSON.stringify({
         user: 1,
         changeType: "create",
-        description: "Approved by user",
+        description: "Approved By User",
         timestamp: new Date(),
         approvalHistory: [
           {
@@ -77,7 +81,7 @@ describe('Default -> DraftEntity -> DraftEntityService', () => {
       changeHistory: {
         user: 1,
         changeType: "create",
-        description: "Approved by user",
+        description: "Approved By User",
         timestamp: new Date(),
         approvalHistory: [
           {
@@ -125,60 +129,34 @@ describe('Default -> DraftEntity -> DraftEntityService', () => {
     expect(result).toEqual(mockDraftEntities);
   });
 
-  test('approve should call repository update when not final approver', async () => {
+  test('approve should update draft when not final approver', async () => {
     const id = 2;
     const approvalHierarchy = [1, 2];
-
-    const mockDraftEntity = {
-      project: 201,
-      entity: "employee",
-      entitySchema: "{}",
-      associatedApprovedEntity: null,
-      createdByUser: 2,
-      nextApprovingUser: 1,
-      changeHistory: { approvalHistory: [] }
-    } as any as Selectable<IDraftEntity>;
-
-    mockDraftEntityRepository.findById.mockResolvedValue(mockDraftEntity);
-    mockDraftEntityRepository.update.mockResolvedValue({ ...mockDraftEntity, nextApprovingUser: 2 });
-
-    const result = await draftEntityService.approve(id, approvalHierarchy);
-
-    expect(mockDraftEntityRepository.findById).toHaveBeenCalledWith(id);
-    expect(mockDraftEntityRepository.update).toHaveBeenCalledWith(id, expect.objectContaining({
-      nextApprovingUser: 2
-    }));
-    expect(result).toBeUndefined();
-  });
-
-  test('approve should call repository.approve when final approver', async () => {
-    const id = 2;
-    const approvalHierarchy = [1];
     const user = 1;
-    const changeDate = new Date();
+
     const mockDraftEntity: Selectable<IDraftEntity> = {
       id,
       tenant: 1,
-      createdOn: changeDate,
+      createdOn: new Date(),
       project: 201,
       entity: "employee",
       entitySchema: "{}",
       associatedApprovedEntity: null,
       createdByUser: 2,
       nextApprovingUser: user,
-      changeHistory: { user: 1, description: '', changeType: 'create', timestamp: changeDate, approvalHistory: [] }
+      changeHistory: { user, description: '', changeType: 'create', timestamp: new Date(), approvalHistory: [] }
     };
 
-    const approvedDraftEntity: Selectable<IDraftEntity> = {
+    const updatedDraftEntity: Selectable<IDraftEntity> = {
       ...mockDraftEntity,
+      nextApprovingUser: 2,
       changeHistory: {
         ...mockDraftEntity.changeHistory,
         approvalHistory: [
-          ...mockDraftEntity.changeHistory.approvalHistory,
           {
             user,
-            timestamp: new Date(),
-            description: "Approved by user",
+            timestamp: expect.any(Date),
+            description: "Approved By User",
             status: "approved"
           }
         ]
@@ -186,51 +164,122 @@ describe('Default -> DraftEntity -> DraftEntityService', () => {
     };
 
     mockDraftEntityRepository.findById.mockResolvedValue(mockDraftEntity);
-    mockDraftEntityRepository.approve.mockResolvedValue(approvedDraftEntity);
+    mockDraftEntityRepository.approvingUpdate.mockResolvedValue(updatedDraftEntity);
 
     const result = await draftEntityService.approve(id, approvalHierarchy);
 
     expect(mockDraftEntityRepository.findById).toHaveBeenCalledWith(id);
-    expect(result?.changeHistory.approvalHistory).toHaveLength(1);
-    expect(result?.changeHistory.approvalHistory[0].description).toEqual("Approved by user");
+    expect(mockDraftEntityRepository.approvingUpdate).toHaveBeenCalledWith(
+      id,
+      expect.objectContaining({
+        nextApprovingUser: 2,
+      })
+    );
+
+    const draftResult = result as Selectable<IDraftEntity>;
+
+    expect(draftResult?.nextApprovingUser).toBe(2);
+    expect(draftResult?.changeHistory.approvalHistory).toHaveLength(1);
+    expect(draftResult?.changeHistory.approvalHistory[0].description).toBe("Approved By User");
+    expect(draftResult?.changeHistory.approvalHistory[0].status).toBe("approved");
   });
 
- test('deleteById should call repository method with correct parameters', async () => {
+  test('approve should insert into changeLog and delete draft when final approver', async () => {
+  const id = 2;
+  const approvalHierarchy = [1];
+  const user = 1;
+  const changeDate = new Date();
+
+  const mockDraftEntity: Selectable<IDraftEntity> = {
+    id,
+    tenant: 1,
+    createdOn: changeDate,
+    project: 201,
+    entity: "employee",
+    entitySchema: "{}",
+    associatedApprovedEntity: null,
+    createdByUser: 2,
+    nextApprovingUser: user,
+    changeHistory: { user: 1, description: '', changeType: 'create', timestamp: changeDate, approvalHistory: [] },
+  };
+
+  const mockChangeLog: Selectable<IChangeLog> = {
+    id: 2,
+    tenant: 1,
+    changeHistory: {
+      user: 1,
+      changeType: "create",
+      description: "Approved By User",
+      timestamp: new Date(),
+      approvalHistory: [
+        {
+          user: 1,
+          timestamp: new Date(),
+          description: "Approved By User",
+          status: "approved"
+        }
+      ]
+    },
+    entitySchema: {},
+    createdOn: new Date(),
+    createdByUser: 1,
+    associatedApprovedEntity: null,
+    project: 0,
+    entity: ""
+  };
+
+  mockDraftEntityRepository.findById.mockResolvedValue(mockDraftEntity);
+  mockChangeLogRepository.create.mockResolvedValue(mockChangeLog);
   mockDraftEntityRepository.delete.mockResolvedValue(undefined);
 
-  const result = await draftEntityService.delete(1);
+  const result = await draftEntityService.approve(id, approvalHierarchy);
 
-  expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(1);
-  expect(result).toBeUndefined();
- });
+  expect(mockDraftEntityRepository.findById).toHaveBeenCalledWith(id);
+  expect(mockChangeLogRepository.create).toHaveBeenCalled();
+  expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(id);
 
- test('should call repository delete method with correct id', async () => {
-    const id = 1;
+  expect(result).toEqual(mockChangeLog);
+
+  expect(result?.changeHistory.approvalHistory).toHaveLength(1);
+  expect(result?.changeHistory.approvalHistory[0].description).toEqual("Approved By User");
+  });
+
+  test('deleteById should call repository method with correct parameters', async () => {
     mockDraftEntityRepository.delete.mockResolvedValue(undefined);
 
-    await draftEntityService.delete(id);
+    const result = await draftEntityService.delete(1);
 
-    expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(id);
-    expect(mockDraftEntityRepository.delete).toHaveBeenCalledTimes(1);
- });
-
- test('should handle repository delete method throwing error', async () => {
-    const id = 1;
-    const error = new Error('Database error');
-    mockDraftEntityRepository.delete.mockRejectedValue(error);
-
-    await expect(draftEntityService.delete(id)).rejects.toThrow('Database error');
-    expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(id);
- });
-
- test('should not return anything when delete is successful', async () => {
-    const id = 1;
-    mockDraftEntityRepository.delete.mockResolvedValue(undefined);
-
-    const result = await draftEntityService.delete(id);
-
+    expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(1);
     expect(result).toBeUndefined();
-    expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(id);
- });
+  });
+
+  test('should call repository delete method with correct id', async () => {
+      const id = 1;
+      mockDraftEntityRepository.delete.mockResolvedValue(undefined);
+
+      await draftEntityService.delete(id);
+
+      expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(id);
+      expect(mockDraftEntityRepository.delete).toHaveBeenCalledTimes(1);
+  });
+
+  test('should handle repository delete method throwing error', async () => {
+      const id = 1;
+      const error = new Error('Database error');
+      mockDraftEntityRepository.delete.mockRejectedValue(error);
+
+      await expect(draftEntityService.delete(id)).rejects.toThrow('Database error');
+      expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(id);
+  });
+
+  test('should not return anything when delete is successful', async () => {
+      const id = 1;
+      mockDraftEntityRepository.delete.mockResolvedValue(undefined);
+
+      const result = await draftEntityService.delete(id);
+
+      expect(result).toBeUndefined();
+      expect(mockDraftEntityRepository.delete).toHaveBeenCalledWith(id);
+  });
 
 });

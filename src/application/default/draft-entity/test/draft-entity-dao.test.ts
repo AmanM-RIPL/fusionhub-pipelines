@@ -43,7 +43,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     // Call the method under test
     const draftEntityResult = await draftEntityDao.findById(1);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.draft_entity");
     expect(mockSelect.selectAll).toHaveBeenCalled();
     expect(mockSelect.where).toHaveBeenCalledWith("id", "=", 1);
@@ -73,7 +73,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     // Call the method under test
     const draftEntityResult = await draftEntityDao.findById(1);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(draftEntityResult).toEqual(mockDraftEntity);
   });
 
@@ -103,7 +103,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     // Call the method under test
     const draftEntityResult = await draftEntityDao.findAll(10, 0);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.draft_entity");
     expect(mockQueryBuilder.where).toHaveBeenCalledWith("tenant", "=", tenant);
     expect(mockQueryBuilder.selectAll).toHaveBeenCalled();
@@ -179,7 +179,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     // Call the method under test
     const draftEntityResult = await draftEntityDao.create(mockDraftEntityInsertable);
 
-    // Add your assertions or method calls here - FIXED: Use the insertable object, not the returned object
+    // Add assertions or method calls here
     expect(mockKysely.insertInto).toHaveBeenCalledWith("public.draft_entity");
     expect(mockInsert.values).toHaveBeenCalledWith({
       ...mockDraftEntityInsertable,
@@ -255,7 +255,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     // Call the method under test
     const draftEntityResult = await draftEntityDao.create(mockDraftEntityInsertable);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(draftEntityResult).toEqual(mockDraftEntitys);
   });
 
@@ -268,9 +268,9 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
       project: 202,
       entity: 'tenant',
       entitySchema: JSON.stringify({
-        firstName: "John",
-        lastName: "Doe",
-        email: "john.doe@example.com"
+        firstName: "Test",
+        lastName: "TestLastName",
+        email: "test@example.com"
       }),
       changeHistory: {
         user: 1,
@@ -292,9 +292,9 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     };
 
     const mockDraftEntityUpdateable: { [key: string]: unknown } = {
-      firstName: "John",
-      lastName: "Doe",
-      email: "john.doe@example.com"
+      firstName: "Test",
+      lastName: "TestLastName",
+      email: "test@example.com"
     };
 
     // Mock the Kysely methods to return the expected results
@@ -314,7 +314,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     // Call the method under test
     const draftEntityResult = await draftEntityDao.update(1, mockDraftEntityUpdateable);
 
-    // Add your assertions or method calls here - FIXED: Use the updateable object, not the returned object
+    // Add assertions or method calls here
     expect(mockKysely.updateTable).toHaveBeenCalledWith("public.draft_entity");
     expect(mockUpdate.set).toHaveBeenCalledWith({
       entitySchema: JSON.stringify(mockDraftEntityUpdateable)
@@ -368,7 +368,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
         approvalHistory: [
           {
             user: 2,
-            timestamp: new Date(2024, 11, 12), // Fixed date constructor
+            timestamp: new Date(2024, 11, 12),
             description: "",
             status: "approved"
           }
@@ -394,7 +394,7 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     // Call the method under test
     const draftEntityResult = await draftEntityDao.update(1, mockDraftEntityUpdateable);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(draftEntityResult).toEqual(mockDraftEntitys);
   });
 
@@ -440,4 +440,5 @@ describe('Default -> DraftEntity -> DraftEntityDao', () => {
     expect(mockDelete.execute).toHaveBeenCalled();
     expect(result).toBeUndefined();
   });
+  
 });

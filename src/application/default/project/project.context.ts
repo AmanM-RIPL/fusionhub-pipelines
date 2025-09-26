@@ -21,6 +21,6 @@ export default async function projectContextPlugin(fastify: FastifyInstance) {
     request.setDecorator<ProjectDao>('projectDao', new ProjectDao(request.getDecorator<ControlledTransaction<IDatabase>>('dbTransaction'), tenant));
 
     // Services
-    request.setDecorator<ProjectService>('projectService', new ProjectService(request.getDecorator<ProjectDao>('projectDao'), request.getDecorator<ProjectDao>('projectDao'))); 
+    request.setDecorator<ProjectService>('projectService', new ProjectService(request.getDecorator<ProjectDao>('projectDao'))); 
   });
 }

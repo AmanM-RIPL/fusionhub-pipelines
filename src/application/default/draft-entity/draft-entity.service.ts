@@ -2,10 +2,13 @@ import { Selectable } from "kysely";
 import { IDraftEntityRepository } from "./draft-entity.repository";
 import { IDraftEntity } from "./draft-entity.model";
 import { InsertableEntity, UpdateableEntity } from "../../common/types/entity";
+import { IChangeLog } from "../change-log/change-log.model";
+import { IChangeLogRepository } from "../change-log/change-log.repository";
 
 export class DraftEntityService {
   constructor(
     protected readonly draftEntityRepository: IDraftEntityRepository,
+    protected readonly changeLogRepository: IChangeLogRepository,
     protected readonly user: number
   ) { }
 
@@ -31,7 +34,7 @@ export class DraftEntityService {
       changeHistory: JSON.stringify({
           user: this.user,
           changeType: "create",
-          description: "Approved by user",
+          description: "Approved By User",
           timestamp: new Date(),
           approvalHistory: [
             {
@@ -51,37 +54,25 @@ export class DraftEntityService {
     return await this.draftEntityRepository.update(id, updatedObject);
   }
 
-
-  async approve(id: number, approvalHierarcy: number[]): Promise<Selectable<IDraftEntity> | undefined> {
+  async approve(id: number, approvalHierarchy: number[]): Promise<Selectable<IDraftEntity> | Selectable<IChangeLog> | undefined> {
     const draftEntity = await this.draftEntityRepository.findById(id);
     if (!draftEntity) {
       throw new Error(`Draft entity with id ${id} not found.`);
     }
 
     if (draftEntity.nextApprovingUser !== this.user) {
-      throw new Error(`User ${this.user} is not the next approving user for draft entity with id ${id}.`);
+      throw new Error(
+        `User ${this.user} is not the next approving user for draft entity with id ${id}.`
+      );
     }
 
-    if (approvalHierarcy.length === 0 || approvalHierarcy[approvalHierarcy.length - 1] === this.user) {
-      return {
-        ...draftEntity,
-        changeHistory: {
-          ...draftEntity.changeHistory,
-          approvalHistory: [
-            ...draftEntity.changeHistory.approvalHistory,
-            {
-              user: this.user,
-              timestamp: new Date(),
-              description: "Approved by user",
-              status: "approved"
-            }
-          ]
-        }
-      };
-    } else {
-      const currentIndex = approvalHierarcy.indexOf(this.user);
-      await this.draftEntityRepository.update(id, {
-        nextApprovingUser: approvalHierarcy[currentIndex + 1],
+    // Last approver
+    if (approvalHierarchy.length === 0 || approvalHierarchy[approvalHierarchy.length - 1] === this.user) {
+      const changeLog = await this.changeLogRepository.create({
+        project: draftEntity.project,
+        entity: draftEntity.entity,
+        entitySchema: draftEntity.entitySchema,
+        createdByUser: this.user,
         changeHistory: JSON.stringify({
           ...draftEntity.changeHistory,
           approvalHistory: [
@@ -89,15 +80,41 @@ export class DraftEntityService {
             {
               user: this.user,
               timestamp: new Date(),
-              description: "Approved by user",
+              description: "Approved By User",
               status: "approved"
             }
-          ]
-        })
+          ],
+        }),
       });
+
+      await this.draftEntityRepository.delete(id);
+      return changeLog;
     }
+
+    // if Next approver
+    const currentIndex = approvalHierarchy.indexOf(this.user);
+    if (currentIndex === -1 || !approvalHierarchy[currentIndex + 1]) {
+      throw new Error(`Invalid approval hierarchy for user ${this.user}`);
+    }
+    const nextApprovingUser = approvalHierarchy[currentIndex + 1];
+
+   return await this.draftEntityRepository.approvingUpdate(id, {
+      nextApprovingUser,
+      changeHistory: {
+        ...draftEntity.changeHistory,
+        approvalHistory: [
+          ...draftEntity.changeHistory.approvalHistory,
+          {
+            user: this.user,
+            timestamp: new Date(),
+            description: "Approved By User",
+            status: "approved"
+          }
+        ],
+      },
+    });
   }
-  
+ 
   async delete(id: number): Promise<void> {
     await this.draftEntityRepository.delete(id);
   }

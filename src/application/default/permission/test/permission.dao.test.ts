@@ -43,7 +43,7 @@ describe('Default -> Permission -> PermissionDao', () => {
         // Call the method under test
         const permissionResult = await permissionDao.findById(1);
 
-        // Add your assertions or method calls here
+        // Add assertions.
         expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.permission");
         expect(mockSelect.selectAll).toHaveBeenCalled();
         expect(mockSelect.where).toHaveBeenCalledWith("id", "=", 1);
@@ -73,7 +73,7 @@ describe('Default -> Permission -> PermissionDao', () => {
         // Call the method under test
         const permissionResult = await permissionDao.findById(1);
 
-        // Add your assertions or method calls here
+        // Add assertions.
         expect(permissionResult).toEqual(mockPermission);
     });
 
@@ -103,7 +103,7 @@ describe('Default -> Permission -> PermissionDao', () => {
         // Call the method under test
         const permissionResult = await permissionDao.findAll(10, 0);
 
-        // Add your assertions or method calls here
+        // Add assertions.
         expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.permission");
         expect(mockQueryBuilder.where).toHaveBeenCalledWith("tenant", "=", tenant);
         expect(mockQueryBuilder.selectAll).toHaveBeenCalled();
@@ -161,7 +161,7 @@ describe('Default -> Permission -> PermissionDao', () => {
         // Call the method under test
         const permissionResult = await permissionDao.create(mockPermissionInsertable);
 
-        // Add your assertions or method calls here - FIXED: Use the insertable object, not the returned object
+        // Add assertions.
         expect(mockKysely.insertInto).toHaveBeenCalledWith("public.permission");
         expect(mockInsert.values).toHaveBeenCalledWith({
             ...mockPermissionInsertable,
@@ -219,7 +219,7 @@ describe('Default -> Permission -> PermissionDao', () => {
         // Call the method under test
         const permissionResult = await permissionDao.create(mockPermissionInsertable);
 
-        // Add your assertions or method calls here
+        // Add assertions.
         expect(permissionResult).toEqual(mockPermissions);
     });
 
@@ -330,7 +330,7 @@ describe('Default -> Permission -> PermissionDao', () => {
         // Call the method under test
         const permissionResult = await permissionDao.update(1, mockPermissionUpdateable);
 
-        // Add your assertions or method calls here
+        // Add assertions.
         expect(permissionResult).toEqual(mockPermissions);
     });
 

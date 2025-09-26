@@ -1,19 +1,19 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { DraftEntityService } from "../draft-entity/draft-entity.service";
-import { DraftEntityDao } from "../draft-entity/dao/draft-entity.dao";
+import { ChangeLogService } from "../change-log/change-log.service";
 import { ChangeLogDao } from "../change-log/dao/change-log.dao";
 import { RequestUser } from "../../../infrastructure/types/fastify.types";
 import { ControlledTransaction } from "kysely";
 import { IDatabase } from "../../../infrastructure/db/kysely/types";
+import { ProjectDao } from "../project/dao/project.dao";
 
-export default async function draftEntityContextPlugin(fastify: FastifyInstance) {
+export default async function changeLogContextPlugin(fastify: FastifyInstance) {
 
   // Add DAO decorators
-  fastify.decorateRequest('draftEntityDao', null);
+  fastify.decorateRequest('changeLogDao', null);
 
 
   // Add Service decorators
-  fastify.decorateRequest('draftEntityService', null);
+  fastify.decorateRequest('changeLogService', null);
 
   // Registering services and dao
   fastify.addHook('preHandler', async (request: FastifyRequest, reply: FastifyReply) => {
@@ -21,18 +21,18 @@ export default async function draftEntityContextPlugin(fastify: FastifyInstance)
     const userId = (request.user as RequestUser).user;
 
     // DAO
-    request.setDecorator<DraftEntityDao>(
-      'draftEntityDao',
-      new DraftEntityDao(request.getDecorator<ControlledTransaction<IDatabase>>('dbTransaction'), tenantId, userId)
+    request.setDecorator<ChangeLogDao>(
+      'changeLogDao',
+      new ChangeLogDao(request.getDecorator<ControlledTransaction<IDatabase>>('dbTransaction'), tenantId, userId)
     );
 
     // Services
-    request.setDecorator<DraftEntityService>(
-      'draftEntityService',
-      new DraftEntityService(
-        request.getDecorator<DraftEntityDao>('draftEntityDao'),
+    request.setDecorator<ChangeLogService>(
+      'changeLogService',
+      new ChangeLogService(
         request.getDecorator<ChangeLogDao>('changeLogDao'),
-        userId,
+        request.getDecorator<ProjectDao>('projectDao'),
+        userId
       )
     );
   });

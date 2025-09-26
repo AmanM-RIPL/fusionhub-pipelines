@@ -1,8 +1,9 @@
 import { Insertable, Kysely, Selectable, sql } from "kysely";
 import { IDatabase } from "../../../../infrastructure/db/kysely/types";
-import { InsertableEntity, UpdateableEntity } from "../../../common/types/entity";
+import { ChangeHistory, InsertableEntity, UpdateableEntity } from "../../../common/types/entity";
 import { IDraftEntity } from "../draft-entity.model";
 import { IDraftEntityRepository } from "../draft-entity.repository";
+import { IChangeLog } from "../../change-log/change-log.model";
 
 /*
 
@@ -71,6 +72,21 @@ export class DraftEntityDao implements IDraftEntityRepository {
       .executeTakeFirst();
   }
 
+  async approvingUpdate (id: number, updatedObject: { nextApprovingUser: number, changeHistory: ChangeHistory }): Promise<Selectable<IDraftEntity> | undefined> {
+    if (this.tenant === null) throw new Error("Tenant must be set before updating an entity schema.");
+
+    return await this.db
+      .updateTable("public.draft_entity")
+      .set({
+        nextApprovingUser: updatedObject.nextApprovingUser,
+        changeHistory: JSON.stringify(updatedObject.changeHistory)
+      })
+      .where("id", "=", id)
+      .where("tenant", "=", this.tenant)
+      .returningAll()
+      .executeTakeFirst();
+  }
+
   async delete(id: number): Promise<void> {
     if (this.tenant === null) { throw new Error("Tenant must be set before deleting a draft entity."); }
 
@@ -101,18 +117,4 @@ export class DraftEntityDao implements IDraftEntityRepository {
       .execute();
   }
 
-  async approve(draftId: number, userIds: number[]): Promise<Selectable<IDraftEntity>> {
-    if (this.tenant === null) throw new Error("Tenant must be set before accessing an entity schema.");
-
-    return await this.db.updateTable("public.draft_entity").set({
-      //status: 'approved',
-      nextApprovingUser: null,
-      createdByUser: userIds[0],
-      createdOn: new Date(),
-    })
-      .where("id", "=", draftId)
-      .where("tenant", "=", this.tenant)
-      .returningAll()
-      .executeTakeFirstOrThrow();
-  }
 }

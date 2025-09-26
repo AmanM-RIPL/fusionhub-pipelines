@@ -214,4 +214,5 @@ export default async function projectRoutes(fastify: FastifyInstance) {
       }
     }
   );
+  
 }

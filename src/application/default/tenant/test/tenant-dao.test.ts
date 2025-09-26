@@ -43,7 +43,7 @@ describe('Default -> Tenant -> TenantDao', () => {
     // Call the method under test
     const tenantResult = await tenantDao.findById(1);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.tenant");
     expect(mockSelect.selectAll).toHaveBeenCalled();
     expect(mockSelect.where).toHaveBeenCalledWith("id", "=", 1);
@@ -73,7 +73,7 @@ describe('Default -> Tenant -> TenantDao', () => {
     // Call the method under test
     const tenantResult = await tenantDao.findById(1);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(tenantResult).toEqual(mockTenant);
   });
 
@@ -103,7 +103,7 @@ describe('Default -> Tenant -> TenantDao', () => {
     // Call the method under test
     const tenantResult = await tenantDao.findAll(10, 0);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.tenant");
     expect(mockQueryBuilder.selectAll).toHaveBeenCalled();
     expect(mockQueryBuilder.limit).toHaveBeenCalledWith(10);
@@ -201,7 +201,7 @@ describe('Default -> Tenant -> TenantDao', () => {
     // Call the method under test
     const tenantResult = await tenantDao.create(mockTenantInsertable);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(tenantResult).toEqual(mockTenants);
   });
 
@@ -303,7 +303,7 @@ describe('Default -> Tenant -> TenantDao', () => {
     // Call the method under test
     const tenantResult = await tenantDao.update(1, mockTenantUpdateable);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(tenantResult).toEqual(mockTenants);
   });
 

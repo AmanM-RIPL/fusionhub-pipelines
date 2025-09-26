@@ -45,8 +45,6 @@ CREATE TABLE project (
         REFERENCES tenant(id) ON DELETE CASCADE
 );
 
-
-
 CREATE TABLE fh_user (
     -- default columns
     "id" SERIAL PRIMARY KEY,
@@ -115,9 +113,35 @@ CREATE TABLE draft_entity (
         REFERENCES fh_user(id) ON DELETE SET NULL
 );
 
+CREATE TABLE change_log (
+    -- default columns
+    "id" SERIAL PRIMARY KEY,
+    "tenant" INT NOT NULL,
+    "createdOn" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    -- custom columns
+    "project" INT NOT NULL,
+    "entity" VARCHAR(50),
+    "entitySchema" JSONB NOT NULL DEFAULT '{}',
+    "associatedApprovedEntity" INT,
+    "createdByUser" INT NOT NULL,
+    "changeHistory" JSONB NOT NULL DEFAULT '{}',
+
+    -- foreign keys
+    CONSTRAINT fk_change_log_tenant FOREIGN KEY(tenant)
+        REFERENCES tenant(id) ON DELETE CASCADE,
+    CONSTRAINT fk_change_log_created_by_user FOREIGN KEY("createdByUser")
+        REFERENCES fh_user(id) ON DELETE CASCADE
+);
+
+ALTER TABLE project ADD CONSTRAINT fk_project_last_change_log FOREIGN KEY ("lastChangeLogId")
+REFERENCES change_log("id") ON DELETE SET NULL;
+
+
 -- migrate:down
 DROP TABLE draft_entity;
 DROP TABLE permission;
-DROP TABLE fh_user;
 DROP TABLE project;
+DROP TABLE change_log;
+DROP TABLE fh_user;
 DROP TABLE tenant;

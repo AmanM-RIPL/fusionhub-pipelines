@@ -1,6 +1,7 @@
 import { Selectable } from "kysely";
 import { IBaseRepository } from "../../common/repositories/base.repository";
 import { IDraftEntity } from "./draft-entity.model";
+import { ChangeHistory } from "../../common/types/entity";
 
 export interface IDraftEntityRepository extends IBaseRepository<IDraftEntity> {
   findBy(
@@ -11,5 +12,6 @@ export interface IDraftEntityRepository extends IBaseRepository<IDraftEntity> {
       nextApprovingUser?: number 
     }
   ): Promise<Selectable<IDraftEntity>[]>;
-  approve(id: number, approvalHierarcy: number[]): Promise<Selectable<IDraftEntity>>;
+
+  approvingUpdate(id: number, updatedObject: { nextApprovingUser: number, changeHistory: ChangeHistory }): Promise<Selectable<IDraftEntity> | undefined>;
 }

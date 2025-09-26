@@ -51,7 +51,7 @@ describe('Default -> Project -> ProjectDao', () => {
     // Call the method under test
     const projectResult = await projectDao.findById(1);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.project");
     expect(mockSelect.selectAll).toHaveBeenCalled();
     expect(mockSelect.where).toHaveBeenCalledWith("id", "=", 1);
@@ -86,7 +86,7 @@ describe('Default -> Project -> ProjectDao', () => {
     // Call the method under test
     const projectResult = await projectDao.findById(1);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(projectResult).toEqual(mockProjects);
   });
 
@@ -119,7 +119,7 @@ describe('Default -> Project -> ProjectDao', () => {
     // Call the method under test
     const projectResult = await projectDao.findAll(10, 0);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(mockKysely.selectFrom).toHaveBeenCalledWith("public.project");
     expect(mockSelect.selectAll).toHaveBeenCalled();
     expect(mockSelect.limit).toHaveBeenCalledWith(10);
@@ -155,7 +155,7 @@ describe('Default -> Project -> ProjectDao', () => {
     // Call the method under test
     const projectResult = await projectDao.findAll(10, 0);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(projectResult).toEqual(mockProjects);
   });
 
@@ -206,7 +206,7 @@ describe('Default -> Project -> ProjectDao', () => {
     // Call the method under test
     const projectResult = await projectDao.create(mockProjects);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(mockKysely.insertInto).toHaveBeenCalledWith("public.project");
     expect(mockInsert.values).toHaveBeenCalledWith(mockProjects);
     expect(mockInsert.returningAll).toHaveBeenCalled();
@@ -297,7 +297,7 @@ describe('Default -> Project -> ProjectDao', () => {
     // Call the method under test
     const projectResult = await projectDao.update(1, mockProjects);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(mockKysely.updateTable).toHaveBeenCalledWith("public.project");
     expect(mockUpdate.set).toHaveBeenCalledWith(mockProjects);
     expect(mockUpdate.where).toHaveBeenCalledWith("id", "=", 1);
@@ -356,7 +356,7 @@ describe('Default -> Project -> ProjectDao', () => {
     // Call the method under test
     const projectResult = await projectDao.update(1, mockProjectUpdateable);
 
-    // Add your assertions or method calls here
+    // Add assertions.
     expect(projectResult).toEqual(mockProjects);
   });
 });

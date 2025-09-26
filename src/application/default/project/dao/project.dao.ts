@@ -3,8 +3,9 @@ import { IUnDeletableRepository } from "../../../common/repositories/base.reposi
 import { IProject } from "../project.model";
 import { IDatabase } from "../../../../infrastructure/db/kysely/types";
 import { InsertableEntity, UpdateableEntity } from "../../../common/types/entity";
+import { IProjectRepository } from "../project.repository";
 
-export class ProjectDao implements IUnDeletableRepository<IProject> {
+export class ProjectDao implements IProjectRepository {
    constructor(protected readonly db: Kysely<IDatabase>, protected readonly tenant: number | null) {} 
 
   async findById(id: number): Promise<Selectable<IProject> | undefined> {
@@ -16,7 +17,7 @@ export class ProjectDao implements IUnDeletableRepository<IProject> {
   }
 
   async create(entity: InsertableEntity<IProject>): Promise<Selectable<IProject>> {
-      if (this.tenant === null) throw new Error("Tenant must be set before creating a user.");
+      if (this.tenant === null) throw new Error("Tenant must be set before creating a project.");
   
       const entityToInsert: Insertable<IProject> = {
         ...entity,
@@ -34,4 +35,17 @@ export class ProjectDao implements IUnDeletableRepository<IProject> {
       .returningAll()
       .executeTakeFirst();
   }
+
+ async findAllWithChangeLogGreaterThan( projectId: number, lastChangeLogId: number, limit: number, offset: number): Promise<Selectable<IProject>[]> {
+  return await this.db
+    .selectFrom("public.project")
+    .selectAll()
+    .where("id", "=", projectId)
+    .where("tenant", "=", this.tenant)
+    .where("lastChangeLogId", ">", lastChangeLogId)
+    .limit(limit)
+    .offset(offset)
+    .execute();
+ }
+
 }
