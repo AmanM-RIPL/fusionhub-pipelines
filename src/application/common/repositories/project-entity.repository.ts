@@ -12,3 +12,7 @@ export interface IProjectEntityBaseRepository {
   create(changeLog: Selectable<IChangeLog>): void;
   update(changeLog: Selectable<IChangeLog>): void;
 }
+
+export interface IProjectEntityBaseController {
+  validate(changeLog: Selectable<IChangeLog>): void;
+}
