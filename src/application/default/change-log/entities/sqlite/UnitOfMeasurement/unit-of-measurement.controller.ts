@@ -10,7 +10,7 @@ export class UnitOfMeasurementController implements IProjectEntityBaseController
       const newEntitySchema: Selectable<IUnitOfMeasurement> = {
         uom_name: "",
         id: 0,
-        global_id: "",
+        global_id: 0,
         approval_status: false,
         change_history: {
           user: 0,
@@ -25,8 +25,38 @@ export class UnitOfMeasurementController implements IProjectEntityBaseController
         conversion_to_meter: 0,
         conversion_to_kilogram: 0
       };
-      changeLog.entitySchema = newEntitySchema
+    }
+    
+    const entitySchema = changeLog.entitySchema as Selectable<IUnitOfMeasurement>;
+
+    if (typeof entitySchema.uom_name !== "string") {
+      entitySchema.uom_name = "";
     }
 
+    if (typeof entitySchema.unit_type !== "string") {
+      entitySchema.unit_type = "";
+    }
+
+    if (typeof entitySchema.approval_status !== "boolean") {
+      entitySchema.approval_status = false;
+    }
+
+    if (typeof entitySchema.conversion_to_sqm !== "number") {
+      entitySchema.conversion_to_sqm = 0;
+    }
+
+    if (typeof entitySchema.conversion_to_cubic_meter !== "number") {
+      entitySchema.conversion_to_cubic_meter = 0;
+    }
+
+    if (typeof entitySchema.conversion_to_meter !== "number") {
+      entitySchema.conversion_to_meter = 0;
+    }
+
+    if (typeof entitySchema.conversion_to_kilogram !== "number") {
+      entitySchema.conversion_to_kilogram = 0;
+    }
+    changeLog.entitySchema = entitySchema
   }
+
 }

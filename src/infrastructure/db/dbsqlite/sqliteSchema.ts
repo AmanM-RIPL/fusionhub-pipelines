@@ -3,7 +3,7 @@ export const sqliteTable: string[] = [
     // Unit of Measurement
     `CREATE TABLE UnitOfMeasurement (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     uom_name TEXT NOT NULL,
                     unit_type TEXT NOT NULL,
@@ -17,7 +17,7 @@ export const sqliteTable: string[] = [
     // Vendor Management
     `CREATE TABLE Vendor (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     vendor_name TEXT NOT NULL,
                     vendor_address TEXT,
@@ -30,19 +30,19 @@ export const sqliteTable: string[] = [
     // Material Management
     `CREATE TABLE Material (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     material_name TEXT NOT NULL,
                     category TEXT,
                     unit_of_measurement_id INTEGER,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
-                    FOREIGN KEY (unit_of_measurement_id) REFERENCES UnitOfMeasurement(id)
+                    FOREIGN KEY (unit_of_measurement_id) REFERENCES UnitOfMeasurement(global_id)
                 );`,
 
     // Budget Management
     `CREATE TABLE BudgetHead (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     description TEXT NOT NULL,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history))
@@ -50,18 +50,18 @@ export const sqliteTable: string[] = [
 
     `CREATE TABLE ProjectBudget (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     budget_head_id INTEGER NOT NULL,
                     dollar_value REAL,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
-                    FOREIGN KEY (budget_head_id) REFERENCES BudgetHead(id)
+                    FOREIGN KEY (budget_head_id) REFERENCES BudgetHead(global_id)
                 );`,
 
     // Schedule Setup
     `CREATE TABLE ScheduleSetup (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     schedule_name TEXT NOT NULL,
                     description TEXT,
@@ -72,7 +72,7 @@ export const sqliteTable: string[] = [
 
     `CREATE TABLE ScheduleOfRates (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     schedule_name TEXT NOT NULL,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history))
@@ -80,21 +80,21 @@ export const sqliteTable: string[] = [
 
     `CREATE TABLE ScheduleOfRatesLine (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     schedule_id INTEGER NOT NULL,
                     schedule_type_id INTEGER NOT NULL,
                     cost TEXT,
                     resource TEXT,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
-                    FOREIGN KEY (schedule_id) REFERENCES ScheduleOfRates(id),
-                    FOREIGN KEY (schedule_type_id) REFERENCES ScheduleSetup(id)
+                    FOREIGN KEY (schedule_id) REFERENCES ScheduleOfRates(global_id),
+                    FOREIGN KEY (schedule_type_id) REFERENCES ScheduleSetup(global_id)
                 );`,
 
     // Task Management
     `CREATE TABLE Task (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     task_name TEXT NOT NULL,
                     description TEXT,
@@ -106,18 +106,18 @@ export const sqliteTable: string[] = [
 
     `CREATE TABLE TaskImage (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     task_id INTEGER NOT NULL,
                     image_url TEXT,
                     image_local_path TEXT,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
-                    FOREIGN KEY (task_id) REFERENCES Task(id)
+                    FOREIGN KEY (task_id) REFERENCES Task(global_id)
                 );`,
 
     `CREATE TABLE TaskMeasurement (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     task_id INTEGER NOT NULL,
                     date TEXT,
@@ -134,44 +134,44 @@ export const sqliteTable: string[] = [
                     surface_area REAL,
                     surface_area_unit_id INTEGER,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
-                    FOREIGN KEY (task_id) REFERENCES Task(id),
-                    FOREIGN KEY (length_unit_id) REFERENCES UnitOfMeasurement(id),
-                    FOREIGN KEY (width_unit_id) REFERENCES UnitOfMeasurement(id),
-                    FOREIGN KEY (height_unit_id) REFERENCES UnitOfMeasurement(id),
-                    FOREIGN KEY (diameter_unit_id) REFERENCES UnitOfMeasurement(id),
-                    FOREIGN KEY (volume_unit_id) REFERENCES UnitOfMeasurement(id),
-                    FOREIGN KEY (surface_area_unit_id) REFERENCES UnitOfMeasurement(id)
+                    FOREIGN KEY (task_id) REFERENCES Task(global_id),
+                    FOREIGN KEY (length_unit_id) REFERENCES UnitOfMeasurement(global_id),
+                    FOREIGN KEY (width_unit_id) REFERENCES UnitOfMeasurement(global_id),
+                    FOREIGN KEY (height_unit_id) REFERENCES UnitOfMeasurement(global_id),
+                    FOREIGN KEY (diameter_unit_id) REFERENCES UnitOfMeasurement(global_id),
+                    FOREIGN KEY (volume_unit_id) REFERENCES UnitOfMeasurement(global_id),
+                    FOREIGN KEY (surface_area_unit_id) REFERENCES UnitOfMeasurement(global_id)
                 );`,
 
     // Bill of Quantity
     `CREATE TABLE BillOfQuantity (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     schedule_id INTEGER NOT NULL,
                     description TEXT,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
-                    FOREIGN KEY (schedule_id) REFERENCES ScheduleOfRates(id)
+                    FOREIGN KEY (schedule_id) REFERENCES ScheduleOfRates(global_id)
                 );`,
 
     `CREATE TABLE BillOfQuantityLine (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     bill_of_quantity_id INTEGER NOT NULL,
                     description TEXT,
                     dollar_value REAL,
                     task_id INTEGER,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
-                    FOREIGN KEY (bill_of_quantity_id) REFERENCES BillOfQuantity(id),
-                    FOREIGN KEY (task_id) REFERENCES Task(id)
+                    FOREIGN KEY (bill_of_quantity_id) REFERENCES BillOfQuantity(global_id),
+                    FOREIGN KEY (task_id) REFERENCES Task(global_id)
                     
                 );`,
 
     // File Management
     `CREATE TABLE File (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     description TEXT,
                     file_url TEXT,
@@ -181,29 +181,29 @@ export const sqliteTable: string[] = [
 
     `CREATE TABLE FilePermission (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     user_id INTEGER NOT NULL,
                     file_id INTEGER NOT NULL,
                     permission_type TEXT NOT NULL,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
-                    FOREIGN KEY (user_id) REFERENCES User(id),
-                    FOREIGN KEY (file_id) REFERENCES File(id)  
+                    FOREIGN KEY (user_id) REFERENCES User(global_id),
+                    FOREIGN KEY (file_id) REFERENCES File(global_id)  
                 );`,
 
     // Purchase Management
     `CREATE TABLE PurchaseOrder (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     vendor_id INTEGER NOT NULL,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
-                    FOREIGN KEY (vendor_id) REFERENCES Vendor(id)
+                    FOREIGN KEY (vendor_id) REFERENCES Vendor(global_id)
                 );`,
 
     `CREATE TABLE PurchaseOrderLine (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     purchase_order_id INTEGER NOT NULL,
                     material_id INTEGER NOT NULL,
@@ -213,48 +213,48 @@ export const sqliteTable: string[] = [
                     tax_amount REAL,
                     tax_withholding REAL,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
-                    FOREIGN KEY (purchase_order_id) REFERENCES PurchaseOrder(id),
-                    FOREIGN KEY (material_id) REFERENCES Material(id),
-                    FOREIGN KEY (unit_of_measurement_id) REFERENCES UnitOfMeasurement(id)
+                    FOREIGN KEY (purchase_order_id) REFERENCES PurchaseOrder(global_id),
+                    FOREIGN KEY (material_id) REFERENCES Material(global_id),
+                    FOREIGN KEY (unit_of_measurement_id) REFERENCES UnitOfMeasurement(global_id)
                 );`,
 
     `CREATE TABLE GoodReceivedNote (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     purchase_order_line_id INTEGER NOT NULL,
                     amount_of_material_received REAL,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
-                    FOREIGN KEY (purchase_order_line_id) REFERENCES PurchaseOrderLine(id)
+                    FOREIGN KEY (purchase_order_line_id) REFERENCES PurchaseOrderLine(global_id)
                 );`,
 
     // Material Indent
     `CREATE TABLE MaterialIndent (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     material_id INTEGER NOT NULL,
                     total_quantity REAL,
                     task_id INTEGER,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
-                    FOREIGN KEY (material_id) REFERENCES Material(id),
-                    FOREIGN KEY (task_id) REFERENCES Task(id)
+                    FOREIGN KEY (material_id) REFERENCES Material(global_id),
+                    FOREIGN KEY (task_id) REFERENCES Task(global_id)
                 );`,
 
     // Work Order Management
     `CREATE TABLE WorkOrder (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     vendor_id INTEGER NOT NULL,
                     description TEXT,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
-                    FOREIGN KEY (vendor_id) REFERENCES Vendor(id)
+                    FOREIGN KEY (vendor_id) REFERENCES Vendor(global_id)
                 );`,
 
     `CREATE TABLE WorkOrderLine (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     work_order_id INTEGER NOT NULL,
                     description TEXT,
@@ -264,23 +264,23 @@ export const sqliteTable: string[] = [
                     task_id INTEGER,
                     retention_amount REAL,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
-                    FOREIGN KEY (work_order_id) REFERENCES WorkOrder(id),
-                    FOREIGN KEY (task_id) REFERENCES Task(id)
+                    FOREIGN KEY (work_order_id) REFERENCES WorkOrder(global_id),
+                    FOREIGN KEY (task_id) REFERENCES Task(global_id)
                 );`,
 
     // Billing Management
     `CREATE TABLE WorkBilling (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     work_order_id INTEGER NOT NULL,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
-                    FOREIGN KEY (work_order_id) REFERENCES WorkOrder(id)
+                    FOREIGN KEY (work_order_id) REFERENCES WorkOrder(global_id)
                 );`,
 
     `CREATE TABLE WorkBillingLine (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER GENERATED ALWAYS AS (id) STORED,
+                    global_id INTEGER NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     work_order_line_id INTEGER NOT NULL,
                     dollar_value REAL,
@@ -288,6 +288,6 @@ export const sqliteTable: string[] = [
                     tax_withholding_amount REAL,
                     retention_amount REAL,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
-                    FOREIGN KEY (work_order_line_id) REFERENCES WorkOrderLine(id)
+                    FOREIGN KEY (work_order_line_id) REFERENCES WorkOrderLine(global_id)
                 );`
 ];
