@@ -70,7 +70,6 @@ export class ChangeLogService {
     }
 
     // 3. Sync into SQLite
-    console.log(`Starting sync of ${entitiesToSync.length} entities for project ${projectId}`);
     const dbFilePath = path.resolve("C:/code/fhapi_service/src/infrastructure/sqlite/" + "project_" + projectId + ".db");
     const sqliteDb = new Database(dbFilePath);
     
