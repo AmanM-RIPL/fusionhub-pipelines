@@ -3,10 +3,13 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import com.fh.models 1.0
 
+
 Rectangle {
     // width: 1440
     // height: 1024
     id: baseLayout
+    width: Screen.width
+    height: Screen.height
     anchors.fill: parent
     color: "#EDF1F4"
 
@@ -28,8 +31,10 @@ Rectangle {
             }
         }
 
-        BudgetHeadPage {
+
+        BudgetHeadPage {            
             visible: pageName === "BudgetHead"
+
         }
 
         VendorPage {
@@ -37,8 +42,14 @@ Rectangle {
         }
 
         MaterialPage {
-            visible: pageName === "Material"
+           visible: pageName === "Material"
         }
+
+        ScheduleSetupPage {
+            visible: pageName === "ScheduleSetup"
+        }
+
+
 
         /*
 
@@ -54,17 +65,14 @@ Rectangle {
             id: taskBoard
             width: parent.width
             height: 1024 - (131 + 13)
-            color: parent.color
+            //color: parent.color
             // border.color: "red"
             //anchors.bottom: parent.bottom
             visible: pageName === "TaskBoard"
 
-
             TaskBoard{
                 anchors.fill: parent
             }
-
         }
-
     }
 }

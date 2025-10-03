@@ -23,18 +23,30 @@
 #include "repositories/material_repository.h"
 #include "repositories/schedule_setup_repository.h"
 #include "repositories/ifcdetailrepository.h"
+#include "repositories/draft_entity_repository.h"
 
 #include "controllers/user_controller.h"
 #include "controllers/project_controller.h"
+#include "controllers/budget_head_controller.h"
+#include "controllers/vendor_controller.h"
+#include "controllers/material_controller.h"
+#include "controllers/unit_of_measurement_controller.h"
+#include "controllers/schedule_setup_controller.h"
 
 #include "models/user.h"
 #include "models/unit_of_measurement.h"
+#include "models/draft_entity.h"
 
 // There has to be a better way???????????
 const OdString OdString::kEmpty;
 const OdDAIObjectId OdDAIObjectId::kNull;
 OdArrayBuffer OdArrayBuffer::g_empty_array_buffer;
 OdGeTol OdGeContext::gTol;
+
+//Create global state later
+std::shared_ptr<User> gUser = std::make_shared<User>();
+int gTenantId = 0;
+int gProjectId = 0;
 
 
 int main(int argc, char *argv[])
@@ -359,6 +371,8 @@ int main(int argc, char *argv[])
     
 
 
+
+    /*
     auto dbManager = DatabaseManager::getInstance();
     if (!dbManager->initializeDatabase("TestProject")) {
         qDebug() << "Failed to initialize database";
@@ -367,8 +381,7 @@ int main(int argc, char *argv[])
     
     qDebug() << "Database initialized successfully!";
     qDebug() << "Project path:" << dbManager->getProjectPath();
-
-
+    */
 
     
     BudgetHeadRepository* budgetHeadRepository = new BudgetHeadRepository(&engine);
@@ -377,6 +390,10 @@ int main(int argc, char *argv[])
     UserRepository* userRepository = new UserRepository(&engine);    
     MaterialRepository* materialRepository = new MaterialRepository(&engine);
     ScheduleSetupRepository* scheduleSetupRepository = new ScheduleSetupRepository(&engine);
+    DraftEntityRepository* draftEntityRepository = new DraftEntityRepository(&engine);
+    ProjectRepository* projectRepository = new ProjectRepository(&engine);
+
+
     // IFCDetailRepository* ifcDetailRepository = new IFCDetailRepository(ifcDetailList, &engine);
     // UserRepository userRepo;
     // UnitOfMeasurementRepository uomRepo;
@@ -448,6 +465,9 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("userRepository", userRepository);   
     engine.rootContext()->setContextProperty("materialRepository", materialRepository);
     engine.rootContext()->setContextProperty("scheduleSetupRepository", scheduleSetupRepository);
+    engine.rootContext()->setContextProperty("draftEntityRepository", draftEntityRepository);
+    engine.rootContext()->setContextProperty("projectRepository", projectRepository);
+
 
     qmlRegisterType<MyGLItem>("com.fh.models", 1, 0, "GLScene");
     qmlRegisterType<BudgetHead>("com.fh.models", 1, 0, "BudgetHead");
@@ -456,9 +476,18 @@ int main(int argc, char *argv[])
     qmlRegisterType<Vendor>("com.fh.models", 1, 0, "Vendor");
     qmlRegisterType<User>("com.fh.models", 1, 0, "User");   
     qmlRegisterType<ScheduleSetup>("com.fh.models", 1, 0, "ScheduleSetup");
+    qmlRegisterType<DraftEntity>("com.fh.models", 1, 0, "DraftEntity");
+    qmlRegisterType<User>("com.fh.models", 1, 0, "Project");
+
 
     qmlRegisterType<UserController>("com.fh.controllers", 1, 0, "UserController");
     qmlRegisterType<ProjectController>("com.fh.controllers", 1, 0, "ProjectController");
+    qmlRegisterType<BudgetHeadController>("com.fh.controllers", 1, 0, "BudgetHeadController");
+    qmlRegisterType<VendorController>("com.fh.controllers", 1, 0, "VendorController");
+    qmlRegisterType<MaterialController>("com.fh.controllers", 1, 0, "MaterialController");
+    qmlRegisterType<UnitOfMeasurementController>("com.fh.controllers", 1, 0, "UnitOfMeasurementController");
+    qmlRegisterType<ScheduleSetupController>("com.fh.controllers", 1, 0, "ScheduleSetupController");
+
     
     const QUrl url(QStringLiteral("qrc:/resources/QML/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,

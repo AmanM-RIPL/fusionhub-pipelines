@@ -6,6 +6,10 @@ Rectangle {
     height: 1024 - (131 + 13)
     color: "#EDF1F4"
 
+    Item {
+        width: 100
+        height: 100
+
 
     Image{
         source: "qrc:/resources/images/backArrow.svg"
@@ -13,6 +17,16 @@ Rectangle {
         anchors.leftMargin: 100
         anchors.top: parent.top
         anchors.topMargin: 46
+
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            hoverEnabled: true
+            onClicked: {
+                baseLayout.visible = false
+                WelcomePage.visible = true
+            }
+        }
     }
 
 
@@ -26,7 +40,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.topMargin: 21
     }
-
+   }
 
 
     Rectangle{

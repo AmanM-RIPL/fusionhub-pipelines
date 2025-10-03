@@ -1,9 +1,19 @@
 #include "repositories/vendor_repository.h"
-VendorRepository::VendorRepository(QObject* parent) : QObject(parent) {}
-std::unique_ptr<Vendor> VendorRepository::findById(int id) { return nullptr; }
-std::vector<std::unique_ptr<Vendor>> VendorRepository::findAll() { return {}; }
+VendorRepository::VendorRepository(QObject* parent) : QObject(parent)
+{
+
+}
+std::unique_ptr<Vendor> VendorRepository::findById(int id)
+{
+    return nullptr;
+}
+std::vector<std::unique_ptr<Vendor>> VendorRepository::findAll()
+{
+    return {};
+}
 std::vector<Vendor*> VendorRepository::findAllQML() {
     std::vector<Vendor*> vendors;
+
     QSqlQuery query(dbManager->getDatabase());
 
     if (query.exec("SELECT * FROM Vendor")) {
@@ -11,10 +21,10 @@ std::vector<Vendor*> VendorRepository::findAllQML() {
             vendors.push_back(mapFromQueryQML(query, this));
         }
     }
-
     return vendors;
 }
 bool VendorRepository::save(const Vendor& entity) { return false; }
+
 bool VendorRepository::saveQML(Vendor* entity) {
 
     QSqlQuery query(dbManager->getDatabase());

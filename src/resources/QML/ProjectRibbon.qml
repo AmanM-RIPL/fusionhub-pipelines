@@ -43,7 +43,8 @@ Column {
             border.width: 1
             border.color: "#7676801F"//"#8A888629"
             color: "white"
-            anchors.horizontalCenter: parent.horizontalCenter
+            //anchors.horizontalCenter: parent.horizontalCenter
+            Layout.alignment: parent.anchors.alignWhenCentered
 
 
             Row {
@@ -259,7 +260,8 @@ Column {
             border.width: 1
             border.color: "#7676801F"//"#8A888629"
             color: "white"
-            anchors.horizontalCenter: parent.horizontalCenter
+            //anchors.horizontalCenter: parent.horizontalCenter
+            Layout.alignment: parent.anchors.alignWhenCentered
 
 
             Row {
@@ -384,8 +386,8 @@ Column {
             border.width: 1
             border.color: "#7676801F"//"#8A888629"
             color: "white"
-            anchors.horizontalCenter: parent.horizontalCenter
-
+            //anchors.horizontalCenter: parent.horizontalCenter
+            Layout.alignment: parent.anchors.alignWhenCentered
 
             Row {
                 spacing: 7
@@ -401,7 +403,7 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            // newProjectClicked()
+                            projectPageToRedirect("ScheduleSetup")
                         }
                     }
                 }

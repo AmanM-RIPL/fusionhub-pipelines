@@ -3,6 +3,13 @@
 
 #include "repositories/user_repository.h"
 #include "repositories/project_repository.h"
+#include "repositories/budget_head_repository.h"
+#include "repositories/vendor_repository.h"
+#include "repositories/material_repository.h"
+#include "repositories/unit_of_measurement_repository.h"
+#include "repositories/schedule_setup_repository.h"
+#include "repositories/draft_entity_repository.h"
+
 
 class RepositoryLocator
 {
@@ -13,10 +20,24 @@ public:
 
     UserRepository* userRepository();
     ProjectRepository* projectRepository();
+    BudgetHeadRepository* budgetheadRepository();
+    VendorRepository* vendorRepository();
+    MaterialRepository* materialRepository();
+    UnitOfMeasurementRepository* unitOfMeasurementRepository();
+    ScheduleSetupRepository* scheduleSetupRepository();
+    DraftEntityRepository* draftEntityRepository();
+
 
 private:
     std::unique_ptr<UserRepository> m_userRepository;
     std::unique_ptr<ProjectRepository> m_projectRepository;
+    std::unique_ptr<BudgetHeadRepository> m_budgetheadRepository;
+    std::unique_ptr<VendorRepository> m_vendorRepository;
+    std::unique_ptr<MaterialRepository> m_materialRepository;
+    std::unique_ptr<UnitOfMeasurementRepository> m_unitOfMeasurementRepository;
+    std::unique_ptr<ScheduleSetupRepository> m_scheduleSetupRepository;
+    std::unique_ptr<DraftEntityRepository> m_draftEntityRepository;
+
 };
 
 #endif // REPOSITORY_LOCATOR_H

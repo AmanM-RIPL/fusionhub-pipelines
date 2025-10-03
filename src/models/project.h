@@ -3,15 +3,34 @@
 
 #include <QString>
 #include <QMetaType>
+#include <QObject>
 
-class Project
+class Project: public QObject
 {
+     Q_OBJECT
+
+    Q_PROPERTY(int id READ getId CONSTANT)
+    Q_PROPERTY(bool approvalStatus READ getApprovalStatus)
+    Q_PROPERTY(QString globalId READ getGlobalId)
+
+
+     Q_PROPERTY(QString projectName READ getProjectName  WRITE setProjectName NOTIFY ProjectNameChanged)
+     Q_PROPERTY(QString customerName READ getCustomerName  WRITE setCustomerName NOTIFY CustomerNameChanged)
+     Q_PROPERTY(QString contactName READ getContactName  WRITE setContactName NOTIFY ContactNameChanged)
+     Q_PROPERTY(QString phoneNumber READ getPhoneNumber  WRITE setPhoneNumber NOTIFY PhoneNumberChanged)
+     Q_PROPERTY(QString emailId READ getEmailId  WRITE setEmailId NOTIFY EmailIdChanged)
+     Q_PROPERTY(QString totalDollarValue READ getTotalDollarValue  WRITE setTotalDollarValue NOTIFY TotalDollarValueChanged)
+     Q_PROPERTY(QString description READ getDescription  WRITE setDescription NOTIFY DescriptionChanged)
+     Q_PROPERTY(bool isBlocked READ getIsBlocked  WRITE setIsBlocked NOTIFY IsBlockedChanged)
+
+
 public:
-    Project()= default;
+    //Project()= default;
+    explicit Project(QObject* parent = nullptr): QObject(parent) {}
 
     Project(int id, const QString& globalId, bool approvalStatus,
          const QString& projectName, const QString& customerName, const QString& contactName, const QString& phoneNumber,
-            const QString& emailId, const QString& totalDollarValue, const QString& description, bool isBlocked);
+            const QString& emailId, const QString& totalDollarValue, const QString& description, bool isBlocked, QObject* parent = nullptr);
 
     int getId() const { return id; }
     QString getGlobalId() const { return globalId; }
@@ -38,6 +57,16 @@ public:
     void setDescription(const QString& description) { this->description = description; }
     void setIsBlocked(const bool isBlocked) { this->isBlocked = isBlocked; }
 
+    signals:
+    void ProjectNameChanged();
+    void CustomerNameChanged();
+    void ContactNameChanged();
+    void PhoneNumberChanged();
+    void EmailIdChanged();
+    void TotalDollarValueChanged();
+    void DescriptionChanged();
+    void IsBlockedChanged();
+
 private:
     int id = 0;
     QString globalId;
@@ -51,5 +80,6 @@ private:
     QString description;
     bool isBlocked = false;
 };
+Q_DECLARE_METATYPE(Project)
 
 #endif // PROJECT_H

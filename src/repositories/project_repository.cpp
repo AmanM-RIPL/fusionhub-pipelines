@@ -6,10 +6,13 @@
 #include <QDate>
 
 
-ProjectRepository::ProjectRepository()
+/*ProjectRepository::ProjectRepository()
 {
 
-}
+}*/
+
+ProjectRepository::ProjectRepository(QObject* parent) : QObject(parent) {}
+
 std::unique_ptr<Project> ProjectRepository::findById(int id)
 {
     return nullptr;

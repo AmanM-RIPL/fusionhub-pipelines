@@ -21,6 +21,7 @@ bool DatabaseManager::initializeDatabase(const QString& projectName)
     database = QSqlDatabase::addDatabase("QSQLITE");
     databasePath = projectPath + "/project.db";
     database.setDatabaseName(databasePath);
+
     
     if (!database.open()) {
         qDebug() << "Database Error:" << database.lastError().text();
@@ -89,7 +90,7 @@ bool DatabaseManager::createTables()
         "FilePermission", "ScheduleOfRates", "ScheduleOfRatesLine",
         "BillOfQuantity", "BillOfQuantityLine", "ProjectBudget", "WorkOrder",
         "WorkOrderLine", "WorkBilling", "WorkBillingLine", "PurchaseOrder",
-        "PurchaseOrderLine", "GoodReceivedNote", "MaterialIndent"
+        "PurchaseOrderLine", "GoodReceivedNote", "MaterialIndent", "DraftEntity"
     };
     
     for(const QString& tableName: tableNames) {
@@ -120,7 +121,8 @@ QString DatabaseManager::getCreateTableQuery(const QString& tableName)
                 user_jobTitle TEXT NOT NULL,
                 user_startDate TEXT NOT NULL,
                 user_endDate TEXT NOT NULL,
-                user_monthlyDeskCostValue TEXT NOT NULL
+                user_monthlyDeskCostValue TEXT NOT NULL,
+                user_password TEXT NOT NULL
             )
         )";
     }
@@ -463,6 +465,23 @@ QString DatabaseManager::getCreateTableQuery(const QString& tableName)
                 task_id INTEGER,
                 FOREIGN KEY (material_id) REFERENCES Material(id),
                 FOREIGN KEY (task_id) REFERENCES Task(id)
+            )
+        )";
+    }
+
+    else if (tableName == "DraftEntity") {
+        return R"(
+            CREATE TABLE IF NOT EXISTS DraftEntity (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tenant INTEGER,
+                createdOn DATE,
+                project INTEGER NOT NULL,
+                entity TEXT NOT NULL,
+                createdByUser TEXT NOT NULL,
+                nextApprovingUser INTEGER,
+                entitySchema TEXT NOT NULL,
+                associatedApprovedEntity INTEGER,
+                changeHistory TEXT NOT NULL
             )
         )";
     }

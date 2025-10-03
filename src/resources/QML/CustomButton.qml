@@ -12,11 +12,14 @@ Rectangle {
     property int btnNamePixelSize:14
     property string btnNameFontFamily:"Segoe UI"
 
+
     Rectangle{
         width: btnImg.width + btnText.width + ((btnImg.source === "") ? 0 : 8)
         height: parent.height
         color: "transparent"
         anchors.centerIn: parent
+
+
         Image{
             id: btnImg
             source: btnSource

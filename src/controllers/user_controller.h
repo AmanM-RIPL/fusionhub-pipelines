@@ -4,6 +4,8 @@
 #include <QObject>
 #include "repositories/user_repository.h"
 
+//extern std::shared_ptr<User> gUser;
+
 class UserController : public QObject
 {
     Q_OBJECT
@@ -23,13 +25,49 @@ public:
                             const QString& endDate,
                             const QString& monthlyDeskCostValue) const;
 
+    Q_INVOKABLE void update(const QString& userId,
+                            const QString& userFullName,
+                            const QString& userName,
+                            const QString& mobile1,
+                            const QString& mobile2,
+                            const QString& email1,
+                            const QString& email2,
+                            const QString& jobTitle,
+                            const QString& startDate,
+                            const QString& endDate,
+                            const QString& monthlyDeskCostValue,
+                            const QString& password) const;
+
+
     Q_INVOKABLE std::vector<User*> getUserList() const;
+
+    Q_INVOKABLE std::shared_ptr<User> getUserDetailsById(const QString& userId) const;
+
+
+    Q_INVOKABLE std::shared_ptr<User>  getCurrentUserObject()const;
+
+    Q_INVOKABLE int getCurrentId() const;
+    Q_INVOKABLE QString getCurrentUserGlobalId()const;
+    Q_INVOKABLE bool getCurrentUserApprovalStatus() const;
+    Q_INVOKABLE QString getCurrentUserId() const;
+    Q_INVOKABLE QString getCurrentUserFullName() const;
+    Q_INVOKABLE QString getCurrentUserName() const;
+    Q_INVOKABLE QString getCurrentUserMobile1() const;
+    Q_INVOKABLE QString getCurrentUserMobile2() const;
+    Q_INVOKABLE QString getCurrentUserEmail1() const;
+    Q_INVOKABLE QString getCurrentUserEmail2() const;
+    Q_INVOKABLE QString getCurrentUserJobTitle() const;
+    Q_INVOKABLE QString getCurrentUserStartDate() const;
+    Q_INVOKABLE QString getCurrentUserEndDate() const;
+    Q_INVOKABLE QString getCurrentUserMonthlyDeskCostValue() const;
+    Q_INVOKABLE QString getCurrentUserPassword() const;
 
 
 signals:
 
 private:
-    UserRepository* m_userRepository;
+    UserRepository* m_userRepository;    
+
 };
 
 #endif // USER_CONTROLLER_H
