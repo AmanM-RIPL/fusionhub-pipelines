@@ -15,6 +15,8 @@ Rectangle {
 
     signal logOutClicked()
     property string pageName: "TaskBoard";
+    property string projectName: "NA";
+
 
     Column {
         width: parent.width
@@ -72,6 +74,7 @@ Rectangle {
 
             TaskBoard{
                 anchors.fill: parent
+                txtProjectName: projectName
             }
         }
     }

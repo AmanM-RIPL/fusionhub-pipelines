@@ -87,6 +87,7 @@ Rectangle {
                        // projectClicked();
                          projectController.openDatabase(projectName, id)
                          baseLayout.visible = true
+                         baseLayout.projectName = projectName
                     }
                 }
             }

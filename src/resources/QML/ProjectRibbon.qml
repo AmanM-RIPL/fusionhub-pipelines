@@ -45,6 +45,9 @@ Column {
             color: "white"
             //anchors.horizontalCenter: parent.horizontalCenter
             Layout.alignment: parent.anchors.alignWhenCentered
+            onVisibleChanged:   {
+                projectPageToRedirect("TaskBoard")
+            }
 
 
             Row {
@@ -263,6 +266,10 @@ Column {
             //anchors.horizontalCenter: parent.horizontalCenter
             Layout.alignment: parent.anchors.alignWhenCentered
 
+            onVisibleChanged:   {
+                  projectPageToRedirect("PlannedBIM")
+            }
+
 
             Row {
                 spacing: 7
@@ -320,7 +327,7 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            projectPageToRedirect("Vendor")
+                            //projectPageToRedirect("Vendor")
                         }
                     }
                 }
@@ -377,6 +384,10 @@ Column {
 
         Item {
             id: activityTab
+            onVisibleChanged:   {
+                //This will be changed after Implemention of Analytics
+                  projectPageToRedirect("PlannedBIM")
+            }
         }
 
         Rectangle {
@@ -388,6 +399,10 @@ Column {
             color: "white"
             //anchors.horizontalCenter: parent.horizontalCenter
             Layout.alignment: parent.anchors.alignWhenCentered
+            onVisibleChanged:   {
+                 projectPageToRedirect("ScheduleSetup")
+            }
+
 
             Row {
                 spacing: 7

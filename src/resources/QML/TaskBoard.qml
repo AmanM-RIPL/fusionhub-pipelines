@@ -5,6 +5,7 @@ Rectangle {
     width: 1440
     height: 1024 - (131 + 13)
     color: "#EDF1F4"
+    property string txtProjectName: "NA"
 
     Item {
         width: 100
@@ -31,7 +32,8 @@ Rectangle {
 
 
     Text{
-        text: "PROJ-0001: Sample House"
+        //text: "PROJ-0001: Sample House"
+        text: txtProjectName
         color: "#000000"
         font.pixelSize: 44
         font.weight: 700
