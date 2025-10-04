@@ -1,252 +1,456 @@
 #include "myglitem.h"
-#include <unordered_set>
 
-MyGLRenderer::MyGLRenderer(OdTvDatabaseId databaseId, OdTvModelId mId)
+MyGLRenderer::MyGLRenderer()
 {
-    dbId = databaseId;
-    modelId = mId;
-
-    try
-    {
-        qInfo() << "Constructor";
-
-        OdTvResult rc;
-        OdTvDatabasePtr pTvDatabase = dbId.openObject(OdTv::kForWrite, &rc);
-        OdTvModelPtr modelPtr = modelId.openObject(OdTv::kForWrite, &rc);
-
-        deviceId = pTvDatabase->createDevice(OD_T("Device0"), &rc);
-        OdTvGsDevicePtr pDevice0 = deviceId.openObject(OdTv::kForWrite, &rc);
-
-        OdTvGsViewId viewId0 = pDevice0->createView(OD_T("View_0"), true, &rc);
-        OdTvGsViewPtr pView0 = viewId0.openObject(OdTv::kForWrite, &rc);
-
-        pView0->addModel(modelId, &rc);
-        pView0->setActive(true);
-        pView0->setView(OdGePoint3d(20000,-10000,0), OdGePoint3d(0,0,0), OdGeVector3d(0,0,1), 10000, 10000, OdTvGsView::kPerspective);
-        rc = pView0->setMode(OdTvGsView::kGouraudShaded);
-        rc = pView0->setLensLength(16.0);
-
-        pDevice0->addView(viewId0);
-
-        m_initialized = false;
-    }
-    catch (...)
-    {
-        qInfo() << "Crashed";
-    }
+    initializeOpenGLFunctions();
+    initGL();
+    initShaders();
 }
 
 MyGLRenderer::~MyGLRenderer()
 {
-    try
-    {
-        qInfo() << "Desctructor";
-        // pDatabase.release();
-    }
-    catch (...)
-    {
-        qInfo() << "Destructor Crashed";
+    if (m_shaderProgram) this->glDeleteProgram(m_shaderProgram);
+    if (m_vbo) this->glDeleteBuffers(1, &m_vbo);
+    if (m_vao) this->glDeleteVertexArrays(1, &m_vao);
+
+    if (m_pickFBO) {
+        this->glDeleteFramebuffers(1, &m_pickFBO);
+        this->glDeleteTextures(1, &m_pickColorTex);
+        this->glDeleteRenderbuffers(1, &m_pickDepthBuf);
     }
 }
 
 void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 {
-    //qInfo() << "Syncronize Function";
-
-    m_item = item;
-
+    // qInfo() << "Syncronize Function";
     MyGLItem* glItem = static_cast<MyGLItem*>(item);
-    m_zoom = glItem->getZoom();
-    m_orbit = glItem->getMousePressed();
 
-    MouseCoordinate m = glItem->getMouseCoordinates();
-
-    // we find where the movement is more, if in x then xObit, otherwise yOrbit
-    double diffX = (m.currentX - m.pressedX) > 0 ? (m.currentX - m.pressedX) : (m.pressedX - m.currentX);
-    double diffY = (m.currentY - m.pressedY) > 0 ? (m.currentY - m.pressedY) : (m.pressedY - m.currentY);
-
-    if (diffX < diffY)
-    {
-        m_xOrbit = (m.currentX - m.pressedX) > 0 ? 0.02 : -0.02;
-        m_yOrbit = 0;
-    }
-    else
-    {
-        m_xOrbit = 0;
-        m_yOrbit = (m.currentY - m.pressedY) > 0 ? 0.02 : -0.02;
+    if (glItem->m_moveUp) {
+        m_cameraPos.setY(m_cameraPos.y() + 0.1f);
+        glItem->m_moveUp = false;  // reset
     }
 
+    if (glItem->m_moveDown) {
+        m_cameraPos.setY(m_cameraPos.y() - 0.1f);
+        glItem->m_moveDown = false;
+    }
 
-    // qInfo() << "Zoom Level: " << m_zoom;
-    // qInfo() << "Diff: " << diffX << ", " << diffY;
+    if (glItem->m_moveLeft) {
+        m_cameraPos.setX(m_cameraPos.x() - 0.1f);
+        glItem->m_moveLeft = false;
+    }
+
+    if (glItem->m_moveRight) {
+        m_cameraPos.setX(m_cameraPos.x() + 0.1f);
+        glItem->m_moveRight = false;
+    }
+
+    // transfer click request safely
+    if (glItem->m_lastClickX >= 0) {
+        m_pickX = glItem->m_lastClickX;
+        m_pickY = glItem->m_lastClickY;
+        m_pickRequested = true;
+        // reset the stored GUI-side coords so we don't re-process
+        glItem->m_lastClickX = -1;
+        glItem->m_lastClickY = -1;
+    }
 }
+
+void MyGLRenderer::update() {
+    // Continuous rendering
+    QQuickFramebufferObject::Renderer::update();
+}
+
+void MyGLRenderer::initGL() {
+    m_vertices[0] = 0.0f;  m_vertices[1] =  0.8f; m_vertices[2] = 0.0f; // top
+    m_vertices[3] = -0.8f; m_vertices[4] = -0.8f; m_vertices[5] = 0.0f; // bottom
+    m_vertices[6] = 0.8f;  m_vertices[7] = -0.8f; m_vertices[8] = 0.0f; // left
+
+    this->glEnable(GL_DEPTH_TEST);
+
+    this->glGenVertexArrays(1, &m_vao);
+    this->glGenBuffers(1, &m_vbo);
+
+    this->glBindVertexArray(m_vao);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertices), m_vertices, GL_DYNAMIC_DRAW);
+
+            this->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+            this->glEnableVertexAttribArray(0);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, 0);
+    this->glBindVertexArray(0);
+}
+
+void MyGLRenderer::initShaders() {
+    const char *vshaderSrc =
+        "#version 330 core\n"
+        "layout (location = 0) in vec3 position;\n"
+        "uniform mat4 u_model;\n"
+        "uniform mat4 u_view;\n"
+        "uniform mat4 u_proj;\n"
+        "void main() {\n"
+        "   gl_Position = u_proj * u_view * u_model * vec4(position, 1.0);\n"
+        "}\n";
+
+    const char *fshaderSrc =
+        "#version 330 core\n"
+        "out vec4 FragColor;\n"
+        "void main() {\n"
+        "   FragColor = vec4(0.9, 0.3, 0.2, 1.0);\n"
+        "}\n";
+
+    const char *vshaderPickSrc =
+        "#version 330 core\n"
+        "layout (location = 0) in vec3 position;\n"
+        "uniform mat4 u_model;\n"
+        "uniform mat4 u_view;\n"
+        "uniform mat4 u_proj;\n"
+        "void main() {\n"
+        "   gl_Position = u_proj * u_view * u_model * vec4(position, 1.0);\n"
+        "}\n";
+
+
+    const char *fshaderPickSrc =
+        "#version 330 core\n"
+        "uniform vec4 u_pickColor;\n"
+        "out vec4 FragColor;\n"
+        "void main() {\n"
+        "   FragColor = u_pickColor;\n"
+        "}\n";
+
+    GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vshaderSrc);
+    GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fshaderSrc);
+    GLuint vertexShaderPick = compileShader(GL_VERTEX_SHADER, vshaderPickSrc);
+    GLuint fragmentShaderPick = compileShader(GL_FRAGMENT_SHADER, fshaderPickSrc);
+
+    // First Pass for picking -------------------------------------------
+    m_pickProgram = this->glCreateProgram();
+    this->glAttachShader(m_pickProgram, vertexShaderPick);
+    this->glAttachShader(m_pickProgram, fragmentShaderPick);
+    this->glLinkProgram(m_pickProgram);
+
+    GLint pickSuccess;
+    this->glGetProgramiv(m_pickProgram, GL_LINK_STATUS, &pickSuccess);
+    if (!pickSuccess) {
+        char log[512];
+        this->glGetProgramInfoLog(m_pickProgram, 512, nullptr, log);
+        qWarning() << "Pick link error:" << log;
+    }
+
+    // cleanup shaders
+    this->glDeleteShader(vertexShaderPick);
+    this-> glDeleteShader(fragmentShaderPick);
+
+    // get uniform locations
+    m_pickModelLoc = this->glGetUniformLocation(m_pickProgram, "u_model");
+    m_pickViewLoc  = this->glGetUniformLocation(m_pickProgram, "u_view");
+    m_pickProjLoc  = this->glGetUniformLocation(m_pickProgram, "u_proj");
+    m_pickColorLoc = glGetUniformLocation(m_pickProgram, "u_pickColor");
+
+
+    // Main program for rendering ----------------------------------------
+    m_shaderProgram = this->glCreateProgram();
+    this->glAttachShader(m_shaderProgram, vertexShader);
+    this->glAttachShader(m_shaderProgram, fragmentShader);
+    this->glLinkProgram(m_shaderProgram);
+
+    GLint success;
+    this->glGetProgramiv(m_shaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        char log[512];
+        this->glGetProgramInfoLog(m_shaderProgram, 512, nullptr, log);
+        qWarning() << "Shader link error:" << log;
+    }
+
+    // add uniform variable u_matrix to vertex shader
+    m_modelLoc = this->glGetUniformLocation(m_shaderProgram, "u_model");
+    m_viewLoc  = this->glGetUniformLocation(m_shaderProgram, "u_view");
+    m_projLoc  = this->glGetUniformLocation(m_shaderProgram, "u_proj");
+
+    this->glDeleteShader(vertexShader);
+    this->glDeleteShader(fragmentShader);
+}
+
+GLuint MyGLRenderer::compileShader(GLenum type, const char* src) {
+    GLuint shader = glCreateShader(type);
+    this->glShaderSource(shader, 1, &src, nullptr);
+    this->glCompileShader(shader);
+
+    GLint success;
+    this->glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        char log[512];
+        this->glGetShaderInfoLog(shader, 512, nullptr, log);
+        qWarning() << "Shader compile error:" << log;
+    }
+    return shader;
+}
+
+void MyGLRenderer::ensurePickFBO(int w, int h) {
+    if (m_pickFBO != 0) {
+        this->glDeleteFramebuffers(1, &m_pickFBO);
+        this->glDeleteTextures(1, &m_pickColorTex);
+        this->glDeleteRenderbuffers(1, &m_pickDepthBuf);
+        m_pickFBO = m_pickColorTex = m_pickDepthBuf = 0;
+    }
+
+    // Generate framebuffer
+    this->glGenFramebuffers(1, &m_pickFBO);
+    this->glBindFramebuffer(GL_FRAMEBUFFER, m_pickFBO);
+
+        // --- Color attachment (texture) ---
+        this->glGenTextures(1, &m_pickColorTex);
+        this->glBindTexture(GL_TEXTURE_2D, m_pickColorTex);
+        this->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0,
+                     GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        this->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        this->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        this->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D, m_pickColorTex, 0);
+
+        // --- Depth attachment (renderbuffer) ---
+        this->glGenRenderbuffers(1, &m_pickDepthBuf);
+        this->glBindRenderbuffer(GL_RENDERBUFFER, m_pickDepthBuf);
+        this->glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, w, h);
+        this->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                  GL_RENDERBUFFER, m_pickDepthBuf);
+
+        // Check FBO status
+        if (this->glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            qWarning() << "Picking FBO is not complete!";
+        }
+
+    // Unbind
+    GLuint defaultFbo = framebufferObject()->handle();
+    this->glBindFramebuffer(GL_FRAMEBUFFER, defaultFbo);
+}
+
+void MyGLRenderer::encodeIdToColor(unsigned int id, unsigned char &r, unsigned char &g, unsigned char &b) {
+    r = (id & 0x000000FF);
+    g = (id & 0x0000FF00) >> 8;
+    b = (id & 0x00FF0000) >> 16;
+}
+
+
+void MyGLRenderer::moveTopVertexToClick(int mouseX, int mouseY, const QMatrix4x4 &proj, const QMatrix4x4 &view, const QMatrix4x4 &model)
+{
+    int w = framebufferObject()->width();
+    int h = framebufferObject()->height();
+
+    // --- Step 1: Screen -> NDC
+    float x = (2.0f * mouseX) / float(w) - 1.0f;
+    float y = (2.0f * mouseY) / float(h) - 1.0f; // no inversion as Y-axis flip is already in proj matrix
+    QVector4D rayClip(x, y, -1.0f, 1.0f);
+
+    // --- Step 2: NDC -> Eye space
+    QVector4D rayEye = proj.inverted() * rayClip;
+    rayEye = QVector4D(rayEye.x(), rayEye.y(), -1.0f, 0.0f);
+
+    // --- Step 3: Eye -> World space
+    QVector3D rayDirWorld = (view.inverted() * rayEye).toVector3D().normalized();
+    QVector3D rayOriginWorld = m_cameraPos;
+
+    // --- Step 4: Transform ray into *model space*
+    QMatrix4x4 invModel = model.inverted();
+    QVector3D rayOriginModel = (invModel * QVector4D(rayOriginWorld, 1.0f)).toVector3D();
+    QVector3D rayDirModel    = (invModel * QVector4D(rayDirWorld, 0.0f)).toVector3D().normalized();
+
+    // --- Step 5: Ray-plane intersection in model space (Z=0 plane)
+    QVector3D planeNormal(0, 0, 1);
+    QVector3D planePoint(0, 0, 0);
+    float denom = QVector3D::dotProduct(planeNormal, rayDirModel);
+    if (fabs(denom) < 1e-6f) {
+        qWarning() << "Ray parallel to model plane, no intersection";
+        return;
+    }
+    float t = QVector3D::dotProduct(planePoint - rayOriginModel, planeNormal) / denom;
+    if (t < 0) {
+        qWarning() << "Intersection is behind camera";
+        return;
+    }
+
+    QVector3D hitPoint = rayOriginModel + t * rayDirModel;
+
+    // --- Step 5: Update vertex (index 0 = top vertex)
+    m_vertices[0] = hitPoint.x();
+    m_vertices[1] = hitPoint.y();
+    m_vertices[2] = hitPoint.z();
+
+    // --- Step 6: Push updated vertices to GPU
+    this->glBindVertexArray(m_vao);
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(m_vertices), m_vertices);
+        this->glBindBuffer(GL_ARRAY_BUFFER, 0);
+    this->glBindVertexArray(0);
+}
+
+
 
 void MyGLRenderer::render() {
-    //qInfo() << "Render Function";
+    // qInfo() << "Render Function";
 
-    try
-    {
-        if (!m_initialized) {
-            QOpenGLFramebufferObject *fbo = framebufferObject();
-            QOpenGLContext* context = QOpenGLContext::currentContext();
+    int w = framebufferObject()->width();
+    int h = framebufferObject()->height();
 
-            if (fbo) {
-                qInfo() << "FBO is there";
-                OdTvResult rc;
-                OdTvGsDevicePtr pDevice0 = deviceId.openObject(OdTv::kForWrite, &rc);
-                rc = pDevice0->setupGsWithContext(context, OdTvDCRect(0, fbo->width(), 0, fbo->height()), OdTvGsDevice::kOpenGL);
-                qInfo() << (rc == tvOk);
+    // all variables are added here
+    // --- Model matrix (triangle local transform) ---
+    QMatrix4x4 model;
+    model.setToIdentity();
+    // model.rotate(45.0f, 0.0f, 0.0f, 1.0f);   // rotate around Z
+    // model.scale(0.8f);                        // shrink slightly
 
-                m_initialized = true;
-            }
-        }
+    // --- View matrix (camera transform) ---
+    QMatrix4x4 view;
+    view.setToIdentity();
+    view.lookAt(
+        m_cameraPos,              // camera position
+        QVector3D(0.0f, 0.0f, 0.0f), // target at origin
+        QVector3D(0.0f, 1.0f, 0.0f)  // up vector
+        );
 
-        //Resize device if needed
-        QOpenGLFramebufferObject *fbo = framebufferObject();
-        OdTvResult rc;
-        OdTvGsDevicePtr pDevice0 = deviceId.openObject(OdTv::kForWrite, &rc);
+    // --- Projection matrix ---
+    QMatrix4x4 proj;
+    float aspect = (h > 0) ? (float)w / (float)h : 1.0f;
+    proj.perspective(45.0f, aspect, 0.1f, 100.0f);
 
-        OdTvGsViewId viewId0 = pDevice0->getActiveView(); //->createView(OD_T("View_0"), true, &rc);
-        OdTvGsViewPtr pView0 = viewId0.openObject(OdTv::kForWrite, &rc);
-        pView0->zoom(m_zoom);
+    // float orthoHeight = 2.0f;                     // world units in Y
+    // float orthoWidth  = orthoHeight * aspect;     // scale X by aspect
 
-        if (m_orbit)
-        {
-            // qInfo() << "Render x, y: " << m_xOrbit << "," << m_yOrbit;
-            pView0->orbit(m_xOrbit, m_yOrbit);
-        }
+    // proj.ortho(-orthoWidth / 2.0f, orthoWidth / 2.0f,   // left, right
+    //            -orthoHeight / 2.0f, orthoHeight / 2.0f, // bottom, top
+    //            -100.0f, 100.0f);                        // near, far
 
-        QSize currentSize(fbo->width(), fbo->height());
-        if (m_lastSize != currentSize) {
-            pDevice0->onSize(OdTvDCRect(0, currentSize.width(), 0, currentSize.height()));
-            m_lastSize = currentSize;
-        }
+    // Flip Y so it matches Qt Quick
+    proj.scale(1.0f, -1.0f, 1.0f);
 
-        pDevice0->update();
 
-    } catch (...)
-    {
-        qInfo() << "Error in renderer";
+    // Ray-Casting for change in coordinates ------------------------
+    if (m_pickRequested) {
+        moveTopVertexToClick(m_pickX, m_pickY, proj, view, model);
     }
+
+
+
+    // First Pass for Picking ----------------------------------------
+    // ensure pick FBO exists and matches size
+    if (m_pickRequested) {
+        ensurePickFBO(w, h);
+    }
+
+    if (m_pickRequested && m_pickFBO)
+    {
+        // Bind picking framebuffer
+        this->glBindFramebuffer(GL_FRAMEBUFFER, m_pickFBO);
+            this->glViewport(0, 0, w, h);
+            this->glClearColor(0,0,0,0);
+            this->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            // draw scene with flat pick colors
+            this->glUseProgram(m_pickProgram);
+
+            unsigned int objectId = 1;
+            unsigned char r,g,b;
+            encodeIdToColor(objectId, r,g,b);
+            this->glUniform4f(m_pickColorLoc, r/255.0f, g/255.0f, b/255.0f, 1.0f);
+
+            // --- Upload to shader ---
+            this->glUniformMatrix4fv(m_pickModelLoc, 1, GL_FALSE, model.constData());
+            this->glUniformMatrix4fv(m_pickViewLoc,  1, GL_FALSE, view.constData());
+            this->glUniformMatrix4fv(m_pickProjLoc,  1, GL_FALSE, proj.constData());
+
+            this->glBindVertexArray(m_vao);
+                this->glDrawArrays(GL_TRIANGLES, 0, 3);
+            this->glBindVertexArray(0);
+
+            // Read pixel
+            int readX = m_pickX;
+            int readY = (h - 1) - m_pickY;
+            unsigned char pixel[4];
+            this->glReadPixels(readX, readY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+
+            unsigned int pickedId = pixel[0] | (pixel[1] << 8) | (pixel[2] << 16);
+
+        // Restore default framebuffer
+        GLuint defaultFbo = framebufferObject()->handle();
+        this->glBindFramebuffer(GL_FRAMEBUFFER, defaultFbo);
+
+        // reset flag
+        m_pickRequested = false;
+        qInfo() << "Picked Id: " << pickedId;
+    }
+
+
+
+
+
+    // Actual Rendering -------------------------------------------
+    this->glViewport(0, 0, w, h);
+    this->glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
+    this->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    this->glUseProgram(m_shaderProgram);
+
+    // --- Upload to shader ---
+    this->glUniformMatrix4fv(m_modelLoc, 1, GL_FALSE, model.constData());
+    this->glUniformMatrix4fv(m_viewLoc,  1, GL_FALSE, view.constData());
+    this->glUniformMatrix4fv(m_projLoc,  1, GL_FALSE, proj.constData());
+
+
+    // Draw
+    this->glBindVertexArray(m_vao);
+        this->glDrawArrays(GL_TRIANGLES, 0, 3);
+    this->glBindVertexArray(0);
+
+    //update(); // keep continuous rendering
 }
 
-QOpenGLFramebufferObject *MyGLRenderer::createFramebufferObject(const QSize &size) {
-    // qInfo() << "Create Frame Buffer Object";
+QOpenGLFramebufferObject* MyGLRenderer::createFramebufferObject(const QSize &size) {
     QOpenGLFramebufferObjectFormat format;
-    format.setAttachment(QOpenGLFramebufferObject::Depth);
+    format.setAttachment(QOpenGLFramebufferObject::Depth);  // Request depth buffer
+
     return new QOpenGLFramebufferObject(size, format);
 }
 
 
+
+
+
+
+
 QQuickFramebufferObject::Renderer* MyGLItem::createRenderer() const {
     // qInfo() << "Create Renderer";
-    return new MyGLRenderer(m_dbId, m_modelId);
+    return new MyGLRenderer();
 }
 
-void MyGLItem::zoomIn()
-{
-    // qInfo() << "Zoom In";
 
-    // m_zoom += 0.1;
-    m_zoom = 1.1;
-
+void MyGLItem::cameraMoveUp() {
+    m_moveUp = true;
     update();
 }
 
-void MyGLItem::zoomOut()
-{
-    // qInfo() << "Zoom Out";
-
-    // m_zoom -= 0.1;
-    m_zoom = 0.9;
-
+void MyGLItem::cameraMoveDown() {
+    m_moveDown = true;
     update();
 }
 
-void MyGLItem::mousePressed(double x, double y)
-{
-    m_mouseIsPressed = true;
-    m_pressedMouseX = x;
-    m_pressedMouseY = y;
-    m_mouseX = x;
-    m_mouseY = y;
-
-    // needed to re-set any zoom
-    m_zoom = 1;
+void MyGLItem::cameraMoveLeft() {
+    m_moveLeft = true;
+    update();
 }
 
-void MyGLItem::mouseReleased()
-{
-    m_mouseIsPressed = false;
-    m_pressedMouseX = 0;
-    m_pressedMouseY = 0;
-    m_mouseX = 0;
-    m_mouseY = 0;
-
-    m_zoom = 1;
+void MyGLItem::cameraMoveRight() {
+    m_moveRight = true;
+    update();
 }
 
-void MyGLItem::mousePositionChanged(double x, double y)
-{
-    if (m_mouseIsPressed)
-    {
-        m_mouseX = x;
-        m_mouseY = y;
-        m_zoom = 1;
-
-        update();
-    }
-    else
-    {
-        m_pressedMouseX = 0;
-        m_pressedMouseY = 0;
-        m_mouseX = 0;
-        m_mouseY = 0;
-        m_zoom = 1;
-    }
+void MyGLItem::requestPick(int x, int y) {
+    m_lastClickX = x;
+    m_lastClickY = y;
+    update();
 }
 
-void MyGLItem::setDatabaseId(OdTvDatabaseId dbId)
-{
-    m_dbId = dbId;
+void MyGLItem::handlePick(int id) {
+    emit selectionChanged(id);
 }
-
-void MyGLItem::setModelId(OdTvModelId modelId)
-{
-    m_modelId = modelId;
-}
-
-OdTvDatabaseId MyGLItem::dbId()
-{
-    return m_dbId;
-}
-
-OdTvModelId MyGLItem::modelId()
-{
-    return m_modelId;
-}
-
-double MyGLItem::getZoom()
-{
-    //qInfo() << "Zoom got";
-    return m_zoom;
-}
-
-MouseCoordinate MyGLItem::getMouseCoordinates()
-{
-    MouseCoordinate m;
-    m.pressedX = m_pressedMouseX;
-    m.pressedY = m_pressedMouseY;
-    m.currentX = m_mouseX;
-    m.currentY = m_mouseY;
-
-    return m;
-}
-
-bool MyGLItem::getMousePressed()
-{
-    return m_mouseIsPressed;
-}
-
-OdTvDatabaseId MyGLItem::m_dbId = OdTvDatabaseId();
-OdTvModelId MyGLItem::m_modelId = OdTvModelId();

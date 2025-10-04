@@ -41,7 +41,7 @@ add_compile_options(-w)
 add_compile_options(-I "${LONG_PATH}\\IFC_vc17_amd64dll_26.7\\Sdai\\Include")
 
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Sql Qml Quick Charts)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Sql Qml Quick Charts Gui)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
@@ -186,6 +186,7 @@ target_link_libraries(FusionHubQt
         Qt6::Quick
         Qt6::Charts
         Qt6::OpenGL
+        Qt6::Gui
 )
 
 if(WIN32)
