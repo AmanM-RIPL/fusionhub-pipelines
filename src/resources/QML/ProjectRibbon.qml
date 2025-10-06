@@ -284,7 +284,7 @@ Column {
                     MouseArea {
                         anchors.fill: parent
 
-                        onClicked: {
+                        onClicked: {                            
                             projectPageToRedirect("PlannedBIM")
                         }
                     }
@@ -386,7 +386,7 @@ Column {
             id: activityTab
             onVisibleChanged:   {
                 //This will be changed after Implemention of Analytics
-                  projectPageToRedirect("PlannedBIM")
+                  projectPageToRedirect("Analytics")
             }
         }
 

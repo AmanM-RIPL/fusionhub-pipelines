@@ -44,9 +44,9 @@ void ScheduleSetupController::create(const QString &scheduleName, const QString 
     /***********Start of DraftEntity******************/
 
     QJsonObject jsonObject;
-    jsonObject["id"] = 0;
-    jsonObject["globalId"] = "123";
-    jsonObject["approvalStatus"] = true;
+    //jsonObject["id"] = 0;
+    //jsonObject["globalId"] = "123";
+    //jsonObject["approvalStatus"] = true;
     jsonObject["scheduleName"] = scheduleName;
     jsonObject["description"] = description;
     jsonObject["costParam"] = costParam;
@@ -60,7 +60,8 @@ void ScheduleSetupController::create(const QString &scheduleName, const QString 
     QString isoDateTimeString = currentDateTimeUtc.toString(Qt::ISODateWithMs);
 
     QJsonObject jsonObjectChangeHistory;
-    jsonObjectChangeHistory["user"] = gUser->getUserId();
+    //jsonObjectChangeHistory["user"] = gUser->getUserId();
+    jsonObjectChangeHistory["user"] = gUser->getId();
     jsonObjectChangeHistory["timestamp"] =  isoDateTimeString;
     jsonObjectChangeHistory["changeType"] =  "create";
     jsonObjectChangeHistory["description"] = "Cretaed By User";
@@ -77,7 +78,8 @@ void ScheduleSetupController::create(const QString &scheduleName, const QString 
     draftEntity.setCreatedOn(createdOn);
     draftEntity.setProject(gProjectId);
     draftEntity.setEntity("ScheduleSetup");
-    draftEntity.setCreatedByUser(gUser->getUserId());
+    //draftEntity.setCreatedByUser(gUser->getUserId());
+     draftEntity.setCreatedByUser(gUser->getId());
     draftEntity.setNextApprovingUser(0);
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);

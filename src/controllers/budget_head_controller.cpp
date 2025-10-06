@@ -26,9 +26,9 @@ void BudgetHeadController::create(const QString &description) const
     /***********Start of DraftEntity******************/
 
     QJsonObject jsonObject;
-    jsonObject["id"] = 0;
-    jsonObject["globalId"] = "123";
-    jsonObject["approvalStatus"] = true;
+    //jsonObject["id"] = 0;
+    //jsonObject["globalId"] = "123";
+    //jsonObject["approvalStatus"] = true;
     jsonObject["description"] = description;
 
     QJsonDocument jsonDoc(jsonObject);
@@ -39,7 +39,8 @@ void BudgetHeadController::create(const QString &description) const
     QString isoDateTimeString = currentDateTimeUtc.toString(Qt::ISODateWithMs);
 
     QJsonObject jsonObjectChangeHistory;
-    jsonObjectChangeHistory["user"] = gUser->getUserId();
+    //jsonObjectChangeHistory["user"] = gUser->getUserId();
+    jsonObjectChangeHistory["user"] = gUser->getId();
     jsonObjectChangeHistory["timestamp"] = isoDateTimeString;
     jsonObjectChangeHistory["changeType"] =  "create";
     jsonObjectChangeHistory["description"] = "Cretaed By User";
@@ -57,7 +58,8 @@ void BudgetHeadController::create(const QString &description) const
     draftEntity.setCreatedOn(createdOn);
     draftEntity.setProject(gProjectId);
     draftEntity.setEntity("BudgetHead");
-    draftEntity.setCreatedByUser(gUser->getUserId());
+    //draftEntity.setCreatedByUser(gUser->getUserId());
+    draftEntity.setCreatedByUser(gUser->getId());
     draftEntity.setNextApprovingUser(0);
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);

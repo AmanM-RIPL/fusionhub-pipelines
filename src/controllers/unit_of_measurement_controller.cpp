@@ -35,9 +35,9 @@ void UnitOfMeasurementController::create(const QString& uomName, const QString& 
     /***********Start of DraftEntity******************/
 
     QJsonObject jsonObject;
-    jsonObject["id"] = 0;
-    jsonObject["globalId"] = "123";
-    jsonObject["approvalStatus"] = true;
+    //jsonObject["id"] = 0;
+    //jsonObject["globalId"] = "123";
+    //jsonObject["approvalStatus"] = true;
     jsonObject["conversionToCubicMeter"] = conversionToCubicMeter;
     jsonObject["conversionToKilogram"] = conversionToKilogram;
     jsonObject["conversionToMeter"] = conversionToMeter;
@@ -57,7 +57,8 @@ void UnitOfMeasurementController::create(const QString& uomName, const QString& 
     draftEntity.setCreatedOn(createdOn);
     draftEntity.setProject(gProjectId);
     draftEntity.setEntity("UnitOfMeasurement");
-    draftEntity.setCreatedByUser(gUser->getUserId());
+    //draftEntity.setCreatedByUser(gUser->getUserId());
+    draftEntity.setCreatedByUser(gUser->getId());
     draftEntity.setNextApprovingUser(0);
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);

@@ -30,9 +30,9 @@ void MaterialController::create(const QString &name, const QString &category, co
     /***********Start of DraftEntity******************/
 
     QJsonObject jsonObject;
-    jsonObject["id"] = 0;
-    jsonObject["globalId"] = "123";
-    jsonObject["approvalStatus"] = true;
+    //jsonObject["id"] = 0;
+    //jsonObject["globalId"] = "123";
+    //jsonObject["approvalStatus"] = true;
     jsonObject["materialName"] = name;
     jsonObject["category"] = category;
     jsonObject["unitOfMeasurementId"] = unitOfMeasurementId;
@@ -46,7 +46,8 @@ void MaterialController::create(const QString &name, const QString &category, co
     QString isoDateTimeString = currentDateTimeUtc.toString(Qt::ISODateWithMs);
 
     QJsonObject jsonObjectChangeHistory;
-    jsonObjectChangeHistory["user"] = gUser->getUserId();
+    //jsonObjectChangeHistory["user"] = gUser->getUserId();
+    jsonObjectChangeHistory["user"] = gUser->getId();
     jsonObjectChangeHistory["timestamp"] =  isoDateTimeString;
     jsonObjectChangeHistory["changeType"] =  "create";
     jsonObjectChangeHistory["description"] = "Cretaed By User";
@@ -63,7 +64,8 @@ void MaterialController::create(const QString &name, const QString &category, co
     draftEntity.setCreatedOn(createdOn);
     draftEntity.setProject(gProjectId);
     draftEntity.setEntity("Material");
-    draftEntity.setCreatedByUser(gUser->getUserId());
+    //draftEntity.setCreatedByUser(gUser->getUserId());
+    draftEntity.setCreatedByUser(gUser->getId());
     draftEntity.setNextApprovingUser(0);
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);

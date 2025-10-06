@@ -253,6 +253,21 @@ void UserController::update(const QString& userId,
 
 std::vector<User*> UserController::getUserList() const
 {
+    //This is used only for user creation
+    auto dbManager = DatabaseManager::getInstance();
+    QSqlDatabase database = dbManager->getDatabase();
+    if (database.isOpen())
+    {
+        database.close();
+    }
+
+    if (!dbManager->initializeDatabase("Users")) {
+        qDebug() << "Failed to initialize database";
+    }
+
+    qDebug() << "Database initialized successfully!";
+    qDebug() << "Project path:" << dbManager->getProjectPath();
+
     return m_userRepository->findAllQML();
 }
 

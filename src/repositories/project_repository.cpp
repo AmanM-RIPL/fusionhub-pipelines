@@ -5,7 +5,7 @@
 #include <QJsonArray>
 #include <QDate>
 
-
+extern QString gEnvironmentPath;
 /*ProjectRepository::ProjectRepository()
 {
 
@@ -23,30 +23,31 @@ std::vector<std::unique_ptr<Project>> ProjectRepository::findAll()
 }
 bool ProjectRepository::save(const Project& entity)
 {   
-    QString folderPath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\";
+    //QString folderPath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\";
+
     QDir dir;
-    if (!dir.mkpath(folderPath)) {
-        qDebug() << "Failed to create project folder:" << folderPath;
+    if (!dir.mkpath(gEnvironmentPath)) {
+        qDebug() << "Failed to create project folder:" << gEnvironmentPath;
         return false;
     }
-    QString filePath = folderPath + "main.json";
+    QString filePath = gEnvironmentPath + "\\" + "main.json";
     createJsonFileAndAppendJsonObject(filePath, entity);
 }
 
 QString ProjectRepository::getProjectListAsJsonString(bool isBlocked)
 {
-    QString folderPath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\";
+    //QString folderPath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\";
 
     QDir dir;
-    if (!dir.mkpath(folderPath)) {
-        qDebug() << "Failed to create project folder:" << folderPath;
+    if (!dir.mkpath(gEnvironmentPath)) {
+       // qDebug() << "Failed to create project folder:" << gEnvironmentPath;
         return "";
     }
 
-    QString filePath = folderPath + "main.json";
+    QString filePath = gEnvironmentPath + "\\" + "main.json";
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Failed to open JSON file:" << file.errorString();
+        //qDebug() << "Failed to open JSON file:" << file.errorString();
         return "";
     }
 

@@ -55,11 +55,13 @@ Column {
         }
 
         onOpened: {
-            var materialList = materialController.getMaterialList(true);
-            purchaseMaterialList = [];
-            for (var i = 0; i < materialList.length; i++)
-            {
-                purchaseMaterialList = purchaseMaterialList.concat(materialList[i].materialName)
+             purchaseMaterialList = [];
+            if(scheduleSetupRoot.visible){
+                var materialList = materialController.getMaterialList(true);
+                for (var i = 0; i < materialList.length; i++)
+                {
+                    purchaseMaterialList = purchaseMaterialList.concat(materialList[i].materialName)
+                }
             }
         }
 
@@ -423,8 +425,10 @@ Column {
     function showList()
     {
         scheduleSetupRoot.scheduleSetupList = [];
-        var arr = scheduleSetupController.getSetupList(isApproved);
-        scheduleSetupRoot.scheduleSetupList = scheduleSetupRoot.scheduleSetupList.concat(arr);
+        if(scheduleSetupRoot.visible){
+            var arr = scheduleSetupController.getSetupList(isApproved);
+            scheduleSetupRoot.scheduleSetupList = scheduleSetupRoot.scheduleSetupList.concat(arr);
+        }
     }
 
 

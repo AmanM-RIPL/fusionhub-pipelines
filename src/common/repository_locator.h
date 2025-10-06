@@ -9,6 +9,7 @@
 #include "repositories/unit_of_measurement_repository.h"
 #include "repositories/schedule_setup_repository.h"
 #include "repositories/draft_entity_repository.h"
+#include "repositories/ifc_detail_repository.h"
 
 
 class RepositoryLocator
@@ -26,6 +27,7 @@ public:
     UnitOfMeasurementRepository* unitOfMeasurementRepository();
     ScheduleSetupRepository* scheduleSetupRepository();
     DraftEntityRepository* draftEntityRepository();
+    IFCDetailRepository* ifcDetailRepository();
 
 
 private:
@@ -37,6 +39,7 @@ private:
     std::unique_ptr<UnitOfMeasurementRepository> m_unitOfMeasurementRepository;
     std::unique_ptr<ScheduleSetupRepository> m_scheduleSetupRepository;
     std::unique_ptr<DraftEntityRepository> m_draftEntityRepository;
+    std::unique_ptr<IFCDetailRepository> m_ifcDetailRepository;
 
 };
 

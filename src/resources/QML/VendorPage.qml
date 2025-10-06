@@ -233,15 +233,17 @@ Column {
         ]
     }
 
-    Component.onCompleted: {        
+    Component.onCompleted: {
         showList();
     }
 
-    onVisibleChanged: {
+    onVisibleChanged: {        
         showList();
     }
 
     function showList(){
-        vendorRoot.vendorList = vendorController.getVendorList(isApproved);
+        if(vendorRoot.visible){
+          vendorRoot.vendorList = vendorController.getVendorList(isApproved);
+        }
     }
 }

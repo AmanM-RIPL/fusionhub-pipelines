@@ -42,9 +42,9 @@ void VendorController::create(const QString &vendorName, const QString &vendorAd
     /***********Start of DraftEntity******************/
 
     QJsonObject jsonObject;
-    jsonObject["id"] = 0;
-    jsonObject["globalId"] = "123";
-    jsonObject["approvalStatus"] = true;
+    //jsonObject["id"] = 0;
+    //jsonObject["globalId"] = "123";
+    //jsonObject["approvalStatus"] = true;
     jsonObject["vendorName"] = vendorName;
     jsonObject["vendorAddress"] = vendorAddress;
     jsonObject["vendorMobile"] = vendorMobile;
@@ -59,7 +59,8 @@ void VendorController::create(const QString &vendorName, const QString &vendorAd
     QString isoDateTimeString = currentDateTimeUtc.toString(Qt::ISODateWithMs);
 
     QJsonObject jsonObjectChangeHistory;
-    jsonObjectChangeHistory["user"] = gUser->getUserId();
+    //jsonObjectChangeHistory["user"] = gUser->getUserId();
+    jsonObjectChangeHistory["user"] = gUser->getId();
     jsonObjectChangeHistory["timestamp"] =  isoDateTimeString;
     jsonObjectChangeHistory["changeType"] =  "create";
     jsonObjectChangeHistory["description"] = "Cretaed By User";
@@ -77,7 +78,8 @@ void VendorController::create(const QString &vendorName, const QString &vendorAd
     draftEntity.setCreatedOn(createdOn);
     draftEntity.setProject(gProjectId);
     draftEntity.setEntity("Vendor");
-    draftEntity.setCreatedByUser(gUser->getUserId());
+    //draftEntity.setCreatedByUser(gUser->getUserId());
+     draftEntity.setCreatedByUser(gUser->getId());
     draftEntity.setNextApprovingUser(0);
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);

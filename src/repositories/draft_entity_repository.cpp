@@ -62,7 +62,7 @@ DraftEntity* DraftEntityRepository::mapFromQueryQML(const QSqlQuery& query, QObj
     draftEntity->setProject(query.value("project").toInt());
     draftEntity->setEntity(query.value("entity").toString());
     draftEntity->setCreatedOn(query.value("createdOn").toDate());
-    draftEntity->setCreatedByUser(query.value("createdByUser").toString());
+    draftEntity->setCreatedByUser(query.value("createdByUser").toInt());
     draftEntity->setEntitySchema(query.value("entitySchema").toString());
     draftEntity->setAssociatedApprovedEntity(query.value("associatedApprovedEntity").toInt());
     draftEntity->setNextApprovingUser(query.value("nextApprovingUser").toInt());

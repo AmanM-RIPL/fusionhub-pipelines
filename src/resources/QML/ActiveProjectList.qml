@@ -3,11 +3,12 @@ import QtQuick.Controls
 import com.fh.controllers;
 
 Rectangle {
+    id:rootActiveProject
     width: 300 *(activeProjectsView.count) + 13 * (activeProjectsView.count - 1)
     height: 164
     color: "#EDF1F4"
 
-    readonly property string jsonData: projectController.getProjectList().toString();
+    readonly property string jsonData:projectController.getProjectList().toString();;
     property string txtDefault: "There is no active project at this moment."
 
     Text{
@@ -104,6 +105,8 @@ Rectangle {
                 anchors.topMargin: 34 - 4
             }
 
+
+
             Text{
                 width: 275
                 height: 42               
@@ -152,8 +155,7 @@ Rectangle {
                 }
                 txtDefault="";
             }
-        } catch (e) {
-            console.error("Error parsing JSON:", e);
+        } catch (e) {            
             txtDefault = "There is no active project at this moment."
         }
     }

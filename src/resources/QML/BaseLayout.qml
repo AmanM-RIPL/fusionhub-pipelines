@@ -18,6 +18,7 @@ Rectangle {
     property string projectName: "NA";
 
 
+
     Column {
         width: parent.width
         height: parent.height
@@ -58,10 +59,35 @@ Rectangle {
           To be added once BIM related stuff is added
 
         */
-        // PlannedBIMPage {
-        //     visible: pageName === "PlannedBIM" || pageName === "Gantt" || pageName === "Collision"
-        //     pageType: pageName
-        // }
+
+         //PlannedBIMPage {
+         //   visible: pageName === "PlannedBIM" || pageName === "Gantt" || pageName === "Collision"
+         //   pageType: pageName
+         //}
+
+        /*
+        PlannedBIMPage {
+            visible: isPageVisible(pageName)
+            pageType: pageName            
+
+            //Define the JavaScript function
+            function isPageVisible(name) {
+                if (name === "PlannedBIM"){
+                    treeviewWidth = 200
+                    glsceneWidth = parent.width - treeviewWidth - 30
+                    glsceneVisible = true
+                    return true;
+                }
+                else if( name === "Gantt" || name === "Collision") {
+                    treeviewWidth = parent.width - 20
+                    glsceneWidth = parent.width - treeviewWidth
+                    glsceneVisible = false
+                    return true;
+                }
+                return false;
+
+            }
+        }*/
 
         Rectangle{
             id: taskBoard
@@ -77,5 +103,7 @@ Rectangle {
                 txtProjectName: projectName
             }
         }
+
     }
+
 }

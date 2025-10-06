@@ -157,7 +157,9 @@ Column {
 
     function showList()
     {
-        budgetHeadRoot.budgetHeadList = budgetheadController.getBudgetHeadList(isApproved);
+        if(budgetHeadRoot.visible){
+            budgetHeadRoot.budgetHeadList = budgetheadController.getBudgetHeadList(isApproved);
+        }
     }
 }
 

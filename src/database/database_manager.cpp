@@ -2,6 +2,8 @@
 #include <QDebug>
 #include <QCoreApplication>
 
+extern QString gEnvironmentPath;
+
 std::shared_ptr<DatabaseManager> DatabaseManager::instance = nullptr;
 
 std::shared_ptr<DatabaseManager> DatabaseManager::getInstance()
@@ -19,7 +21,7 @@ bool DatabaseManager::initializeDatabase(const QString& projectName)
     }
     
     database = QSqlDatabase::addDatabase("QSQLITE");
-    databasePath = projectPath + "/project.db";
+    databasePath = projectPath + "\\project.db";
     database.setDatabaseName(databasePath);
 
     
@@ -33,10 +35,11 @@ bool DatabaseManager::initializeDatabase(const QString& projectName)
 
 bool DatabaseManager::createProjectFolder(const QString& projectName)
 {
-   // QString documentsPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-   // projectPath = documentsPath + "/ConstructionMgmt/" + projectName;
+   //QString documentsPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+   //projectPath = documentsPath + "/ConstructionMgmt/" + projectName;
 
-   projectPath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\" + projectName;
+   //projectPath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\" + projectName;
+   projectPath = gEnvironmentPath + "\\" + projectName;
     
     QDir dir;
     if (!dir.mkpath(projectPath)) {
@@ -477,7 +480,7 @@ QString DatabaseManager::getCreateTableQuery(const QString& tableName)
                 createdOn DATE,
                 project INTEGER NOT NULL,
                 entity TEXT NOT NULL,
-                createdByUser TEXT NOT NULL,
+                createdByUser INTEGER NOT NULL,
                 nextApprovingUser INTEGER,
                 entitySchema TEXT NOT NULL,
                 associatedApprovedEntity INTEGER,

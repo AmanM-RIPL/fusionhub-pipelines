@@ -9,6 +9,7 @@ RepositoryLocator::RepositoryLocator() {
     m_materialRepository = std::make_unique<MaterialRepository>();
     m_scheduleSetupRepository = std::make_unique<ScheduleSetupRepository>();
     m_draftEntityRepository = std::make_unique<DraftEntityRepository>();
+    m_ifcDetailRepository = std::make_unique<IFCDetailRepository>();
 }
 
 RepositoryLocator &RepositoryLocator::instance()
@@ -56,3 +57,9 @@ DraftEntityRepository *RepositoryLocator::draftEntityRepository()
 {
     return m_draftEntityRepository.get();
 }
+
+IFCDetailRepository *RepositoryLocator::ifcDetailRepository()
+{
+    return m_ifcDetailRepository.get();
+}
+

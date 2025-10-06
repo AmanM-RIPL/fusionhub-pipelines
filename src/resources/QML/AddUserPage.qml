@@ -7,7 +7,7 @@ import QtQuick.Dialogs
 
 Rectangle{
     anchors.fill: parent
-    color: "#EDF1F4"
+    color: "#EDF1F4"    
 
 
     signal logOutClicked()
@@ -414,32 +414,32 @@ Rectangle{
                     ScrollBar.horizontal.policy: ScrollBar.AlwaysOn
                     ScrollBar.vertical.policy: ScrollBar.AlwaysOff
 
-                FHTable {
-                    //height: 200
-                    height: Screen.height - backbuttonUsers.y - backbuttonUsers.height
-                            - toolbar.y - toolbar.height - blankUsers.y - blankUsers.height - 200
-                    leftPadding: 20
-                    model: userRoot.userList                    
+                    FHTable {
+                        //height: 200
+                        height: Screen.height - backbuttonUsers.y - backbuttonUsers.height
+                                - toolbar.y - toolbar.height - blankUsers.y - blankUsers.height - 200
+                        leftPadding: 20
+                        model: userRoot.userList
 
 
-                    columns: [
-                        { label: "Full Name", width: 250, key: "user_fullname" },
-                        { label: "User Name", width: 250, key: "user_name" },
-                        { label: "Mobile1", width: 100, key: "mobile1" },
-                        { label: "Mobile2", width: 100, key: "mobile2" },
-                        { label: "Email1", width: 250, key: "email1" },
-                        { label: "Email2", width: 250, key: "email2" },
-                        { label: "Job Title", width: 250, key: "jobTitle" },
-                        { label: "Start Date", width: 150, key: "startDate" },
-                        { label: "End Date", width: 150, key: "endDate" },
-                        { label: "Monthly Desk Cost(In Dollar)", width: 200, key: "monthlyDeskCostValue" },
-                    ]
-                }
+                        columns: [
+                            { label: "Full Name", width: 250, key: "user_fullname" },
+                            { label: "User Name", width: 250, key: "user_name" },
+                            { label: "Mobile1", width: 100, key: "mobile1" },
+                            { label: "Mobile2", width: 100, key: "mobile2" },
+                            { label: "Email1", width: 250, key: "email1" },
+                            { label: "Email2", width: 250, key: "email2" },
+                            { label: "Job Title", width: 250, key: "jobTitle" },
+                            { label: "Start Date", width: 150, key: "startDate" },
+                            { label: "End Date", width: 150, key: "endDate" },
+                            { label: "Monthly Desk Cost(In Dollar)", width: 200, key: "monthlyDeskCostValue" },
+                        ]
+                    }
                 }
 
-                Component.onCompleted: {
-                   userList  = userController.getUserList();
-                }
+                Component.onCompleted: {                   
+                    userRoot.userList  = userController.getUserList();
+                }                
             }
         }
     }

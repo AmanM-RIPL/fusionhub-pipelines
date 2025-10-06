@@ -205,30 +205,32 @@ Column {
 
     function showList()
     {
-        //material data
-        materialList = materialController.getMaterialList(isApproved);
+        if(materialRoot.visible){
+            //material data
+            materialList = materialController.getMaterialList(isApproved);
 
-        //uom data
-        unitOfMeasurementList = materialController.getUOMList();
+            //uom data
+            unitOfMeasurementList = materialController.getUOMList();
 
-        const uomNames = unitOfMeasurementList.map(uom => uom.uomName);
-        unitOfMeasurementText = uomNames;
+            const uomNames = unitOfMeasurementList.map(uom => uom.uomName);
+            unitOfMeasurementText = uomNames;
 
-        //material data for table
-        materialListForTable = materialList.map((material, materialIndex) => {
-            const uom = unitOfMeasurementList.filter(x => x.id === material.unitOfMeasurementId);
-            let uomText = "Unknown";
-            if (uom.length > 0)
-            {
-                uomText = uom[0].uomName;
-            }
+            //material data for table
+            materialListForTable = materialList.map((material, materialIndex) => {
+                                                        const uom = unitOfMeasurementList.filter(x => x.id === material.unitOfMeasurementId);
+                                                        let uomText = "Unknown";
+                                                        if (uom.length > 0)
+                                                        {
+                                                            uomText = uom[0].uomName;
+                                                        }
 
-            return {
-                id: material.id,
-                materialName: material.materialName,
-                category: material.category,
-                unitOfMeasurement: uomText
-            };
-        });
+                                                        return {
+                                                            id: material.id,
+                                                            materialName: material.materialName,
+                                                            category: material.category,
+                                                            unitOfMeasurement: uomText
+                                                        };
+                                                    });
+        }
     }
 }
