@@ -5,6 +5,11 @@ Rectangle {
     width: 1440
     height: 1024 - (131 + 13)
     color: "#EDF1F4"
+    property string txtProjectName: "NA"
+
+    Item {
+        width: 100
+        height: 100
 
 
     Image{
@@ -13,11 +18,22 @@ Rectangle {
         anchors.leftMargin: 100
         anchors.top: parent.top
         anchors.topMargin: 46
+
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            hoverEnabled: true
+            onClicked: {
+                baseLayout.visible = false
+                WelcomePage.visible = true
+            }
+        }
     }
 
 
     Text{
-        text: "PROJ-0001: Sample House"
+        //text: "PROJ-0001: Sample House"
+        text: txtProjectName
         color: "#000000"
         font.pixelSize: 44
         font.weight: 700
@@ -26,7 +42,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.topMargin: 21
     }
-
+   }
 
 
     Rectangle{

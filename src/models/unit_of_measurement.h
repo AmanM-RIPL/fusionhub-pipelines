@@ -16,8 +16,8 @@ class UnitOfMeasurement: public QObject
     Q_PROPERTY(QString unitType READ getUnitType WRITE setUnitType NOTIFY unitTypeChanged)
     Q_PROPERTY(double conversionToSqm READ getConversionToSqm WRITE setConversionToSqm NOTIFY conversionToSqmChanged)
     Q_PROPERTY(double conversionToCubicMeter READ getConversionToCubicMeter WRITE setConversionToCubicMeter NOTIFY conversionToCubicMeterChanged)
-    Q_PROPERTY(double conversionToMeter READ getConversionToMeter WRITE setConversionToMeter NOTIFY setConversionToMeter)
-    Q_PROPERTY(double conversionToKilogram READ getConversionToKilogram WRITE setConversionToKilogram NOTIFY setConversionToKilogram)
+    Q_PROPERTY(double conversionToMeter READ getConversionToMeter WRITE setConversionToMeter NOTIFY conversionToMeterChanged)
+    Q_PROPERTY(double conversionToKilogram READ getConversionToKilogram WRITE setConversionToKilogram NOTIFY conversionToKilogramChanged)
 
 public:
     explicit UnitOfMeasurement(QObject* parent = nullptr): QObject(parent) {}

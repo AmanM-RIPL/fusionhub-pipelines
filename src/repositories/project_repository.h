@@ -6,12 +6,12 @@
 //#include <QObject>
 #include <string>
 
-class ProjectRepository : public AbstractRepository<Project>
+class ProjectRepository :public QObject, public AbstractRepository<Project>
 {
     //Q_OBJECT
 public:
-    //explicit ProjectRepository(QObject *parent = nullptr);
-    ProjectRepository();
+    explicit ProjectRepository(QObject *parent = nullptr);
+    //ProjectRepository();
 
     std::unique_ptr<Project> findById(int id) override;
     std::vector<std::unique_ptr<Project>> findAll() override;

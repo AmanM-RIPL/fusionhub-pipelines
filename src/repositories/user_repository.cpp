@@ -5,6 +5,7 @@
 {
 }*/
 UserRepository::UserRepository(QObject* parent) : QObject(parent) {}
+
 std::unique_ptr<User> UserRepository::findById(int id)
 {
     QSqlQuery query(dbManager->getDatabase());
@@ -15,6 +16,20 @@ std::unique_ptr<User> UserRepository::findById(int id)
         return mapFromQuery(query);
     }
     
+    return nullptr;
+}
+
+std::unique_ptr<User> UserRepository::getUserDetailsByNameAndPassword(const QString& username, const QString& password)
+{
+    QSqlQuery query(dbManager->getDatabase());
+    query.prepare("SELECT * FROM User WHERE user_name=? AND user_password=?");
+    query.addBindValue(username);
+    query.addBindValue(password);
+
+    if (query.exec() && query.next()) {
+        return mapFromQuery(query);
+    }
+
     return nullptr;
 }
 
@@ -66,9 +81,19 @@ bool UserRepository::update(const User& entity)
 {
     QSqlQuery query(dbManager->getDatabase());
     query.prepare(getUpdateQuery());
-    bindEntityToQuery(query, entity);
-    query.addBindValue(entity.getId());
-    
+    //bindEntityToQuery(query, entity);
+    //query.addBindValue(entity.getId());
+    query.addBindValue(entity.getUserFullName());
+    query.addBindValue(entity.getUserMobile1());
+    query.addBindValue(entity.getUserMobile2());
+    query.addBindValue(entity.getUserEmail1());
+    query.addBindValue(entity.getUserEmail2());
+    query.addBindValue(entity.getUserJobTitle());
+    query.addBindValue(entity.getUserStartDate());
+    query.addBindValue(entity.getUserEndDate());
+    query.addBindValue(entity.getUserPassword());
+    query.addBindValue(entity.getUserId());
+
     return query.exec();
 }
 
@@ -146,8 +171,7 @@ std::unique_ptr<User> UserRepository::mapFromQuery(const QSqlQuery& query) const
     user->setUserStartDate(query.value("user_startDate").toString());
     user->setUserEndDate(query.value("user_endDate").toString());
     user->setUserMonthlyDeskCostValue(query.value("user_monthlyDeskCostValue").toString());
-
-    
+    user->setUserPassword(query.value("user_password").toString());
     return user;
 }
 
@@ -167,6 +191,7 @@ User* UserRepository::mapFromQueryQML(const QSqlQuery& query, QObject* parent) c
     user->setUserStartDate(query.value("user_startDate").toString());
     user->setUserEndDate(query.value("user_endDate").toString());
     user->setUserMonthlyDeskCostValue(query.value("user_monthlyDeskCostValue").toString());
+    user->setUserPassword(query.value("user_password").toString());
 
     return user;
 }
@@ -187,19 +212,24 @@ void UserRepository::bindEntityToQuery(QSqlQuery& query, const User& entity) con
     query.addBindValue(entity.getUserStartDate());
     query.addBindValue(entity.getUserEndDate());
     query.addBindValue(entity.getUserMonthlyDeskCostValue());
+    query.addBindValue(entity.getUserPassword());
 }
 
 QString UserRepository::getInsertQuery() const
 {
-    //return "INSERT INTO User (global_id, approval_status, user_id, username) VALUES (?, ?, ?, ?)";
-
     return "INSERT INTO User (id, global_id, approval_status, user_id, user_fullname, user_name, "
            "user_mobile1, user_mobile2, user_email1, user_email2, user_jobTitle, user_startDate,"
-           " user_endDate, user_monthlyDeskCostValue )"
-           " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+           " user_endDate, user_monthlyDeskCostValue, user_password)"
+           " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    /*
+    return "INSERT INTO DraftEntity (tenant, createdOn, project, entity, createdByUser, "
+           "entitySchema, changeHistory, nextApprovingUser,"
+           "associatedApprovedEntity VALUES())";
+    */
 }
 
 QString UserRepository::getUpdateQuery() const
 {
-    return "UPDATE User SET global_id = ?, approval_status = ?, user_id = ?, username = ? WHERE id = ?";
+     return "UPDATE User SET user_fullname = ?, user_mobile1 = ?, user_mobile2 = ?, user_email1 = ?,"
+           "user_email2 = ?, user_jobTitle = ?, user_startDate = ?, user_endDate = ?, user_password = ? WHERE user_id = ?";
 }

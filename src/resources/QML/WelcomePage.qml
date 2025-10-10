@@ -1,6 +1,9 @@
 import QtQuick 2.15
 import QtQuick.Controls
 import com.fh.models 1.0
+import QtQuick.Layouts 1.3
+import com.fh.controllers;
+import QtQuick.Window 2.15
 
 Rectangle {
     // width: 1440
@@ -12,6 +15,10 @@ Rectangle {
     signal newProjectClicked()
     signal userSettingsClicked()
     signal organizationSettingsClicked()
+
+    property bool showOrgSettingsButton: true
+    property bool showNewProjectButton: true
+    property color showButtonColor: "#7676801F"
 
     Column {
         anchors.fill: parent
@@ -44,6 +51,7 @@ Rectangle {
                     btnName: "New Project"
                     btnNameColor: "#007AFF"
                     anchors.verticalCenter: parent.verticalCenter
+                    visible:showNewProjectButton
 
                     MouseArea{
                         anchors.fill: parent
@@ -58,16 +66,186 @@ Rectangle {
                             parent.color = "transparent";
                         }
 
-                        onClicked: {
-                           newProjectClicked();
+                        onClicked: {                           
+                            idCreateNewProjectDialog.open()
                         }
                     }
                 }
 
+                /*****Start of New Project Dialog********************/
+
+                ProjectController {
+                    id: projectController
+                }
+
+                FHPopup {
+                    id: idCreateNewProjectDialog
+                    popupWidth: 500
+                    popupHeight: 500
+                    title: "New Project"
+                    parent: Overlay.overlay                    
+
+                    onAcceptCallback: function () {
+                       projectController.create(projectNameTextBox.text, customerNameTextBox.text, contactNameTextBox.text,
+                                                 phoneNumberTextBox.text, emailTextBox.text, totalDollarValueTextBox.text,
+                                                 descriptionTextBox.text);
+
+
+                        projectNameTextBox.text = "";
+                        customerNameTextBox.text = "";
+                        contactNameTextBox.text = "";
+                        phoneNumberTextBox.text = "";
+                        emailTextBox.text = "";
+                        totalDollarValueTextBox.text = "";
+                        descriptionTextBox.text = "";                        
+
+                        pageLoader.active = false
+                        pageLoader.active = true                       
+
+                    }
+
+                    onCancelCallback: function () {
+                        projectNameTextBox.text = "";
+                        customerNameTextBox.text = "";
+                        contactNameTextBox.text = "";
+                        phoneNumberTextBox.text = "";
+                        emailTextBox.text = "";
+                        totalDollarValueTextBox.text = "";
+                        descriptionTextBox.text = "";
+                    }
+
+
+                   // Column {
+                     content: Column{
+                        width: parent.width
+                        height:500;//parent.height //30 for each top bottom
+
+                        Text{
+                            id: projectNameLabel
+                            text: "Proejct Name:"
+                            color: "#323130"
+                            font.weight: 700
+                            font.pixelSize: 14
+                            font.family: "Segoe UI"
+                            topPadding: 10
+                        }
+                        CustomTextBox{
+                            id: projectNameTextBox
+                            placeholderText: "Proejct Name"
+                            text: ""
+                            color: "#323130"
+                        }
+
+
+                        Text{
+                            id: customerNameLabel
+                            text: "Customer Name:"
+                            color: "#323130"
+                            font.weight: 700
+                            font.pixelSize: 14
+                            font.family: "Segoe UI"
+                            topPadding: 10
+                        }
+                        CustomTextBox{
+                            id: customerNameTextBox
+                            placeholderText: "Customer Name"
+                            text: ""
+                            color: "#323130"
+                        }
+
+
+                        Text{
+                            id: contactNameLabel
+                            text: "Contact Name:"
+                            color: "#323130"
+                            font.weight: 700
+                            font.pixelSize: 14
+                            font.family: "Segoe UI"
+                            topPadding: 10
+                        }
+                        CustomTextBox{
+                            id: contactNameTextBox
+                            placeholderText: "Contact Name"
+                            text: ""
+                            color: "#323130"
+                        }
+
+
+                        Text{
+                            id: phoneNumberLabel
+                            text: "Phone Number:"
+                            color: "#323130"
+                            font.weight: 700
+                            font.pixelSize: 14
+                            font.family: "Segoe UI"
+                            topPadding: 10
+                        }
+                        CustomTextBox{
+                            id: phoneNumberTextBox
+                            placeholderText: "phone number"
+                            text: ""
+                            color: "#323130"
+                        }
+
+
+                        Text{
+                            id: emailLabel
+                            text: "Email:"
+                            color: "#323130"
+                            font.weight: 700
+                            font.pixelSize: 14
+                            font.family: "Segoe UI"
+                            topPadding: 10
+                        }
+                        CustomTextBox{
+                            id: emailTextBox
+                            placeholderText: "Email"
+                            text: ""
+                            color: "#323130"
+                        }
+
+
+                        Text{
+                            id: totalDollarValueLabel
+                            text: "Total Dolar Value:"
+                            color: "#323130"
+                            font.weight: 700
+                            font.pixelSize: 14
+                            font.family: "Segoe UI"
+                            topPadding: 10
+                        }
+                        CustomTextBox{
+                            id: totalDollarValueTextBox
+                            placeholderText: "Total Dollar Value"
+                            text: ""
+                            color: "#323130"
+                        }
+
+
+                        Text{
+                            id: descriptionLabel
+                            text: "Description:"
+                            color: "#323130"
+                            font.weight: 700
+                            font.pixelSize: 14
+                            font.family: "Segoe UI"
+                            topPadding: 10
+                        }
+                        CustomTextBox{
+                            id: descriptionTextBox
+                            placeholderText: "Description"
+                            text: ""
+                            color: "#323130"
+                        }
+                    }
+                }
+                /**********End of AddedDialog************/
+
                 Rectangle {
                     width: 1
                     height: 60
-                    color: "#7676801F"
+                   // color: "#7676801F"
+                    color:showButtonColor
                 }
 
                 CustomButton {
@@ -100,6 +278,9 @@ Rectangle {
                     }
                 }
 
+
+
+
                 CustomButton {
                     color: "transparent"
                     width: 186
@@ -110,6 +291,7 @@ Rectangle {
                     btnName: "Organization Settings"
                     btnNameColor: "black"
                     anchors.verticalCenter: parent.verticalCenter
+                    visible: showOrgSettingsButton
 
                     MouseArea{
                         anchors.fill: parent
@@ -130,8 +312,8 @@ Rectangle {
                         }
                     }
                 }
-            }
 
+            }
 
             CustomButton {
                 color: "#007AFF"
@@ -205,12 +387,20 @@ Rectangle {
                 color: "#EDF1F4"
             }
 
-            ActiveProjectList {
-                onProjectClicked: {
-                    //newProjectClicked();
-                   baseLayout.visible = true
+            ScrollView{
+                id: scrollviewProject
+                height: 190
+                width: parent.width - 40
+                ScrollBar.horizontal.policy: scrollviewProject.contentWidth > scrollviewProject.width ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
+                ScrollBar.vertical.policy: ScrollBar.AlwaysOff
+
+            Loader {
+                    id: pageLoader
+                    source: "ActiveProjectList.qml" //The QML page to be reloaded
+
                 }
             }
+
 
             Rectangle {
                 width: 100

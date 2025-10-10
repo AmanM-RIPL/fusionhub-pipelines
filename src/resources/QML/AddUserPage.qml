@@ -1,13 +1,18 @@
 import QtQuick 2.15
 import QtQuick.Controls
 import com.fh.controllers;
+import QtQuick.Window 2.15
+import QtQuick.Dialogs
+
 
 Rectangle{
     anchors.fill: parent
-    color: "#EDF1F4"
+    color: "#EDF1F4"    
+
 
     signal logOutClicked()
     signal newAddUserClicked()   
+
 
     Column {
         anchors.fill: parent
@@ -17,6 +22,7 @@ Rectangle{
             Tool Bar
         */
         Rectangle {
+            id:toolbar
             width: parent.width - 20
             height: 75
             radius: 8
@@ -64,7 +70,6 @@ Rectangle{
                     height: 60
                     //color: "#7676801F"
                     color: "transparent"
-
                 }
             }
 
@@ -96,86 +101,119 @@ Rectangle{
             id: users
             height: parent.height
             width: parent.width
-            padding: 10
+            padding: 10           
 
             Row {
                 spacing: 7
                 padding: 50
 
-                CustomButton {
-                    color: "transparent"
-                    width: 85
+                Item {
+                    width: 30
                     height: 38
-                    btnSource: "qrc:/resources/images/backArrow.svg"
-                    btnName: "Users"
-                    btnNameColor: "black"
-                    btnNamePixelSize: 40
-                    //anchors.verticalCenter: parent.verticalCenter
-                    anchors.centerIn: parent.Center
-
-                    MouseArea{
+                    Image {
+                        id: backbuttonUsers
+                        source: "qrc:/resources/images/backArrow.svg"
                         anchors.fill: parent
-                        onClicked: {                            
-                            addUserPage.visible = false
-                            organizationSettingsPage.visible = true
+                        anchors.verticalCenter: parent.verticalCenter
+                        fillMode: Image.PreserveAspectFit
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            hoverEnabled: true
+                            onClicked: {
+                                addUserPage.visible = false
+                                organizationSettingsPage.visible = true
+                            }
                         }
                     }
-                }               
-            }
 
+                    Rectangle{
+                        id: blankUsers
+                        width: 10
+                        height: 38
+                        color:"transparent"
+                        anchors.left: backbuttonUsers.right
+                    }
 
-            Rectangle {
-                width: 100
-                height: 20
-                color: "#EDF1F4"
-            }
+                    Text{
+                        text: "Users"
+                        color:"Black"
+                        font.weight: 700
+                        font.pixelSize: 40
+                        font.family: "Segoe UI"
+                        anchors.left: blankUsers.right
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+            }          
 
-            //UserList{
 
             Column {
-                // anchors.fill: parent
-                //id: vendorRoot
+                // anchors.fill: parent               
                 id: userRoot
                 width: parent.width
-                padding: 10
-
-                //property var vendorList: []
+                padding: 10                
                 property var userList: []
 
                 UserController {
                     id: userController
                 }
 
+                MessageDialog {
+                        id: alertMessageDialog
+                        title: "Alert!"
+                        text: "Input text should not be blank."
+                        buttons: MessageDialog.Ok
+                        modality: Qt.ApplicationModal
+                        onAccepted: {
+                            //console.log("OK button clicked!");
+                            // Perform actions after the dialog is accepted
+                        }
+                    }
+
+
+
                 FHPopup {
                     id: newUserPopup
                     popupWidth: 500
                     popupHeight: 500
                     title: "New User"
+                    parent: Overlay.overlay                    
 
                     onAcceptCallback: function () {
-                        userController.create(userFullNameTextBox.text,
-                                              userNameTextBox.text,
-                                              userMobile1TextBox.text,
-                                              userMobile2TextBox.text,
-                                              userEmail1TextBox.text,
-                                              userEmail2TextBox.text,
-                                              userJobTitleTextBox.text,
-                                              userStartDateTextBox.text,
-                                              userEndDateTextBox.text,
-                                              userMonthlyDeskCostTextBox.text);
+                        if(userFullNameTextBox.text === "" || userNameTextBox.text === "" || userMobile1TextBox.text === ""
+                            || userMobile2TextBox.text === "" || userEmail1TextBox.text === "" || userEmail2TextBox.text === ""
+                            || userJobTitleTextBox.text === "" || userStartDateTextBox.text === "" || userEndDateTextBox.text === ""
+                            || userMonthlyDeskCostTextBox.text === "")
+                        {
+                            alertMessageDialog.open()
 
-                        userFullNameTextBox.text = "";
-                        userNameTextBox.text = "";
-                        userMobile1TextBox.text = "";
-                        userMobile2TextBox.text = "";
-                        userEmail1TextBox.text = "";
-                        userEmail2TextBox.text = "";
-                        userJobTitleTextBox.text = "";
-                        userStartDateTextBox.text = "";
-                        userEndDateTextBox.text = "";
-                        userMonthlyDeskCostTextBox.text = "";
+                        }
+                        else{
+                            userController.create(userFullNameTextBox.text,
+                                                  userNameTextBox.text,
+                                                  userMobile1TextBox.text,
+                                                  userMobile2TextBox.text,
+                                                  userEmail1TextBox.text,
+                                                  userEmail2TextBox.text,
+                                                  userJobTitleTextBox.text,
+                                                  userStartDateTextBox.text,
+                                                  userEndDateTextBox.text,
+                                                  userMonthlyDeskCostTextBox.text);
 
-                        userRoot.userList = userController.getUserList();
+                            userFullNameTextBox.text = "";
+                            userNameTextBox.text = "";
+                            userMobile1TextBox.text = "";
+                            userMobile2TextBox.text = "";
+                            userEmail1TextBox.text = "";
+                            userEmail2TextBox.text = "";
+                            userJobTitleTextBox.text = "";
+                            userStartDateTextBox.text = "";
+                            userEndDateTextBox.text = "";
+                            userMonthlyDeskCostTextBox.text = "";
+
+                            userRoot.userList = userController.getUserList();
+                        }
                     }
 
                     onCancelCallback: function () {
@@ -191,8 +229,6 @@ Rectangle{
                         userMonthlyDeskCostTextBox.text = "";
                     }
 
-
-                   // Column {
                      content: Column{
                         width: parent.width
                         height:650;//parent.height //30 for each top bottom
@@ -367,45 +403,43 @@ Rectangle{
                     }
                 }
 
+                ScrollView{
+                    //id: horizontalScrollView
+                    //anchors.fill: parent
+                    //clip: true
+                    //height: 230
+                    height: Screen.height - backbuttonUsers.y - backbuttonUsers.height
+                            - toolbar.y - toolbar.height - blankUsers.y - blankUsers.height - 170
+                    width: Screen.width - 60
+                    ScrollBar.horizontal.policy: ScrollBar.AlwaysOn
+                    ScrollBar.vertical.policy: ScrollBar.AlwaysOff
 
-                ///
+                    FHTable {
+                        //height: 200
+                        height: Screen.height - backbuttonUsers.y - backbuttonUsers.height
+                                - toolbar.y - toolbar.height - blankUsers.y - blankUsers.height - 200
+                        leftPadding: 20
+                        model: userRoot.userList
 
-                Rectangle {
-                    width: 100
-                    height: 40
-                    color: "#EDF1F4"
+
+                        columns: [
+                            { label: "Full Name", width: 250, key: "user_fullname" },
+                            { label: "User Name", width: 250, key: "user_name" },
+                            { label: "Mobile1", width: 100, key: "mobile1" },
+                            { label: "Mobile2", width: 100, key: "mobile2" },
+                            { label: "Email1", width: 250, key: "email1" },
+                            { label: "Email2", width: 250, key: "email2" },
+                            { label: "Job Title", width: 250, key: "jobTitle" },
+                            { label: "Start Date", width: 150, key: "startDate" },
+                            { label: "End Date", width: 150, key: "endDate" },
+                            { label: "Monthly Desk Cost(In Dollar)", width: 200, key: "monthlyDeskCostValue" },
+                        ]
+                    }
                 }
 
-                FHTable {
-                    height: 200
-                    leftPadding: 20
-                    model: userRoot.userList
-                    columns: [
-                        { label: "Full Name", width: 150, key: "user_fullname" },
-                        { label: "User Name", width: 150, key: "user_name" },
-                        { label: "Mobile1", width: 90, key: "mobile1" },
-                        { label: "Mobile2", width: 90, key: "mobile2" },
-                        { label: "Email1", width: 150, key: "email1" },
-                        { label: "Email2", width: 150, key: "email2" },
-                        { label: "Job Title", width: 100, key: "jobTitle" },
-                        { label: "Start Date", width: 75, key: "startDate" },
-                        { label: "End Date", width: 75, key: "endDate" },
-                        { label: "Monthly Desk Cost(In Dollar)", width: 200, key: "monthlyDeskCostValue" },
-                    ]
-                }
-
-                Component.onCompleted: {
-                    //userList = userRepository.findAllQML();
-                   userList  = userController.getUserList();
-                }
-            }
-
-           // }
-
-            Rectangle {
-                width: 100
-                height: 20
-                color: "#EDF1F4"
+                Component.onCompleted: {                   
+                    userRoot.userList  = userController.getUserList();
+                }                
             }
         }
     }

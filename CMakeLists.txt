@@ -47,6 +47,10 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -105,7 +109,7 @@ set(SOURCES
     src/repositories/purchase_order_line_repository.cpp
     src/repositories/good_received_note_repository.cpp
     src/repositories/material_indent_repository.cpp
-    src/repositories/ifcdetailrepository.cpp
+    src/repositories/ifc_detail_repository.cpp
     src/common/ifcdetail.cpp
     src/common/myglitem.cpp
 )
@@ -162,7 +166,7 @@ set(HEADERS
     src/repositories/purchase_order_line_repository.h
     src/repositories/good_received_note_repository.h
     src/repositories/material_indent_repository.h
-    src/repositories/ifcdetailrepository.h
+    src/repositories/ifc_detail_repository.h
     src/common/ifcdetail.h
     src/common/myglitem.h
 )
@@ -173,6 +177,14 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/controllers/user_controller.h src/controllers/user_controller.cpp    
     src/controllers/project_controller.h src/controllers/project_controller.cpp
     src/models/project.h src/models/project.cpp
+    src/controllers/budget_head_controller.h src/controllers/budget_head_controller.cpp
+    src/controllers/vendor_controller.h src/controllers/vendor_controller.cpp
+    src/controllers/material_controller.h src/controllers/material_controller.cpp
+    src/controllers/unit_of_measurement_controller.h src/controllers/unit_of_measurement_controller.cpp
+    src/controllers/schedule_setup_controller.h src/controllers/schedule_setup_controller.cpp
+    src/repositories/draft_entity_repository.h src/repositories/draft_entity_repository.cpp
+    src/models/draft_entity.h src/models/draft_entity.cpp
+    src/controllers/ifc_detail_controller.h src/controllers/ifc_detail_controller.cpp
 )
 
 target_include_directories(FusionHubQt PRIVATE src)
@@ -246,6 +258,10 @@ target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\hdf5.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\sdai.lib")
 
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)

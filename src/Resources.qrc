@@ -55,5 +55,6 @@
         <file>resources/QML/NewProjectPage.qml</file>
         <file>resources/QML/OrganizationSettingsPage.qml</file>
         <file>resources/QML/AddUserPage.qml</file>
+        <file>resources/QML/ScheduleSetupPage.qml</file>
     </qresource>
 </RCC>

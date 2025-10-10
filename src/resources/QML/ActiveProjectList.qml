@@ -3,43 +3,30 @@ import QtQuick.Controls
 import com.fh.controllers;
 
 Rectangle {
+    id:rootActiveProject
     width: 300 *(activeProjectsView.count) + 13 * (activeProjectsView.count - 1)
     height: 164
     color: "#EDF1F4"
 
-    signal projectClicked();
+    readonly property string jsonData:projectController.getProjectList().toString();;
+    property string txtDefault: "There is no active project at this moment."
 
-    readonly property string jsonData: projectController.getProjectList().toString();
+    Text{
+         id:defaultActiveText
+         text: txtDefault
+         color: "#323130"
+         font.family: "Segoe UI"
+         font.weight: 700
+         font.pixelSize: 20
+         anchors.left: parent.left
+         anchors.leftMargin: 0
+         anchors.top: parent.top
+         anchors.topMargin: 16 - 4
+     }
 
 
     ListModel{
         id: activeProjectsModel
-
-        /*
-        ListElement{
-            projectName: "Project Name"
-            dateData: "June 05"
-            customerName: "Customer Name"
-        }
-
-        ListElement{
-            projectName: "Project Name"
-            dateData: "June 05"
-            customerName: "Customer Name"
-        }
-
-        ListElement{
-            projectName: "Project Name"
-            dateData: "June 05"
-            customerName: "Customer Name"
-        }
-
-        ListElement{
-            projectName: "Project Name"
-            dateData: "June 05"
-            customerName: "Customer Name"
-        }
-        */
     }
 
 
@@ -52,14 +39,12 @@ Rectangle {
         orientation: ListView.Horizontal
         delegate: activeProjectDelegate
 
-
         ProjectController {
             id: projectController
         }
     }
 
     Component{
-
         id: activeProjectDelegate        
 
         Rectangle{
@@ -74,7 +59,6 @@ Rectangle {
                 anchors.top: parent.top
                 anchors.topMargin: 13
             }
-
 
             Image {
                 source: "qrc:/resources/images/dotMenu.svg"
@@ -97,12 +81,17 @@ Rectangle {
 
                 MouseArea {
                     anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    hoverEnabled: true
+
                     onClicked: {
-                        projectClicked();
+                       // projectClicked();
+                         projectController.openDatabase(projectName, id)
+                         baseLayout.visible = true
+                         baseLayout.projectName = projectName
                     }
                 }
             }
-
 
             Text{
                 text: dateData
@@ -115,6 +104,8 @@ Rectangle {
                 anchors.top: parent.top
                 anchors.topMargin: 34 - 4
             }
+
+
 
             Text{
                 width: 275
@@ -151,26 +142,21 @@ Rectangle {
     }
 
     Component.onCompleted: {
-                parseAndPopulate(jsonData);
-            }
+        parseAndPopulate(jsonData);
+    }
 
     function parseAndPopulate(jsonString) {
-                try {
-                    var dataArray = JSON.parse(jsonString);
-                    if (dataArray && Array.isArray(dataArray)) {
-                        activeProjectsModel.clear();
-                        for (var i = 0; i < dataArray.length; i++) {
-                            activeProjectsModel.append(dataArray[i]);
-                        }
-
-                        /*if(activeProjectsModel.count() < 1)
-                        {
-                            //activeProjectsModel.append()
-                        }*/
-                    }
-                } catch (e) {
-                    console.error("Error parsing JSON:", e);
+        try {
+            var dataArray = JSON.parse(jsonString);
+            if (dataArray && Array.isArray(dataArray)) {
+                activeProjectsModel.clear();
+                for (var i = 0; i < dataArray.length; i++) {
+                    activeProjectsModel.append(dataArray[i]);
                 }
+                txtDefault="";
             }
-
+        } catch (e) {            
+            txtDefault = "There is no active project at this moment."
+        }
+    }
 }

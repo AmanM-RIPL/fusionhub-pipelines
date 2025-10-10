@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick
 import com.fh.models 1.0
+import com.fh.controllers;
 
 Row {
     // anchors.fill: parent
@@ -14,12 +15,20 @@ Row {
 
     property var ifcDetailList: [];
     property string pageType: "PlannedBIM";
+    property int treeviewWidth: parent.width/2 - 20
+    property int glsceneWidth: parent.width/2
+    property bool glsceneVisible: false
+
+
 
     Rectangle {
-        width: parent.width/2 - 20
+        //width: parent.width/2 - 20
+        width: treeviewWidth
         height: parent.height
         color: "white"
         border.color: "#000000"
+
+
 
         ScrollView {
             id: horizontalScrollView
@@ -29,7 +38,7 @@ Row {
             clip: true
 
             FHTable {
-                visible: plannedBIMRoot.pageType === "Collision"
+                visible: plannedBIMRoot.pageType === "Collision"                
                 height: 500
                 leftPadding: 20
                 model: plannedBIMRoot.ifcDetailList
@@ -268,18 +277,27 @@ Row {
                 anchors.margins: 10
                 delegate: TreeViewDelegate {}
                 model: treeModel
-            }
 
+                IFCDetailController {
+                    id: ifcDetailController
+                }
+
+            }
         }
     }
 
     Rectangle {
-        width: parent.width/2
+        //width: parent.width/2
+        width: glsceneWidth
         height: 500
+        color: "gray"
+        visible: glsceneVisible
 
         GLScene {
             id: glscene
             anchors.fill: parent
+
+
 
             MouseArea {
                 anchors.fill: parent
@@ -311,7 +329,12 @@ Row {
         }
     }
 
+
+
     Component.onCompleted: {
-        ifcDetailList = ifcDetailRepository.getIFCDetails();
+        //ifcDetailList = ifcDetailRepository.getIFCDetails();
+
+        //ifcDetailList = ifcDetailController.loadIFC("");
+
     }
 }

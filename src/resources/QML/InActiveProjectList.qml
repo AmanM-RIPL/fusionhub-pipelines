@@ -7,13 +7,23 @@ Rectangle {
     height: 164
     color: "#EDF1F4"
 
+    property string txtDefaultInactive: "There is no inactive project at this moment."
+
+    Text{
+         id:defaultInActiveText
+         text: txtDefaultInactive
+         color: "#323130"
+         font.family: "Segoe UI"
+         font.weight: 700
+         font.pixelSize: 20
+         anchors.left: parent.left
+         anchors.leftMargin: 0
+         anchors.top: parent.top
+         anchors.topMargin: 16 - 4
+     }
+
     ListModel{
-        id: activeProjectsModel
-
-
-        ListElement{
-            inactiveText: "There is no inactive project at this moment."
-        }
+        id: activeProjectsModel        
 
        /* ListElement{
             projectName: "Project Name"
@@ -35,7 +45,6 @@ Rectangle {
         */
     }
 
-
     ListView{
         id: inActiveProjectsView
         anchors.fill: parent
@@ -49,28 +58,7 @@ Rectangle {
     Component{
         id: activeProjectDelegate
 
-        Rectangle {
-            width: parent.width
-            height: 164
-            radius: 0
-            color: "#EDF1F4"
-
-
-            Text{
-                text: inactiveText
-                color: "#323130"
-                font.family: "Segoe UI"
-                font.weight: 700
-                font.pixelSize: 40
-                anchors.left: parent.left
-                //anchors.leftMargin: 51
-                anchors.leftMargin: 0
-                anchors.top: parent.top
-                anchors.topMargin: 16 - 4
-            }
-        }
-
-       /* Rectangle{
+        Rectangle{
             width: 300
             height: 164
             radius: 8
@@ -102,7 +90,6 @@ Rectangle {
                 anchors.top: parent.top
                 anchors.topMargin: 16 - 4
             }
-
 
             Text{
                 text: dateData
@@ -147,8 +134,6 @@ Rectangle {
                 anchors.top: parent.top
                 anchors.topMargin: 131
             }
-
-        }*/
+        }
     }
-
 }

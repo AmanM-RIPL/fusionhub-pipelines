@@ -3,10 +3,10 @@
 
 Project::Project(int id, const QString& globalId, bool approvalStatus,
            const QString& projectName, const QString& customerName, const QString& contactName, const QString& phoneNumber,
-                 const QString& emailId, const QString& totalDollarValue, const QString& description, bool isBlocked )
+                 const QString& emailId, const QString& totalDollarValue, const QString& description, bool isBlocked,  QObject* parent)
     : id(id), globalId(globalId), approvalStatus(approvalStatus), projectName(projectName),
     customerName(customerName), contactName(contactName), phoneNumber(phoneNumber), emailId(emailId),
-    totalDollarValue(totalDollarValue), description(description), isBlocked(isBlocked)
+    totalDollarValue(totalDollarValue), description(description), isBlocked(isBlocked), QObject(parent)
 
 {
 

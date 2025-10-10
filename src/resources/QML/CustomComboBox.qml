@@ -6,15 +6,18 @@ ComboBox {
     model: ["First", "Second", "Third"]
     leftPadding: 9
     font.weight: 400
-    font.pixelSize: 14
+    font.pixelSize: 14    
     width: 450
     height: 34
+
+
 
     delegate: ItemDelegate {
         id: delegate
 
         required property var model
         required property int index
+
 
         width: control.width
         contentItem: Text {
@@ -26,6 +29,7 @@ ComboBox {
         }
         highlighted: control.highlightedIndex === index
     }
+
 
     indicator: Canvas {
         id: canvas
@@ -40,7 +44,9 @@ ComboBox {
             function onPressedChanged() { canvas.requestPaint(); }
         }
 
+
         onPaint: {
+            var context = getContext("2d");//This line was not added before
             context.reset();
             context.moveTo(0, 0);
             context.lineTo(width, 0);

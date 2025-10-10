@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls
 import QtQuick.Layouts
 import com.fh.models 1.0
+import com.fh.controllers;
 
 Column {
     // anchors.fill: parent
@@ -14,6 +15,18 @@ Column {
     property var unitOfMeasurementText: [] // text for dropdown
     property var unitOfMeasurementList: [] // raw data of uom
 
+    property bool isApproved:false
+
+
+    MaterialController {
+        id: materialController
+    }
+
+    UnitOfMeasurementController
+    {
+        id:unitOfMeasurementController
+    }
+
     FHPopup {
         id: newMaterialPopup
         popupWidth: 500
@@ -21,39 +34,14 @@ Column {
         title: "New Material"
 
         onAcceptCallback: function () {
-            // Create Material object dynamically
-            let material = Qt.createQmlObject('import com.fh.models 1.0; Material {}', parent);
-            material.materialName = materialNameTextBox.text;
-            material.globalId = "";
-            material.approvalStatus = true;
-            material.category = categoryComboBox.currentText;
-            material.unitOfMeasurementId = materialRoot.unitOfMeasurementList[unitOfMeasurementComboBox.currentIndex].id;
 
-            materialRepository.saveQML(material);
+            materialController.create(materialNameTextBox.text, categoryComboBox.currentText,
+                                      materialRoot.unitOfMeasurementList[unitOfMeasurementComboBox.currentIndex].id);
 
             materialNameTextBox.text = "";
             categoryComboBox.currentIndex = -1;
             unitOfMeasurementComboBox.currentIndex = -1;
-
-            materialRoot.materialList = materialRepository.findAllQML();
-
-            // material data for table
-            materialRoot.materialListForTable = materialRoot.materialList.map((material, materialIndex) => {
-                const uom = materialRoot.unitOfMeasurementList.filter(x => x.id === material.unitOfMeasurementId);
-                let uomText = "Unknown";
-                if (uom.length > 0)
-                {
-                    uomText = uom[0].uomName;
-                }
-
-
-                return {
-                    id: material.id,
-                    materialName: material.materialName,
-                    category: material.category,
-                    unitOfMeasurement: uomText
-                };
-            });
+            showList();
         }
 
         onCancelCallback: function () {
@@ -64,7 +52,7 @@ Column {
 
         Column {
             width: parent.width
-            height: parent.height //30 for each top bottom
+            height: 200//parent.height //30 for each top bottom
 
             Text{
                 id: materialNameLabel
@@ -75,11 +63,13 @@ Column {
                 font.family: "Segoe UI"
             }
 
-
             CustomTextBox{
                 id: materialNameTextBox
                 placeholderText: "Material Name"
+                text:""
+                color: "#323130"
             }
+
 
             Text{
                 id: categoryLabel
@@ -91,11 +81,11 @@ Column {
                 topPadding: 10
             }
 
-
             CustomComboBox {
                 id: categoryComboBox
                 model: ["Raw Material", "Non-Construction", "Finished Good"]
             }
+
 
             Text{
                 id: unitOfMeasurementLabel
@@ -106,7 +96,6 @@ Column {
                 font.family: "Segoe UI"
                 topPadding: 10
             }
-
 
             CustomComboBox {
                 id: unitOfMeasurementComboBox
@@ -155,6 +144,45 @@ Column {
         color: "#EDF1F4"
     }
 
+    Row {
+        spacing: 20
+        Text{
+            id: approvalTypeLabel
+            text: "Choose Approval Type"
+            color: "#323130"
+            font.weight: 700
+            font.pixelSize: 14
+            font.family: "Segoe UI"
+            topPadding: 10
+            leftPadding: 20
+        }
+
+
+        CustomComboBox {
+            id: approvalTypeComboBox
+            model: ["Approved", "Draft"]
+            width:200
+
+            onCurrentTextChanged: {
+                if(approvalTypeComboBox.currentText === "Approved"){
+                    isApproved = true                    
+                }
+                else{
+                    isApproved = false;                    
+                }
+                showList();
+            }
+        }
+    }
+
+    Rectangle {
+        width: 100
+        height: 40
+        color: "#EDF1F4"
+    }
+
+
+
     FHTable {
         height: 200
         leftPadding: 20
@@ -168,33 +196,41 @@ Column {
     }
 
     Component.onCompleted: {
+        showList();
+    }
 
-        // material data
-        materialList = materialRepository.findAllQML();
+    onVisibleChanged: {
+         showList();
+    }
 
+    function showList()
+    {
+        if(materialRoot.visible){
+            //material data
+            materialList = materialController.getMaterialList(isApproved);
 
-        // uom data
-        unitOfMeasurementList = unitOfMeasurementRepository.findAllQML();
+            //uom data
+            unitOfMeasurementList = materialController.getUOMList();
 
-        const uomNames = unitOfMeasurementList.map(uom => uom.uomName);
-        unitOfMeasurementText = uomNames;
+            const uomNames = unitOfMeasurementList.map(uom => uom.uomName);
+            unitOfMeasurementText = uomNames;
 
-        // material data for table
-        materialListForTable = materialList.map((material, materialIndex) => {
-            const uom = unitOfMeasurementList.filter(x => x.id === material.unitOfMeasurementId);
-            let uomText = "Unknown";
-            if (uom.length > 0)
-            {
-                uomText = uom[0].uomName;
-            }
+            //material data for table
+            materialListForTable = materialList.map((material, materialIndex) => {
+                                                        const uom = unitOfMeasurementList.filter(x => x.id === material.unitOfMeasurementId);
+                                                        let uomText = "Unknown";
+                                                        if (uom.length > 0)
+                                                        {
+                                                            uomText = uom[0].uomName;
+                                                        }
 
-
-            return {
-                id: material.id,
-                materialName: material.materialName,
-                category: material.category,
-                unitOfMeasurement: uomText
-            };
-        });
+                                                        return {
+                                                            id: material.id,
+                                                            materialName: material.materialName,
+                                                            category: material.category,
+                                                            unitOfMeasurement: uomText
+                                                        };
+                                                    });
+        }
     }
 }

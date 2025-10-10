@@ -43,7 +43,11 @@ Column {
             border.width: 1
             border.color: "#7676801F"//"#8A888629"
             color: "white"
-            anchors.horizontalCenter: parent.horizontalCenter
+            //anchors.horizontalCenter: parent.horizontalCenter
+            Layout.alignment: parent.anchors.alignWhenCentered
+            onVisibleChanged:   {
+                projectPageToRedirect("TaskBoard")
+            }
 
 
             Row {
@@ -259,7 +263,12 @@ Column {
             border.width: 1
             border.color: "#7676801F"//"#8A888629"
             color: "white"
-            anchors.horizontalCenter: parent.horizontalCenter
+            //anchors.horizontalCenter: parent.horizontalCenter
+            Layout.alignment: parent.anchors.alignWhenCentered
+
+            onVisibleChanged:   {
+                  projectPageToRedirect("PlannedBIM")
+            }
 
 
             Row {
@@ -275,7 +284,7 @@ Column {
                     MouseArea {
                         anchors.fill: parent
 
-                        onClicked: {
+                        onClicked: {                            
                             projectPageToRedirect("PlannedBIM")
                         }
                     }
@@ -318,7 +327,7 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            projectPageToRedirect("Vendor")
+                            //projectPageToRedirect("Vendor")
                         }
                     }
                 }
@@ -375,6 +384,10 @@ Column {
 
         Item {
             id: activityTab
+            onVisibleChanged:   {
+                //This will be changed after Implemention of Analytics
+                  projectPageToRedirect("Analytics")
+            }
         }
 
         Rectangle {
@@ -384,7 +397,11 @@ Column {
             border.width: 1
             border.color: "#7676801F"//"#8A888629"
             color: "white"
-            anchors.horizontalCenter: parent.horizontalCenter
+            //anchors.horizontalCenter: parent.horizontalCenter
+            Layout.alignment: parent.anchors.alignWhenCentered
+            onVisibleChanged:   {
+                 projectPageToRedirect("ScheduleSetup")
+            }
 
 
             Row {
@@ -401,7 +418,7 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            // newProjectClicked()
+                            projectPageToRedirect("ScheduleSetup")
                         }
                     }
                 }

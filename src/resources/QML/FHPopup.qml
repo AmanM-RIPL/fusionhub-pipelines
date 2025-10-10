@@ -23,6 +23,10 @@ Popup {
     property var onCancelCallback: null
     default property alias content: contentItem.children
 
+    property string buttonName: "Add"
+    property string buttonSource: "qrc:/resources/images/addWhite_icon.png"
+
+
     Rectangle {
         anchors.fill: parent
         color: "white"
@@ -32,7 +36,7 @@ Popup {
             anchors.fill: parent
             spacing: 10
 
-            Row {
+            Item {
                 width: parent.width
                 height: 30
 
@@ -59,6 +63,7 @@ Popup {
                     // anchors.verticalCenter: parent.verticalCenter
                     anchors.right: parent.right
 
+
                     MouseArea{
                         anchors.fill: parent
 
@@ -68,6 +73,7 @@ Popup {
                     }
                 }
             }
+
 
             Rectangle {
                 width: parent.width
@@ -104,8 +110,10 @@ Popup {
                     height: 30
                     radius: 4
                     // border.color: "#007AFF"
-                    btnSource: "qrc:/resources/images/addWhite_icon.png"
-                    btnName: "Add"
+                    //btnSource: "qrc:/resources/images/addWhite_icon.png"
+                    btnSource: buttonSource
+                    //btnName: "Add"
+                    btnName: buttonName
                     btnNameColor: "white"
                     // anchors.verticalCenter: parent.verticalCenter
 

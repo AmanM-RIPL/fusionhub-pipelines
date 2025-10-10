@@ -5,15 +5,14 @@ std::vector<std::unique_ptr<ScheduleSetup>> ScheduleSetupRepository::findAll() {
 std::vector<ScheduleSetup*> ScheduleSetupRepository::findAllQML() {
     std::vector<ScheduleSetup*> scheduleSetup;
     QSqlQuery query(dbManager->getDatabase());
-
     if (query.exec("SELECT * FROM ScheduleSetup")) {
         while (query.next()) {
             scheduleSetup.push_back(mapFromQueryQML(query, this));
         }
     }
-
     return scheduleSetup;
 }
+
 bool ScheduleSetupRepository::save(const ScheduleSetup& entity) { return false; }
 bool ScheduleSetupRepository::saveQML(ScheduleSetup* entity) {
 
