@@ -1,0 +1,259 @@
+#include "view.h"
+
+View::View(QObject *parent)
+    : QObject{parent}
+{
+}
+
+void View::Initialize()
+{
+    this->initializeOpenGLFunctions();
+
+    // FOR TESTING:::: ADD MESH BEFORE HAND
+    // getting the data of the first mesh
+    GLfloat* vertices = meshList[0]->getVerticies();
+    unsigned int* indices = meshList[0]->getIndices();
+    unsigned int numOfVertices = meshList[0]->getNumOfVertices();
+    unsigned int numOfIndices = meshList[0]->getNumOfIndices();
+
+    // Initializing the vao, vbo, and ibo
+    m_indexCount = numOfIndices;
+    this->glEnable(GL_DEPTH_TEST);
+
+    this->glGenVertexArrays(1, &m_vao);
+    this->glGenBuffers(1, &m_static_ibo);
+    this->glGenBuffers(1, &m_static_vbo);
+
+    // VAO
+    this->glBindVertexArray(m_vao);
+        //IBO
+        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
+            this->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * numOfIndices, indices, GL_STATIC_DRAW);
+
+            //VBO
+            this->glBindBuffer(GL_ARRAY_BUFFER, m_static_vbo);
+                this->glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * numOfVertices, vertices, GL_STATIC_DRAW);
+
+                this->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(vertices[0]), (void*)0);
+                this->glEnableVertexAttribArray(0);
+
+            this->glBindBuffer(GL_ARRAY_BUFFER, 0);
+        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    this->glBindVertexArray(0);
+}
+
+void View::Render()
+{
+    this->glViewport(0, 0, viewportWidth, viewportHeight);
+    this->glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
+    this->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    this->glUseProgram(shader->getShaderId());
+
+    // --- Upload to shader ---
+    this->glUniformMatrix4fv(shader->getModelId(), 1, GL_FALSE, meshList[0]->getModelMatrix().constData());
+    this->glUniformMatrix4fv(shader->getViewId(),  1, GL_FALSE, camera->calculateViewMatrix().constData());
+    this->glUniformMatrix4fv(shader->getProjectionId(),  1, GL_FALSE, m_projectionMatrix.constData());
+
+
+    // Draw
+    this->glBindVertexArray(m_vao);
+        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
+            this->glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
+        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    this->glBindVertexArray(0);
+}
+
+void View::Selection()
+{
+    // ensure pick FBO exists and matches size
+    ensurePickFBO();
+
+    if (m_pickFBO)
+    {
+        // Bind picking framebuffer
+        this->glBindFramebuffer(GL_FRAMEBUFFER, m_pickFBO);
+            this->glViewport(0, 0, viewportWidth, viewportHeight);
+            this->glClearColor(0,0,0,0);
+            this->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            // draw scene with flat pick colors
+            this->glUseProgram(pickingShader->getShaderId());
+
+            unsigned int objectId = 1;
+            unsigned char r,g,b;
+            encodeIdToColor(objectId, r,g,b);
+            this->glUniform4f(pickingShader->getPickColorId(), r/255.0f, g/255.0f, b/255.0f, 1.0f);
+
+            // --- Upload to shader ---
+            this->glUniformMatrix4fv(pickingShader->getModelId(), 1, GL_FALSE, meshList[0]->getModelMatrix().constData());
+            this->glUniformMatrix4fv(pickingShader->getViewId(),  1, GL_FALSE, camera->calculateViewMatrix().constData());
+            this->glUniformMatrix4fv(pickingShader->getProjectionId(),  1, GL_FALSE, m_projectionMatrix.constData());
+
+            this->glBindVertexArray(m_vao);
+                this->glDrawArrays(GL_TRIANGLES, 0, 3);
+            this->glBindVertexArray(0);
+
+            // Read pixel
+            int readX = m_pickX;
+            int readY = m_pickY; //(viewportHeight - 1) - m_pickY;
+            unsigned char pixel[4];
+            this->glReadPixels(readX, readY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+
+            unsigned int pickedId = pixel[0] | (pixel[1] << 8) | (pixel[2] << 16);
+
+        // Restore default framebuffer
+        this->glBindFramebuffer(GL_FRAMEBUFFER, defaultFBO);
+
+        qInfo() << "Picked Id: " << pickedId;
+    }
+}
+
+void View::UpdateGeometry()
+{
+    // --- Step 1: Screen -> NDC
+    float x = (2.0f * m_pickX) / float(viewportWidth) - 1.0f;
+    float y = (2.0f * m_pickY) / float(viewportHeight) - 1.0f; // no inversion as Y-axis flip is already in proj matrix
+    QVector4D rayClip(x, y, -1.0f, 1.0f);
+
+    // --- Step 2: NDC -> Eye space
+    QVector4D rayEye = m_projectionMatrix.inverted() * rayClip;
+    rayEye = QVector4D(rayEye.x(), rayEye.y(), -1.0f, 0.0f);
+
+    // --- Step 3: Eye -> World space
+    QVector3D rayDirWorld = (camera->calculateViewMatrix().inverted() * rayEye).toVector3D().normalized();
+    QVector3D rayOriginWorld = camera->getCameraPosition();
+
+    // --- Step 4: Transform ray into *model space*
+    QMatrix4x4 invModel = meshList[0]->getModelMatrix().inverted();
+    QVector3D rayOriginModel = (invModel * QVector4D(rayOriginWorld, 1.0f)).toVector3D();
+    QVector3D rayDirModel    = (invModel * QVector4D(rayDirWorld, 0.0f)).toVector3D().normalized();
+
+    // --- Step 5: Ray-plane intersection in model space (Z=0 plane)
+    QVector3D planeNormal(0, 0, 1);
+    QVector3D planePoint(0, 0, 0);
+    float denom = QVector3D::dotProduct(planeNormal, rayDirModel);
+    if (fabs(denom) < 1e-6f) {
+        qWarning() << "Ray parallel to model plane, no intersection";
+        return;
+    }
+    float t = QVector3D::dotProduct(planePoint - rayOriginModel, planeNormal) / denom;
+    if (t < 0) {
+        qWarning() << "Intersection is behind camera";
+        return;
+    }
+
+    QVector3D hitPoint = rayOriginModel + t * rayDirModel;
+
+    // --- Step 5: Update vertex (index 0 = top vertex)
+    meshList[0]->UpdateGeometry(hitPoint);
+
+    // --- Step 6: Push updated vertices to GPU
+    this->glBindVertexArray(m_vao);
+        //IBO
+        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
+            this->glBindBuffer(GL_ARRAY_BUFFER, m_static_vbo);
+                this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(meshList[0]->getVerticies()), meshList[0]->getVerticies());
+            this->glBindBuffer(GL_ARRAY_BUFFER, 0);
+        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    this->glBindVertexArray(0);
+}
+
+void View::AddMesh(Mesh *mesh)
+{
+    meshList.append(mesh);
+}
+
+void View::AddCamera(Camera *cam)
+{
+    camera = cam;
+}
+
+void View::AddShader(Shader *shad)
+{
+    shader = shad;
+}
+
+void View::AddPickingShader(Shader *shad)
+{
+    pickingShader = shad;
+}
+
+void View::SetProjection(QMatrix4x4 &projection)
+{
+    m_projectionMatrix = projection;
+}
+
+void View::SetWidth(int width)
+{
+    viewportWidth = width;
+}
+
+void View::SetHeight(int height)
+{
+    viewportHeight = height;
+}
+
+void View::SetDefaultFBO(GLuint fbo)
+{
+    defaultFBO = fbo;
+}
+
+void View::SetSelectionCoordinates(int x, int y)
+{
+    m_pickX = x;
+    m_pickY = y;
+}
+
+void View::encodeIdToColor(unsigned int id, unsigned char &r, unsigned char &g, unsigned char &b)
+{
+    r = (id & 0x000000FF);
+    g = (id & 0x0000FF00) >> 8;
+    b = (id & 0x00FF0000) >> 16;
+}
+
+void View::ensurePickFBO()
+{
+    if (m_pickFBO != 0) {
+        this->glDeleteFramebuffers(1, &m_pickFBO);
+        this->glDeleteTextures(1, &m_pickColorTex);
+        this->glDeleteRenderbuffers(1, &m_pickDepthBuf);
+        m_pickFBO = m_pickColorTex = m_pickDepthBuf = 0;
+    }
+
+    // Generate framebuffer
+    this->glGenFramebuffers(1, &m_pickFBO);
+    this->glBindFramebuffer(GL_FRAMEBUFFER, m_pickFBO);
+
+    // --- Color attachment (texture) ---
+    this->glGenTextures(1, &m_pickColorTex);
+    this->glBindTexture(GL_TEXTURE_2D, m_pickColorTex);
+    this->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, viewportWidth, viewportHeight, 0,
+                       GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    this->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    this->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    this->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                 GL_TEXTURE_2D, m_pickColorTex, 0);
+
+    // --- Depth attachment (renderbuffer) ---
+    this->glGenRenderbuffers(1, &m_pickDepthBuf);
+    this->glBindRenderbuffer(GL_RENDERBUFFER, m_pickDepthBuf);
+    this->glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, viewportWidth, viewportHeight);
+    this->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                    GL_RENDERBUFFER, m_pickDepthBuf);
+
+    // Check FBO status
+    if (this->glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        qWarning() << "Picking FBO is not complete!";
+    }
+
+    // Unbind
+    this->glBindFramebuffer(GL_FRAMEBUFFER, defaultFBO);
+}
+
+View::~View()
+{
+    this->glDeleteBuffers(1, &m_static_vbo);
+    this->glDeleteBuffers(1, &m_static_ibo);
+    this->glDeleteVertexArrays(1, &m_vao);
+}

@@ -47,6 +47,10 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -173,6 +177,10 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/controllers/user_controller.h src/controllers/user_controller.cpp    
     src/controllers/project_controller.h src/controllers/project_controller.cpp
     src/models/project.h src/models/project.cpp
+    src/common/opengl/classes/view.h src/common/opengl/classes/view.cpp
+    src/common/opengl/classes/shader.h src/common/opengl/classes/shader.cpp
+    src/common/opengl/classes/camera.h src/common/opengl/classes/camera.cpp
+    src/common/opengl/classes/mesh.h src/common/opengl/classes/mesh.cpp
 )
 
 target_include_directories(FusionHubQt PRIVATE src)
@@ -247,6 +255,10 @@ target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\hdf5.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\sdai.lib")
 
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)

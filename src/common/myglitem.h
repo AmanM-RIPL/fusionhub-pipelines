@@ -41,6 +41,11 @@
 #include "FMMdlIterators.h"
 #include "Ge/GeTrMeshSimplification.h"
 
+#include "common/opengl/classes/mesh.h"
+#include "common/opengl/classes/camera.h"
+#include "common/opengl/classes/shader.h"
+#include "common/opengl/classes/view.h"
+
 class MyApp : public ExSystemServices
 {
 protected:
@@ -99,6 +104,12 @@ private:
     GLuint m_projLoc = -1;
     GLfloat m_vertices[9];
     QVector3D m_cameraPos = QVector3D(0.0f, 0.0f, 2.0f);
+
+    Mesh* m_mesh = nullptr;
+    Camera* m_camera = nullptr;
+    Shader* m_shader = nullptr;
+    Shader* m_picking_shader = nullptr;
+    View* m_view = nullptr;
 
     bool m_pickRequested = false;
     int m_pickX = -1;
