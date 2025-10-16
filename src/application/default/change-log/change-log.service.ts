@@ -13,7 +13,7 @@ export class ChangeLogService {
     private readonly changeLogRepository: IChangeLogRepository,
     private readonly projectRepository: IProjectRepository,
     private readonly user: number
-  ) {}
+  ) { }
 
   async findById(id: number): Promise<Selectable<IChangeLog> | undefined> {
     return await this.changeLogRepository.findById(id);
@@ -49,41 +49,62 @@ export class ChangeLogService {
   /**
    * Sync change logs from Postgres to SQLite
    */
-   async changeLogSync(projectId: number): Promise<void> {
-    // 1. Get project from Postgres
+  async changeLogSync(projectId: number): Promise<void> {
     const pgProject = await this.projectRepository.findById(projectId);
     if (!pgProject) throw new Error(`Project ${projectId} not found in Postgres.`);
 
-    const lastChangeLogId = pgProject.lastChangeLogId ?? 0;
+    let lastChangeLogId = pgProject.lastChangeLogId ?? 0;
+    const batchSize = 10;
+    let hasMore = true;
 
-    // 2. Fetch new change logs from Postgres
-    const entitiesToSync = await this.changeLogRepository.findAllWithChangeLogGreaterThan(
-      projectId,
-      lastChangeLogId,
-      50,
-      0
-    );
-
-    if (entitiesToSync.length === 0) {
-      console.log(`No new change logs for project ${projectId}`);
-      return;
-    }
-
-    // 3. Sync into SQLite
+    // Open SQLite connection
     const dbFilePath = path.resolve("C:/code/fhapi_service/src/infrastructure/sqlite/" + "project_" + projectId + ".db");
     const sqliteDb = new Database(dbFilePath);
-    
+
     try {
       const sqliteSync: SQLiteSync = new SQLiteSync(sqliteDb);
-      await sqliteSync.syncSqlite(entitiesToSync);
+
+      // Process in batches using cursor
+      while (hasMore) {
+        const entitiesToSync = await this.changeLogRepository.findAllWithChangeLogGreaterThan(
+          projectId,
+          lastChangeLogId,
+          batchSize
+        );
+
+        if (entitiesToSync.length === 0) {
+          console.log(`No more change logs for project ${projectId}`);
+          hasMore = false;
+          break;
+        }
+
+        console.log(`Syncing batch of ${entitiesToSync.length} change logs for project ${projectId}`);
+
+        // Sync current batch to SQLite
+        await sqliteSync.syncSqlite(entitiesToSync);
+
+        // Update cursor to the last processed ID
+        lastChangeLogId = entitiesToSync[entitiesToSync.length - 1].id;
+
+        // If fewer than batch size, process are done
+        if (entitiesToSync.length < batchSize) {
+          hasMore = false;
+        }
+
+        // This provides checkpoint capability in case of failures
+        await this.projectRepository.update(projectId, {
+          lastChangeLogId: lastChangeLogId
+        });
+      }
+
+      console.log(`Completed sync for project ${projectId}. Last ID: ${lastChangeLogId}`);
+
     } catch (error) {
       console.error("Error during SQLite sync:", error);
-      sqliteDb.close();
       throw error;
+    } finally {
+      sqliteDb.close();
     }
-
-    // close sqlite database
-    sqliteDb.close();
   }
 
 }

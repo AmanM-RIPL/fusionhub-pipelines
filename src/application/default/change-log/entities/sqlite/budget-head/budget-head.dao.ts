@@ -17,7 +17,7 @@ export default class BudgetHeadDao implements IProjectEntityBaseRepository {
       changeLog.id,
       entitySchema.approval_status ? 1 : 0,
       entitySchema.description,
-      JSON.stringify(entitySchema.change_history)
+      JSON.stringify(changeLog.changeHistory)
     );
   }
 
@@ -30,7 +30,7 @@ export default class BudgetHeadDao implements IProjectEntityBaseRepository {
     statement.run(
       entitySchema.approval_status ? 1 : 0,
       entitySchema.description,
-      JSON.stringify(entitySchema.change_history),
+      JSON.stringify(changeLog.changeHistory),
       changeLog.associatedApprovedEntity
     );
   }

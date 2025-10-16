@@ -45,10 +45,12 @@ import { WorkOrderController } from "../sqlite/work-order/work-order.controller"
 import { WorkOrderLineController } from "../sqlite/work-order-line/work-order-line.controller";
 import { WorkBillingController } from "../sqlite/work-billing/work-billing.controller";
 import { WorkBillingLineController } from "../sqlite/work-billing-line/work-billing-line.controller";
+import WorkBillingLineDao from "../sqlite/work-billing-line/work-billing-line.dao";
 
 // get DAO based on entity name
 export function getSQLiteDao(entityName: string, db: DatabaseType): IProjectEntityBaseRepository | undefined {
   switch (entityName) {
+    
     case "UnitOfMeasurement":
       return new UnitOfMeasurementDao(db);
     case "Vendor":
@@ -57,48 +59,57 @@ export function getSQLiteDao(entityName: string, db: DatabaseType): IProjectEnti
       return new MaterialDao(db);
     case "BudgetHead":
       return new BudgetHeadDao(db);
+
     case "ProjectBudget":
       return new ProjectBudgetDao(db);
     case "ScheduleSetup":
       return new ScheduleSetupDao(db);
+
     case "ScheduleOfRates":
       return new ScheduleOfRatesDao(db);
     case "ScheduleOfRatesLine":
       return new ScheduleOfRatesLineDao(db);
+
     case "Task":
       return new TaskDao(db);
     case "TaskImage":
       return new TaskImageDao(db);
     case "TaskMeasurement":
       return new TaskMeasurementDao(db);
+
     case "BillOfQuantity":
       return new BillOfQuantityDao(db);
     case "BillOfQuantityLine":
       return new BillOfQuantityLineDao(db);
+
     case "File":
       return new FileDao(db);
     case "FilePermission":
       return new FilePermissionDao(db);
+
     case "PurchaseOrder":
       return new PurchaseOrderDao(db);
     case "PurchaseOrderLine":
       return new PurchaseOrderLineDao(db);
+
     case "GoodReceivedNote":
       return new GoodReceivedNoteDao(db);
     case "MaterialIndent":
       return new MaterialIndentDao(db);
+
     case "WorkOrder":
       return new WorkOrderDao(db);
     case "WorkOrderLine":
       return new WorkOrderLineDao(db);
+
     case "WorkBilling":
       return new WorkBillingDao(db);
     case "WorkBillingLine":
-      return new WorkBillingDao(db);
+      return new WorkBillingLineDao(db);
+
     default:
       return undefined;
   }
-
 }
 
 // get Controller based on entity name

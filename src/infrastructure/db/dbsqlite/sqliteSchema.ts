@@ -3,7 +3,7 @@ export const sqliteTable: string[] = [
     // Unit of Measurement
     `CREATE TABLE UnitOfMeasurement (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     uom_name TEXT NOT NULL,
                     unit_type TEXT NOT NULL,
@@ -17,7 +17,7 @@ export const sqliteTable: string[] = [
     // Vendor Management
     `CREATE TABLE Vendor (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     vendor_name TEXT NOT NULL,
                     vendor_address TEXT,
@@ -30,7 +30,7 @@ export const sqliteTable: string[] = [
     // Material Management
     `CREATE TABLE Material (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     material_name TEXT NOT NULL,
                     category TEXT,
@@ -42,7 +42,7 @@ export const sqliteTable: string[] = [
     // Budget Management
     `CREATE TABLE BudgetHead (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     description TEXT NOT NULL,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history))
@@ -50,7 +50,7 @@ export const sqliteTable: string[] = [
 
     `CREATE TABLE ProjectBudget (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     budget_head_id INTEGER NOT NULL,
                     dollar_value REAL,
@@ -61,7 +61,7 @@ export const sqliteTable: string[] = [
     // Schedule Setup
     `CREATE TABLE ScheduleSetup (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     schedule_name TEXT NOT NULL,
                     description TEXT,
@@ -72,7 +72,7 @@ export const sqliteTable: string[] = [
 
     `CREATE TABLE ScheduleOfRates (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     schedule_name TEXT NOT NULL,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history))
@@ -80,7 +80,7 @@ export const sqliteTable: string[] = [
 
     `CREATE TABLE ScheduleOfRatesLine (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     schedule_id INTEGER NOT NULL,
                     schedule_type_id INTEGER NOT NULL,
@@ -94,7 +94,7 @@ export const sqliteTable: string[] = [
     // Task Management
     `CREATE TABLE Task (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     task_name TEXT NOT NULL,
                     description TEXT,
@@ -106,7 +106,7 @@ export const sqliteTable: string[] = [
 
     `CREATE TABLE TaskImage (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     task_id INTEGER NOT NULL,
                     image_url TEXT,
@@ -117,7 +117,7 @@ export const sqliteTable: string[] = [
 
     `CREATE TABLE TaskMeasurement (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     task_id INTEGER NOT NULL,
                     date TEXT,
@@ -146,7 +146,7 @@ export const sqliteTable: string[] = [
     // Bill of Quantity
     `CREATE TABLE BillOfQuantity (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     schedule_id INTEGER NOT NULL,
                     description TEXT,
@@ -156,7 +156,7 @@ export const sqliteTable: string[] = [
 
     `CREATE TABLE BillOfQuantityLine (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     bill_of_quantity_id INTEGER NOT NULL,
                     description TEXT,
@@ -171,7 +171,7 @@ export const sqliteTable: string[] = [
     // File Management
     `CREATE TABLE File (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     description TEXT,
                     file_url TEXT,
@@ -181,7 +181,7 @@ export const sqliteTable: string[] = [
 
     `CREATE TABLE FilePermission (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     user_id INTEGER NOT NULL,
                     file_id INTEGER NOT NULL,
@@ -194,7 +194,7 @@ export const sqliteTable: string[] = [
     // Purchase Management
     `CREATE TABLE PurchaseOrder (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     vendor_id INTEGER NOT NULL,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
@@ -203,7 +203,7 @@ export const sqliteTable: string[] = [
 
     `CREATE TABLE PurchaseOrderLine (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     purchase_order_id INTEGER NOT NULL,
                     material_id INTEGER NOT NULL,
@@ -220,7 +220,7 @@ export const sqliteTable: string[] = [
 
     `CREATE TABLE GoodReceivedNote (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     purchase_order_line_id INTEGER NOT NULL,
                     amount_of_material_received REAL,
@@ -231,7 +231,7 @@ export const sqliteTable: string[] = [
     // Material Indent
     `CREATE TABLE MaterialIndent (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     material_id INTEGER NOT NULL,
                     total_quantity REAL,
@@ -244,7 +244,7 @@ export const sqliteTable: string[] = [
     // Work Order Management
     `CREATE TABLE WorkOrder (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     vendor_id INTEGER NOT NULL,
                     description TEXT,
@@ -254,7 +254,7 @@ export const sqliteTable: string[] = [
 
     `CREATE TABLE WorkOrderLine (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     work_order_id INTEGER NOT NULL,
                     description TEXT,
@@ -271,7 +271,7 @@ export const sqliteTable: string[] = [
     // Billing Management
     `CREATE TABLE WorkBilling (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     work_order_id INTEGER NOT NULL,
                     change_history TEXT CHECK (change_history IS NULL OR json_valid(change_history)),
@@ -280,7 +280,7 @@ export const sqliteTable: string[] = [
 
     `CREATE TABLE WorkBillingLine (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    global_id INTEGER NOT NULL,
+                    global_id INTEGER UNIQUE NOT NULL,
                     approval_status BOOLEAN DEFAULT 1,
                     work_order_line_id INTEGER NOT NULL,
                     dollar_value REAL,

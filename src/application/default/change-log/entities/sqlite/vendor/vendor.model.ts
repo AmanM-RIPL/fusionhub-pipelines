@@ -3,7 +3,7 @@ import { ChangeHistory } from "../../../../../common/types/entity";
 
 export interface IVendor {
   id: Generated<number>;
-  global_id: string;
+  global_id: number;
   approval_status: boolean;
   change_history: JSONColumnType<ChangeHistory>;
   vendor_name: string;

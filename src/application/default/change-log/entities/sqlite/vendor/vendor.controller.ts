@@ -9,7 +9,7 @@ export class VendorController implements IProjectEntityBaseController {
         if (!changeLog.entitySchema || typeof changeLog.entitySchema !== "object") {
             const newEntitySchema: Selectable<IVendor> = {
                 id: 0,
-                global_id: "",
+                global_id: 0,
                 vendor_name: "",
                 vendor_address: "",
                 vendor_contact_person: "",

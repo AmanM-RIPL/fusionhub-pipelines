@@ -11,7 +11,7 @@ export default class UnitOfMeasurementDao implements IProjectEntityBaseRepositor
   public create(changeLog: Selectable<IChangeLog>): void {
     const entitySchema: IUnitOfMeasurement = changeLog.entitySchema as IUnitOfMeasurement;
 
-    const statement = this.db.prepare("INSERT INTO UnitOfMeasurement (global_id, uom_name, unit_type, conversion_to_sqm, conversion_to_cubic_meter, conversion_to_meter, conversion_to_kilogram, change_history) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    const statement = this.db.prepare("INSERT INTO UnitOfMeasurement (global_id, uom_name, unit_type, conversion_to_sqm, conversion_to_cubic_meter, conversion_to_meter, conversion_to_kilogram, change_history) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
     statement.run(
       changeLog.id,
