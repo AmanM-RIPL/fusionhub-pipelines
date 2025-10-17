@@ -38,7 +38,7 @@ void View::Initialize()
                 this->glEnableVertexAttribArray(0);
 
             this->glBindBuffer(GL_ARRAY_BUFFER, 0);
-        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     this->glBindVertexArray(0);
 }
 
@@ -58,9 +58,9 @@ void View::Render()
 
     // Draw
     this->glBindVertexArray(m_vao);
-        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
+        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
             this->glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
-        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     this->glBindVertexArray(0);
 }
 
@@ -91,7 +91,9 @@ void View::Selection()
             this->glUniformMatrix4fv(pickingShader->getProjectionId(),  1, GL_FALSE, m_projectionMatrix.constData());
 
             this->glBindVertexArray(m_vao);
-                this->glDrawArrays(GL_TRIANGLES, 0, 3);
+                // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
+                    this->glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
+                // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             this->glBindVertexArray(0);
 
             // Read pixel
@@ -151,11 +153,11 @@ void View::UpdateGeometry()
     // --- Step 6: Push updated vertices to GPU
     this->glBindVertexArray(m_vao);
         //IBO
-        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
+        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
             this->glBindBuffer(GL_ARRAY_BUFFER, m_static_vbo);
                 this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(meshList[0]->getVerticies()), meshList[0]->getVerticies());
             this->glBindBuffer(GL_ARRAY_BUFFER, 0);
-        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     this->glBindVertexArray(0);
 }
 

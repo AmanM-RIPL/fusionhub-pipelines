@@ -11,12 +11,23 @@ MyGLRenderer::MyGLRenderer()
     m_vertices[3] = -0.8f; m_vertices[4] = -0.8f; m_vertices[5] = 0.0f; // bottom
     m_vertices[6] = 0.8f;  m_vertices[7] = -0.8f; m_vertices[8] = 0.0f; // left
 
+    GLfloat verticies[] = {
+        //    x,     y,    z   u,   v,   n.x, n.y, n.z
+        -1.0f, -1.0f, -0.6f,
+        0.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, -0.6f,
+        0.0f, 1.0f, 0.0f
+    };
+
     unsigned int indices[] = {
+        0, 3, 1,
+        1, 3, 2,
+        2, 3, 0,
         0, 1, 2
     };
 
     m_mesh = new Mesh();
-    m_mesh->Initialize(m_vertices, indices, 9, 3);
+    m_mesh->Initialize(verticies, indices, 12, 12);
 
     // initialize Camera
     m_camera = new Camera();
