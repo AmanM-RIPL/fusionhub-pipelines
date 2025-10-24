@@ -51,6 +51,11 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -181,6 +186,11 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/common/opengl/classes/shader.h src/common/opengl/classes/shader.cpp
     src/common/opengl/classes/camera.h src/common/opengl/classes/camera.cpp
     src/common/opengl/classes/mesh.h src/common/opengl/classes/mesh.cpp
+    src/models/bim_element.h src/models/bim_element.cpp
+    src/models/bim_parameter.h src/models/bim_parameter.cpp
+    src/repositories/bim_parameter_repository.h src/repositories/bim_parameter_repository.cpp
+    src/repositories/bim_element_repository.h src/repositories/bim_element_repository.cpp
+    src/controllers/bim_element_controller.h src/controllers/bim_element_controller.cpp
 )
 
 target_include_directories(FusionHubQt PRIVATE src)
@@ -255,6 +265,11 @@ target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\hdf5.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\sdai.lib")
 
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)

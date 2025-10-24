@@ -45,6 +45,7 @@
 #include "common/opengl/classes/camera.h"
 #include "common/opengl/classes/shader.h"
 #include "common/opengl/classes/view.h"
+#include "controllers/bim_element_controller.h"
 
 class MyApp : public ExSystemServices
 {
@@ -59,6 +60,7 @@ class MyGLItem : public QQuickFramebufferObject
 {
     Q_OBJECT
 public:
+    explicit MyGLItem(QQuickItem *parent = nullptr);
     Renderer* createRenderer() const override;
 
     bool m_moveUp = false;

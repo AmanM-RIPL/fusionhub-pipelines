@@ -93,6 +93,20 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
     {
         m_pickColorId = this->glGetUniformLocation(shaderID, "pickColor");
     }
+    else
+    {
+        m_viewPositionId = this->glGetUniformLocation(shaderID, "viewPosition");
+
+        m_materialAmbientId = this->glGetUniformLocation(shaderID, "material.ambient");
+        m_materialDiffuseId = this->glGetUniformLocation(shaderID, "material.diffuse");
+        m_materialSpecularId = this->glGetUniformLocation(shaderID, "material.specular");
+        m_materialShininessId = this->glGetUniformLocation(shaderID, "material.shininess");
+
+        m_lightPositionId = this->glGetUniformLocation(shaderID, "light.position");
+        m_lightAmbientId = this->glGetUniformLocation(shaderID, "light.ambient");
+        m_lightDiffuseId = this->glGetUniformLocation(shaderID, "light.diffuse");
+        m_lightSpecularId = this->glGetUniformLocation(shaderID, "light.specular");
+    }
 }
 
 GLuint Shader::getShaderId()
@@ -118,6 +132,51 @@ GLuint Shader::getViewId()
 GLuint Shader::getPickColorId()
 {
     return m_pickColorId;
+}
+
+GLuint Shader::getViewPositionId()
+{
+    return m_viewPositionId;
+}
+
+GLuint Shader::getMaterialAmbientId()
+{
+    return m_materialAmbientId;
+}
+
+GLuint Shader::getMaterialDiffuseId()
+{
+    return m_materialDiffuseId;
+}
+
+GLuint Shader::getMaterialSpecularId()
+{
+    return m_materialSpecularId;
+}
+
+GLuint Shader::getMaterialShininessId()
+{
+    return m_materialShininessId;
+}
+
+GLuint Shader::getLightPositionId()
+{
+    return m_lightPositionId;
+}
+
+GLuint Shader::getLightAmbientId()
+{
+    return m_lightAmbientId;
+}
+
+GLuint Shader::getLightDiffuseId()
+{
+    return m_lightDiffuseId;
+}
+
+GLuint Shader::getLightSpecularId()
+{
+    return m_lightSpecularId;
 }
 
 void Shader::SetPickColor(bool value)

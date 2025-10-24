@@ -34,8 +34,13 @@ void View::Initialize()
             this->glBindBuffer(GL_ARRAY_BUFFER, m_static_vbo);
                 this->glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * numOfVertices, vertices, GL_STATIC_DRAW);
 
-                this->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(vertices[0]), (void*)0);
+                // postition in verticies
+                this->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(vertices[0]), (void*)0);
                 this->glEnableVertexAttribArray(0);
+
+                // normal in verticies
+                this->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(vertices[0]), (void*)(3 * sizeof(vertices[0])));
+                this->glEnableVertexAttribArray(1);
 
             this->glBindBuffer(GL_ARRAY_BUFFER, 0);
         // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -48,7 +53,21 @@ void View::Render()
     this->glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
     this->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // draw scene with the required colors
     this->glUseProgram(shader->getShaderId());
+
+    QVector3D cameraPosition = camera->getCameraPosition();
+    this->glUniform3f(shader->getViewPositionId(), cameraPosition.x(), cameraPosition.y(), cameraPosition.z());
+
+    this->glUniform3f(shader->getMaterialAmbientId(), 1.0f, 0.5f, 0.31f);
+    this->glUniform3f(shader->getMaterialDiffuseId(), 1.0f, 0.5f, 0.31f);
+    this->glUniform3f(shader->getMaterialSpecularId(), 0.5f, 0.5f, 0.5f);
+    this->glUniform1f(shader->getMaterialShininessId(), 32.0f);
+
+    this->glUniform3f(shader->getLightPositionId(), 0.0f, 0.0f, 2.0f);
+    this->glUniform3f(shader->getLightAmbientId(), 0.2f, 0.2f, 0.2f);
+    this->glUniform3f(shader->getLightDiffuseId(), 0.5f, 0.5f, 0.5f);
+    this->glUniform3f(shader->getLightSpecularId(), 1.0f, 1.0f, 1.0f);
 
     // --- Upload to shader ---
     this->glUniformMatrix4fv(shader->getModelId(), 1, GL_FALSE, meshList[0]->getModelMatrix().constData());

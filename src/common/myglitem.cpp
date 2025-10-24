@@ -1,5 +1,34 @@
 #include "myglitem.h"
 
+void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount, unsigned int vLength, unsigned int normalOffset)
+{
+    for (size_t i = 0; i < indiceCount; i += 3)
+    {
+        unsigned int in0 = indices[i] * vLength;
+        unsigned int in1 = indices[i + 1] * vLength;
+        unsigned int in2 = indices[i + 2] * vLength;
+
+        QVector3D v1(vertices[in1] - vertices[in0], vertices[in1 + 1] - vertices[in0 + 1], vertices[in1 + 2] - vertices[in0 + 2]);
+        QVector3D v2(vertices[in2] - vertices[in0], vertices[in2 + 1] - vertices[in0 + 1], vertices[in2 + 2] - vertices[in0 + 2]);
+
+        QVector3D normal = QVector3D::crossProduct(v1, v2);
+        normal.normalize();
+
+        in0 += normalOffset; in1 += normalOffset; in2 += normalOffset;
+        vertices[in0] += normal.x(); vertices[in0 + 1] += normal.y(); vertices[in0 + 2] += normal.z();
+        vertices[in1] += normal.x(); vertices[in1 + 1] += normal.y(); vertices[in1 + 2] += normal.z();
+        vertices[in2] += normal.x(); vertices[in2 + 1] += normal.y(); vertices[in2 + 2] += normal.z();
+    }
+
+    for (size_t i = 0; i < verticeCount / vLength; i++)
+    {
+        unsigned int nOffset = i * vLength + normalOffset;
+        QVector3D vec(vertices[nOffset], vertices[nOffset + 1], vertices[nOffset + 2]);
+        vec.normalize();
+        vertices[nOffset] = vec.x(); vertices[nOffset + 1] = vec.y(); vertices[nOffset + 2] = vec.z();
+    }
+}
+
 MyGLRenderer::MyGLRenderer()
 {
     initializeOpenGLFunctions();
@@ -12,11 +41,11 @@ MyGLRenderer::MyGLRenderer()
     m_vertices[6] = 0.8f;  m_vertices[7] = -0.8f; m_vertices[8] = 0.0f; // left
 
     GLfloat verticies[] = {
-        //    x,     y,    z   u,   v,   n.x, n.y, n.z
-        -1.0f, -1.0f, -0.6f,
-        0.0f, -1.0f, 1.0f,
-        1.0f, -1.0f, -0.6f,
-        0.0f, 1.0f, 0.0f
+        //    x,     y,    z,  n.x, n.y, n.z
+        -1.0f, -1.0f, -0.6f, 0.0f, 0.0f, 0.0f,
+        0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+        1.0f, -1.0f, -0.6f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f
     };
 
     unsigned int indices[] = {
@@ -26,8 +55,15 @@ MyGLRenderer::MyGLRenderer()
         0, 1, 2
     };
 
+    calcAverageNormals(indices, 12, verticies, 24, 6, 3);
+
+    // qInfo() << verticies[0] << ", " << verticies[1] << ", " << verticies[2];
+    // qInfo() << verticies[6] << ", " << verticies[7] << ", " << verticies[8];
+    // qInfo() << verticies[12] << ", " << verticies[13] << ", " << verticies[14];
+    // qInfo() << verticies[18] << ", " << verticies[19] << ", " << verticies[20];
+
     m_mesh = new Mesh();
-    m_mesh->Initialize(verticies, indices, 12, 12);
+    m_mesh->Initialize(verticies, indices, 24, 12);
 
     // initialize Camera
     m_camera = new Camera();
@@ -361,8 +397,8 @@ void MyGLRenderer::render() {
     {
         m_view->SetSelectionCoordinates(m_pickX, m_pickY);
 
-        // m_view->Selection();
-        m_view->UpdateGeometry();
+        m_view->Selection();
+        // m_view->UpdateGeometry();
         m_pickRequested = false;
     }
 
@@ -509,7 +545,21 @@ QOpenGLFramebufferObject* MyGLRenderer::createFramebufferObject(const QSize &siz
 
 
 
+MyGLItem::MyGLItem(QQuickItem *parent)
+    : QQuickFramebufferObject(parent)
+{
+    BIMElementController* bimElementController = new BIMElementController(this);
 
+    bimElementController->create("Wall", "Front Wall", 0);
+    BIMElement* newElement = bimElementController->getElement();
+
+    bimElementController->addParameter(newElement->getId(), "Height", "3000");
+    bimElementController->addParameter(newElement->getId(), "Width", "100");
+
+    BIMElement* finalNewElement = bimElementController->getElement();
+
+    qInfo() << "BIM Element with Params is null: " << (finalNewElement == nullptr);
+}
 
 
 QQuickFramebufferObject::Renderer* MyGLItem::createRenderer() const {

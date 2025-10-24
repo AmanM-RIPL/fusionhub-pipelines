@@ -89,7 +89,7 @@ bool DatabaseManager::createTables()
         "FilePermission", "ScheduleOfRates", "ScheduleOfRatesLine",
         "BillOfQuantity", "BillOfQuantityLine", "ProjectBudget", "WorkOrder",
         "WorkOrderLine", "WorkBilling", "WorkBillingLine", "PurchaseOrder",
-        "PurchaseOrderLine", "GoodReceivedNote", "MaterialIndent"
+        "PurchaseOrderLine", "GoodReceivedNote", "MaterialIndent", "BIMElement", "BIMParameter"
     };
     
     for(const QString& tableName: tableNames) {
@@ -463,6 +463,31 @@ QString DatabaseManager::getCreateTableQuery(const QString& tableName)
                 task_id INTEGER,
                 FOREIGN KEY (material_id) REFERENCES Material(id),
                 FOREIGN KEY (task_id) REFERENCES Task(id)
+            )
+        )";
+    }
+    else if (tableName == "BIMElement") {
+        return R"(
+            CREATE TABLE IF NOT EXISTS BIMElement (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                global_id TEXT NOT NULL,
+                approval_status BOOLEAN DEFAULT 1,
+                type TEXT NOT NULL,
+                name TEXT NOT NULL,
+                level INTEGER NOT NULL
+            )
+        )";
+    }
+    else if (tableName == "BIMParameter") {
+        return R"(
+            CREATE TABLE IF NOT EXISTS BIMParameter (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                global_id TEXT NOT NULL,
+                approval_status BOOLEAN DEFAULT 1,
+                bim_element_id INTEGER NOT NULL,
+                key TEXT NOT NULL,
+                value TEXT NOT NULL,
+                FOREIGN KEY (bim_element_id) REFERENCES BIMElement(id)
             )
         )";
     }

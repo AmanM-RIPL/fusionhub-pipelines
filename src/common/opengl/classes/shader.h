@@ -17,15 +17,33 @@ public:
     QByteArray ReadFile(const QString& fileLocation);
 
     GLuint getShaderId();
+
     GLuint getProjectionId();
     GLuint getModelId();
     GLuint getViewId();
+
     GLuint getPickColorId();
+    GLuint getViewPositionId();
+
+    GLuint getMaterialAmbientId();
+    GLuint getMaterialDiffuseId();
+    GLuint getMaterialSpecularId();
+    GLuint getMaterialShininessId();
+
+    GLuint getLightPositionId();
+    GLuint getLightAmbientId();
+    GLuint getLightDiffuseId();
+    GLuint getLightSpecularId();
 
     void SetPickColor(bool value);
 
 private:
-    GLuint shaderID, m_projectionId, m_modelId, m_viewId, m_pickColorId;
+    GLuint shaderID,
+        m_projectionId, m_modelId, m_viewId,
+        m_pickColorId, m_viewPositionId,
+        m_materialAmbientId, m_materialDiffuseId, m_materialSpecularId, m_materialShininessId,
+        m_lightPositionId, m_lightAmbientId, m_lightDiffuseId, m_lightSpecularId;
+
     bool setPickColorId = false;
 
     void AddShader(GLenum type, const char* src);
