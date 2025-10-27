@@ -25,7 +25,17 @@ bool BIMElementRepository::saveQML(BIMElement* entity) {
     query.prepare(getInsertQuery());
     bindEntityToQuery(query, *entity);
 
-    return query.exec();
+    bool result = query.exec();
+
+    if (result)
+    {
+        if (query.next())
+        {
+            entity->setId(query.value("id").toInt());
+        }
+    }
+
+    return result;
 }
 bool BIMElementRepository::update(const BIMElement& entity) { return false; }
 bool BIMElementRepository::deleteById(int id) { return false; }
@@ -54,7 +64,7 @@ void BIMElementRepository::bindEntityToQuery(QSqlQuery& query, const BIMElement&
 QString BIMElementRepository::getInsertQuery() const {
     return "INSERT INTO BIMElement (global_id, approval_status, name, type, "
            "level) "
-           "VALUES (?, ?, ?, ?, ?)";
+           "VALUES (?, ?, ?, ?, ?) RETURNING id";
 }
 QString BIMElementRepository::getUpdateQuery() const {
     return "UPDATE BIMElement SET global_id = ?, approval_status = ?, name = ?, "

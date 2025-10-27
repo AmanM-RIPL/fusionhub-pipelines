@@ -14,6 +14,7 @@ public:
     Q_INVOKABLE std::unique_ptr<BIMParameter> findById(int id) override;
     std::vector<std::unique_ptr<BIMParameter>> findAll() override;
     Q_INVOKABLE std::vector<BIMParameter*> findAllQML();
+    std::vector<BIMParameter*> findAllForElement(int id);
     bool save(const BIMParameter& entity) override;
     Q_INVOKABLE bool saveQML(BIMParameter* entity);
     bool update(const BIMParameter& entity) override;

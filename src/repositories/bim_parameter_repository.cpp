@@ -18,6 +18,23 @@ std::vector<BIMParameter*> BIMParameterRepository::findAllQML() {
 
     return uom;
 }
+
+std::vector<BIMParameter*> BIMParameterRepository::findAllForElement(int id)
+{
+    std::vector<BIMParameter*> uom;
+    QSqlQuery query(dbManager->getDatabase());
+
+    query.prepare("SELECT * FROM BIMParameter WHERE bim_element_id = ?");
+    query.addBindValue(id);
+
+    if (query.exec()) {
+        while (query.next()) {
+            uom.push_back(mapFromQueryQML(query, this));
+        }
+    }
+
+    return uom;
+}
 bool BIMParameterRepository::save(const BIMParameter& entity) { return false; }
 bool BIMParameterRepository::saveQML(BIMParameter* entity) {
 
@@ -25,7 +42,17 @@ bool BIMParameterRepository::saveQML(BIMParameter* entity) {
     query.prepare(getInsertQuery());
     bindEntityToQuery(query, *entity);
 
-    return query.exec();
+    bool result = query.exec();
+
+    if (result)
+    {
+        if (query.next())
+        {
+            entity->setId(query.value("id").toInt());
+        }
+    }
+
+    return result;
 }
 bool BIMParameterRepository::update(const BIMParameter& entity) { return false; }
 bool BIMParameterRepository::deleteById(int id) { return false; }
@@ -54,7 +81,7 @@ void BIMParameterRepository::bindEntityToQuery(QSqlQuery& query, const BIMParame
 QString BIMParameterRepository::getInsertQuery() const {
     return "INSERT INTO BIMParameter (global_id, approval_status, key, value, "
            "bim_element_id) "
-           "VALUES (?, ?, ?, ?, ?)";
+           "VALUES (?, ?, ?, ?, ?) RETURNING id";
 }
 QString BIMParameterRepository::getUpdateQuery() const {
     return "UPDATE BIMParameter SET global_id = ?, approval_status = ?, key = ?, "

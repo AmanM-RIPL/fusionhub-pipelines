@@ -57,11 +57,6 @@ MyGLRenderer::MyGLRenderer()
 
     calcAverageNormals(indices, 12, verticies, 24, 6, 3);
 
-    // qInfo() << verticies[0] << ", " << verticies[1] << ", " << verticies[2];
-    // qInfo() << verticies[6] << ", " << verticies[7] << ", " << verticies[8];
-    // qInfo() << verticies[12] << ", " << verticies[13] << ", " << verticies[14];
-    // qInfo() << verticies[18] << ", " << verticies[19] << ", " << verticies[20];
-
     m_mesh = new Mesh();
     m_mesh->Initialize(verticies, indices, 24, 12);
 
@@ -548,17 +543,14 @@ QOpenGLFramebufferObject* MyGLRenderer::createFramebufferObject(const QSize &siz
 MyGLItem::MyGLItem(QQuickItem *parent)
     : QQuickFramebufferObject(parent)
 {
-    BIMElementController* bimElementController = new BIMElementController(this);
+    // BIMElementController* bimElementController = new BIMElementController(this);
 
-    bimElementController->create("Wall", "Front Wall", 0);
-    BIMElement* newElement = bimElementController->getElement();
+    // BIMElement* newElement = bimElementController->create("Wall", "Front Wall", 0);
 
-    bimElementController->addParameter(newElement->getId(), "Height", "3000");
-    bimElementController->addParameter(newElement->getId(), "Width", "100");
+    // bimElementController->addParameter(newElement, "Height", "3000");
+    // bimElementController->addParameter(newElement, "Width", "100");
 
-    BIMElement* finalNewElement = bimElementController->getElement();
-
-    qInfo() << "BIM Element with Params is null: " << (finalNewElement == nullptr);
+    // qInfo() << "BIM Element with Params is null: " << (newElement == nullptr);
 }
 
 
