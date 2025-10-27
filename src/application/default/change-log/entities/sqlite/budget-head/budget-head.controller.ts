@@ -1,0 +1,53 @@
+import { Selectable } from "kysely";
+import { IChangeLog } from "../../../change-log.model";
+import { IBudgetHead } from "./budget-head.model";
+import { IProjectEntityBaseController } from "../../../../../common/repositories/project-entity.repository";
+import { ChangeHistory } from "../../../../../common/types/entity";
+
+export class BudgetHeadController implements IProjectEntityBaseController {
+  validate(changeLog: Selectable<IChangeLog>): void {
+    
+    if (!changeLog.entitySchema || typeof changeLog.entitySchema !== "object") {
+      const newEntitySchema: Selectable<IBudgetHead> = {
+        id: 0,
+        global_id: 0,
+        approval_status: false,
+        description: "",
+        change_history: {
+          user: 0,
+          changeType: "create",
+          description: "",
+          timestamp: new Date(),
+          approvalHistory: []
+        }
+      };
+      changeLog.entitySchema = newEntitySchema;
+    }
+
+    const entitySchema = changeLog.entitySchema as Selectable<IBudgetHead>;
+
+    if (typeof entitySchema.global_id !== "number") {
+      entitySchema.global_id = 0;
+    }
+
+    if (typeof entitySchema.approval_status !== "boolean") {
+      entitySchema.approval_status = false;
+    }
+
+    if (typeof entitySchema.description !== "string") {
+      entitySchema.description = "";
+    }
+
+    if (typeof entitySchema.change_history !== "object" || entitySchema.change_history === null) {
+      entitySchema.change_history = {
+        user: 0,
+        changeType: "create",
+        description: "",
+        timestamp: new Date(),
+        approvalHistory: []
+      } as ChangeHistory;
+    }
+
+    changeLog.entitySchema = entitySchema;
+  }
+}

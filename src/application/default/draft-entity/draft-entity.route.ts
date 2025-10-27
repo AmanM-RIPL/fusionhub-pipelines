@@ -22,7 +22,7 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
           entity: { type: 'string' },
           createdByUser: { type: 'number' },
           nextApprovingUser: { type: ['number', 'null'] },
-          entitySchema: { 
+          entitySchema: {
             type: 'object',
             additionalProperties: true
           },
@@ -36,7 +36,7 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
               timestamp: { type: 'string', format: 'date-time' },
               approvalHistory: { type: 'array' }
             },
-            required:['user', 'changeType', 'timestamp', 'approvalHistory']
+            required: ['user', 'changeType', 'timestamp', 'approvalHistory']
           }
         },
         required: ['id', 'tenant', 'createdOn', 'project', 'entity', 'createdByUser', 'entitySchema', 'changeHistory']
@@ -57,13 +57,24 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
               timestamp: { type: 'string', format: 'date-time' },
               approvalHistory: { type: 'array' }
             },
-            required:['user', 'changeType', 'timestamp', 'approvalHistory']
+            required: ['user', 'changeType', 'timestamp', 'approvalHistory']
           }
         },
         required: ['project', 'entity', 'entitySchema', 'changeHistory', 'associatedApprovedEntity']
       },
       updateable: {
         type: 'object'
+      },
+      approveable: {
+        type: 'object',
+        description: 'Schema for approving a draft entity',
+        properties: {
+          approvalHierarchy: {
+            type: 'array',
+            items: { type: 'integer' },
+            description: 'Ordered list of user IDs who must approve in sequence'
+          }
+        }
       }
     }
   });
@@ -215,6 +226,113 @@ export default async function draftEntityRoutes(fastify: FastifyInstance) {
       }
     }
   );
+
+  //Approve   
+  fastify.post(
+    '/draft-entity/:draftEntityId/approve',
+    {
+      onRequest: fastify.authenticate,
+      schema: {
+        description: 'Approve draft entity by ID',
+        tags: ['draft-entity'],
+        summary: 'Approve draft entity using approval hierarchy',
+        body: { $ref: 'draftEntity-object#/properties/approveable' },
+        params: {
+          type: 'object',
+          properties: {
+            draftEntityId: { type: 'integer', minimum: 1 }
+          },
+          required: ['draftEntityId']
+        },
+        response: {
+          200: { $ref: 'draftEntity-object#/properties/approveable' },
+          404: { type: 'object', properties: { error: { type: 'string' } } },
+          500: { type: 'object', properties: { error: { type: 'string' } } }
+        }
+      },
+      handler: async (
+        request: FastifyRequest<{
+          Params: { draftEntityId: number };
+          Body: { approvalHierarchy: number[] };
+        }>,
+        reply: FastifyReply
+      ) => {
+        try {
+          const draftEntityService = request.getDecorator<DraftEntityService>('draftEntityService');
+
+          const result = await draftEntityService.approve(request.params.draftEntityId, request.body.approvalHierarchy);
+
+          return reply.code(200).send({ message: 'Approval processed successfully', data: result });
+        } catch (error: any) {
+          request.log.error(error);
+          return reply.code(500).send({ error: error.message || 'Internal Server Error' });
+        }
+      }
+    }
+  );
+
+  //Reject   
+  fastify.post(
+    '/draft-entity/:draftEntityId/reject',
+    {
+      onRequest: fastify.authenticate,
+      schema: {
+        description: 'Reject draft entity by ID',
+        tags: ['draft-entity'],
+        summary: 'Reject draft entity with reason',
+        body: {
+          type: 'object',
+          properties: {
+            reason: { type: 'string', minLength: 1 }
+          },
+          required: ['reason']
+        },
+        params: {
+          type: 'object',
+          properties: {
+            draftEntityId: { type: 'integer', minimum: 1 }
+          },
+          required: ['draftEntityId']
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              message: { type: 'string' },
+              data: { $ref: 'draftEntity-object#/properties/approveable' }
+            }
+          },
+          404: { type: 'object', properties: { error: { type: 'string' } } },
+          500: { type: 'object', properties: { error: { type: 'string' } } }
+        }
+      },
+      handler: async (
+        request: FastifyRequest<{
+          Params: { draftEntityId: number };
+          Body: { reason: string };
+        }>,
+        reply: FastifyReply
+      ) => {
+        try {
+          const draftEntityService = request.getDecorator<DraftEntityService>('draftEntityService');
+
+          const result = await draftEntityService.reject(
+            request.params.draftEntityId,
+            request.body.reason
+          );
+
+          return reply.code(200).send({
+            message: 'Draft entity rejected successfully',
+            data: result
+          });
+        } catch (error: any) {
+          request.log.error(error);
+          return reply.code(500).send({ error: error.message || 'Internal Server Error' });
+        }
+      }
+    }
+  );
+
 
   fastify.delete(
     '/draft-entity/:draftEntityId',

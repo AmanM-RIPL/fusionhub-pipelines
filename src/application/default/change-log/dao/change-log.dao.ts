@@ -28,15 +28,15 @@ export class ChangeLogDao implements IChangeLogRepository {
     return await this.db.selectFrom("public.change_log").selectAll().where("id", "=", id).where("tenant", "=", this.tenant).executeTakeFirst();
   }
 
- async findAllWithChangeLogGreaterThan( projectId: number, lastChangeLogId: number, limit: number, offset: number): Promise<Selectable<IChangeLog>[]> {
+ async findAllWithChangeLogGreaterThan( projectId: number, lastChangeLogId: number, limit: number): Promise<Selectable<IChangeLog>[]> {
     return await this.db
     .selectFrom("public.change_log")
     .selectAll()
     .where("project", "=", projectId)
     .where("tenant", "=", this.tenant)
     .where("id", ">", lastChangeLogId)
+    .orderBy("id", "asc")
     .limit(limit)
-    .offset(offset)
     .execute();
   }
 
