@@ -19,7 +19,7 @@ public:
     QString getName() const { return name; }
     QString getType() const { return type; }
     int getLevel() const { return level; }
-    QList<BIMParameter*> getParameterList() const { this->parameterList; }
+    QList<BIMParameter*> getParameterList() const { return this->parameterList; }
 
     void setId(int id) { this->id = id; }
     void setGlobalId(const QString& globalId) { this->globalId = globalId; }

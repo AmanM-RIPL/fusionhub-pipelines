@@ -44,7 +44,10 @@
 #include "common/opengl/classes/camera.h"
 #include "common/opengl/classes/shader.h"
 #include "common/opengl/classes/view.h"
-#include "controllers/bim_element_controller.h"
+// #include "controllers/bim_element_controller.h"
+#include "models/bim_element.h"
+#include "models/bim_parameter.h"
+#include "services/geometry/wall_geometry_service.h"
 
 class MyApp : public ExSystemServices
 {

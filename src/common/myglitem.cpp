@@ -545,12 +545,22 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 {
     // BIMElementController* bimElementController = new BIMElementController(this);
 
-    // BIMElement* newElement = bimElementController->create("Wall", "Front Wall", 0);
+
+    BIMElement* newElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
+    BIMParameter* widthParameter = new BIMParameter(1,"1",false,"Width","1",1,this);
+    BIMParameter* rlParameter = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [0,1], [1,1]]",1,this);
+    newElement->addParameter(widthParameter);
+    newElement->addParameter(rlParameter);
+
+    // bimElementController->create("Wall", "Front Wall", 0);
 
     // bimElementController->addParameter(newElement, "Height", "3000");
     // bimElementController->addParameter(newElement, "Width", "100");
 
     // qInfo() << "BIM Element with Params is null: " << (newElement == nullptr);
+
+    WallGeometryService* service = new WallGeometryService(this);
+    service->generateMesh2D(newElement);
 }
 
 
