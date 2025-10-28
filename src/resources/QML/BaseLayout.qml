@@ -18,7 +18,6 @@ Rectangle {
     property string projectName: "NA";
 
 
-
     Column {
         width: parent.width
         height: parent.height
@@ -30,7 +29,7 @@ Rectangle {
 
             onProjectPageToRedirect: (pageName) => {
                 console.log(pageName);
-                baseLayout.pageName = pageName;
+                baseLayout.pageName = pageName;                                         
             }
         }
 
@@ -53,7 +52,6 @@ Rectangle {
         }
 
 
-
         /*
 
           To be added once BIM related stuff is added
@@ -64,30 +62,6 @@ Rectangle {
          //   visible: pageName === "PlannedBIM" || pageName === "Gantt" || pageName === "Collision"
          //   pageType: pageName
          //}
-
-        /*
-        PlannedBIMPage {
-            visible: isPageVisible(pageName)
-            pageType: pageName            
-
-            //Define the JavaScript function
-            function isPageVisible(name) {
-                if (name === "PlannedBIM"){
-                    treeviewWidth = 200
-                    glsceneWidth = parent.width - treeviewWidth - 30
-                    glsceneVisible = true
-                    return true;
-                }
-                else if( name === "Gantt" || name === "Collision") {
-                    treeviewWidth = parent.width - 20
-                    glsceneWidth = parent.width - treeviewWidth
-                    glsceneVisible = false
-                    return true;
-                }
-                return false;
-
-            }
-        }*/
 
         Rectangle{
             id: taskBoard
@@ -104,6 +78,30 @@ Rectangle {
             }
         }
 
-    }
 
+        PlannedBIMPage {
+            pageType: pageName
+            visible: pageType !== ""
+            onPageTypeChanged: {
+                switch (pageType) {
+                case "PlannedBIM":
+                    treeviewWidth = 200
+                    glsceneWidth = parent.width - treeviewWidth - 30
+                    glsceneVisible = true
+                    break;
+                case "Gantt":
+                case "Collision":
+                    treeviewWidth = parent.width - 20
+                    glsceneWidth = parent.width - treeviewWidth
+                    glsceneVisible = false
+                    break;
+                default:
+                    treeviewWidth = 0
+                    glsceneWidth = 0
+                    glsceneVisible = false
+                    break;
+                }
+            }
+        }
+    }
 }

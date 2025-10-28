@@ -84,8 +84,7 @@ Rectangle {
                     cursorShape: Qt.PointingHandCursor
                     hoverEnabled: true
 
-                    onClicked: {
-                       // projectClicked();
+                    onClicked: {                      
                          projectController.openDatabase(projectName, id)
                          baseLayout.visible = true
                          baseLayout.projectName = projectName

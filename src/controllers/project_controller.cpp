@@ -2,11 +2,14 @@
 #include "common/repository_locator.h"
 #include <QDir>
 //#import QtQuick.LocalStorage as Sql
+#include "ifc_detail_controller.h"
+
 extern int gProjectId;
+extern QString gProjectName;
 
 ProjectController::ProjectController(QObject *parent)
     : QObject{parent},
-   m_projectRepository(RepositoryLocator::instance().projectRepository())
+   m_projectRepository(RepositoryLocator::instance().projectRepository())   
 {}
 
 void ProjectController::create(const QString &projectName, const QString &customerName,
@@ -20,8 +23,7 @@ void ProjectController::create(const QString &projectName, const QString &custom
     auto dbManager = DatabaseManager::getInstance();
 
     QSqlDatabase database = dbManager->getDatabase();
-    if (database.isOpen())
-    {
+    if (database.isOpen()){
         database.close();
     }
 
@@ -32,28 +34,13 @@ void ProjectController::create(const QString &projectName, const QString &custom
     qDebug() << "Database initialized successfully!";
     qDebug() << "Project path:" << dbManager->getProjectPath();
 
-    QString ifcFileName = "file.ifc";
-    QString filePath = dbManager->getProjectPath() +"\\" + ifcFileName; // Specify the full path
-    QFile file(filePath);
-    qDebug()<< "File path:" << filePath;
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        file.close();
-    }
-    else
-    {
-        qDebug() << "Error opening file:" << file.errorString();
-    }
-
-    Project project;
-
     //QUuid uuid = QUuid::createUuid();
     //QString randomId = uuid.toString();
-
     //project.setId(123);
     //Temporary projectId creation
     qint64 milliseconds = QDateTime::currentMSecsSinceEpoch();
 
+    Project project;
     project.setId(milliseconds);
     project.setGlobalId("123");
     project.setApprovalStatus(true);
@@ -66,16 +53,27 @@ void ProjectController::create(const QString &projectName, const QString &custom
     project.setDescription(description);
     project.setIsBlocked(false);
 
-
-    if(m_projectRepository->save(project))
-    {
+    if(m_projectRepository->save(project)){
         qDebug()<<"Data Saved";
     }
-    else
-    {
+    else{
         qDebug()<<"Data not Saved";
     }
 
+
+    IFCDetail ifcDetail;
+    ifcDetail.setGlobalId("123");   
+    ifcDetail.setName(projectName);
+    ifcDetail.setType("NA");
+
+    IFCDetailController ifcController;
+    bool bResult =  ifcController.create(projectName, ifcDetail);
+    if(bResult){
+        qDebug()<<"ifc file created successfully";
+    }
+    else{
+         qDebug()<<"ifc file could not be created";
+    }
 }
 
 QString ProjectController::getProjectList(bool isBlocked) const
@@ -99,6 +97,7 @@ void ProjectController::openDatabase(const QString &projectName, int projectId)c
     }
     else{
         gProjectId = projectId;
+        gProjectName = projectName;
     }
 
     qDebug() << "Database initialized successfully!";

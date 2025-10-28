@@ -20,15 +20,12 @@ Row {
     property bool glsceneVisible: false
 
 
-
     Rectangle {
         //width: parent.width/2 - 20
         width: treeviewWidth
         height: parent.height
         color: "white"
         border.color: "#000000"
-
-
 
         ScrollView {
             id: horizontalScrollView
@@ -276,12 +273,11 @@ Row {
                 anchors.fill: parent
                 anchors.margins: 10
                 delegate: TreeViewDelegate {}
-                model: treeModel
+                model: treeModel                
 
                 IFCDetailController {
                     id: ifcDetailController
                 }
-
             }
         }
     }
@@ -296,7 +292,6 @@ Row {
         GLScene {
             id: glscene
             anchors.fill: parent
-
 
 
             MouseArea {
@@ -316,6 +311,7 @@ Row {
                 onPressed: function(mouse) {
                     glscene.mousePressed(mouse.x, mouse.y);
                     mouse.accepted = true;
+
                 }
                 onReleased: function(mouse) {
                     glscene.mouseReleased();
@@ -329,12 +325,20 @@ Row {
         }
     }
 
-
-
     Component.onCompleted: {
-        //ifcDetailList = ifcDetailRepository.getIFCDetails();
+        //if(plannedBIMRoot.visible){
+            //ifcDetailList = ifcDetailRepository.getIFCDetails();
+             ifcDetailList = ifcDetailController.loadIFC(ifcDetailController.getIfcFilePath());
+             //treeModel = ifcDetailController.getTreeModel();
+        //}
 
-        //ifcDetailList = ifcDetailController.loadIFC("");
+    }
 
+    onVisibleChanged: {
+        //if(plannedBIMRoot.visible && plannedBIMRoot.pageType === "PlannedBIM"){
+            //ifcDetailList = ifcDetailRepository.getIFCDetails();
+            ifcDetailList = ifcDetailController.loadIFC(ifcDetailController.getIfcFilePath());
+             //treeModel = ifcDetailController.getTreeModel();
+        //}
     }
 }
