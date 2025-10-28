@@ -23,6 +23,8 @@ public:
     std::unique_ptr<User> findByUserId(const QString& userId);
     std::unique_ptr<User> findByUsername(const QString& username);
 
+    std::unique_ptr<User> getUserDetailsByNameAndPassword(const QString& username, const QString& password);
+
     Q_INVOKABLE std::vector<User*> findAllQML();
     Q_INVOKABLE bool saveQML(User* entity);
 

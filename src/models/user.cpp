@@ -14,6 +14,7 @@ User::User(int id,
      const QString& startDate,
      const QString& endDate,
      const QString& monthlyDeskCostValue,
+     const QString& password,
            QObject* parent)
     :id(id),
     globalId(globalId),
@@ -29,6 +30,7 @@ User::User(int id,
     startDate(startDate),
     endDate(endDate),
     monthlyDeskCostValue(monthlyDeskCostValue),
+    password(password),
     QObject(parent)
 {
 

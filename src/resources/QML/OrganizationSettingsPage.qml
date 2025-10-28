@@ -7,6 +7,7 @@ Rectangle {
 
     signal logOutClicked()   
     signal organizationSettingsClicked()
+    signal userSettingsClicked()
 
     Column {
         anchors.fill: parent
@@ -60,10 +61,11 @@ Rectangle {
                         }
 
                         onClicked: {
-                            //userSettingsClicked();
+                            userSettingsClicked();
                         }
                     }
                 }
+
 
                 CustomButton {
                     color: "transparent"
@@ -92,7 +94,7 @@ Rectangle {
                         }
 
                         onClicked: {
-                            //newProjectClicked();
+                            //newProjectClicked();                          
                         }
                     }
                 }
@@ -132,31 +134,44 @@ Rectangle {
                 spacing: 7
                 padding: 50
 
-                CustomButton {
-                    color: "transparent"
-                    width: 85
+                Item {
+                    width: 30
                     height: 38
-                    btnSource: "qrc:/resources/images/backArrow.svg"
-                    btnName: "Admin"
-                    btnNameColor: "Black"
-                    btnNamePixelSize: 40
-                    anchors.verticalCenter: parent.verticalCenter
-                    //anchors.centerIn: parent.Center
-
-                    MouseArea{
+                    Image {
+                        id: backbuttonAdmin
+                        source: "qrc:/resources/images/backArrow.svg"
                         anchors.fill: parent
-                        onClicked: {
-                            welcomePage.visible = true
-                            organizationSettingsPage.visible = false
+                        anchors.verticalCenter: parent.verticalCenter
+                        fillMode: Image.PreserveAspectFit
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            hoverEnabled: true
+                            onClicked: {
+                                welcomePage.visible = true
+                                organizationSettingsPage.visible = false
+                            }
                         }
                     }
-                }               
-            }            
 
-            Rectangle {
-                width: 100
-                height: 20
-                color: "#EDF1F4"
+                    Rectangle{
+                        id: blankAdmin
+                        width: 10
+                        height: 38
+                        color:"transparent"
+                        anchors.left: backbuttonAdmin.right
+                    }
+
+                    Text{
+                        text: "Admin"
+                        color:"Black"
+                        font.weight: 700
+                        font.pixelSize: 40
+                        font.family: "Segoe UI"
+                        anchors.left: blankAdmin.right
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
             }
 
             //Users
@@ -219,7 +234,7 @@ Rectangle {
                         anchors.top: parent.top
                         anchors.topMargin: 131
 
-                        MouseArea {
+                       /* MouseArea {
                             anchors.fill: parent
                             onClicked: {
                                 loginPage.visible = false
@@ -227,7 +242,7 @@ Rectangle {
                                 organizationSettingsPage.visible = false
                                 addUserPage.visible = true
                             }
-                        }
+                        }*/
                     }
 
                     Image {
@@ -239,15 +254,19 @@ Rectangle {
 
                         MouseArea {
                             anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            hoverEnabled: true
+
                             onClicked: {
                                 loginPage.visible = false
                                 welcomePage.visible = false
                                 organizationSettingsPage.visible = false
-                                addUserPage.visible = true
+                                addUserPage.visible = true                                
                             }
                         }
                     }
-                }
+                }                
+
             //}
 
             Rectangle {

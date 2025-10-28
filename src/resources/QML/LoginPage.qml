@@ -14,7 +14,6 @@ Rectangle {
     }
 
 
-
     Row {
         spacing: 10
         anchors.fill: parent
@@ -91,7 +90,7 @@ Rectangle {
                     }
 
                     Text {
-                        text: "Invalid Password!!"
+                        text: "Invalid Username/Password!!"
                         font.pixelSize: 14
                         font.weight: 700
                         color: "#ffffff"
@@ -169,6 +168,8 @@ Rectangle {
                     cursorShape: Qt.PointingHandCursor
 
                     onClicked: {
+
+                        loginErrorBox.visible = false;
                         const loginResult = userController.login(usernameTextBox.text, passwordTextBox.text);
 
                         if (loginResult) {

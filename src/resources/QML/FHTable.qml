@@ -2,6 +2,8 @@ import QtQuick 2.15
 import QtQuick.Controls
 import QtQuick.Layouts
 
+
+
 Column {
     width: totalColumnWidth
     spacing: 10
@@ -9,6 +11,9 @@ Column {
 
     property var model
     property var columns // array of { label, key, width }
+    property bool removeRow: false
+    property int removedIndex: -1
+
 
     readonly property int totalColumnWidth: {
         var total = 0;
@@ -21,10 +26,12 @@ Column {
         return total;
     }
 
+
     Row {
         id: headerRow
-        spacing: 20
-        width: parent.width
+        //spacing: 20
+        spacing: 2
+        width: parent.width        
 
         Repeater {
             model: tableRoot.columns
@@ -32,6 +39,7 @@ Column {
                 width: modelData.width
                 height: 30
                 color: "#E0E0E0"
+
                 Text {
                     anchors.centerIn: parent
                     text: modelData.label
@@ -41,29 +49,76 @@ Column {
         }
     }
 
+
+
     Rectangle {
         width: headerRow.width
         height: parent.height - 30
         // radius: 4
-        // border.width: 1
-        // border.color: "#7676801F"//"#8A888629"
+        border.width: 1
+        border.color: "#7676801F"//"#8A888629"
         color: "white"
+
 
         ListView {
             id: listView
             anchors.fill: parent
             model: tableRoot.model
             clip: true
+            focus: true            
+
+            /*
+            ScrollBar.vertical: ScrollBar {
+                        policy: ScrollBar.AlwaysOn
+            }
+            */
 
             delegate: Column {
-                // padding: 10
+                //padding: 10
                 property var rowData: modelData
 
                 Row {
-                    spacing: 20
+                    //spacing: 20
+                    spacing: 2
+
+                    /************Row Removed Button***************/
+                    Rectangle {
+                        id:removeRowId
+                        width: 10
+                        height: 30
+                        color: "transparent"
+                        visible: removeRow
+                        focus: true                        
+                        anchors.verticalCenter: parent.verticalCenter
+                    Text {
+                          text: "x"
+                          font.pixelSize: 15
+                          color: "blue"
+                        }
+
+
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked:{
+
+                                if (listView.currentIndex !== -1) {                                  
+                                    removedIndex = index
+                                    console.log("removedIndex:" , removedIndex, "removd:", index)                                    
+                                    tableRoot.model.splice(index, 1)
+                                    listView.model.splice(index, 1)
+                                }
+                            }
+                        }
+                    }
+                    /*********Row Removed Button End************/
+
+
 
                     Repeater {
                         model: tableRoot.columns
+
                         Rectangle {
                             width: modelData.width
                             height: 30
@@ -74,8 +129,8 @@ Column {
                                 font.pixelSize: 15
                                 anchors.centerIn: parent
                             }
-                        }
-                    }
+                        }                        
+                    }                    
                 }
 
                 Rectangle {
@@ -83,7 +138,12 @@ Column {
                     height: 1
                     color: "#EDF1F4"
                 }
-            }
+            }           
         }
-    }
+
+
+    }    
+
 }
+
+

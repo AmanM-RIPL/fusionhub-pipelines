@@ -10,19 +10,22 @@ class User:public QObject
     Q_OBJECT
 
     Q_PROPERTY(int id READ getId CONSTANT)
-    Q_PROPERTY(bool approvalStatus READ getApprovalStatus WRITE setApprovalStatus /*NOTIFY approvalStatusChanged*/)
-    Q_PROPERTY(QString globalId READ getGlobalId WRITE setGlobalId /*NOTIFY globalIdChanged*/)
-    Q_PROPERTY(QString user_id READ getUserId WRITE setUserId /*NOTIFY userIdChanged*/)
-    Q_PROPERTY(QString user_fullname READ getUserFullName WRITE setUserFullName /*NOTIFY userFullNameChanged*/)
-    Q_PROPERTY(QString user_name READ getUserName WRITE setUserName /*NOTIFY userNameChanged*/)
-    Q_PROPERTY(QString mobile1 READ getUserMobile1 WRITE setUserMobile1 /*NOTIFY userMobile1Changed*/)
-    Q_PROPERTY(QString mobile2 READ getUserMobile2 WRITE setUserMobile2 /*NOTIFY userMobile2Changed*/)
-    Q_PROPERTY(QString email1 READ getUserEmail1 WRITE setUserEmail1 /*NOTIFY userEmail1Changed*/)
-    Q_PROPERTY(QString email2 READ getUserEmail2 WRITE setUserEmail2 /*NOTIFY userEmail2Changed*/)
-    Q_PROPERTY(QString jobTitle READ getUserJobTitle WRITE setUserJobTitle /*NOTIFY userJobTitleChanged*/)
-    Q_PROPERTY(QString startDate READ getUserStartDate WRITE setUserStartDate /*NOTIFY userStartDateChanged*/)
-    Q_PROPERTY(QString endDate READ getUserEndDate WRITE setUserEndDate /*NOTIFY userEndDateChanged*/)
-    Q_PROPERTY(QString monthlyDeskCostValue READ getUserMonthlyDeskCostValue WRITE setUserMonthlyDeskCostValue /*NOTIFY userMonthlyDeskCostValueChanged*/)
+    Q_PROPERTY(bool approvalStatus READ getApprovalStatus)
+    Q_PROPERTY(QString globalId READ getGlobalId)
+    Q_PROPERTY(QString user_id READ getUserId)
+
+    Q_PROPERTY(QString user_fullname READ getUserFullName  WRITE setUserFullName NOTIFY userFullNameChanged)
+    Q_PROPERTY(QString user_name READ getUserName  WRITE setUserName NOTIFY userNameChanged)
+    Q_PROPERTY(QString mobile1 READ getUserMobile1  WRITE setUserMobile1 NOTIFY userMobile1Changed)
+    Q_PROPERTY(QString mobile2 READ getUserMobile2  WRITE setUserMobile2 NOTIFY userMobile2Changed)
+    Q_PROPERTY(QString email1 READ getUserEmail1 WRITE setUserEmail1 NOTIFY userEmail1Changed)
+    Q_PROPERTY(QString email2 READ getUserEmail2 WRITE setUserEmail2 NOTIFY userEmail2Changed)
+    Q_PROPERTY(QString jobTitle READ getUserJobTitle WRITE setUserJobTitle NOTIFY userJobTitleChanged)
+    Q_PROPERTY(QString startDate READ getUserStartDate WRITE setUserStartDate NOTIFY userStartDateChanged)
+    Q_PROPERTY(QString endDate READ getUserEndDate WRITE setUserEndDate NOTIFY userEndDateChanged)
+    Q_PROPERTY(QString monthlyDeskCostValue READ getUserMonthlyDeskCostValue WRITE setUserMonthlyDeskCostValue NOTIFY userMonthlyDeskCostValueChanged)
+    Q_PROPERTY(QString password READ getUserPassword WRITE setUserPassword NOTIFY userPasswordChanged)
+
 
 public:
     //User() = default;
@@ -45,6 +48,7 @@ public:
              const QString& startDate,
              const QString& endDate,
              const QString& monthlyDeskCostValue,
+             const QString& password,
              QObject* parent = nullptr);
     
     int getId() const { return id; }
@@ -61,6 +65,7 @@ public:
     QString getUserStartDate() const { return startDate; }
     QString getUserEndDate() const { return endDate; }
     QString getUserMonthlyDeskCostValue() const { return monthlyDeskCostValue; }
+    QString getUserPassword() const { return password; }
 
     
     void setId(int id) { this->id = id; }
@@ -68,7 +73,7 @@ public:
     void setApprovalStatus(bool status) { this->approvalStatus = status; }
     void setUserId(const QString& user_id) { this->user_id = user_id; }
     void setUserFullName(const QString& user_fullname) { this->user_fullname = user_fullname; }
-    void setUserName(const QString& user_name) { this->user_name = user_name ; }
+    void setUserName(const QString& user_name) { this->user_name = user_name; }
     void setUserMobile1(const QString& mobile1) { this->mobile1 = mobile1; }
     void setUserMobile2(const QString& mobile2) { this->mobile2 = mobile2; }
     void setUserEmail1(const QString& email1) { this->email1 = email1; }
@@ -77,6 +82,21 @@ public:
     void setUserStartDate(const QString& startDate) { this->startDate = startDate; }
     void setUserEndDate(const QString& endDate) { this->endDate = endDate; }
     void setUserMonthlyDeskCostValue(const QString& monthlyDeskCostValue) { this->monthlyDeskCostValue = monthlyDeskCostValue; }
+    void setUserPassword(const QString& password) { this->password = password; }
+
+signals:
+    void userFullNameChanged();
+    void userNameChanged();
+    void userMobile1Changed();
+    void userMobile2Changed();
+    void userEmail1Changed();
+    void userEmail2Changed();
+    void userJobTitleChanged();
+    void userStartDateChanged();
+    void userEndDateChanged();
+    void userMonthlyDeskCostValueChanged();
+    void userPasswordChanged();
+
 
 private:
     int id = 2;
@@ -93,6 +113,7 @@ private:
     QString startDate;
     QString endDate;
     QString monthlyDeskCostValue;
+    QString password;
 };
 
 Q_DECLARE_METATYPE(User)

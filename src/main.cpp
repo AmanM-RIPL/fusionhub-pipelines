@@ -5,12 +5,16 @@
 #include <QDebug>
 #include <QSGRendererInterface>
 #include <random>
+#include <QDir>
 
+/*
 #include "OdaCommon.h"
 #include "OdString.h"
 #include "daiObjectId.h"
 #include "OdArray.h"
 #include "Ge/GeVector3dArray.h"
+*/
+
 #include "common/myglitem.h"
 #include "common/ifcdetail.h"
 
@@ -22,13 +26,23 @@
 #include "repositories/vendor_repository.h"
 #include "repositories/material_repository.h"
 #include "repositories/schedule_setup_repository.h"
-#include "repositories/ifcdetailrepository.h"
+#include "repositories/ifc_detail_repository.h"
+#include "repositories/draft_entity_repository.h"
+
+#include "repositories/ifc_detail_repository.h"
 
 #include "controllers/user_controller.h"
 #include "controllers/project_controller.h"
+#include "controllers/budget_head_controller.h"
+#include "controllers/vendor_controller.h"
+#include "controllers/material_controller.h"
+#include "controllers/unit_of_measurement_controller.h"
+#include "controllers/schedule_setup_controller.h"
+#include "controllers/ifc_detail_controller.h"
 
 #include "models/user.h"
 #include "models/unit_of_measurement.h"
+#include "models/draft_entity.h"
 
 // There has to be a better way???????????
 const OdString OdString::kEmpty;
@@ -36,14 +50,25 @@ const OdDAIObjectId OdDAIObjectId::kNull;
 OdArrayBuffer OdArrayBuffer::g_empty_array_buffer;
 OdGeTol OdGeContext::gTol;
 
+//Create global state later
+std::shared_ptr<User> gUser = std::make_shared<User>();
+int gTenantId = 0;
+int gProjectId = 0;
+QString gEnvironmentPath = "C:\\Users\\RIPL\\Documents\\FusionHubData";
+
 
 int main(int argc, char *argv[])
 {
+    /*
     static OdStaticRxObject<MyServices> svcs;
 
     odrxInitialize(&svcs);
+
     odIfcInitialize(true, true);
     odTvInitialize();
+   */
+
+
 
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
     QSurfaceFormat format;
@@ -54,11 +79,22 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     QQmlApplicationEngine engine;
 
+    QDir dir;
+    if (!dir.exists(gEnvironmentPath)) {
+        if (dir.mkpath(gEnvironmentPath)) {
+            qDebug() << "Directory" << gEnvironmentPath << "created successfully.";
+        } else {
+            qDebug() << "Failed to create directory" << gEnvironmentPath;
+        }
+    } else {
+        qDebug() << "Directory" << gEnvironmentPath << "already exists.";
+    }
+
     /*
         HERE WE EXECUTE THE IFC CODE
 
     */
-    // QList<IFCDetail*> ifcDetailList;
+     //QList<IFCDetail*> ifcDetailList;
     // OdTvFactoryId factId = odTvGetFactory();
 
     // OdTvResult rc;
@@ -101,7 +137,7 @@ int main(int argc, char *argv[])
     // CDAWalker walker(new CDATreePrinter);
     // walker.run(pDatabase, rootItem);
 
-    // TreeModel* treeModel = new TreeModel(rootItem, nullptr);
+     //TreeModel* treeModel = new TreeModel(rootItem, nullptr);
 
 
     // const OdDAI::SetOfOdDAIObjectId* productIdSet = pIfcModel->getEntityExtent("IfcProduct");
@@ -363,6 +399,8 @@ int main(int argc, char *argv[])
     
 
 
+
+    /*
     auto dbManager = DatabaseManager::getInstance();
     if (!dbManager->initializeDatabase("TestProject")) {
         qDebug() << "Failed to initialize database";
@@ -371,8 +409,7 @@ int main(int argc, char *argv[])
     
     qDebug() << "Database initialized successfully!";
     qDebug() << "Project path:" << dbManager->getProjectPath();
-
-
+    */
 
     
     BudgetHeadRepository* budgetHeadRepository = new BudgetHeadRepository(&engine);
@@ -381,7 +418,12 @@ int main(int argc, char *argv[])
     UserRepository* userRepository = new UserRepository(&engine);    
     MaterialRepository* materialRepository = new MaterialRepository(&engine);
     ScheduleSetupRepository* scheduleSetupRepository = new ScheduleSetupRepository(&engine);
-    // IFCDetailRepository* ifcDetailRepository = new IFCDetailRepository(ifcDetailList, &engine);
+    DraftEntityRepository* draftEntityRepository = new DraftEntityRepository(&engine);
+    ProjectRepository* projectRepository = new ProjectRepository(&engine);
+    IFCDetailRepository* ifcDetailRepository = new IFCDetailRepository(&engine);
+
+   // IFCDetailRepository* ifcDetailRepository = new IFCDetailRepository(ifcDetailList, &engine);
+
     // UserRepository userRepo;
     // UnitOfMeasurementRepository uomRepo;
     
@@ -444,14 +486,19 @@ int main(int argc, char *argv[])
     
     // qDebug() << "Construction Management Tool - Model Layer Test Complete";
     
-    // engine.rootContext()->setContextProperty("treeModel", treeModel);
-    // engine.rootContext()->setContextProperty("ifcDetailRepository", ifcDetailRepository);
+    //engine.rootContext()->setContextProperty("treeModel", treeModel);
+    //engine.rootContext()->setContextProperty("ifcDetailRepository", ifcDetailRepository);
+
     engine.rootContext()->setContextProperty("budgetHeadRepository", budgetHeadRepository);
     engine.rootContext()->setContextProperty("unitOfMeasurementRepository", unitOfMeasurementRepository);
     engine.rootContext()->setContextProperty("vendorRepository", vendorRepository);
     engine.rootContext()->setContextProperty("userRepository", userRepository);   
     engine.rootContext()->setContextProperty("materialRepository", materialRepository);
     engine.rootContext()->setContextProperty("scheduleSetupRepository", scheduleSetupRepository);
+    engine.rootContext()->setContextProperty("draftEntityRepository", draftEntityRepository);
+    engine.rootContext()->setContextProperty("projectRepository", projectRepository);
+    engine.rootContext()->setContextProperty("ifcDetailRepository", ifcDetailRepository);
+
 
     qmlRegisterType<MyGLItem>("com.fh.models", 1, 0, "GLScene");
     qmlRegisterType<BudgetHead>("com.fh.models", 1, 0, "BudgetHead");
@@ -460,9 +507,19 @@ int main(int argc, char *argv[])
     qmlRegisterType<Vendor>("com.fh.models", 1, 0, "Vendor");
     qmlRegisterType<User>("com.fh.models", 1, 0, "User");   
     qmlRegisterType<ScheduleSetup>("com.fh.models", 1, 0, "ScheduleSetup");
+    qmlRegisterType<DraftEntity>("com.fh.models", 1, 0, "DraftEntity");
+    qmlRegisterType<User>("com.fh.models", 1, 0, "Project");
+
 
     qmlRegisterType<UserController>("com.fh.controllers", 1, 0, "UserController");
     qmlRegisterType<ProjectController>("com.fh.controllers", 1, 0, "ProjectController");
+    qmlRegisterType<BudgetHeadController>("com.fh.controllers", 1, 0, "BudgetHeadController");
+    qmlRegisterType<VendorController>("com.fh.controllers", 1, 0, "VendorController");
+    qmlRegisterType<MaterialController>("com.fh.controllers", 1, 0, "MaterialController");
+    qmlRegisterType<UnitOfMeasurementController>("com.fh.controllers", 1, 0, "UnitOfMeasurementController");
+    qmlRegisterType<ScheduleSetupController>("com.fh.controllers", 1, 0, "ScheduleSetupController");
+    qmlRegisterType<IFCDetailController>("com.fh.controllers", 1, 0, "IFCDetailController");
+
     
     const QUrl url(QStringLiteral("qrc:/resources/QML/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,

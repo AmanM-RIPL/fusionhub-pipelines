@@ -3,7 +3,10 @@
 #include "repositories/abstract_repository.h"
 #include "models/vendor.h"
 #include <memory>
-class VendorRepository : public QObject, public AbstractRepository<Vendor> {
+#include <QObject>
+
+class VendorRepository : public QObject, public AbstractRepository<Vendor>
+{
     Q_OBJECT
 public:
     explicit VendorRepository(QObject* parent = nullptr);

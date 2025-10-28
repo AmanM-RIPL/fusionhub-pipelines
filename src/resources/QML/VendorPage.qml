@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls
 import QtQuick.Layouts
 import com.fh.models 1.0
+import com.fh.controllers;
 
 Column {
     // anchors.fill: parent
@@ -10,6 +11,11 @@ Column {
     padding: 10
 
     property var vendorList: []
+    property bool isApproved:false    
+
+    VendorController {
+        id: vendorController       
+    }
 
     FHPopup {
         id: newVendorPopup
@@ -17,25 +23,18 @@ Column {
         popupHeight: 500
         title: "New Vendor"
 
-        onAcceptCallback: function () {
-            // Create Vendor object dynamically
-            let vendor = Qt.createQmlObject('import com.fh.models 1.0; Vendor {}', parent);
-            vendor.vendorName = vendorNameTextBox.text;
-            vendor.vendorAddress = vendorAddressTextBox.text;
-            vendor.vendorContactPerson = vendorContactPersonTextBox.text;
-            vendor.vendorMobile = vendorMobileTextBox.text;
-            vendor.vendorEmail = vendorEmailTextBox.text;
-            vendor.globalId = "";
-            vendor.approvalStatus = true;
+        onAcceptCallback: function () {                 
 
-            vendorRepository.saveQML(vendor);
+            vendorController.create(vendorNameTextBox.text, vendorAddressTextBox.text, vendorContactPersonTextBox.text,
+                                    vendorMobileTextBox.text, vendorEmailTextBox.text);
+
             vendorNameTextBox.text = "";
             vendorAddressTextBox.text = "";
             vendorContactPersonTextBox.text = "";
             vendorMobileTextBox.text = "";
             vendorEmailTextBox.text = "";
 
-            vendorRoot.vendorList = vendorRepository.findAllQML();
+            showList();
         }
 
         onCancelCallback: function () {
@@ -43,12 +42,12 @@ Column {
             vendorAddressTextBox.text = "";
             vendorContactPersonTextBox.text = "";
             vendorMobileTextBox.text = "";
-            vendorEmailTextBox.text = "";
+            vendorEmailTextBox.text = "";            
         }
 
         Column {
             width: parent.width
-            height: parent.height //30 for each top bottom
+            height: 300//parent.height //30 for each top bottom
 
             Text{
                 id: vendorNameLabel
@@ -63,6 +62,8 @@ Column {
             CustomTextBox{
                 id: vendorNameTextBox
                 placeholderText: "Vendor Name"
+                text:""
+                color: "#323130"
             }
 
             Text{
@@ -79,6 +80,8 @@ Column {
             CustomTextBox{
                 id: vendorAddressTextBox
                 placeholderText: "Vendor Address"
+                text:""
+                color: "#323130"
             }
 
             Text{
@@ -95,6 +98,8 @@ Column {
             CustomTextBox{
                 id: vendorContactPersonTextBox
                 placeholderText: "Vendor Contact Person"
+                text:""
+                color: "#323130"
             }
 
             Text{
@@ -111,6 +116,8 @@ Column {
             CustomTextBox{
                 id: vendorMobileTextBox
                 placeholderText: "Vendor Mobile"
+                text:""
+                color: "#323130"
             }
 
             Text{
@@ -127,9 +134,10 @@ Column {
             CustomTextBox{
                 id: vendorEmailTextBox
                 placeholderText: "Vendor Email"
+                text:""
+                color: "#323130"
             }
         }
-
     }
 
     Row {
@@ -171,6 +179,46 @@ Column {
         color: "#EDF1F4"
     }
 
+    Row {
+        spacing: 20
+        Text{
+            id: approvalTypeLabel
+            text: "Choose Approval Type"
+            color: "#323130"
+            font.weight: 700
+            font.pixelSize: 14
+            font.family: "Segoe UI"
+            topPadding: 10
+            leftPadding: 20
+        }
+
+
+        CustomComboBox {
+            id: approvalTypeComboBox
+            model: ["Approved", "Draft"]
+            width:200
+
+            onCurrentTextChanged: {
+                if(approvalTypeComboBox.currentText === "Approved"){
+                    isApproved = true;
+                    console.log("Vendor::Selected text1:", approvalTypeComboBox.currentText)
+                }
+                else{
+                    isApproved = false;
+                    console.log("Vendor::Selected text2:", approvalTypeComboBox.currentText)
+                }                
+                showList();
+            }
+        }
+    }
+
+
+    Rectangle {
+        width: 100
+        height: 40
+        color: "#EDF1F4"
+    }
+
     FHTable {
         height: 200
         leftPadding: 20
@@ -186,6 +234,16 @@ Column {
     }
 
     Component.onCompleted: {
-        vendorList = vendorRepository.findAllQML();
+        showList();
+    }
+
+    onVisibleChanged: {        
+        showList();
+    }
+
+    function showList(){
+        if(vendorRoot.visible){
+          vendorRoot.vendorList = vendorController.getVendorList(isApproved);
+        }
     }
 }
