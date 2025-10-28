@@ -296,18 +296,18 @@ Row {
 
             MouseArea {
                 anchors.fill: parent
-                onWheel: function(wheel) { // Declare 'wheel' as a formal parameter
-                    if (wheel.modifiers & Qt.ControlModifier) {
-                        if (wheel.angleDelta.y > 0) {
-                            glscene.zoomIn();
-                        } else {
-                            glscene.zoomOut();
-                        }
-                        wheel.accepted = true;
-                    } else {
-                        wheel.accepted = false;
-                    }
-                }
+                // onWheel: function(wheel) { // Declare 'wheel' as a formal parameter
+                //     if (wheel.modifiers & Qt.ControlModifier) {
+                //         if (wheel.angleDelta.y > 0) {
+                //             glscene.zoomIn();
+                //         } else {
+                //             glscene.zoomOut();
+                //         }
+                //         wheel.accepted = true;
+                //     } else {
+                //         wheel.accepted = false;
+                //     }
+                // }
                 onPressed: function(mouse) {
                     glscene.mousePressed(mouse.x, mouse.y);
                     mouse.accepted = true;
@@ -316,10 +316,31 @@ Row {
                 onReleased: function(mouse) {
                     glscene.mouseReleased();
                     mouse.accepted = true;
+                    // glscene.mousePressed(mouse.x, mouse.y);
+                    // mouse.accepted = true;
+                    glscene.focus = true;
+                    glscene.requestPick(mouse.x, mouse.y);
                 }
-                onPositionChanged: function(mouse) {
-                    glscene.mousePositionChanged(mouse.x, mouse.y);
-                    mouse.accepted = true;
+                // onReleased: function(mouse) {
+                //     glscene.mouseReleased();
+                //     mouse.accepted = true;
+                // }
+                // onPositionChanged: function(mouse) {
+                //     glscene.mousePositionChanged(mouse.x, mouse.y);
+                //     mouse.accepted = true;
+                // }
+            }
+
+
+            Keys.onPressed: function (event) {
+                if (event.key === Qt.Key_Up) {
+                    glscene.cameraMoveUp();
+                } else if (event.key === Qt.Key_Down) {
+                    glscene.cameraMoveDown();
+                } else if (event.key === Qt.Key_Left) {
+                    glscene.cameraMoveLeft();
+                } else if (event.key === Qt.Key_Right) {
+                    glscene.cameraMoveRight();
                 }
             }
         }
@@ -328,7 +349,7 @@ Row {
     Component.onCompleted: {
         //if(plannedBIMRoot.visible){
             //ifcDetailList = ifcDetailRepository.getIFCDetails();
-             ifcDetailList = ifcDetailController.loadIFC(ifcDetailController.getIfcFilePath());
+             // ifcDetailList = ifcDetailController.loadIFC(ifcDetailController.getIfcFilePath());
              //treeModel = ifcDetailController.getTreeModel();
         //}
 
@@ -337,7 +358,7 @@ Row {
     onVisibleChanged: {
         //if(plannedBIMRoot.visible && plannedBIMRoot.pageType === "PlannedBIM"){
             //ifcDetailList = ifcDetailRepository.getIFCDetails();
-            ifcDetailList = ifcDetailController.loadIFC(ifcDetailController.getIfcFilePath());
+            // ifcDetailList = ifcDetailController.loadIFC(ifcDetailController.getIfcFilePath());
              //treeModel = ifcDetailController.getTreeModel();
         //}
     }

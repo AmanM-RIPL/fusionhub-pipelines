@@ -3,6 +3,8 @@
 
 #include "repositories/user_repository.h"
 #include "repositories/project_repository.h"
+#include "repositories/bim_element_repository.h"
+#include "repositories/bim_parameter_repository.h"
 #include "repositories/budget_head_repository.h"
 #include "repositories/vendor_repository.h"
 #include "repositories/material_repository.h"
@@ -24,6 +26,8 @@ public:
 
     UserRepository* userRepository();
     ProjectRepository* projectRepository();
+    BIMElementRepository* bimElementRepository();
+    BIMParameterRepository* bimParameterRepository();
     BudgetHeadRepository* budgetheadRepository();
     VendorRepository* vendorRepository();
     MaterialRepository* materialRepository();
@@ -39,6 +43,8 @@ public:
 private:
     std::unique_ptr<UserRepository> m_userRepository;
     std::unique_ptr<ProjectRepository> m_projectRepository;
+    std::unique_ptr<BIMElementRepository> m_bimElementRepository;
+    std::unique_ptr<BIMParameterRepository> m_bimParameterRepository;
     std::unique_ptr<BudgetHeadRepository> m_budgetheadRepository;
     std::unique_ptr<VendorRepository> m_vendorRepository;
     std::unique_ptr<MaterialRepository> m_materialRepository;
