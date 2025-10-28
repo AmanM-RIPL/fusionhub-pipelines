@@ -215,6 +215,7 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/models/ifc_models/ifc_wall.h src/models/ifc_models/ifc_wall.cpp
     src/database/ifc_database_manager.h src/database/ifc_database_manager.cpp
     src/common/ifc_filler_extender.h
+    src/common/tree_model.h src/common/tree_model.cpp
 )
 
 target_include_directories(FusionHubQt PRIVATE src)
@@ -370,4 +371,5 @@ file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TV_Db
 file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcCore_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\sdai_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcGeom_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IFC4X3_26.7_17.txexp DESTINATION ${CMAKE_BINARY_DIR})
 

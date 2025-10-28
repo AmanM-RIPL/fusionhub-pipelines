@@ -29,8 +29,6 @@
 #include "repositories/ifc_detail_repository.h"
 #include "repositories/draft_entity_repository.h"
 
-#include "repositories/ifc_detail_repository.h"
-
 #include "controllers/user_controller.h"
 #include "controllers/project_controller.h"
 #include "controllers/budget_head_controller.h"

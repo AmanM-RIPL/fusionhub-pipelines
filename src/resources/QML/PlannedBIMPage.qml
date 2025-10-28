@@ -309,13 +309,6 @@ Row {
                 //     }
                 // }
                 onPressed: function(mouse) {
-                    glscene.mousePressed(mouse.x, mouse.y);
-                    mouse.accepted = true;
-
-                }
-                onReleased: function(mouse) {
-                    glscene.mouseReleased();
-                    mouse.accepted = true;
                     // glscene.mousePressed(mouse.x, mouse.y);
                     // mouse.accepted = true;
                     glscene.focus = true;

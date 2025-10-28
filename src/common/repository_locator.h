@@ -12,7 +12,6 @@
 #include "repositories/schedule_setup_repository.h"
 #include "repositories/draft_entity_repository.h"
 #include "repositories/ifc_detail_repository.h"
-
 #include "repositories/ifc_repositories/ifc_wall_repository.h"
 
 

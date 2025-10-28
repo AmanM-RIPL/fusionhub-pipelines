@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include "common/ifcdetail.h"
-#include "common/myglitem.h"
+#include "common/tree_model.h"
 #include <QList>
 
 #include "OdaCommon.h"
@@ -71,7 +71,7 @@ public:
 
     //THeaderEntity* getHeaderFromSection(OdDAI::OdHeaderSectionPtr headerSection);
     void initHeader(OdIfcFile *pDb);
-    void fillModel(OdIfcFile *pDb);    
+    void fillModel(OdIfcFile *pDb);
 
 protected:
     QString getTableName() const{return "";};

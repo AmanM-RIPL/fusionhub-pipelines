@@ -11,7 +11,6 @@
 #include <QtGui/QWindow>
 #include <QtQuick/QQuickWindow>
 #include <windows.h>
-#include <QAbstractItemModel>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLFramebufferObject>
 
@@ -133,6 +132,5 @@ private:
     void encodeIdToColor(unsigned int id, unsigned char &r, unsigned char &g, unsigned char &b);
     void moveTopVertexToClick(int mouseX, int mouseY, const QMatrix4x4 &proj, const QMatrix4x4 &view, const QMatrix4x4 &model);
 };
-
 
 #endif // MYGLITEM_H
