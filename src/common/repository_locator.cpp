@@ -3,6 +3,8 @@
 RepositoryLocator::RepositoryLocator() {
     m_userRepository = std::make_unique<UserRepository>();
     m_projectRepository = std::make_unique<ProjectRepository>();
+    m_bimElementRepository = std::make_unique<BIMElementRepository>();
+    m_bimParameterRepository = std::make_unique<BIMParameterRepository>();
     m_budgetheadRepository = std::make_unique<BudgetHeadRepository>();
     m_unitOfMeasurementRepository = std::make_unique<UnitOfMeasurementRepository>();
     m_vendorRepository =  std::make_unique<VendorRepository>();
@@ -28,6 +30,15 @@ ProjectRepository *RepositoryLocator::projectRepository()
     return m_projectRepository.get();
 }
 
+BIMElementRepository *RepositoryLocator::bimElementRepository()
+{
+    return m_bimElementRepository.get();
+}
+
+BIMParameterRepository *RepositoryLocator::bimParameterRepository()
+{
+    return m_bimParameterRepository.get();
+}
 BudgetHeadRepository *RepositoryLocator::budgetheadRepository()
 {
     return m_budgetheadRepository.get();

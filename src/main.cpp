@@ -71,6 +71,10 @@ int main(int argc, char *argv[])
 
 
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+    QSurfaceFormat format;
+    format.setVersion(3, 3);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+    QSurfaceFormat::setDefaultFormat(format);
 
     QApplication app(argc, argv);
     QQmlApplicationEngine engine;

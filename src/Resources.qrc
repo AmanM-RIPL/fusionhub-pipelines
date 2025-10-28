@@ -55,6 +55,10 @@
         <file>resources/QML/NewProjectPage.qml</file>
         <file>resources/QML/OrganizationSettingsPage.qml</file>
         <file>resources/QML/AddUserPage.qml</file>
+        <file>resources/shaders/default.frag</file>
+        <file>resources/shaders/default.vert</file>
+        <file>resources/shaders/color-picking.vert</file>
+        <file>resources/shaders/color-picking.frag</file>
         <file>resources/QML/ScheduleSetupPage.qml</file>
     </qresource>
 </RCC>

@@ -41,7 +41,16 @@ add_compile_options(-w)
 add_compile_options(-I "${LONG_PATH}\\IFC_vc17_amd64dll_26.7\\Sdai\\Include")
 
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Sql Qml Quick Charts)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Sql Qml Quick Charts Gui)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
@@ -177,6 +186,15 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/controllers/user_controller.h src/controllers/user_controller.cpp    
     src/controllers/project_controller.h src/controllers/project_controller.cpp
     src/models/project.h src/models/project.cpp
+    src/common/opengl/classes/view.h src/common/opengl/classes/view.cpp
+    src/common/opengl/classes/shader.h src/common/opengl/classes/shader.cpp
+    src/common/opengl/classes/camera.h src/common/opengl/classes/camera.cpp
+    src/common/opengl/classes/mesh.h src/common/opengl/classes/mesh.cpp
+    src/models/bim_element.h src/models/bim_element.cpp
+    src/models/bim_parameter.h src/models/bim_parameter.cpp
+    src/repositories/bim_parameter_repository.h src/repositories/bim_parameter_repository.cpp
+    src/repositories/bim_element_repository.h src/repositories/bim_element_repository.cpp
+    src/controllers/bim_element_controller.h src/controllers/bim_element_controller.cpp
     src/controllers/budget_head_controller.h src/controllers/budget_head_controller.cpp
     src/controllers/vendor_controller.h src/controllers/vendor_controller.cpp
     src/controllers/material_controller.h src/controllers/material_controller.cpp
@@ -198,6 +216,7 @@ target_link_libraries(FusionHubQt
         Qt6::Quick
         Qt6::Charts
         Qt6::OpenGL
+        Qt6::Gui
 )
 
 if(WIN32)
@@ -258,6 +277,11 @@ target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\hdf5.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\sdai.lib")
 
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
