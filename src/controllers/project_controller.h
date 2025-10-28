@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "repositories/project_repository.h"
+#include "common/ifcdetail.h"
 
 class ProjectController : public QObject
 {

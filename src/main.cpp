@@ -54,21 +54,18 @@ OdGeTol OdGeContext::gTol;
 std::shared_ptr<User> gUser = std::make_shared<User>();
 int gTenantId = 0;
 int gProjectId = 0;
+QString gProjectName ="";
 QString gEnvironmentPath = "C:\\Users\\RIPL\\Documents\\FusionHubData";
-
+OdStaticRxObject<MyServices> svcs;
 
 int main(int argc, char *argv[])
 {
-    /*
-    static OdStaticRxObject<MyServices> svcs;
+    //static OdStaticRxObject<MyServices> svcs;
 
     odrxInitialize(&svcs);
 
     odIfcInitialize(true, true);
     odTvInitialize();
-   */
-
-
 
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
     QSurfaceFormat format;

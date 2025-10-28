@@ -13,6 +13,9 @@
 #include "repositories/draft_entity_repository.h"
 #include "repositories/ifc_detail_repository.h"
 
+#include "repositories/ifc_repositories/ifc_wall_repository.h"
+
+
 
 class RepositoryLocator
 {
@@ -33,6 +36,9 @@ public:
     DraftEntityRepository* draftEntityRepository();
     IFCDetailRepository* ifcDetailRepository();
 
+    IFCWallRepository* ifcWallRepository();
+
+
 
 private:
     std::unique_ptr<UserRepository> m_userRepository;
@@ -46,6 +52,8 @@ private:
     std::unique_ptr<ScheduleSetupRepository> m_scheduleSetupRepository;
     std::unique_ptr<DraftEntityRepository> m_draftEntityRepository;
     std::unique_ptr<IFCDetailRepository> m_ifcDetailRepository;
+
+    std::unique_ptr<IFCWallRepository> m_ifcWallRepository;
 
 };
 

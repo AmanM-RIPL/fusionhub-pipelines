@@ -60,6 +60,10 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -94,7 +98,7 @@ set(SOURCES
     src/models/material_indent.cpp
     src/repositories/abstract_repository.cpp
     src/repositories/user_repository.cpp
-     src/repositories/project_repository.cpp
+    src/repositories/project_repository.cpp
     src/repositories/unit_of_measurement_repository.cpp
     src/repositories/vendor_repository.cpp
     src/repositories/material_repository.cpp
@@ -121,6 +125,7 @@ set(SOURCES
     src/repositories/ifc_detail_repository.cpp
     src/common/ifcdetail.cpp
     src/common/myglitem.cpp
+
 )
 
 set(HEADERS
@@ -178,6 +183,8 @@ set(HEADERS
     src/repositories/ifc_detail_repository.h
     src/common/ifcdetail.h
     src/common/myglitem.h
+
+    
 )
 
 add_executable(FusionHubQt ${SOURCES} ${HEADERS}
@@ -203,6 +210,11 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/repositories/draft_entity_repository.h src/repositories/draft_entity_repository.cpp
     src/models/draft_entity.h src/models/draft_entity.cpp
     src/controllers/ifc_detail_controller.h src/controllers/ifc_detail_controller.cpp
+    src/repositories/ifc_repositories/ifc_wall_repository.h src/repositories/ifc_repositories/ifc_wall_repository.cpp
+    src/controllers/ifc_controllers/ifc_wall_controller.h src/controllers/ifc_controllers/ifc_wall_controller.cpp
+    src/models/ifc_models/ifc_wall.h src/models/ifc_models/ifc_wall.cpp
+    src/database/ifc_database_manager.h src/database/ifc_database_manager.cpp
+    src/common/ifc_filler_extender.h
 )
 
 target_include_directories(FusionHubQt PRIVATE src)
@@ -232,21 +244,32 @@ if(APPLE)
 endif()
 
 #All include directory path
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\KernelBase")
 target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\Kernel\\Include")
 target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\FacetModeler\\include")
 target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\KernelBase\\Include")
 target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\ThirdParty\\activation")
 target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\Kernel\\Extensions\\ExServices")
 target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\FacetModeler\\include\\Modeler")
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\Kernel\\Include\\Ge")
 
 target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\Visualize\\Include")
 target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\ThirdParty\\activation")
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\CommonApplications\\Visualize\\Examples\\Ifc2Visualize")
 
 target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Sdai\\Include")
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Sdai\\Include\\daiHeader")
 target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Ifc\\Include")
 target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Ifc\\Include\\Common")
 target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Ifc\\Examples\\Common")
 target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Ifc\\Extensions\\ExServices")
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Include\\sdai")
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Include\\sdai\\daiHeader")
+
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Ifc\\Examples\\Common\\SDAI")
+
+target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Ifc\\Include\\Entities")
+
 #End
 
 #All Source Path
@@ -254,7 +277,12 @@ target_sources(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\Ke
 target_sources(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\Kernel\\Extensions\\ExServices\\RxSystemServicesImpl.cpp")
 target_sources(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\Kernel\\Extensions\\ExServices\\OdFileBuf.cpp")
 
+#target_sources(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\KernelBase\\Extensions\\ExServices\\ExSystemServices.cpp")
+#target_sources(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\KernelBase\\Extensions\\alloc\\OdAllocOp.cpp")
+
+
 target_sources(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Ifc\\Extensions\\ExServices\\ExIfcHostAppServices.cpp")
+
 #End
 
 #All Link library Path
@@ -264,6 +292,9 @@ target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_2
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_Br.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_Gi.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\FacetModeler.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_ExamplesCommon.lib")
+
+
 
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_Ge.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TV_CoreDb.lib")
@@ -271,12 +302,25 @@ target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dl
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TV_Visualize.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TV_VisualizeTools.lib")
 
+
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\IfcCore.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\IfcCoreTools.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\IfcGeom.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\hdf5.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\sdai.lib")
 
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\IfcFacetModeler.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\IfcGeom.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\IfcBrepBuilder.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\IfcBrepModeler.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\Ifc2x3.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\Ifc4x3.lib")
+
+
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
@@ -302,6 +346,7 @@ file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_BrepR
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_BrepBuilderFiller_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\RxCommonDataAccess_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\tinyxml.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\FacetModeler_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 
 
 file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TV_Visualize_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
@@ -324,4 +369,5 @@ file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TV_Db
 
 file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcCore_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\sdai_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcGeom_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 

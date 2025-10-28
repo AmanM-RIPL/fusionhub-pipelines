@@ -74,3 +74,9 @@ IFCDetailRepository *RepositoryLocator::ifcDetailRepository()
     return m_ifcDetailRepository.get();
 }
 
+IFCWallRepository *RepositoryLocator::ifcWallRepository()
+{
+    return m_ifcWallRepository.get();
+}
+
+
