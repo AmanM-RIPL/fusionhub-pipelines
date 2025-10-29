@@ -18,6 +18,8 @@
 #include <QVector3D>
 #include <QVector4D>
 
+#include <vector>
+
 #include "OdaCommon.h"
 #include "RxObject.h"
 #include "RxObjectImpl.h"
@@ -71,6 +73,7 @@ public:
     bool m_moveRight = false;
     int m_lastClickX = -1;
     int m_lastClickY = -1;
+    Mesh* mesh = nullptr;
 
 public slots:
     void cameraMoveUp();
@@ -91,7 +94,7 @@ signals:
 class MyGLRenderer : public QQuickFramebufferObject::Renderer, protected QOpenGLFunctions_3_3_Core
 {
 public:
-    MyGLRenderer();
+    MyGLRenderer(Mesh* mesh);
     ~MyGLRenderer();
 
     void synchronize(QQuickFramebufferObject *item) override;
@@ -107,7 +110,7 @@ private:
     GLuint m_viewLoc = -1;
     GLuint m_projLoc = -1;
     GLfloat m_vertices[9];
-    QVector3D m_cameraPos = QVector3D(0.0f, 0.0f, 2.0f);
+    QVector3D m_cameraPos = QVector3D(0.0f, 0.0f, 24.0f);
 
     Mesh* m_mesh = nullptr;
     Camera* m_camera = nullptr;

@@ -9,13 +9,18 @@
 
 #include <vector>
 #include <array>
+#include <cmath>
+#include <limits>
+#include <memory>
+#include <algorithm>
+
 
 #include "models/bim_element.h"
 #include "common/opengl/classes/mesh.h"
 #include "common/opengl/classes/earcut_algorithm.h"
 
-using Point = std::array<float, 2>;
-using Line = std::array<float, 2>;
+using Point = std::array<float, 2>; // (x,y)
+using Line = std::array<float, 3>; // (m, b, x) for y = mx + b and x in case m is infinity
 
 class WallGeometryService : public QObject
 {
@@ -23,7 +28,7 @@ class WallGeometryService : public QObject
 public:
     explicit WallGeometryService(QObject *parent = nullptr);
 
-    void generateMesh2D(BIMElement* wallElement);
+    void generateMesh2D(BIMElement* wallElement, Mesh* mesh);
 
 
 signals:

@@ -13,44 +13,53 @@ void View::Initialize()
     // getting the data of the first mesh
     GLfloat* vertices = meshList[0]->getVerticies();
     unsigned int* indices = meshList[0]->getIndices();
+    unsigned int* borderIndices = meshList[0]->getBorderIndices();
     unsigned int numOfVertices = meshList[0]->getNumOfVertices();
     unsigned int numOfIndices = meshList[0]->getNumOfIndices();
+    unsigned int numOfBorderIndices = meshList[0]->getNumOfBorderIndices();
 
     // Initializing the vao, vbo, and ibo
     m_indexCount = numOfIndices;
+    m_borderIndexCount = numOfBorderIndices;
     this->glEnable(GL_DEPTH_TEST);
 
     this->glGenVertexArrays(1, &m_vao);
     this->glGenBuffers(1, &m_static_ibo);
     this->glGenBuffers(1, &m_static_vbo);
+    this->glGenBuffers(1, &m_static_border_ibo);
 
     // VAO
     this->glBindVertexArray(m_vao);
-        //IBO
+        //VBO
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * numOfVertices, vertices, GL_STATIC_DRAW);
+
+            // postition in verticies
+            this->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(vertices[0]), (void*)0);
+            this->glEnableVertexAttribArray(0);
+
+            // normal in verticies
+            this->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(vertices[0]), (void*)(3 * sizeof(vertices[0])));
+            this->glEnableVertexAttribArray(1);
+
+            // this->glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+
+        //TRIANGLE IBO
         this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
             this->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * numOfIndices, indices, GL_STATIC_DRAW);
 
-            //VBO
-            this->glBindBuffer(GL_ARRAY_BUFFER, m_static_vbo);
-                this->glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * numOfVertices, vertices, GL_STATIC_DRAW);
-
-                // postition in verticies
-                this->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(vertices[0]), (void*)0);
-                this->glEnableVertexAttribArray(0);
-
-                // normal in verticies
-                this->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(vertices[0]), (void*)(3 * sizeof(vertices[0])));
-                this->glEnableVertexAttribArray(1);
-
-            this->glBindBuffer(GL_ARRAY_BUFFER, 0);
-        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        //LINE IBO
+        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_border_ibo);
+            this->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(borderIndices[0]) * numOfBorderIndices, borderIndices, GL_STATIC_DRAW);
     this->glBindVertexArray(0);
 }
 
 void View::Render()
 {
     this->glViewport(0, 0, viewportWidth, viewportHeight);
-    this->glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
+    this->glClearColor(0.97f, 0.99f, 0.98f, 1.0f);
     this->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // draw scene with the required colors
@@ -59,13 +68,23 @@ void View::Render()
     QVector3D cameraPosition = camera->getCameraPosition();
     this->glUniform3f(shader->getViewPositionId(), cameraPosition.x(), cameraPosition.y(), cameraPosition.z());
 
-    this->glUniform3f(shader->getMaterialAmbientId(), 1.0f, 0.5f, 0.31f);
-    this->glUniform3f(shader->getMaterialDiffuseId(), 1.0f, 0.5f, 0.31f);
-    this->glUniform3f(shader->getMaterialSpecularId(), 0.5f, 0.5f, 0.5f);
+    // this->glUniform3f(shader->getMaterialAmbientId(), 1.0f, 0.5f, 0.31f);
+    // this->glUniform3f(shader->getMaterialDiffuseId(), 0.0f, 0.5f, 0.31f);
+    // this->glUniform3f(shader->getMaterialSpecularId(), 0.5f, 0.5f, 0.5f);
+    // this->glUniform1f(shader->getMaterialShininessId(), 32.0f);
+
+    // this->glUniform3f(shader->getLightPositionId(), 0.0f, 0.0f, 2.0f);
+    // this->glUniform3f(shader->getLightAmbientId(), 0.2f, 0.2f, 0.2f);
+    // this->glUniform3f(shader->getLightDiffuseId(), 0.5f, 0.5f, 0.5f);
+    // this->glUniform3f(shader->getLightSpecularId(), 1.0f, 1.0f, 1.0f);
+
+    this->glUniform3f(shader->getMaterialAmbientId(), 0.96f, 0.47f, 0.02f);
+    this->glUniform3f(shader->getMaterialDiffuseId(), 0.0f, 0.0f, 0.0f);
+    this->glUniform3f(shader->getMaterialSpecularId(), 0.0f, 0.0f, 0.0f);
     this->glUniform1f(shader->getMaterialShininessId(), 32.0f);
 
     this->glUniform3f(shader->getLightPositionId(), 0.0f, 0.0f, 2.0f);
-    this->glUniform3f(shader->getLightAmbientId(), 0.2f, 0.2f, 0.2f);
+    this->glUniform3f(shader->getLightAmbientId(), 1.0f, 1.0f, 1.0f);
     this->glUniform3f(shader->getLightDiffuseId(), 0.5f, 0.5f, 0.5f);
     this->glUniform3f(shader->getLightSpecularId(), 1.0f, 1.0f, 1.0f);
 
@@ -77,9 +96,14 @@ void View::Render()
 
     // Draw
     this->glBindVertexArray(m_vao);
-        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
+        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
             this->glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
         // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        this->glUniform3f(shader->getMaterialAmbientId(), 0.0f, 0.0f, 0.0f);
+
+        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_border_ibo);
+            this->glDrawElements(GL_LINES, m_borderIndexCount, GL_UNSIGNED_INT, 0);
     this->glBindVertexArray(0);
 }
 
