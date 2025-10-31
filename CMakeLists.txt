@@ -295,6 +295,8 @@ target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_2
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_DbRoot.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_Br.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_Gi.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_Ge.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_SpatialIndex.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\FacetModeler.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_ExamplesCommon.lib")
 
@@ -347,6 +349,8 @@ file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Alloc
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Root_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_DbRoot_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Gi_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Ge_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_SpatialIndex_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_BrepRenderer_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_BrepBuilderFiller_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\RxCommonDataAccess_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})

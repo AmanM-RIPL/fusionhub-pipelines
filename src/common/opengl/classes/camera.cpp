@@ -56,10 +56,10 @@ void Camera::update()
 
     */
 
-    front.setX(qCos(qDegreesToRadians(yaw)) * qCos(qDegreesToRadians(pitch)));
-    front.setY(qSin(qDegreesToRadians(pitch)));
-    front.setZ(qSin(qDegreesToRadians(yaw)) * qCos(qDegreesToRadians(pitch)));
-    front = front.normalized();
+    // front.setX(qCos(qDegreesToRadians(yaw)) * qCos(qDegreesToRadians(pitch)));
+    // front.setY(qSin(qDegreesToRadians(pitch)));
+    // front.setZ(qSin(qDegreesToRadians(yaw)) * qCos(qDegreesToRadians(pitch)));
+    // front = front.normalized();
 
     right = QVector3D::crossProduct(front, worldUp);
     right = right.normalized();

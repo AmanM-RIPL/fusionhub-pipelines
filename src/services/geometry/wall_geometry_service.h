@@ -14,6 +14,21 @@
 #include <memory>
 #include <algorithm>
 
+#include "OdaCommon.h"
+#include "RxObject.h"
+#include "RxObjectImpl.h"
+#include "ExSystemServices.h"
+#include "StaticRxObject.h"
+#include "FMMdlBody.h"
+#include "FMMdlFace.h"
+#include "FMMdlSurface.h"
+#include "FMMdlEdge.h"
+#include "FMMdlVertex.h"
+#include "FMMdlIterators.h"
+#include "FMContour2D.h"
+#include "FMProfile2D.h"
+#include "Ge/GeTrMeshSimplification.h"
+
 
 #include "models/bim_element.h"
 #include "common/opengl/classes/mesh.h"
@@ -29,11 +44,14 @@ public:
     explicit WallGeometryService(QObject *parent = nullptr);
 
     void generateMesh2D(BIMElement* wallElement, Mesh* mesh);
+    void generateMesh3D(BIMElement *wallElement, Mesh* mesh);
 
 
 signals:
 
 private:
+    void extractBIMParameters(BIMElement *wallElement, std::vector<Point>& referenceLine, float& width, float& height);
+
     std::vector<Point> generateParallelCurve(std::vector<Point> referenceCurve, float width);
 
     // [10,2] where 10 = m and 2 = b in y = mx + b

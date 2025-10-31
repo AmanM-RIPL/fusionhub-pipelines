@@ -34,6 +34,7 @@
 #include "IfcGiContext.h"
 #include "IfcGsManager.h"
 #include "TvFactory.h"
+#include "FMDataSerialize.h"
 #include "FMMdlBody.h"
 #include "FMMdlFace.h"
 #include "FMMdlSurface.h"
@@ -110,7 +111,7 @@ private:
     GLuint m_viewLoc = -1;
     GLuint m_projLoc = -1;
     GLfloat m_vertices[9];
-    QVector3D m_cameraPos = QVector3D(0.0f, 0.0f, 24.0f);
+    QVector3D m_cameraPos = QVector3D(0.0f, 0.0f, 20.0f);
 
     Mesh* m_mesh = nullptr;
     Camera* m_camera = nullptr;

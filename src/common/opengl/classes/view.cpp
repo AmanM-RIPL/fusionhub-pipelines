@@ -68,25 +68,27 @@ void View::Render()
     QVector3D cameraPosition = camera->getCameraPosition();
     this->glUniform3f(shader->getViewPositionId(), cameraPosition.x(), cameraPosition.y(), cameraPosition.z());
 
-    // this->glUniform3f(shader->getMaterialAmbientId(), 1.0f, 0.5f, 0.31f);
-    // this->glUniform3f(shader->getMaterialDiffuseId(), 0.0f, 0.5f, 0.31f);
-    // this->glUniform3f(shader->getMaterialSpecularId(), 0.5f, 0.5f, 0.5f);
+    // For 3D
+    this->glUniform3f(shader->getMaterialAmbientId(), 0.96f, 0.47f, 0.02f);
+    this->glUniform3f(shader->getMaterialDiffuseId(), 0.0f, 0.5f, 0.31f);
+    this->glUniform3f(shader->getMaterialSpecularId(), 0.5f, 0.5f, 0.5f);
+    this->glUniform1f(shader->getMaterialShininessId(), 32.0f);
+
+    this->glUniform3f(shader->getLightPositionId(), 0.0f, 0.0f, 20.0f);
+    this->glUniform3f(shader->getLightAmbientId(), 0.2f, 0.2f, 0.2f);
+    this->glUniform3f(shader->getLightDiffuseId(), 0.5f, 0.5f, 0.5f);
+    this->glUniform3f(shader->getLightSpecularId(), 1.0f, 1.0f, 1.0f);
+
+    // For 2D
+    // this->glUniform3f(shader->getMaterialAmbientId(), 0.96f, 0.47f, 0.02f);
+    // this->glUniform3f(shader->getMaterialDiffuseId(), 0.0f, 0.0f, 0.0f);
+    // this->glUniform3f(shader->getMaterialSpecularId(), 0.0f, 0.0f, 0.0f);
     // this->glUniform1f(shader->getMaterialShininessId(), 32.0f);
 
     // this->glUniform3f(shader->getLightPositionId(), 0.0f, 0.0f, 2.0f);
-    // this->glUniform3f(shader->getLightAmbientId(), 0.2f, 0.2f, 0.2f);
+    // this->glUniform3f(shader->getLightAmbientId(), 1.0f, 1.0f, 1.0f);
     // this->glUniform3f(shader->getLightDiffuseId(), 0.5f, 0.5f, 0.5f);
     // this->glUniform3f(shader->getLightSpecularId(), 1.0f, 1.0f, 1.0f);
-
-    this->glUniform3f(shader->getMaterialAmbientId(), 0.96f, 0.47f, 0.02f);
-    this->glUniform3f(shader->getMaterialDiffuseId(), 0.0f, 0.0f, 0.0f);
-    this->glUniform3f(shader->getMaterialSpecularId(), 0.0f, 0.0f, 0.0f);
-    this->glUniform1f(shader->getMaterialShininessId(), 32.0f);
-
-    this->glUniform3f(shader->getLightPositionId(), 0.0f, 0.0f, 2.0f);
-    this->glUniform3f(shader->getLightAmbientId(), 1.0f, 1.0f, 1.0f);
-    this->glUniform3f(shader->getLightDiffuseId(), 0.5f, 0.5f, 0.5f);
-    this->glUniform3f(shader->getLightSpecularId(), 1.0f, 1.0f, 1.0f);
 
     // --- Upload to shader ---
     this->glUniformMatrix4fv(shader->getModelId(), 1, GL_FALSE, meshList[0]->getModelMatrix().constData());

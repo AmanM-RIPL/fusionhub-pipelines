@@ -577,7 +577,7 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 
     mesh = new Mesh(this);
     WallGeometryService* service = new WallGeometryService(this);
-    service->generateMesh2D(newElement, mesh);
+    service->generateMesh3D(newElement, mesh);
 
     // GLfloat* vertices = mesh->getVerticies();
     // unsigned int* indices = mesh->getIndices();
