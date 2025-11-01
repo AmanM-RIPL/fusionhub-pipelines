@@ -549,6 +549,7 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 
     // bimElementController->addParameter(newElement, "Height", "3000");
     // bimElementController->addParameter(newElement, "Width", "100");
+    // bimElementController->addParameter(newElement, "ReferenceLine", "");
 
     // qInfo() << "BIM Element with Params is null: " << (newElement == nullptr);
 }
