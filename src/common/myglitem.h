@@ -72,6 +72,9 @@ public:
     bool m_moveDown = false;
     bool m_moveLeft = false;
     bool m_moveRight = false;
+    bool m_zoomIn = false;
+    bool m_zoomOut = false;
+
     int m_lastClickX = -1;
     int m_lastClickY = -1;
     Mesh* mesh = nullptr;
@@ -81,6 +84,9 @@ public slots:
     void cameraMoveDown();
     void cameraMoveLeft();
     void cameraMoveRight();
+
+    void zoomIn();
+    void zoomOut();
 
     void requestPick(int x, int y);
 

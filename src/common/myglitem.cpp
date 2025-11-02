@@ -78,7 +78,7 @@ MyGLRenderer::MyGLRenderer(Mesh* mesh)
 
     // initialize Camera
     m_camera = new Camera();
-    m_camera->Initialize(m_cameraPos, QVector3D(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.5f);
+    m_camera->Initialize(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 1.0f, 0.0f), 90.0f, 0.0f, 20.0f, 5.0f, 0.5f);
 
     // initialize Shader
     m_shader = new Shader();
@@ -122,25 +122,36 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
     // qInfo() << "Syncronize Function";
     MyGLItem* glItem = static_cast<MyGLItem*>(item);
 
-    // if (glItem->m_moveUp) {
-    //     m_cameraPos.setY(m_cameraPos.y() + 0.1f);
-    //     glItem->m_moveUp = false;  // reset
-    // }
+    if (glItem->m_moveUp) {
+        m_camera->OrbitVertical(true);
+        glItem->m_moveUp = false;  // reset
+    }
 
-    // if (glItem->m_moveDown) {
-    //     m_cameraPos.setY(m_cameraPos.y() - 0.1f);
-    //     glItem->m_moveDown = false;
-    // }
+    if (glItem->m_moveDown) {
+        m_camera->OrbitVertical(false);
+        glItem->m_moveDown = false;
+    }
 
-    // if (glItem->m_moveLeft) {
-    //     m_cameraPos.setX(m_cameraPos.x() - 0.1f);
-    //     glItem->m_moveLeft = false;
-    // }
+    if (glItem->m_moveLeft) {
+        m_camera->OrbitHorizontal(false);
+        glItem->m_moveLeft = false;
+    }
 
-    // if (glItem->m_moveRight) {
-    //     m_cameraPos.setX(m_cameraPos.x() + 0.1f);
-    //     glItem->m_moveRight = false;
-    // }
+    if (glItem->m_moveRight) {
+        m_camera->OrbitHorizontal(true);
+        glItem->m_moveRight = false;
+    }
+
+    if (glItem->m_zoomIn)
+    {
+        m_camera->Zoom(true);
+        glItem->m_zoomIn = false;
+    }
+    else if (glItem->m_zoomOut)
+    {
+        m_camera->Zoom(false);
+        glItem->m_zoomOut = false;
+    }
 
     // transfer click request safely
     if (glItem->m_lastClickX >= 0) {
@@ -618,6 +629,18 @@ void MyGLItem::cameraMoveLeft() {
 
 void MyGLItem::cameraMoveRight() {
     m_moveRight = true;
+    update();
+}
+
+void MyGLItem::zoomIn()
+{
+    m_zoomIn = true;
+    update();
+}
+
+void MyGLItem::zoomOut()
+{
+    m_zoomOut = true;
     update();
 }
 
