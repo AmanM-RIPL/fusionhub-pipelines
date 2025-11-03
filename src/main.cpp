@@ -74,9 +74,13 @@ int main(int argc, char *argv[])
 
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
     QSurfaceFormat format;
+    format.setDepthBufferSize(24);
+    format.setStencilBufferSize(8);
     format.setVersion(3, 3);
     format.setProfile(QSurfaceFormat::CoreProfile);
     QSurfaceFormat::setDefaultFormat(format);
+
+    qInfo() << "Depth Buffer SIze: " << format.depthBufferSize();
 
     QApplication app(argc, argv);
     QQmlApplicationEngine engine;

@@ -72,6 +72,12 @@ public:
     bool m_moveDown = false;
     bool m_moveLeft = false;
     bool m_moveRight = false;
+
+    bool m_panUp = false;
+    bool m_panDown = false;
+    bool m_panLeft = false;
+    bool m_panRight = false;
+
     bool m_zoomIn = false;
     bool m_zoomOut = false;
 
@@ -84,6 +90,11 @@ public slots:
     void cameraMoveDown();
     void cameraMoveLeft();
     void cameraMoveRight();
+
+    void cameraPanUp();
+    void cameraPanDown();
+    void cameraPanLeft();
+    void cameraPanRight();
 
     void zoomIn();
     void zoomOut();

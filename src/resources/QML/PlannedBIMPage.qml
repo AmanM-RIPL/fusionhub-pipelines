@@ -609,6 +609,14 @@ Row {
                     glscene.cameraMoveLeft();
                 } else if (event.key === Qt.Key_Right) {
                     glscene.cameraMoveRight();
+                } else if (event.key === Qt.Key_W) {
+                    glscene.cameraPanUp();
+                } else if (event.key === Qt.Key_S) {
+                    glscene.cameraPanDown();
+                } else if (event.key === Qt.Key_A) {
+                    glscene.cameraPanLeft();
+                } else if (event.key === Qt.Key_D) {
+                    glscene.cameraPanRight();
                 }
             }
         }

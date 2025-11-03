@@ -12,11 +12,12 @@ class Camera : public QObject, protected QOpenGLFunctions_3_3_Core
     Q_OBJECT
 public:
     explicit Camera(QObject *parent = nullptr);
-    void Initialize(QVector3D startTarget, QVector3D startUp, GLfloat startYaw, GLfloat startPitch, GLfloat startDistance, GLfloat startMoveSpeed, GLfloat startTurnSpeed);
+    void Initialize(QVector3D startTarget, QVector3D startUp, QVector3D startPosition, GLfloat startMoveSpeed, GLfloat startTurnSpeed);
 
     void Zoom(bool zoomIn = true);
     void OrbitVertical(bool zDirection = true);
     void OrbitHorizontal(bool rightDirection = true);
+    void Pan(float deltaX, float deltaY);
 
     QVector3D getCameraPosition();
     QVector3D getCameraDirection();

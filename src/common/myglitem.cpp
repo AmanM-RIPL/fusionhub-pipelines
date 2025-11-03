@@ -78,7 +78,7 @@ MyGLRenderer::MyGLRenderer(Mesh* mesh)
 
     // initialize Camera
     m_camera = new Camera();
-    m_camera->Initialize(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 1.0f, 0.0f), 90.0f, 0.0f, 20.0f, 5.0f, 0.5f);
+    m_camera->Initialize(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 1.0f, 0.0f), QVector3D(0.0f, 0.0f, 20.0f), 5.0f, 0.5f);
 
     // initialize Shader
     m_shader = new Shader();
@@ -141,6 +141,29 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         m_camera->OrbitHorizontal(true);
         glItem->m_moveRight = false;
     }
+
+
+    float panLength = 0.1f;
+    if (glItem->m_panUp) {
+        m_camera->Pan(0.0f,panLength);
+        glItem->m_panUp = false;  // reset
+    }
+
+    if (glItem->m_panDown) {
+        m_camera->Pan(0.0f, -panLength);
+        glItem->m_panDown = false;
+    }
+
+    if (glItem->m_panLeft) {
+        m_camera->Pan(-panLength, 0.0f);
+        glItem->m_panLeft = false;
+    }
+
+    if (glItem->m_panRight) {
+        m_camera->Pan(panLength, 0.0f);
+        glItem->m_panRight = false;
+    }
+
 
     if (glItem->m_zoomIn)
     {
@@ -632,6 +655,27 @@ void MyGLItem::cameraMoveRight() {
     m_moveRight = true;
     update();
 }
+
+void MyGLItem::cameraPanUp() {
+    m_panUp = true;
+    update();
+}
+
+void MyGLItem::cameraPanDown() {
+    m_panDown = true;
+    update();
+}
+
+void MyGLItem::cameraPanLeft() {
+    m_panLeft = true;
+    update();
+}
+
+void MyGLItem::cameraPanRight() {
+    m_panRight = true;
+    update();
+}
+
 
 void MyGLItem::zoomIn()
 {

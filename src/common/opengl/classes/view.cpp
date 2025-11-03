@@ -70,8 +70,8 @@ void View::Render()
 
     // For 3D
     this->glUniform3f(shader->getMaterialAmbientId(), 0.96f, 0.47f, 0.02f);
-    this->glUniform3f(shader->getMaterialDiffuseId(), 0.0f, 0.5f, 0.31f);
-    this->glUniform3f(shader->getMaterialSpecularId(), 0.5f, 0.5f, 0.5f);
+    this->glUniform3f(shader->getMaterialDiffuseId(), 0.0f, 0.0f, 0.0f); // 0.0f, 0.5f, 0.31f
+    this->glUniform3f(shader->getMaterialSpecularId(), 0.0f, 0.0f, 0.0f); //0.5f, 0.5f, 0.5f
     this->glUniform1f(shader->getMaterialShininessId(), 32.0f);
 
     this->glUniform3f(shader->getLightPositionId(), 0.0f, 0.0f, 20.0f);
@@ -94,6 +94,27 @@ void View::Render()
     this->glUniformMatrix4fv(shader->getModelId(), 1, GL_FALSE, meshList[0]->getModelMatrix().constData());
     this->glUniformMatrix4fv(shader->getViewId(),  1, GL_FALSE, camera->calculateViewMatrix().constData());
     this->glUniformMatrix4fv(shader->getProjectionId(),  1, GL_FALSE, m_projectionMatrix.constData());
+
+    GLint depthTestEnabled = 1;
+    this->glGetIntegerv(GL_DEPTH_TEST, &depthTestEnabled);
+    qInfo() << "Depth test:" << (depthTestEnabled ? "ON" : "OFF");
+    this->glGetIntegerv(GL_DEPTH_BITS, &depthTestEnabled);
+    qInfo() << "Depth bits:" << depthTestEnabled;
+
+    GLint depthBits = 0;
+
+    // Use glGetFramebufferAttachmentParameteriv to query the specific attachment
+    // for the currently bound FBO.
+    // The attachment point for a renderbuffer (which Qt uses by default for depth) is GL_DEPTH_ATTACHMENT
+    this->glGetFramebufferAttachmentParameteriv(
+        GL_FRAMEBUFFER,
+        GL_DEPTH_ATTACHMENT,
+        GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE,
+        &depthBits
+        );
+
+    qInfo() << "FBO Depth bits:" << depthBits;
+
 
 
     // Draw

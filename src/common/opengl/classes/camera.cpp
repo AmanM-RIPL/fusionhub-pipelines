@@ -4,18 +4,24 @@ Camera::Camera(QObject *parent)
     : QObject{parent}
 {}
 
-void Camera::Initialize(QVector3D startTarget, QVector3D startUp, GLfloat startYaw, GLfloat startPitch, GLfloat startDistance, GLfloat startMoveSpeed, GLfloat startTurnSpeed)
+void Camera::Initialize(QVector3D startTarget, QVector3D startUp, QVector3D startPosition, GLfloat startMoveSpeed, GLfloat startTurnSpeed)
 {
     this->initializeOpenGLFunctions();
 
     // initializing camera
     worldUp = startUp;
-    yaw = startYaw;
-    pitch = startPitch;
+    position = startPosition;
     target = startTarget;
-    distance = startDistance;
     moveSpeed = startMoveSpeed;
     turnSpeed = startTurnSpeed;
+
+    // initial calculations for pitch, and yaw
+    QVector3D offset = position - target;
+    distance = offset.length();
+
+    yaw = qRadiansToDegrees(qAtan2(offset.z(), offset.x()));
+    float horizontalDist = QVector2D(offset.x(), offset.z()).length();
+    pitch = qRadiansToDegrees(qAtan2(offset.y(), horizontalDist));
 
     update();
 }
@@ -73,6 +79,15 @@ void Camera::OrbitHorizontal(bool rightDirection)
     {
         yaw -= turnSpeed;
     }
+
+    update();
+}
+
+void Camera::Pan(float deltaX, float deltaY)
+{
+    QVector3D offset = (-right * deltaX * moveSpeed) + (up * deltaY * moveSpeed);
+    position += offset;
+    target += offset;
 
     update();
 }
