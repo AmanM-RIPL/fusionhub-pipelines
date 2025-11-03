@@ -9,7 +9,7 @@ class IFCWallController : public QObject
     Q_OBJECT
 public:
     explicit IFCWallController(QObject *parent = nullptr);
-    Q_INVOKABLE void create(const QString &projectName) const;
+    Q_INVOKABLE void create(const QString &projectName, const QString &height, const QString &width) const;
 
 signals:
 

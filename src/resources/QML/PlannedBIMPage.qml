@@ -5,6 +5,8 @@ import QtQuick
 import com.fh.models 1.0
 import com.fh.controllers;
 
+
+
 Row {
     // anchors.fill: parent
     id: plannedBIMRoot
@@ -19,13 +21,25 @@ Row {
     property int glsceneWidth: parent.width/2
     property bool glsceneVisible: false
 
+    property int expandedIndex: -1
+
+
+    IFCWallController {
+        id: wallController
+    }
+
+    BIMElementController{
+        id: bimElementController
+    }
+
 
     Rectangle {
         //width: parent.width/2 - 20
         width: treeviewWidth
         height: parent.height
         color: "white"
-        border.color: "#000000"
+        border.color: "#000000"       
+
 
         ScrollView {
             id: horizontalScrollView
@@ -268,7 +282,7 @@ Row {
                 model: treeModel
             }
 
-            TreeView {
+            /*TreeView {
                 visible: plannedBIMRoot.pageType === "PlannedBIM"
                 anchors.fill: parent
                 anchors.margins: 10
@@ -278,7 +292,268 @@ Row {
                 IFCDetailController {
                     id: ifcDetailController
                 }
+            }*/
+
+            //Start
+            ListModel {
+                id: mainModel
+                Component.onCompleted: {
+                    let categories = [
+                        {
+                            categories:"Architecture",
+                            name: "General",
+                            items: [
+                                {itemName: "Wall"},
+                                {itemName: "Door"},
+                                {itemName: "Window"},
+                                {itemName: "Opening"},
+                                {itemName: "Roof"},
+                                {itemName: "Stairs"}
+                            ]
+                        },
+                        {
+                            categories:"Architecture",
+                            name: "Interior",
+                            items: []
+                        },
+                        {
+                            categories:"Architecture",
+                            name: "Finishing",
+                            items: []
+                        },
+                        {
+                            categories:"Structure",
+                            name: "General",
+                            items: []
+                        },
+                        {
+                            categories:"MEPF",
+                            name: "Mechanical",
+                            items: []
+                        },
+                        {
+                            categories:"MEPF",
+                            name: "Electrical",
+                            items: []
+                        },
+                        {
+                            categories:"MEPF",
+                            name: "Plumbing",
+                            items: []
+                        }
+                    ]
+                    append(categories)
+                }
             }
+
+            //Start of outerlist
+            ListView {
+                visible: plannedBIMRoot.pageType === "PlannedBIM"
+                id: mainList
+                anchors.fill: parent
+                model: mainModel
+                clip: true
+
+                delegate: Column {
+                    id: mainDelegate
+                    spacing: 5
+                    property bool collapsed: true
+
+                    Text {
+                        id: categoryText
+                        text: categories
+                        font.pointSize: 10
+                        color: "gray"
+                    }
+
+                    MouseArea {
+                        width: parent.width
+                        height: nameText.implicitHeight
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            collapsed = !collapsed;
+                            console.log("Clicked on outer item:", name);
+                            itemList.visible = !itemList.visible
+                        }
+
+                        Text {
+                            id: nameText
+                            text: name
+                            font.pointSize: 14
+                            color: "black"
+                            font.underline: true
+                        }
+                    }//End of Outerlist
+
+                    //Start of innerlist
+                    ListView {
+                        id: itemList
+                        width: parent.width
+                        height: contentHeight+20
+                        model: items
+                        clip: true
+
+                        delegate: MouseArea {
+                            width: parent.width
+                            height: itemText.implicitHeight + 5 // Include padding for better touch
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                console.log("Clicked on inner item:", itemName);
+                                if(itemName === "Wall")
+                                {
+                                    wallsettingsPopup.open();
+                                }
+                            }
+
+                            Text {
+                                id: itemText
+                                text: "- " + itemName
+                                anchors.leftMargin: 20
+                                font.pointSize: 11
+                                color: "black"
+                            }
+                        }
+                    }
+                }
+            }
+            //End of innerlist
+        }
+
+        //List Model start
+        ListModel {
+            id: popupModel
+            Component.onCompleted: {
+                let categories = [
+                    {
+                        rowIndexText:"0",
+                        name: "Geometry and Positioning"
+                    },
+                    {
+                        rowIndexText:"1",
+                        name: "Model"
+                    },
+                    {
+                        rowIndexText:"2",
+                        name: "Classification and Properties"
+                    }
+                ]
+                append(categories)
+            }
+        }
+        //End of List Model
+
+        FHPopup {
+            id: wallsettingsPopup
+            popupWidth: 500
+            popupHeight: 600
+            title: "Wall Settings"
+            //parent: Overlay
+            anchors.centerIn: Overlay.overlay
+
+            property string wallTotalHeightText: ""
+            property string wallWidthText: ""
+
+
+            onAcceptCallback: function () {                
+                //wallController.create("projectname", wallTotalHeightTextBox.text, wallWidthTextBox.text);
+                let bimElementPtr = bimElementController.create("Wall", "Front Wall", 0);
+                bimElementController.addParameter(bimElementPtr, "Height", wallTotalHeightText);
+                bimElementController.addParameter(bimElementPtr, "Width", wallWidthText);
+                bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
+
+                wallTotalHeightText = "";
+                wallWidthText = "";
+            }
+
+            onCancelCallback: function () {
+                wallTotalHeightText = "";
+                wallWidthText= "";
+            }
+
+
+            ColumnLayout {
+                id:columnLayout
+                width: wallsettingsPopup.popupWidth-65
+                height: wallsettingsPopup.popupHeight-65
+                ListView{                    
+                    id:mainListView                   
+                    model: popupModel
+                    clip: true
+                    orientation: Qt.Vertical
+                    spacing: 10
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    delegate: Rectangle {
+                        //id: firstColumn
+                        id: rectId                        
+                        width:columnLayout.width
+                        height: expandedIndex === index ? 360 : 60
+                        radius: 5                        
+                        color:height === 60 ? "lightgray": "white"                        
+
+                        // Animate the height change
+                        Behavior on height {
+                            NumberAnimation { duration: 200 }                            
+                        }
+
+                        Text {
+                            id: nameId
+                            text: name
+                            objectName:rowIndexText
+                            topPadding: 10
+                            bottomPadding: 10
+                            font.pointSize: 14
+                            color: "black"
+                            font.weight: 700
+                            font.family: "Segoe UI"
+                            anchors.left: parent.left
+                            anchors.leftMargin: 10
+                        }
+
+                        //Start of row
+                        RowLayout{
+                            id: wallRowLayout
+                            width: parent.width
+                            height: 300
+                            spacing: 5                            
+                            anchors.top: nameId.bottom
+                            anchors.left: nameId.left
+                            visible: expandedIndex === index                            
+                            Loader {                                        
+                                        Layout.fillWidth: true
+                                        sourceComponent: {
+                                            if (nameId.objectName === "0")
+                                            {
+                                                return gpDelegateComponent;
+                                            }
+                                            else if (nameId.objectName === "1")
+                                            {
+                                                return modelDelegateComponent;
+                                            }
+                                            else
+                                            {
+                                                return cpDelegateComponent;
+                                            }
+                                        }
+                                    }
+                        }//End of row
+                        MouseArea {
+                            anchors.fill: nameId
+                            onClicked: {
+                               //If this item is already expanded, collapse it. Otherwise, expand it.
+                                if (expandedIndex === index) {
+                                    expandedIndex = -1
+                                }
+                                else {
+                                    expandedIndex = index                                    
+                                    rectId.border.color = "lightgray"
+                                }                                
+                            }
+                        }
+                    }
+                }
+            }                        
         }
     }
 
@@ -354,5 +629,211 @@ Row {
             // ifcDetailList = ifcDetailController.loadIFC(ifcDetailController.getIfcFilePath());
              //treeModel = ifcDetailController.getTreeModel();
         //}
+    }
+
+
+
+    //Components for Geometry and Positioning
+    Component {
+        id: gpDelegateComponent
+        RowLayout {
+            id:wallRowlLayoutGP
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (wallRowlLayoutGP.width - wallRowlLayoutGP.spacing) / 2-10
+                height: 300
+
+                ColumnLayout {
+                    width: firstColumn.width
+                    height: firstColumn.height
+
+                    Text{
+                        id: wallTopLinkLabel
+                        text: "Wall top link"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                    }
+                    CustomTextBox{
+                        id: wallTopLinkTextBox
+                        placeholderText: "Top Link"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: wallHeightFromTopLabel
+                        text: "Height From Top"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: wallHeightFromTopTextBox
+                        placeholderText: "Height From Top"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: wallTotalHeightLabel
+                        text: "Total Height"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: wallTotalHeightTextBox
+                        placeholderText: "Total Height"
+                        text:""
+                        color: "#323130"
+
+                        onTextChanged: {
+                            wallsettingsPopup.wallTotalHeightText = wallTotalHeightTextBox.text;
+                        }
+                    }
+
+
+                    Text{
+                        id: wallTypeLabel
+                        text: "Wall Type"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: wallTypeTextBox
+                        placeholderText: "Wall Type"
+                        text:""
+                        color: "#323130"
+                    }
+                }
+            }
+
+            Rectangle {
+                id:secondColumn
+                width: (wallRowlLayoutGP.width - wallRowlLayoutGP.spacing) / 2-10
+                height: 300
+
+                ColumnLayout {
+                    width: secondColumn.width
+                    height: secondColumn.height
+
+                    Text{
+                        id: wallHomeFloorLabel
+                        text: "Home Floor"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                    }
+                    CustomTextBox{
+                        id: wallHomeFloorTextBox
+                        placeholderText: "Home Floor"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: wallHeightFromBottomLabel
+                        text: "Height From Bottom"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: wallHeightFromBottomTextBox
+                        placeholderText: "Height From Bottom"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: wallWidthLabel
+                        text: "Width"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: wallWidthTextBox
+                        placeholderText: "Width"
+                        text:""
+                        color: "#323130"
+
+                        onTextChanged: {
+                            wallsettingsPopup.wallWidthText = wallWidthTextBox.text;
+                        }
+                    }
+
+
+                    Text{
+                        id: wallGeometryTypeLabel
+                        text: "Geometry Type"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                     }
+                    CustomTextBox{
+                        id: wallGeometryTypeTextBox
+                        placeholderText: "Geometry Type"
+                        text:""
+                        color: "#323130"
+                    }
+                }
+            }
+        }
+    }    
+
+   //Components for Model
+    Component {
+        id: modelDelegateComponent
+        RowLayout {
+            id:wallRowLayoutModel
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (wallRowLayoutModel.width - wallRowLayoutModel.spacing) / 2-20
+                height: 300
+            }
+        }
+    }    
+
+    //Components for Classification and Properties
+    Component {
+        id: cpDelegateComponent
+        RowLayout {
+            id:wallRowLayoutCP
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (wallRowLayoutCP.width - wallRowLayoutCP.spacing) / 2-20
+                height: 300
+            }
+        }
     }
 }

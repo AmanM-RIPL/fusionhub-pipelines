@@ -1,6 +1,7 @@
 #include "ifc_wall_controller.h"
 #include "common/repository_locator.h"
 #include <QDir>
+#include "controllers//bim_element_controller.h"
 
 IFCWallController::IFCWallController(QObject *parent)
     : QObject{parent},
@@ -8,7 +9,7 @@ IFCWallController::IFCWallController(QObject *parent)
 {}
 
 
-void IFCWallController::create(const QString &projectName) const
+void IFCWallController::create(const QString &projectName, const QString &height, const QString &width) const
 {
     /*
     qInfo() << projectName << " " << customerName << " " <<contactName<< ""
@@ -42,7 +43,17 @@ void IFCWallController::create(const QString &projectName) const
         qDebug() << "Error opening file:" << file.errorString();
     }
   */
-    IFCWall ifcWall;
 
-    m_ifcWallRepository->save(ifcWall);
+    /*
+     BIMElementController* bimElementController = new BIMElementController();
+
+     BIMElement* newElement = bimElementController->create("Wall", "Front Wall", 0);
+
+     bimElementController->addParameter(newElement, "Height", height);
+     bimElementController->addParameter(newElement, "Width", width);
+     bimElementController->addParameter(newElement, "ReferenceLine", "");
+    */
+
+    //IFCWall ifcWall;
+    //m_ifcWallRepository->save(ifcWall);
 }

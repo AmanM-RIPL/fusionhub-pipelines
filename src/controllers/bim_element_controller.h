@@ -13,9 +13,9 @@ class BIMElementController : public QObject
 public:
     explicit BIMElementController(QObject *parent = nullptr);
 
-    BIMElement* create(const QString &type, const QString &name, int level);
-    void addParameter(BIMElement* bim_element, const QString &key, const QString &value);
-    std::vector<BIMElement*> getAllElements() const;
+   Q_INVOKABLE BIMElement* create(const QString &type, const QString &name, int level);
+   Q_INVOKABLE void addParameter(BIMElement* bim_element, const QString &key, const QString &value);
+   Q_INVOKABLE std::vector<BIMElement*> getAllElements() const;
 
 signals:
 

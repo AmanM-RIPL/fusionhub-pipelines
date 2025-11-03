@@ -28,6 +28,8 @@
 #include "repositories/schedule_setup_repository.h"
 #include "repositories/ifc_detail_repository.h"
 #include "repositories/draft_entity_repository.h"
+#include "repositories/bim_element_repository.h"
+
 
 #include "controllers/user_controller.h"
 #include "controllers/project_controller.h"
@@ -37,6 +39,8 @@
 #include "controllers/unit_of_measurement_controller.h"
 #include "controllers/schedule_setup_controller.h"
 #include "controllers/ifc_detail_controller.h"
+#include "controllers/ifc_controllers/ifc_wall_controller.h"
+#include "controllers/bim_element_controller.h"
 
 #include "models/user.h"
 #include "models/unit_of_measurement.h"
@@ -419,6 +423,8 @@ int main(int argc, char *argv[])
     DraftEntityRepository* draftEntityRepository = new DraftEntityRepository(&engine);
     ProjectRepository* projectRepository = new ProjectRepository(&engine);
     IFCDetailRepository* ifcDetailRepository = new IFCDetailRepository(&engine);
+    BIMElementRepository* bimElementRepository = new BIMElementRepository(&engine);
+
 
    // IFCDetailRepository* ifcDetailRepository = new IFCDetailRepository(ifcDetailList, &engine);
 
@@ -497,6 +503,8 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("projectRepository", projectRepository);
     engine.rootContext()->setContextProperty("ifcDetailRepository", ifcDetailRepository);
 
+    engine.rootContext()->setContextProperty("bimElementRepository", bimElementRepository);
+
 
     qmlRegisterType<MyGLItem>("com.fh.models", 1, 0, "GLScene");
     qmlRegisterType<BudgetHead>("com.fh.models", 1, 0, "BudgetHead");
@@ -517,6 +525,8 @@ int main(int argc, char *argv[])
     qmlRegisterType<UnitOfMeasurementController>("com.fh.controllers", 1, 0, "UnitOfMeasurementController");
     qmlRegisterType<ScheduleSetupController>("com.fh.controllers", 1, 0, "ScheduleSetupController");
     qmlRegisterType<IFCDetailController>("com.fh.controllers", 1, 0, "IFCDetailController");
+    qmlRegisterType<IFCWallController>("com.fh.controllers", 1, 0, "IFCWallController");
+    qmlRegisterType<BIMElementController>("com.fh.controllers", 1, 0, "BIMElementController");
 
     
     const QUrl url(QStringLiteral("qrc:/resources/QML/main.qml"));

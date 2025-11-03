@@ -493,7 +493,9 @@ QString DatabaseManager::getCreateTableQuery(const QString& tableName)
                 key TEXT NOT NULL,
                 value TEXT NOT NULL,
                 FOREIGN KEY (bim_element_id) REFERENCES BIMElement(id)
-
+             )
+        )";
+    }
     else if (tableName == "DraftEntity") {
         return R"(
             CREATE TABLE IF NOT EXISTS DraftEntity (
