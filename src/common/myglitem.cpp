@@ -29,7 +29,7 @@ void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat
     }
 }
 
-MyGLRenderer::MyGLRenderer()
+MyGLRenderer::MyGLRenderer(Mesh* mesh)
 {
     initializeOpenGLFunctions();
     // initGL();
@@ -40,29 +40,45 @@ MyGLRenderer::MyGLRenderer()
     m_vertices[3] = -0.8f; m_vertices[4] = -0.8f; m_vertices[5] = 0.0f; // bottom
     m_vertices[6] = 0.8f;  m_vertices[7] = -0.8f; m_vertices[8] = 0.0f; // left
 
-    GLfloat verticies[] = {
-        //    x,     y,    z,  n.x, n.y, n.z
-        -1.0f, -1.0f, -0.6f, 0.0f, 0.0f, 0.0f,
-        0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-        1.0f, -1.0f, -0.6f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f
-    };
+    // GLfloat verticies[] = {
+    //     //    x,     y,    z,  n.x, n.y, n.z
+    //     -1.0f, -1.0f, -0.6f, 0.0f, 0.0f, 0.0f,
+    //     0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+    //     1.0f, -1.0f, -0.6f, 0.0f, 0.0f, 0.0f,
+    //     0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f
+    // };
 
-    unsigned int indices[] = {
-        0, 3, 1,
-        1, 3, 2,
-        2, 3, 0,
-        0, 1, 2
-    };
+    // unsigned int indices[] = {
+    //     0, 3, 1,
+    //     1, 3, 2,
+    //     2, 3, 0,
+    //     0, 1, 2
+    // };
 
-    calcAverageNormals(indices, 12, verticies, 24, 6, 3);
+    // std::vector<GLfloat> verticies = {
+    //     //    x,     y,    z,  n.x, n.y, n.z
+    //     -1.0f, -1.0f, -0.6f, 0.0f, 0.0f, 0.0f,
+    //     0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+    //     1.0f, -1.0f, -0.6f, 0.0f, 0.0f, 0.0f,
+    //     0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f
+    // };
+
+    // std::vector<unsigned int> indices = {
+    //     0, 3, 1,
+    //     1, 3, 2,
+    //     2, 3, 0,
+    //     0, 1, 2
+    // };
+
+    // calcAverageNormals(indices.data(), 12, verticies.data(), 24, 6, 3);
 
     m_mesh = new Mesh();
-    m_mesh->Initialize(verticies, indices, 24, 12);
+    // m_mesh->Initialize(verticies, indices, 24, 12);
+    mesh->Copy(m_mesh);
 
     // initialize Camera
     m_camera = new Camera();
-    m_camera->Initialize(m_cameraPos, QVector3D(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.5f);
+    m_camera->Initialize(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 1.0f, 0.0f), 90.0f, 0.0f, 20.0f, 5.0f, 0.5f);
 
     // initialize Shader
     m_shader = new Shader();
@@ -106,25 +122,36 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
     // qInfo() << "Syncronize Function";
     MyGLItem* glItem = static_cast<MyGLItem*>(item);
 
-    // if (glItem->m_moveUp) {
-    //     m_cameraPos.setY(m_cameraPos.y() + 0.1f);
-    //     glItem->m_moveUp = false;  // reset
-    // }
+    if (glItem->m_moveUp) {
+        m_camera->OrbitVertical(true);
+        glItem->m_moveUp = false;  // reset
+    }
 
-    // if (glItem->m_moveDown) {
-    //     m_cameraPos.setY(m_cameraPos.y() - 0.1f);
-    //     glItem->m_moveDown = false;
-    // }
+    if (glItem->m_moveDown) {
+        m_camera->OrbitVertical(false);
+        glItem->m_moveDown = false;
+    }
 
-    // if (glItem->m_moveLeft) {
-    //     m_cameraPos.setX(m_cameraPos.x() - 0.1f);
-    //     glItem->m_moveLeft = false;
-    // }
+    if (glItem->m_moveLeft) {
+        m_camera->OrbitHorizontal(false);
+        glItem->m_moveLeft = false;
+    }
 
-    // if (glItem->m_moveRight) {
-    //     m_cameraPos.setX(m_cameraPos.x() + 0.1f);
-    //     glItem->m_moveRight = false;
-    // }
+    if (glItem->m_moveRight) {
+        m_camera->OrbitHorizontal(true);
+        glItem->m_moveRight = false;
+    }
+
+    if (glItem->m_zoomIn)
+    {
+        m_camera->Zoom(true);
+        glItem->m_zoomIn = false;
+    }
+    else if (glItem->m_zoomOut)
+    {
+        m_camera->Zoom(false);
+        glItem->m_zoomOut = false;
+    }
 
     // transfer click request safely
     if (glItem->m_lastClickX >= 0) {
@@ -545,18 +572,43 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 {
     // BIMElementController* bimElementController = new BIMElementController(this);
 
-    // BIMElement* newElement = bimElementController->create("Wall", "Front Wall", 0);
+
+    BIMElement* newElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
+    BIMParameter* widthParameter = new BIMParameter(1,"1",false,"Width","1",1,this);
+    BIMParameter* rlParameter = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [0,4], [4,4]]",1,this);
+    newElement->addParameter(widthParameter);
+    newElement->addParameter(rlParameter);
+
+    // bimElementController->create("Wall", "Front Wall", 0);
 
     // bimElementController->addParameter(newElement, "Height", "3000");
     // bimElementController->addParameter(newElement, "Width", "100");
 
     // qInfo() << "BIM Element with Params is null: " << (newElement == nullptr);
+
+    mesh = new Mesh(this);
+    WallGeometryService* service = new WallGeometryService(this);
+    service->generateMesh3D(newElement, mesh);
+
+    // GLfloat* vertices = mesh->getVerticies();
+    // unsigned int* indices = mesh->getIndices();
+    // for (int i = 0; i < 6; i++)
+    // {
+    //     qInfo() << vertices[6*i] << " , " << vertices[6*i + 1] << " , " << vertices[6*i + 2] << " , " << vertices[6*i + 3] << " , " << vertices[6*i + 4] << " , " << vertices[6*i + 5];
+    // }
+
+    // qInfo() << "----------------------------------";
+
+    // for (int i = 0; i < 6; i++)
+    // {
+    //     qInfo() << indices[i];
+    // }
 }
 
 
 QQuickFramebufferObject::Renderer* MyGLItem::createRenderer() const {
     // qInfo() << "Create Renderer";
-    return new MyGLRenderer();
+    return new MyGLRenderer(mesh);
 }
 
 
@@ -577,6 +629,18 @@ void MyGLItem::cameraMoveLeft() {
 
 void MyGLItem::cameraMoveRight() {
     m_moveRight = true;
+    update();
+}
+
+void MyGLItem::zoomIn()
+{
+    m_zoomIn = true;
+    update();
+}
+
+void MyGLItem::zoomOut()
+{
+    m_zoomOut = true;
     update();
 }
 

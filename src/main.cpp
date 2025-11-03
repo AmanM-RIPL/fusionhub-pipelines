@@ -47,6 +47,9 @@ const OdString OdString::kEmpty;
 const OdDAIObjectId OdDAIObjectId::kNull;
 OdArrayBuffer OdArrayBuffer::g_empty_array_buffer;
 OdGeTol OdGeContext::gTol;
+FacetModeler::DeviationParams FacetModeler::FMGeGbl::gDefDev;
+const OdGePoint3d OdGePoint3d::kOrigin;
+OdGeTol FacetModeler::FMGeGbl::gTol;
 
 //Create global state later
 std::shared_ptr<User> gUser = std::make_shared<User>();

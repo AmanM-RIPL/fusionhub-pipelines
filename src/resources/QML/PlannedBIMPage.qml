@@ -296,18 +296,18 @@ Row {
 
             MouseArea {
                 anchors.fill: parent
-                // onWheel: function(wheel) { // Declare 'wheel' as a formal parameter
-                //     if (wheel.modifiers & Qt.ControlModifier) {
-                //         if (wheel.angleDelta.y > 0) {
-                //             glscene.zoomIn();
-                //         } else {
-                //             glscene.zoomOut();
-                //         }
-                //         wheel.accepted = true;
-                //     } else {
-                //         wheel.accepted = false;
-                //     }
-                // }
+                onWheel: function(wheel) { // Declare 'wheel' as a formal parameter
+                    if (wheel.modifiers & Qt.ControlModifier) {
+                        if (wheel.angleDelta.y > 0) {
+                            glscene.zoomIn();
+                        } else {
+                            glscene.zoomOut();
+                        }
+                        wheel.accepted = true;
+                    } else {
+                        wheel.accepted = false;
+                    }
+                }
                 onPressed: function(mouse) {
                     // glscene.mousePressed(mouse.x, mouse.y);
                     // mouse.accepted = true;

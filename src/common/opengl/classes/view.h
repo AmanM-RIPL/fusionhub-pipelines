@@ -41,6 +41,7 @@ private:
     GLuint m_editor_vbo = 0;
     GLuint m_static_ibo = 0;
     GLuint m_editor_ibo = 0;
+    GLuint m_static_border_ibo = 0;
 
     // for color picking
     int m_pickX = -1;
@@ -51,6 +52,7 @@ private:
     GLuint m_pickDepthBuf = 0;
 
     GLsizei m_indexCount;
+    GLsizei m_borderIndexCount;
 
     QMatrix4x4 m_projectionMatrix = QMatrix4x4();
     GLuint defaultFBO = 0;

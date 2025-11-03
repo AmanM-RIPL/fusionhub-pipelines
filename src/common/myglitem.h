@@ -18,6 +18,8 @@
 #include <QVector3D>
 #include <QVector4D>
 
+#include <vector>
+
 #include "OdaCommon.h"
 #include "RxObject.h"
 #include "RxObjectImpl.h"
@@ -32,6 +34,7 @@
 #include "IfcGiContext.h"
 #include "IfcGsManager.h"
 #include "TvFactory.h"
+#include "FMDataSerialize.h"
 #include "FMMdlBody.h"
 #include "FMMdlFace.h"
 #include "FMMdlSurface.h"
@@ -44,7 +47,10 @@
 #include "common/opengl/classes/camera.h"
 #include "common/opengl/classes/shader.h"
 #include "common/opengl/classes/view.h"
-#include "controllers/bim_element_controller.h"
+// #include "controllers/bim_element_controller.h"
+#include "models/bim_element.h"
+#include "models/bim_parameter.h"
+#include "services/geometry/wall_geometry_service.h"
 
 class MyApp : public ExSystemServices
 {
@@ -66,14 +72,21 @@ public:
     bool m_moveDown = false;
     bool m_moveLeft = false;
     bool m_moveRight = false;
+    bool m_zoomIn = false;
+    bool m_zoomOut = false;
+
     int m_lastClickX = -1;
     int m_lastClickY = -1;
+    Mesh* mesh = nullptr;
 
 public slots:
     void cameraMoveUp();
     void cameraMoveDown();
     void cameraMoveLeft();
     void cameraMoveRight();
+
+    void zoomIn();
+    void zoomOut();
 
     void requestPick(int x, int y);
 
@@ -88,7 +101,7 @@ signals:
 class MyGLRenderer : public QQuickFramebufferObject::Renderer, protected QOpenGLFunctions_3_3_Core
 {
 public:
-    MyGLRenderer();
+    MyGLRenderer(Mesh* mesh);
     ~MyGLRenderer();
 
     void synchronize(QQuickFramebufferObject *item) override;
@@ -104,7 +117,7 @@ private:
     GLuint m_viewLoc = -1;
     GLuint m_projLoc = -1;
     GLfloat m_vertices[9];
-    QVector3D m_cameraPos = QVector3D(0.0f, 0.0f, 2.0f);
+    QVector3D m_cameraPos = QVector3D(0.0f, 0.0f, 20.0f);
 
     Mesh* m_mesh = nullptr;
     Camera* m_camera = nullptr;

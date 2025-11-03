@@ -4,18 +4,75 @@ Camera::Camera(QObject *parent)
     : QObject{parent}
 {}
 
-void Camera::Initialize(QVector3D startPosition, QVector3D startUp, GLfloat startYaw, GLfloat startPitch, GLfloat startMoveSpeed, GLfloat startTurnSpeed)
+void Camera::Initialize(QVector3D startTarget, QVector3D startUp, GLfloat startYaw, GLfloat startPitch, GLfloat startDistance, GLfloat startMoveSpeed, GLfloat startTurnSpeed)
 {
     this->initializeOpenGLFunctions();
 
     // initializing camera
-    position = startPosition;
     worldUp = startUp;
     yaw = startYaw;
     pitch = startPitch;
-    front = QVector3D(0.0f, 0.0f, -1.0f);
+    target = startTarget;
+    distance = startDistance;
     moveSpeed = startMoveSpeed;
     turnSpeed = startTurnSpeed;
+
+    update();
+}
+
+void Camera::Zoom(bool zoomIn)
+{
+    // Adjust distance instead of moving along front
+    if (zoomIn)
+        distance -= moveSpeed;
+    else
+        distance += moveSpeed;
+
+    // Clamp to avoid flipping through target
+    if (distance < 0.5f)
+        distance = 0.5f;
+    if (distance > 100.0f)
+        distance = 100.0f;
+
+    update();
+}
+
+void Camera::OrbitVertical(bool zDirection)
+{
+    if (zDirection)
+    {
+        pitch += turnSpeed;
+    }
+    else
+    {
+        pitch -= turnSpeed;
+    }
+
+
+    if (pitch > 89.0f)
+    {
+        pitch = 89.0f;
+    }
+
+
+    if (pitch < -89.0f)
+    {
+        pitch = -89.0f;
+    }
+
+    update();
+}
+
+void Camera::OrbitHorizontal(bool rightDirection)
+{
+    if (rightDirection)
+    {
+        yaw += turnSpeed;
+    }
+    else
+    {
+        yaw -= turnSpeed;
+    }
 
     update();
 }
@@ -37,7 +94,7 @@ QMatrix4x4 Camera::calculateViewMatrix()
 
     view.lookAt(
         position,
-        position + front,
+        target,
         up
     );
 
@@ -56,10 +113,16 @@ void Camera::update()
 
     */
 
-    front.setX(qCos(qDegreesToRadians(yaw)) * qCos(qDegreesToRadians(pitch)));
-    front.setY(qSin(qDegreesToRadians(pitch)));
-    front.setZ(qSin(qDegreesToRadians(yaw)) * qCos(qDegreesToRadians(pitch)));
-    front = front.normalized();
+    // front.setX(qCos(qDegreesToRadians(yaw)) * qCos(qDegreesToRadians(pitch)));
+    // front.setY(qSin(qDegreesToRadians(pitch)));
+    // front.setZ(qSin(qDegreesToRadians(yaw)) * qCos(qDegreesToRadians(pitch)));
+    // front = front.normalized();
+
+    position.setX(target.x() + distance * qCos(qDegreesToRadians(yaw)) * qCos(qDegreesToRadians(pitch)));
+    position.setY(target.y() + distance * qSin(qDegreesToRadians(pitch)));
+    position.setZ(target.z() + distance * qSin(qDegreesToRadians(yaw)) * qCos(qDegreesToRadians(pitch)));
+
+    front = (target - position).normalized();
 
     right = QVector3D::crossProduct(front, worldUp);
     right = right.normalized();
