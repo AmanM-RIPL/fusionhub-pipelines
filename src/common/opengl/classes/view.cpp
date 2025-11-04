@@ -11,7 +11,7 @@ void View::Initialize()
 
     // FOR TESTING:::: ADD MESH BEFORE HAND
     // getting the data of the first mesh
-    GLfloat* vertices = meshList[0]->getVerticies();
+    Vertex* vertices = meshList[0]->getVerticies();
     unsigned int* indices = meshList[0]->getIndices();
     unsigned int* borderIndices = meshList[0]->getBorderIndices();
     unsigned int numOfVertices = meshList[0]->getNumOfVertices();
@@ -35,12 +35,16 @@ void View::Initialize()
             this->glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * numOfVertices, vertices, GL_STATIC_DRAW);
 
             // postition in verticies
-            this->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(vertices[0]), (void*)0);
+            this->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
             this->glEnableVertexAttribArray(0);
 
             // normal in verticies
-            this->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(vertices[0]), (void*)(3 * sizeof(vertices[0])));
+            this->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
             this->glEnableVertexAttribArray(1);
+
+            //materialIndex in verticies
+            this->glVertexAttribIPointer(2, 1, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, materialIndex));
+            this->glEnableVertexAttribArray(2);
 
             // this->glBindBuffer(GL_ARRAY_BUFFER, 0);
         // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -58,6 +62,15 @@ void View::Initialize()
 
 void View::Render()
 {
+    this->glEnable(GL_DEPTH_TEST);
+    this->glDepthFunc(GL_LEQUAL);
+    this->glDepthMask(GL_TRUE);
+    this->glDisable(GL_BLEND);
+
+    this->glEnable(GL_CULL_FACE);
+    this->glCullFace(GL_BACK);
+    this->glFrontFace(GL_CW); // GL_CW or GL_CCW ??? GL_CW seems to work because we flipped Y in the vertex shader
+
     this->glViewport(0, 0, viewportWidth, viewportHeight);
     this->glClearColor(0.97f, 0.99f, 0.98f, 1.0f);
     this->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -69,12 +82,23 @@ void View::Render()
     this->glUniform3f(shader->getViewPositionId(), cameraPosition.x(), cameraPosition.y(), cameraPosition.z());
 
     // For 3D
-    this->glUniform3f(shader->getMaterialAmbientId(), 0.96f, 0.47f, 0.02f);
-    this->glUniform3f(shader->getMaterialDiffuseId(), 0.0f, 0.0f, 0.0f); // 0.0f, 0.5f, 0.31f
-    this->glUniform3f(shader->getMaterialSpecularId(), 0.0f, 0.0f, 0.0f); //0.5f, 0.5f, 0.5f
-    this->glUniform1f(shader->getMaterialShininessId(), 32.0f);
+    for (int i = 0; i < materialList.size(); i++)
+    {
+        OpenGLMaterial* material = materialList[i];
 
-    this->glUniform3f(shader->getLightPositionId(), 0.0f, 0.0f, 20.0f);
+        auto ambient = material->ambient();
+        this->glUniform3f(shader->getMaterialAmbientId(i), ambient[0], ambient[1], ambient[2]); // 0.96, 0.47f, 0.02f
+
+        auto diffuse = material->diffuse();
+        this->glUniform3f(shader->getMaterialDiffuseId(i), diffuse[0], diffuse[1], diffuse[2]); // 0.0f, 0.5f, 0.31f
+
+        auto specular = material->specular();
+        this->glUniform3f(shader->getMaterialSpecularId(i), specular[0], specular[1], specular[2]); //0.5f, 0.5f, 0.5f
+
+        this->glUniform1f(shader->getMaterialShininessId(i), material->shininess());
+    }
+
+    this->glUniform3f(shader->getLightPositionId(), 20.0f, 0.0f, 0.0f);
     this->glUniform3f(shader->getLightAmbientId(), 0.2f, 0.2f, 0.2f);
     this->glUniform3f(shader->getLightDiffuseId(), 0.5f, 0.5f, 0.5f);
     this->glUniform3f(shader->getLightSpecularId(), 1.0f, 1.0f, 1.0f);
@@ -95,25 +119,25 @@ void View::Render()
     this->glUniformMatrix4fv(shader->getViewId(),  1, GL_FALSE, camera->calculateViewMatrix().constData());
     this->glUniformMatrix4fv(shader->getProjectionId(),  1, GL_FALSE, m_projectionMatrix.constData());
 
-    GLint depthTestEnabled = 1;
-    this->glGetIntegerv(GL_DEPTH_TEST, &depthTestEnabled);
-    qInfo() << "Depth test:" << (depthTestEnabled ? "ON" : "OFF");
-    this->glGetIntegerv(GL_DEPTH_BITS, &depthTestEnabled);
-    qInfo() << "Depth bits:" << depthTestEnabled;
+    // GLint depthTestEnabled = 1;
+    // this->glGetIntegerv(GL_DEPTH_TEST, &depthTestEnabled);
+    // qInfo() << "Depth test:" << (depthTestEnabled ? "ON" : "OFF");
+    // this->glGetIntegerv(GL_DEPTH_BITS, &depthTestEnabled);
+    // qInfo() << "Depth bits:" << depthTestEnabled;
 
-    GLint depthBits = 0;
+    // GLint depthBits = 0;
 
-    // Use glGetFramebufferAttachmentParameteriv to query the specific attachment
-    // for the currently bound FBO.
-    // The attachment point for a renderbuffer (which Qt uses by default for depth) is GL_DEPTH_ATTACHMENT
-    this->glGetFramebufferAttachmentParameteriv(
-        GL_FRAMEBUFFER,
-        GL_DEPTH_ATTACHMENT,
-        GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE,
-        &depthBits
-        );
+    // // Use glGetFramebufferAttachmentParameteriv to query the specific attachment
+    // // for the currently bound FBO.
+    // // The attachment point for a renderbuffer (which Qt uses by default for depth) is GL_DEPTH_ATTACHMENT
+    // this->glGetFramebufferAttachmentParameteriv(
+    //     GL_FRAMEBUFFER,
+    //     GL_DEPTH_ATTACHMENT,
+    //     GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE,
+    //     &depthBits
+    //     );
 
-    qInfo() << "FBO Depth bits:" << depthBits;
+    // qInfo() << "FBO Depth bits:" << depthBits;
 
 
 
@@ -123,7 +147,7 @@ void View::Render()
             this->glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
         // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        this->glUniform3f(shader->getMaterialAmbientId(), 0.0f, 0.0f, 0.0f);
+        this->glUniform3f(shader->getMaterialAmbientId(0), 0.0f, 0.0f, 0.0f);
 
         this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_border_ibo);
             this->glDrawElements(GL_LINES, m_borderIndexCount, GL_UNSIGNED_INT, 0);
@@ -230,6 +254,11 @@ void View::UpdateGeometry()
 void View::AddMesh(Mesh *mesh)
 {
     meshList.append(mesh);
+}
+
+void View::AddMaterial(OpenGLMaterial *material)
+{
+    materialList.append(material);
 }
 
 void View::AddCamera(Camera *cam)

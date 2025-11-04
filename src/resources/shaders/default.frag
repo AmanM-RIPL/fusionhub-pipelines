@@ -2,6 +2,7 @@
 
 in vec3 Normal;
 in vec3 FragPosition;
+flat in int MaterialIndex;
 
 out vec4 FragColor;
 
@@ -21,10 +22,12 @@ struct Light {
 };
 
 uniform vec3 viewPosition;
-uniform Material material;
+uniform Material materials[1];
 uniform Light light;
 
 void main() {
+   Material material = materials[MaterialIndex];
+
    // ambient
    vec3 ambient  = light.ambient * material.ambient;
 

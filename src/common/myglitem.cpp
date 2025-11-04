@@ -89,9 +89,18 @@ MyGLRenderer::MyGLRenderer(Mesh* mesh)
     m_picking_shader->SetPickColor(true);
     m_picking_shader->CreateFromFiles("://resources/shaders/color-picking.vert", "://resources/shaders/color-picking.frag");
 
+    // initialize Materials
+    OpenGLMaterial* material = new OpenGLMaterial();
+    material->setAmbient({0.96, 0.47f, 0.02f});
+    material->setDiffuse({0.0f, 0.5f, 0.31f});
+    material->setSpecular({0.5f, 0.5f, 0.5f});
+    material->setShininess(32.0f);
+    m_materialList.append(material);
+
     // initialize View
     m_view = new View();
     m_view->AddMesh(m_mesh);
+    m_view->AddMaterial(material);
     m_view->AddCamera(m_camera);
     m_view->AddShader(m_shader);
     m_view->AddPickingShader(m_picking_shader);
@@ -115,6 +124,11 @@ MyGLRenderer::~MyGLRenderer()
     delete m_shader;
     delete m_picking_shader;
     delete m_view;
+
+    for (OpenGLMaterial* material : m_materialList) {
+        delete material;
+    }
+    m_materialList.clear();
 }
 
 void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
@@ -431,7 +445,7 @@ void MyGLRenderer::render() {
     proj.perspective(45.0f, aspect, 0.1f, 100.0f);
 
     // Flip Y so it matches Qt Quick
-    proj.scale(1.0f, -1.0f, 1.0f);
+    // proj.scale(1.0f, -1.0f, 1.0f);
 
     m_view->SetProjection(proj);
     m_view->SetWidth(w);

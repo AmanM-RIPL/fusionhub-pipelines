@@ -25,10 +25,10 @@ public:
     GLuint getPickColorId();
     GLuint getViewPositionId();
 
-    GLuint getMaterialAmbientId();
-    GLuint getMaterialDiffuseId();
-    GLuint getMaterialSpecularId();
-    GLuint getMaterialShininessId();
+    GLuint getMaterialAmbientId(int materialIndex);
+    GLuint getMaterialDiffuseId(int materialIndex);
+    GLuint getMaterialSpecularId(int materialIndex);
+    GLuint getMaterialShininessId(int materialIndex);
 
     GLuint getLightPositionId();
     GLuint getLightAmbientId();
@@ -41,8 +41,17 @@ private:
     GLuint shaderID,
         m_projectionId, m_modelId, m_viewId,
         m_pickColorId, m_viewPositionId,
-        m_materialAmbientId, m_materialDiffuseId, m_materialSpecularId, m_materialShininessId,
         m_lightPositionId, m_lightAmbientId, m_lightDiffuseId, m_lightSpecularId;
+
+    int m_materialCount = 1;
+
+    struct
+    {
+        GLint  m_materialAmbientId;
+        GLint  m_materialDiffuseId;
+        GLint  m_materialSpecularId;
+        GLint  m_materialShininessId;
+    } m_materialId[1];
 
     bool setPickColorId = false;
 

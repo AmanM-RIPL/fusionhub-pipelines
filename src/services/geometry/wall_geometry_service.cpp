@@ -35,16 +35,23 @@ void WallGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
     // }
 
     // 5. Create and export mesh
-    std::vector<GLfloat> verticesVector = {};
+    std::vector<Vertex> verticesVector = {};
     for (int i = 0; i < referenceLine.size(); i++)
     {
         Point point = referenceLine[i];
-        verticesVector.push_back(point[0]); // x
-        verticesVector.push_back(point[1]); // y
-        verticesVector.push_back(0.0f); // z
-        verticesVector.push_back(0.0f); // n.x
-        verticesVector.push_back(0.0f); // n.y
-        verticesVector.push_back(1.0f); // n.z
+
+        Vertex v = {
+            {point[0], point[1], 0.0f},
+            {0.0f, 0.0f, 0.0f},
+            0
+        };
+
+        // verticesVector.push_back(point[0]); // x
+        // verticesVector.push_back(point[1]); // y
+        // verticesVector.push_back(0.0f); // z
+        // verticesVector.push_back(0.0f); // n.x
+        // verticesVector.push_back(0.0f); // n.y
+        // verticesVector.push_back(1.0f); // n.z
     }
 
     std::vector<uint32_t> borderIndices = {};
@@ -69,7 +76,7 @@ void WallGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
     // std::copy(indices.begin(), indices.end(), indices_raw.get());
 
     // Mesh* mesh = new Mesh(this);
-    mesh->Initialize(verticesVector, indices, borderIndices, referenceLine.size() * 6, indices.size(), borderIndices.size());
+    mesh->Initialize(verticesVector, indices, borderIndices, referenceLine.size(), indices.size(), borderIndices.size());
 
 
     // GLfloat* vertices1 = mesh->getVerticies();
@@ -216,18 +223,27 @@ void WallGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
 
 
     // Create local mesh
-    std::vector<GLfloat> verticesVector = {};
+    std::vector<Vertex> verticesVector = {};
     for (int i = 0; i < pointArray.size(); i++)
     {
         OdGePoint3d point = pointArray[i];
-        verticesVector.push_back(point.x); // x
-        verticesVector.push_back(point.y); // y
-        verticesVector.push_back(point.z); // z
-
         OdGeVector3d normal = normalArray[i];
-        verticesVector.push_back(normal.x); // n.x
-        verticesVector.push_back(normal.y); // n.y
-        verticesVector.push_back(normal.z); // n.z
+
+        Vertex v = {
+            {point.x, point.y, point.z},
+            {normal.x, normal.y, normal.z},
+            0
+        };
+
+        verticesVector.push_back(v);
+
+        // verticesVector.push_back(point.x); // x
+        // verticesVector.push_back(point.y); // y
+        // verticesVector.push_back(point.z); // z
+
+        // verticesVector.push_back(normal.x); // n.x
+        // verticesVector.push_back(normal.y); // n.y
+        // verticesVector.push_back(normal.z); // n.z
     }
 
     mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());

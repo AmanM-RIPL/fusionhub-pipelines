@@ -4,7 +4,7 @@ Mesh::Mesh(QObject *parent)
     : QObject{parent}
 {}
 
-void Mesh::Initialize(const std::vector<GLfloat>& vertices, const std::vector<unsigned int>& indices, const std::vector<unsigned int>& borderIndices, unsigned int numOfVertices, unsigned int numOfIndices, unsigned int numOfBorderIndices)
+void Mesh::Initialize(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<unsigned int>& borderIndices, unsigned int numOfVertices, unsigned int numOfIndices, unsigned int numOfBorderIndices)
 {
     m_verticies = vertices;
     m_indices = indices;
@@ -19,7 +19,7 @@ void Mesh::Copy(Mesh *mesh)
     mesh->Initialize(m_verticies, m_indices, m_border_indices, m_numOfVertices, m_numOfIndices, m_numOfBorderIndices);
 }
 
-GLfloat *Mesh::getVerticies()
+Vertex *Mesh::getVerticies()
 {
     return m_verticies.data();
 }
@@ -59,7 +59,7 @@ QMatrix4x4 Mesh::getModelMatrix()
 
 void Mesh::UpdateGeometry(QVector3D hitPoint)
 {
-    m_verticies[0] = hitPoint.x();
-    m_verticies[1] = hitPoint.y();
-    m_verticies[2] = hitPoint.z();
+    m_verticies[0].position[0] = hitPoint.x();
+    m_verticies[0].position[1] = hitPoint.y();
+    m_verticies[0].position[2] = hitPoint.z();
 }

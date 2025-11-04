@@ -8,16 +8,23 @@
 
 #include <vector>
 
+struct Vertex
+{
+    float position[3];
+    float normal[3];
+    int materialIndex;
+};
+
 class Mesh : public QObject
 {
     Q_OBJECT
 public:
     explicit Mesh(QObject *parent = nullptr);
 
-    void Initialize(const std::vector<GLfloat>& vertices, const std::vector<unsigned int>& indices, const std::vector<unsigned int>& borderIndices, unsigned int numOfVertices, unsigned int numOfIndices, unsigned int numOfBorderIndices);
+    void Initialize(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<unsigned int>& borderIndices, unsigned int numOfVertices, unsigned int numOfIndices, unsigned int numOfBorderIndices);
     void Copy(Mesh* mesh);
 
-    GLfloat* getVerticies();
+    Vertex* getVerticies();
     unsigned int* getIndices();
     unsigned int* getBorderIndices();
     unsigned int getNumOfVertices();
@@ -30,7 +37,7 @@ public:
 signals:
 
 private:
-    std::vector<GLfloat> m_verticies;
+    std::vector<Vertex> m_verticies;
     std::vector<unsigned int> m_indices;
     std::vector<unsigned int> m_border_indices;
     unsigned int m_numOfVertices;

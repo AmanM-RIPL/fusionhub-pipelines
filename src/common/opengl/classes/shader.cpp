@@ -97,10 +97,17 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
     {
         m_viewPositionId = this->glGetUniformLocation(shaderID, "viewPosition");
 
-        m_materialAmbientId = this->glGetUniformLocation(shaderID, "material.ambient");
-        m_materialDiffuseId = this->glGetUniformLocation(shaderID, "material.diffuse");
-        m_materialSpecularId = this->glGetUniformLocation(shaderID, "material.specular");
-        m_materialShininessId = this->glGetUniformLocation(shaderID, "material.shininess");
+        for (int i = 0; i < m_materialCount; i++)
+        {
+            QString index = QString("materials[%1]").arg(i);
+
+            m_materialId[i] = {
+                this->glGetUniformLocation(shaderID, (index + ".ambient").toUtf8().constData()),
+                this->glGetUniformLocation(shaderID, (index + ".diffuse").toUtf8().constData()),
+                this->glGetUniformLocation(shaderID, (index + ".specular").toUtf8().constData()),
+                this->glGetUniformLocation(shaderID, (index + ".shininess").toUtf8().constData())
+            };
+        }
 
         m_lightPositionId = this->glGetUniformLocation(shaderID, "light.position");
         m_lightAmbientId = this->glGetUniformLocation(shaderID, "light.ambient");
@@ -139,24 +146,24 @@ GLuint Shader::getViewPositionId()
     return m_viewPositionId;
 }
 
-GLuint Shader::getMaterialAmbientId()
+GLuint Shader::getMaterialAmbientId(int materialIndex)
 {
-    return m_materialAmbientId;
+    return m_materialId[materialIndex].m_materialAmbientId;
 }
 
-GLuint Shader::getMaterialDiffuseId()
+GLuint Shader::getMaterialDiffuseId(int materialIndex)
 {
-    return m_materialDiffuseId;
+    return m_materialId[materialIndex].m_materialDiffuseId;
 }
 
-GLuint Shader::getMaterialSpecularId()
+GLuint Shader::getMaterialSpecularId(int materialIndex)
 {
-    return m_materialSpecularId;
+    return m_materialId[materialIndex].m_materialSpecularId;
 }
 
-GLuint Shader::getMaterialShininessId()
+GLuint Shader::getMaterialShininessId(int materialIndex)
 {
-    return m_materialShininessId;
+    return m_materialId[materialIndex].m_materialShininessId;
 }
 
 GLuint Shader::getLightPositionId()

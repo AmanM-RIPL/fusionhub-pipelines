@@ -47,6 +47,7 @@
 #include "common/opengl/classes/camera.h"
 #include "common/opengl/classes/shader.h"
 #include "common/opengl/classes/view.h"
+#include "common/opengl/classes/opengl_material.h"
 // #include "controllers/bim_element_controller.h"
 #include "models/bim_element.h"
 #include "models/bim_parameter.h"
@@ -135,6 +136,7 @@ private:
     Shader* m_shader = nullptr;
     Shader* m_picking_shader = nullptr;
     View* m_view = nullptr;
+    QList<OpenGLMaterial*> m_materialList;
 
     bool m_pickRequested = false;
     int m_pickX = -1;
