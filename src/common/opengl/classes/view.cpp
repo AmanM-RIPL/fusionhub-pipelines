@@ -42,9 +42,17 @@ void View::Initialize()
             this->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
             this->glEnableVertexAttribArray(1);
 
-            //materialIndex in verticies
-            this->glVertexAttribIPointer(2, 1, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, materialIndex));
+            // texture uv in verticies
+            this->glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv));
             this->glEnableVertexAttribArray(2);
+
+            //materialIndex in verticies
+            this->glVertexAttribIPointer(3, 1, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, materialIndex));
+            this->glEnableVertexAttribArray(3);
+
+            //textureIndex in verticies
+            this->glVertexAttribIPointer(4, 1, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, textureIndex));
+            this->glEnableVertexAttribArray(4);
 
             // this->glBindBuffer(GL_ARRAY_BUFFER, 0);
         // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -98,9 +106,16 @@ void View::Render()
         this->glUniform1f(shader->getMaterialShininessId(i), material->shininess());
     }
 
+    for (int i = 0; i < 1; ++i) {
+        this->glActiveTexture(GL_TEXTURE0 + i);
+        this->glBindTexture(GL_TEXTURE_2D, textureList[i]->getTextureId());
+    }
+
+    this->glUniform1iv(shader->getTextureArrayId(), 1, shader->getTextureUnitArray());
+
     this->glUniform3f(shader->getLightPositionId(), 20.0f, 0.0f, 0.0f);
-    this->glUniform3f(shader->getLightAmbientId(), 0.2f, 0.2f, 0.2f);
-    this->glUniform3f(shader->getLightDiffuseId(), 0.5f, 0.5f, 0.5f);
+    this->glUniform3f(shader->getLightAmbientId(), 1.0f, 1.0f, 1.0f); // 0.2f, 0.2f, 0.2f
+    this->glUniform3f(shader->getLightDiffuseId(), 0.5f, 0.5f, 0.5f); // 0.5f, 0.5f, 0.5f
     this->glUniform3f(shader->getLightSpecularId(), 1.0f, 1.0f, 1.0f);
 
     // For 2D
@@ -259,6 +274,11 @@ void View::AddMesh(Mesh *mesh)
 void View::AddMaterial(OpenGLMaterial *material)
 {
     materialList.append(material);
+}
+
+void View::AddTexture(Texture *texture)
+{
+    textureList.append(texture);
 }
 
 void View::AddCamera(Camera *cam)

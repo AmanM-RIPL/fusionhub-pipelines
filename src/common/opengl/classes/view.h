@@ -12,6 +12,7 @@
 #include "camera.h"
 #include "shader.h"
 #include "opengl_material.h"
+#include "texture.h"
 
 class View : public QObject, protected QOpenGLFunctions_3_3_Core
 {
@@ -27,6 +28,7 @@ public:
 
     void AddMesh(Mesh* mesh);
     void AddMaterial(OpenGLMaterial* material);
+    void AddTexture(Texture* texture);
     void AddCamera(Camera* cam);
     void AddShader(Shader* shad);
     void AddPickingShader(Shader* shad);
@@ -61,6 +63,7 @@ private:
 
     QList<Mesh*> meshList;
     QList<OpenGLMaterial*> materialList;
+    QList<Texture*> textureList;
 
     int viewportWidth = 0;
     int viewportHeight = 0;

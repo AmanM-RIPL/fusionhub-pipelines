@@ -43,7 +43,9 @@ void WallGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
         Vertex v = {
             {point[0], point[1], 0.0f},
             {0.0f, 0.0f, 0.0f},
-            0
+            {0.0f, 0.0f},
+            0,
+            -1
         };
 
         // verticesVector.push_back(point[0]); // x
@@ -224,14 +226,37 @@ void WallGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
 
     // Create local mesh
     std::vector<Vertex> verticesVector = {};
+    int vertexIndex = 1; // for each vertex index we use a specific uv value for texture
     for (int i = 0; i < pointArray.size(); i++)
     {
         OdGePoint3d point = pointArray[i];
         OdGeVector3d normal = normalArray[i];
+        float textureU = 0.0f;
+        float textureV = 0.0f;
+
+        if (vertexIndex == 1)
+        {
+            vertexIndex++;
+        }
+        else if (vertexIndex == 2)
+        {
+            vertexIndex++;
+
+            textureU = 1.0f;
+            textureV = 1.0f;
+        }
+        else if (vertexIndex == 3)
+        {
+            vertexIndex = 1;
+            textureU = 0.5f;
+            textureV = 1.0f;
+        }
 
         Vertex v = {
             {point.x, point.y, point.z},
             {normal.x, normal.y, normal.z},
+            {textureU, textureV},
+            0,
             0
         };
 

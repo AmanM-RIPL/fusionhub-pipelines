@@ -91,16 +91,22 @@ MyGLRenderer::MyGLRenderer(Mesh* mesh)
 
     // initialize Materials
     OpenGLMaterial* material = new OpenGLMaterial();
-    material->setAmbient({0.96, 0.47f, 0.02f});
-    material->setDiffuse({0.0f, 0.5f, 0.31f});
-    material->setSpecular({0.5f, 0.5f, 0.5f});
+    material->setAmbient({1.0f, 1.0f, 1.0f}); // 0.96, 0.47f, 0.02f
+    material->setDiffuse({1.0f, 1.0f, 1.0f}); // 0.0f, 0.5f, 0.31f
+    material->setSpecular({1.0f, 1.0f, 1.0f}); // 0.5f, 0.5f, 0.5f
     material->setShininess(32.0f);
     m_materialList.append(material);
+
+    // initialize Textures
+    Texture* texture = new Texture();
+    texture->LoadTexture("://resources/images/brick.jpg");
+    m_textureList.append(texture);
 
     // initialize View
     m_view = new View();
     m_view->AddMesh(m_mesh);
     m_view->AddMaterial(material);
+    m_view->AddTexture(texture);
     m_view->AddCamera(m_camera);
     m_view->AddShader(m_shader);
     m_view->AddPickingShader(m_picking_shader);
@@ -129,6 +135,11 @@ MyGLRenderer::~MyGLRenderer()
         delete material;
     }
     m_materialList.clear();
+
+    for (Texture* texture : m_textureList) {
+        delete texture;
+    }
+    m_textureList.clear();
 }
 
 void MyGLRenderer::synchronize(QQuickFramebufferObject *item)

@@ -109,6 +109,8 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
             };
         }
 
+        m_textureArrayId = this->glGetUniformLocation(shaderID, "textures");
+
         m_lightPositionId = this->glGetUniformLocation(shaderID, "light.position");
         m_lightAmbientId = this->glGetUniformLocation(shaderID, "light.ambient");
         m_lightDiffuseId = this->glGetUniformLocation(shaderID, "light.diffuse");
@@ -164,6 +166,16 @@ GLuint Shader::getMaterialSpecularId(int materialIndex)
 GLuint Shader::getMaterialShininessId(int materialIndex)
 {
     return m_materialId[materialIndex].m_materialShininessId;
+}
+
+GLuint Shader::getTextureArrayId()
+{
+    return m_textureArrayId;
+}
+
+int *Shader::getTextureUnitArray()
+{
+    return textureArray;
 }
 
 GLuint Shader::getLightPositionId()

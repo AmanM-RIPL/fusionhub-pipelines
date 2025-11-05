@@ -30,6 +30,9 @@ public:
     GLuint getMaterialSpecularId(int materialIndex);
     GLuint getMaterialShininessId(int materialIndex);
 
+    GLuint getTextureArrayId();
+    int* getTextureUnitArray();
+
     GLuint getLightPositionId();
     GLuint getLightAmbientId();
     GLuint getLightDiffuseId();
@@ -42,6 +45,10 @@ private:
         m_projectionId, m_modelId, m_viewId,
         m_pickColorId, m_viewPositionId,
         m_lightPositionId, m_lightAmbientId, m_lightDiffuseId, m_lightSpecularId;
+
+    GLuint m_textureArrayId;
+    int m_textureCount = 1;
+    int textureArray[1] = {0};
 
     int m_materialCount = 1;
 
