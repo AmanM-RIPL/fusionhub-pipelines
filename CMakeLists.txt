@@ -65,6 +65,9 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -183,9 +186,7 @@ set(HEADERS
     src/repositories/material_indent_repository.h
     src/repositories/ifc_detail_repository.h
     src/common/ifcdetail.h
-    src/common/myglitem.h
-
-    
+    src/common/myglitem.h    
 )
 
 add_executable(FusionHubQt ${SOURCES} ${HEADERS}
@@ -219,6 +220,12 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/common/tree_model.h src/common/tree_model.cpp
     src/common/opengl/classes/earcut_algorithm.h
     src/services/geometry/wall_geometry_service.h src/services/geometry/wall_geometry_service.cpp
+    src/services/geometry/beam_geometry_service.h src/services/geometry/beam_geometry_service.cpp
+    src/services/geometry/column_geometry_service.h src/services/geometry/column_geometry_service.cpp
+    src/services/geometry/slab_geometry_service.h src/services/geometry/slab_geometry_service.cpp
+    src/common/opengl/classes/opengl_helper.h
+    src/common/opengl/classes/opengl_helper.cpp
+
 )
 
 target_include_directories(FusionHubQt PRIVATE src)
@@ -323,6 +330,9 @@ target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\Ifc4x3.lib")
 
 
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)

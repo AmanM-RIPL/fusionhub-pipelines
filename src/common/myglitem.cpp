@@ -424,26 +424,7 @@ void MyGLRenderer::render() {
         m_pickRequested = false;
     }
 
-
     m_view->Render();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     // // all variables are added here
     // // --- Model matrix (triangle local transform) ---
@@ -565,51 +546,104 @@ QOpenGLFramebufferObject* MyGLRenderer::createFramebufferObject(const QSize &siz
 }
 
 
-
-
 MyGLItem::MyGLItem(QQuickItem *parent)
     : QQuickFramebufferObject(parent)
 {
-    // BIMElementController* bimElementController = new BIMElementController(this);
+
+    /*if(m_currentItem == "Beam")
+    {
+        BIMElement* newElement = new BIMElement(1, "1", false, "Beam", "Front Beam", 0, this);
+        BIMParameter* widthParameter = new BIMParameter(1, "1", false, "Width", "1.5", 22, this);
+        BIMParameter* heightParameter = new BIMParameter(37, "1", false, "Height", "5", 15, this);
+        BIMParameter* rlParameter = new BIMParameter(1, "1", false, "ReferenceLine","[[0,0], [0,2]]", 22, this);
+        newElement->addParameter(widthParameter);
+        newElement->addParameter(heightParameter);
+        newElement->addParameter(rlParameter);
+
+        mesh = new Mesh(this);
+        BeamGeometryService* service = new BeamGeometryService(this);
+        service->generateMesh3D(newElement, mesh);
+    }
+   else if(m_currentItem == "Column")
+    {
+        BIMElement* newElement = new BIMElement(23,"1",false,"Column", "Front Column", 0, this);
+        BIMParameter* widthParameter = new BIMParameter(62,"1",false,"Width","3",23,this);
+        BIMParameter* heightParameter = new BIMParameter(37, "1", false, "Height", "0.05", 15, this);
+        BIMParameter* rlParameter = new BIMParameter(63,"1",false,"ReferenceLine","[[0,0], [0,4]]",23,this);
+        newElement->addParameter(widthParameter);
+        newElement->addParameter(heightParameter);
+        newElement->addParameter(rlParameter);
+
+        mesh = new Mesh(this);
+        ColumnGeometryService* service = new ColumnGeometryService(this);
+        service->generateMesh3D(newElement, mesh);
+    }
+    else if(m_currentItem == "Slab")*/
+    {
+
+        BIMElement* newElement = new BIMElement(15, "1", false, "Slab", "Front Slab", 0, this);
+        BIMParameter* distFromLevelParameter = new BIMParameter(38, "1", false, "Distance", "5", 15, this);
+        BIMParameter* heightParameter = new BIMParameter(37, "1", false, "Height", "1", 15, this);
+        //Regular Octagonal Slab
+        BIMParameter* rlParameter = new BIMParameter(39, "1", false, "ReferenceLine", "[[5.0, 0.0], [3.54, 3.54], [0.0, 5.0], [-3.54, 3.54], [-5.0, 0.0], [-3.54, -3.54], [0.0, -5.0], [3.54, -3.54] ]", 15, this);
+        newElement->addParameter(distFromLevelParameter);
+        newElement->addParameter(heightParameter);
+        newElement->addParameter(rlParameter);
+
+        mesh = new Mesh(this);
+        SlabGeometryService* service = new SlabGeometryService(this);
+        service->generateMesh3D(newElement, mesh);
+    }
 
 
-    BIMElement* newElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
-    BIMParameter* widthParameter = new BIMParameter(1,"1",false,"Width","1",1,this);
-    BIMParameter* rlParameter = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [0,4], [4,4]]",1,this);
-    newElement->addParameter(widthParameter);
-    newElement->addParameter(rlParameter);
+    /*else
+    {
+        // BIMElementController* bimElementController = new BIMElementController(this);
 
-    // bimElementController->create("Wall", "Front Wall", 0);
+        BIMElement* newElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
+        BIMParameter* widthParameter = new BIMParameter(1,"1",false,"Width","1",1,this);
+        BIMParameter* heightParameter = new BIMParameter(37, "1", false, "Height", "4", 15, this);
+        BIMParameter* rlParameter = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [0,4], [4,4]]",1,this);
+        newElement->addParameter(widthParameter);
+        newElement->addParameter(heightParameter);
+        newElement->addParameter(rlParameter);
 
-    // bimElementController->addParameter(newElement, "Height", "3000");
-    // bimElementController->addParameter(newElement, "Width", "100");
-    // bimElementController->addParameter(newElement, "ReferenceLine", "");
+        // bimElementController->create("Wall", "Front Wall", 0);
 
-    // qInfo() << "BIM Element with Params is null: " << (newElement == nullptr);
+        // bimElementController->addParameter(newElement, "Height", "3000");
+        // bimElementController->addParameter(newElement, "Width", "100");
+        // bimElementController->addParameter(newElement, "ReferenceLine", "");
 
-    mesh = new Mesh(this);
-    WallGeometryService* service = new WallGeometryService(this);
-    service->generateMesh3D(newElement, mesh);
+        // qInfo() << "BIM Element with Params is null: " << (newElement == nullptr);
 
-    // GLfloat* vertices = mesh->getVerticies();
-    // unsigned int* indices = mesh->getIndices();
-    // for (int i = 0; i < 6; i++)
-    // {
-    //     qInfo() << vertices[6*i] << " , " << vertices[6*i + 1] << " , " << vertices[6*i + 2] << " , " << vertices[6*i + 3] << " , " << vertices[6*i + 4] << " , " << vertices[6*i + 5];
-    // }
+        mesh = new Mesh(this);
+        WallGeometryService* service = new WallGeometryService(this);
+        service->generateMesh3D(newElement, mesh);
 
-    // qInfo() << "----------------------------------";
+        // GLfloat* vertices = mesh->getVerticies();
+        // unsigned int* indices = mesh->getIndices();
+        // for (int i = 0; i < 6; i++)
+        // {
+        //     qInfo() << vertices[6*i] << " , " << vertices[6*i + 1] << " , " << vertices[6*i + 2] << " , " << vertices[6*i + 3] << " , " << vertices[6*i + 4] << " , " << vertices[6*i + 5];
+        // }
 
-    // for (int i = 0; i < 6; i++)
-    // {
-    //     qInfo() << indices[i];
-    // }
+        // qInfo() << "----------------------------------";
+
+        // for (int i = 0; i < 6; i++)
+        // {
+        //     qInfo() << indices[i];
+        // }
+   }*/
 }
 
 
 QQuickFramebufferObject::Renderer* MyGLItem::createRenderer() const {
     // qInfo() << "Create Renderer";
     return new MyGLRenderer(mesh);
+}
+
+void MyGLItem::setCurrentItem(QString currentSelctedItem){
+    m_currentItem = currentSelctedItem;
 }
 
 

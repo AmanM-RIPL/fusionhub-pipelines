@@ -1,11 +1,10 @@
-#include "wall_geometry_service.h"
+#include "column_geometry_service.h"
 
-WallGeometryService::WallGeometryService(QObject *parent)
+ColumnGeometryService::ColumnGeometryService(QObject *parent)
     : QObject{parent}
 {}
 
-
-void WallGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
+void ColumnGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
 {
     std::vector<std::vector<Point>> polygon;
     std::vector<Point> referenceLine = {};
@@ -90,7 +89,7 @@ void WallGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
     // return mesh;
 }
 
-void WallGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
+void ColumnGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
 {
     std::vector<Point> referenceLine = {};
     float width = 0;
@@ -129,7 +128,8 @@ void WallGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
     FacetModeler::Profile2D profile(polygon);
     FacetModeler::Body body = FacetModeler::Body::extrusion(profile, OdGeVector3d(0.0, 0.0, 1.0) * height);
 
-    // Mesh geometry generation
+
+    //Mesh geometry generation
     OdGePoint3dArray pointArray = {};
     std::vector<uint32_t> meshIndices = {};
     std::vector<uint32_t> borderIndices = {};
@@ -137,7 +137,7 @@ void WallGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
 
     m_openglHelper.getMeshGeometry(body, pointArray, meshIndices, borderIndices, normalArray);
 
-    // Create local mesh
+    //Create local mesh
     std::vector<GLfloat> verticesVector = {};
     for (int i = 0; i < pointArray.size(); i++)
     {

@@ -21,7 +21,11 @@ Row {
     property int glsceneWidth: parent.width/2
     property bool glsceneVisible: false
 
-    property int expandedIndex: -1
+    //property int expandedIndex: -1
+    property int wallExpandedIndex: -1
+    property int beamExpandedIndex: -1
+    property int columnExpandedIndex: -1
+    property int slabExpandedIndex: -1
 
 
     IFCWallController {
@@ -306,8 +310,9 @@ Row {
                                 {itemName: "Wall"},
                                 {itemName: "Door"},
                                 {itemName: "Window"},
-                                {itemName: "Opening"},
-                                {itemName: "Roof"},
+                                {itemName: "Beam"},
+                                {itemName: "Column"},
+                                {itemName: "Slab"},
                                 {itemName: "Stairs"}
                             ]
                         },
@@ -399,9 +404,23 @@ Row {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 console.log("Clicked on inner item:", itemName);
+
+
                                 if(itemName === "Wall")
                                 {
-                                    wallsettingsPopup.open();
+                                    wallSettingsPopup.open();
+                                }
+                                else if(itemName === "Beam")
+                                {
+                                    beamSettingsPopup.open();
+                                }
+                                else if(itemName === "Column")
+                                {
+                                    columnSettingsPopup.open();
+                                }
+                                else if(itemName === "Slab")
+                                {
+                                    slabSettingsPopup.open();
                                 }
                             }
 
@@ -442,8 +461,9 @@ Row {
         }
         //End of List Model
 
+        //Start of WallSettings
         FHPopup {
-            id: wallsettingsPopup
+            id: wallSettingsPopup
             popupWidth: 500
             popupHeight: 600
             title: "Wall Settings"
@@ -463,18 +483,22 @@ Row {
 
                 wallTotalHeightText = "";
                 wallWidthText = "";
+
+                glscene.setCurrentItem("Wall");
+                glscene.update();
             }
 
             onCancelCallback: function () {
                 wallTotalHeightText = "";
                 wallWidthText= "";
+                glscene.update();
             }
 
 
             ColumnLayout {
                 id:columnLayout
-                width: wallsettingsPopup.popupWidth-65
-                height: wallsettingsPopup.popupHeight-65
+                width: wallSettingsPopup.popupWidth-65
+                height: wallSettingsPopup.popupHeight-65
                 ListView{                    
                     id:mainListView                   
                     model: popupModel
@@ -488,7 +512,7 @@ Row {
                         //id: firstColumn
                         id: rectId                        
                         width:columnLayout.width
-                        height: expandedIndex === index ? 360 : 60
+                        height: wallExpandedIndex === index ? 360 : 60
                         radius: 5                        
                         color:height === 60 ? "lightgray": "white"                        
 
@@ -519,21 +543,21 @@ Row {
                             spacing: 5                            
                             anchors.top: nameId.bottom
                             anchors.left: nameId.left
-                            visible: expandedIndex === index                            
+                            visible: wallExpandedIndex === index
                             Loader {                                        
                                         Layout.fillWidth: true
                                         sourceComponent: {
                                             if (nameId.objectName === "0")
                                             {
-                                                return gpDelegateComponent;
+                                                return gpDelegateComponentForWall;
                                             }
                                             else if (nameId.objectName === "1")
                                             {
-                                                return modelDelegateComponent;
+                                                return modelDelegateComponentForWall;
                                             }
                                             else
                                             {
-                                                return cpDelegateComponent;
+                                                return cpDelegateComponentForWall;
                                             }
                                         }
                                     }
@@ -542,11 +566,11 @@ Row {
                             anchors.fill: nameId
                             onClicked: {
                                //If this item is already expanded, collapse it. Otherwise, expand it.
-                                if (expandedIndex === index) {
-                                    expandedIndex = -1
+                                if (wallExpandedIndex === index) {
+                                    wallExpandedIndex = -1
                                 }
                                 else {
-                                    expandedIndex = index                                    
+                                    wallExpandedIndex = index
                                     rectId.border.color = "lightgray"
                                 }                                
                             }
@@ -555,7 +579,373 @@ Row {
                 }
             }                        
         }
+        //End of WallSetting
+
+        //Start of BeamSettings
+        FHPopup {
+            id: beamSettingsPopup
+            popupWidth: 500
+            popupHeight: 600
+            title: "Beam Settings"
+            //parent: Overlay
+            anchors.centerIn: Overlay.overlay
+
+            property string beamTotalHeightText: ""
+            property string beamWidthText: ""
+
+
+            onAcceptCallback: function () {
+                //beamController.create("projectname", beamTotalHeightTextBox.text, beamWidthTextBox.text);
+                let bimElementPtr = bimElementController.create("Beam", "Front Beam", 0);
+                bimElementController.addParameter(bimElementPtr, "Height", beamTotalHeightText);
+                bimElementController.addParameter(bimElementPtr, "Width", beamWidthText);
+                bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
+
+                beamTotalHeightText = "";
+                beamWidthText = "";
+
+                glscene.setCurrentItem("Beam");
+                glscene.update();
+            }
+
+            onCancelCallback: function () {
+                beamTotalHeightText = "";
+                beamWidthText= "";
+
+                glscene.update();
+            }
+
+
+            ColumnLayout {
+                id:beamColumnLayout
+                width: beamSettingsPopup.popupWidth-65
+                height: beamSettingsPopup.popupHeight-65
+                ListView{
+                    id:beamMainListView
+                    model: popupModel
+                    clip: true
+                    orientation: Qt.Vertical
+                    spacing: 10
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    delegate: Rectangle {
+                        //id: firstColumn
+                        id: beamRectId
+                        width:columnLayout.width
+                        height: beamExpandedIndex === index ? 360 : 60
+                        radius: 5
+                        color:height === 60 ? "lightgray": "white"
+
+                        // Animate the height change
+                        Behavior on height {
+                            NumberAnimation { duration: 200 }
+                        }
+
+                        Text {
+                            id: beamNameId
+                            text: name
+                            objectName:rowIndexText
+                            topPadding: 10
+                            bottomPadding: 10
+                            font.pointSize: 14
+                            color: "black"
+                            font.weight: 700
+                            font.family: "Segoe UI"
+                            anchors.left: parent.left
+                            anchors.leftMargin: 10
+                        }
+
+                        //Start of row
+                        RowLayout{
+                            id: beamRowLayout
+                            width: parent.width
+                            height: 300
+                            spacing: 5
+                            anchors.top: beamNameId.bottom
+                            anchors.left: beamNameId.left
+                            visible: beamExpandedIndex === index
+                            Loader {
+                                        Layout.fillWidth: true
+                                        sourceComponent: {
+                                            if (beamNameId.objectName === "0")
+                                            {
+                                                return gpDelegateComponentForBeam;
+                                            }
+                                            else if (beamNameId.objectName === "1")
+                                            {
+                                                return modelDelegateComponentForBeam;
+                                            }
+                                            else
+                                            {
+                                                return cpDelegateComponentForBeam;
+                                            }
+                                        }
+                                    }
+                        }//End of row
+                        MouseArea {
+                            anchors.fill: beamNameId
+                            onClicked: {
+                               //If this item is already expanded, collapse it. Otherwise, expand it.
+                                if (beamExpandedIndex === index) {
+                                    beamExpandedIndex = -1
+                                }
+                                else {
+                                    beamExpandedIndex = index
+                                    beamRectId.border.color = "lightgray"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        //End of BeamSetting
+
+
+        //Start of ColumnSettings
+        FHPopup {
+            id: columnSettingsPopup
+            popupWidth: 500
+            popupHeight: 600
+            title: "Column Settings"
+            //parent: Overlay
+            anchors.centerIn: Overlay.overlay
+
+            property string columnTotalHeightText: ""
+            property string columnWidthText: ""
+
+
+            onAcceptCallback: function () {
+                //columnController.create("projectname", columnTotalHeightTextBox.text, columnWidthTextBox.text);
+                let bimElementPtr = bimElementController.create("Column", "Front Column", 0);
+                bimElementController.addParameter(bimElementPtr, "Height", columnTotalHeightText);
+                bimElementController.addParameter(bimElementPtr, "Width", columnWidthText);
+                bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
+
+                columnTotalHeightText = "";
+                columnWidthText = "";
+
+                glscene.setCurrentItem("Column");
+                glscene.update();
+            }
+
+            onCancelCallback: function () {
+                columnTotalHeightText = "";
+                columnWidthText= "";
+
+                 glscene.update();
+            }
+
+
+            ColumnLayout {
+                id:columnColumnLayout
+                width: columnSettingsPopup.popupWidth-65
+                height: columnSettingsPopup.popupHeight-65
+                ListView{
+                    id:columnMainListView
+                    model: popupModel
+                    clip: true
+                    orientation: Qt.Vertical
+                    spacing: 10
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    delegate: Rectangle {
+                        //id: firstColumn
+                        id: columnRectId
+                        width:columnLayout.width
+                        height: columnExpandedIndex === index ? 360 : 60
+                        radius: 5
+                        color:height === 60 ? "lightgray": "white"
+
+                        // Animate the height change
+                        Behavior on height {
+                            NumberAnimation { duration: 200 }
+                        }
+
+                        Text {
+                            id: columnNameId
+                            text: name
+                            objectName:rowIndexText
+                            topPadding: 10
+                            bottomPadding: 10
+                            font.pointSize: 14
+                            color: "black"
+                            font.weight: 700
+                            font.family: "Segoe UI"
+                            anchors.left: parent.left
+                            anchors.leftMargin: 10
+                        }
+
+                        //Start of row
+                        RowLayout{
+                            id: columnRowLayout
+                            width: parent.width
+                            height: 300
+                            spacing: 5
+                            anchors.top: columnNameId.bottom
+                            anchors.left: columnNameId.left
+                            visible: columnExpandedIndex === index
+                            Loader {
+                                        Layout.fillWidth: true
+                                        sourceComponent: {
+                                            if (columnNameId.objectName === "0")
+                                            {
+                                                return gpDelegateComponentForColumn;
+                                            }
+                                            else if (columnNameId.objectName === "1")
+                                            {
+                                                return modelDelegateComponentForColumn;
+                                            }
+                                            else
+                                            {
+                                                return cpDelegateComponentForColumn;
+                                            }
+                                        }
+                                    }
+                        }//End of row
+                        MouseArea {
+                            anchors.fill: columnNameId
+                            onClicked: {
+                               //If this item is already expanded, collapse it. Otherwise, expand it.
+                                if (columnExpandedIndex === index) {
+                                    columnExpandedIndex = -1
+                                }
+                                else {
+                                    columnExpandedIndex = index
+                                    columnRectId.border.color = "lightgray"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        //End of ColumnSettings
+
+        //Start of SlabSettings
+        FHPopup {
+            id: slabSettingsPopup
+            popupWidth: 500
+            popupHeight: 600
+            title: "Slab Settings"
+            //parent: Overlay
+            anchors.centerIn: Overlay.overlay
+
+            property string slabTotalHeightText: ""
+            property string slabDistanceText: ""
+
+
+            onAcceptCallback: function () {
+                //slabController.create("projectname", slabTotalHeightTextBox.text, slabWidthTextBox.text);
+                let bimElementPtr = bimElementController.create("Slab", "Front Slab", 0);
+                bimElementController.addParameter(bimElementPtr, "Height", slabTotalHeightText);
+                bimElementController.addParameter(bimElementPtr, "Distance", slabDistanceText);
+                bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
+
+                slabTotalHeightText = "";
+                slabDistanceText = "";
+
+                glscene.setCurrentItem("Slab");
+                glscene.update();
+            }
+
+            onCancelCallback: function () {
+                slabTotalHeightText = "";
+                slabDistanceText= "";
+
+                 glscene.update();
+            }
+
+
+            ColumnLayout {
+                id:slabColumnLayout
+                width: slabSettingsPopup.popupWidth-65
+                height: slabSettingsPopup.popupHeight-65
+                ListView{
+                    id:slabMainListView
+                    model: popupModel
+                    clip: true
+                    orientation: Qt.Vertical
+                    spacing: 10
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    delegate: Rectangle {
+                        //id: firstColumn
+                        id: slabRectId
+                        width:columnLayout.width
+                        height: slabExpandedIndex === index ? 360 : 60
+                        radius: 5
+                        color:height === 60 ? "lightgray": "white"
+
+                        // Animate the height change
+                        Behavior on height {
+                            NumberAnimation { duration: 200 }
+                        }
+
+                        Text {
+                            id: slabNameId
+                            text: name
+                            objectName:rowIndexText
+                            topPadding: 10
+                            bottomPadding: 10
+                            font.pointSize: 14
+                            color: "black"
+                            font.weight: 700
+                            font.family: "Segoe UI"
+                            anchors.left: parent.left
+                            anchors.leftMargin: 10
+                        }
+
+                        //Start of row
+                        RowLayout{
+                            id: slabRowLayout
+                            width: parent.width
+                            height: 300
+                            spacing: 5
+                            anchors.top: slabNameId.bottom
+                            anchors.left: slabNameId.left
+                            visible: slabExpandedIndex === index
+                            Loader {
+                                        Layout.fillWidth: true
+                                        sourceComponent: {
+                                            if (slabNameId.objectName === "0")
+                                            {
+                                                return gpDelegateComponentForSlab;
+                                            }
+                                            else if (slabNameId.objectName === "1")
+                                            {
+                                                return modelDelegateComponentForSlab;
+                                            }
+                                            else
+                                            {
+                                                return cpDelegateComponentForSlab;
+                                            }
+                                        }
+                                    }
+                        }//End of row
+                        MouseArea {
+                            anchors.fill: slabNameId
+                            onClicked: {
+                               //If this item is already expanded, collapse it. Otherwise, expand it.
+                                if (slabExpandedIndex === index) {
+                                    slabExpandedIndex = -1
+                                }
+                                else {
+                                    slabExpandedIndex = index
+                                    slabRectId.border.color = "lightgray"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        //End of SlabSettings
     }
+
 
     Rectangle {
         //width: parent.width/2
@@ -633,9 +1023,9 @@ Row {
 
 
 
-    //Components for Geometry and Positioning
+    //Components for Geometry and Positioning For WallSettings
     Component {
-        id: gpDelegateComponent
+        id: gpDelegateComponentForWall
         RowLayout {
             id:wallRowlLayoutGP
             width: parent.width
@@ -807,7 +1197,7 @@ Row {
 
    //Components for Model
     Component {
-        id: modelDelegateComponent
+        id: modelDelegateComponentForWall
         RowLayout {
             id:wallRowLayoutModel
             width: parent.width
@@ -823,9 +1213,9 @@ Row {
 
     //Components for Classification and Properties
     Component {
-        id: cpDelegateComponent
+        id: cpDelegateComponentForWall
         RowLayout {
-            id:wallRowLayoutCP
+            id: wallRowLayoutCP
             width: parent.width
             height: 300
             spacing: 5
@@ -836,4 +1226,621 @@ Row {
             }
         }
     }
+    //End of WallSettingd Component
+
+    //Components for Geometry and Positioning For BeamSettings
+    Component {
+        id: gpDelegateComponentForBeam
+        RowLayout {
+            id:beamRowLayoutGP
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (beamRowLayoutGP.width - beamRowLayoutGP.spacing) / 2-10
+                height: 300
+
+                ColumnLayout {
+                    width: firstColumn.width
+                    height: firstColumn.height
+
+                    Text{
+                        id: beamTopLinkLabel
+                        text: "Wall top link"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                    }
+                    CustomTextBox{
+                        id: beamTopLinkTextBox
+                        placeholderText: "Top Link"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: beamHeightFromTopLabel
+                        text: "Height From Top"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: beamHeightFromTopTextBox
+                        placeholderText: "Height From Top"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: beamTotalHeightLabel
+                        text: "Total Height"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: beamTotalHeightTextBox
+                        placeholderText: "Total Height"
+                        text:""
+                        color: "#323130"
+
+                        onTextChanged: {
+                            beamSettingsPopup.beamTotalHeightText = beamTotalHeightTextBox.text;
+                        }
+                    }
+
+
+                    Text{
+                        id: beamTypeLabel
+                        text: "Beam Type"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: beamTypeTextBox
+                        placeholderText: "Beam Type"
+                        text:""
+                        color: "#323130"
+                    }
+                }
+            }
+
+            Rectangle {
+                id:secondColumn
+                width: (beamRowLayoutGP.width - beamRowLayoutGP.spacing) / 2-10
+                height: 300
+
+                ColumnLayout {
+                    width: secondColumn.width
+                    height: secondColumn.height
+
+                    Text{
+                        id: beamHomeFloorLabel
+                        text: "Home Floor"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                    }
+                    CustomTextBox{
+                        id: beamHomeFloorTextBox
+                        placeholderText: "Home Floor"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: beamHeightFromBottomLabel
+                        text: "Height From Bottom"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: beamHeightFromBottomTextBox
+                        placeholderText: "Height From Bottom"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: beamWidthLabel
+                        text: "Width"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: beamWidthTextBox
+                        placeholderText: "Width"
+                        text:""
+                        color: "#323130"
+
+                        onTextChanged: {
+                            beamSettingsPopup.beamWidthText = beamWidthTextBox.text;
+                        }
+                    }
+
+
+                    Text{
+                        id: beamGeometryTypeLabel
+                        text: "Geometry Type"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                     }
+                    CustomTextBox{
+                        id: beamGeometryTypeTextBox
+                        placeholderText: "Geometry Type"
+                        text:""
+                        color: "#323130"
+                    }
+                }
+            }
+        }
+    }
+
+   //Components for Model
+    Component {
+        id: modelDelegateComponentForBeam
+        RowLayout {
+            id:beamRowLayoutModel
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (beamRowLayoutModel.width - beamRowLayoutModel.spacing) / 2-20
+                height: 300
+            }
+        }
+    }
+
+    //Components for Classification and Properties
+    Component {
+        id: cpDelegateComponentForBeam
+        RowLayout {
+            id: beamRowLayoutCP
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (beamRowLayoutCP.width - beamRowLayoutCP.spacing) / 2-20
+                height: 300
+            }
+        }
+    }
+    //End of BeamSettings Component
+
+    //Components for Geometry and Positioning For ColumnSettings
+    Component {
+        id: gpDelegateComponentForColumn
+        RowLayout {
+            id:columnRowLayoutGP
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (columnRowLayoutGP.width - columnRowLayoutGP.spacing) / 2-10
+                height: 300
+
+                ColumnLayout {
+                    width: firstColumn.width
+                    height: firstColumn.height
+
+                    Text{
+                        id: columnTopLinkLabel
+                        text: "Wall top link"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                    }
+                    CustomTextBox{
+                        id: columnTopLinkTextBox
+                        placeholderText: "Top Link"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: columnHeightFromTopLabel
+                        text: "Height From Top"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: columnHeightFromTopTextBox
+                        placeholderText: "Height From Top"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: columnTotalHeightLabel
+                        text: "Total Height"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: columnTotalHeightTextBox
+                        placeholderText: "Total Height"
+                        text:""
+                        color: "#323130"
+
+                        onTextChanged: {
+                            columnSettingsPopup.columnTotalHeightText = columnTotalHeightTextBox.text;
+                        }
+                    }
+
+
+                    Text{
+                        id: columnTypeLabel
+                        text: "Column Type"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: columnTypeTextBox
+                        placeholderText: "Column Type"
+                        text:""
+                        color: "#323130"
+                    }
+                }
+            }
+
+            Rectangle {
+                id:secondColumn
+                width: (columnRowLayoutGP.width - columnRowLayoutGP.spacing) / 2-10
+                height: 300
+
+                ColumnLayout {
+                    width: secondColumn.width
+                    height: secondColumn.height
+
+                    Text{
+                        id: columnHomeFloorLabel
+                        text: "Home Floor"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                    }
+                    CustomTextBox{
+                        id: columnHomeFloorTextBox
+                        placeholderText: "Home Floor"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: columnHeightFromBottomLabel
+                        text: "Height From Bottom"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: columnHeightFromBottomTextBox
+                        placeholderText: "Height From Bottom"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: columnWidthLabel
+                        text: "Width"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: columnWidthTextBox
+                        placeholderText: "Width"
+                        text:""
+                        color: "#323130"
+
+                        onTextChanged: {
+                            columnSettingsPopup.columnWidthText = columnWidthTextBox.text;
+                        }
+                    }
+
+
+                    Text{
+                        id: columnGeometryTypeLabel
+                        text: "Geometry Type"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                     }
+                    CustomTextBox{
+                        id: columnGeometryTypeTextBox
+                        placeholderText: "Geometry Type"
+                        text:""
+                        color: "#323130"
+                    }
+                }
+            }
+        }
+    }
+
+   //Components for Model
+    Component {
+        id: modelDelegateComponentForColumn
+        RowLayout {
+            id:columnRowLayoutModel
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (columnRowLayoutModel.width - columnRowLayoutModel.spacing) / 2-20
+                height: 300
+            }
+        }
+    }
+
+    //Components for Classification and Properties
+    Component {
+        id: cpDelegateComponentForColumn
+        RowLayout {
+            id: columnRowLayoutCP
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (columnRowLayoutCP.width - columnRowLayoutCP.spacing) / 2-20
+                height: 300
+            }
+        }
+    }
+    //End of ColumnSettings Component
+
+
+    //Components for Geometry and Positioning For SlabSettings
+    Component {
+        id: gpDelegateComponentForSlab
+        RowLayout {
+            id:slabRowLayoutGP
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (slabRowLayoutGP.width - slabRowLayoutGP.spacing) / 2-10
+                height: 300
+
+                ColumnLayout {
+                    width: firstColumn.width
+                    height: firstColumn.height
+
+                    Text{
+                        id: slabTopLinkLabel
+                        text: "Wall top link"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                    }
+                    CustomTextBox{
+                        id: slabTopLinkTextBox
+                        placeholderText: "Top Link"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: slabHeightFromTopLabel
+                        text: "Height From Top"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: slabHeightFromTopTextBox
+                        placeholderText: "Height From Top"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: slabTotalHeightLabel
+                        text: "Total Height"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: slabTotalHeightTextBox
+                        placeholderText: "Total Height"
+                        text:""
+                        color: "#323130"
+
+                        onTextChanged: {
+                            slabSettingsPopup.slabTotalHeightText = slabTotalHeightTextBox.text;
+                        }
+                    }
+
+
+                    Text{
+                        id: slabTypeLabel
+                        text: "Slab Type"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: slabTypeTextBox
+                        placeholderText: "Slab Type"
+                        text:""
+                        color: "#323130"
+                    }
+                }
+            }
+
+            Rectangle {
+                id:secondColumn
+                width: (slabRowLayoutGP.width - slabRowLayoutGP.spacing) / 2-10
+                height: 300
+
+                ColumnLayout {
+                    width: secondColumn.width
+                    height: secondColumn.height
+
+                    Text{
+                        id: slabHomeFloorLabel
+                        text: "Home Floor"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                    }
+                    CustomTextBox{
+                        id: slabHomeFloorTextBox
+                        placeholderText: "Home Floor"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: slabHeightFromBottomLabel
+                        text: "Height From Bottom"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: slabHeightFromBottomTextBox
+                        placeholderText: "Height From Bottom"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: slabDistanceLabel
+                        text: "Distance From Level"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: slabDistanceTextBox
+                        placeholderText: "Distance"
+                        text:""
+                        color: "#323130"
+
+                        onTextChanged: {
+                            slabSettingsPopup.slabDistanceText = slabDistanceTextBox.text;
+                        }
+                    }
+
+
+                    Text{
+                        id: slabGeometryTypeLabel
+                        text: "Slab Type"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                     }
+                    CustomTextBox{
+                        id: slabGeometryTypeTextBox
+                        placeholderText: "Slab Type"
+                        text:""
+                        color: "#323130"
+                    }
+                }
+            }
+        }
+    }
+
+   //Components for Slab Model
+    Component {
+        id: modelDelegateComponentForSlab
+        RowLayout {
+            id:slabRowLayoutModel
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (slabRowLayoutModel.width - slabRowLayoutModel.spacing) / 2-20
+                height: 300
+            }
+        }
+    }
+
+    //Components for Slab Classification and Properties
+    Component {
+        id: cpDelegateComponentForSlab
+        RowLayout {
+            id: slabRowLayoutCP
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (slabRowLayoutCP.width - slabRowLayoutCP.spacing) / 2-20
+                height: 300
+            }
+        }
+    }
+    //End of SlabSettings Component
 }

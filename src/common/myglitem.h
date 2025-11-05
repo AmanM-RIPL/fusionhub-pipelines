@@ -17,6 +17,7 @@
 #include <QMatrix4x4>
 #include <QVector3D>
 #include <QVector4D>
+#include <QString>
 
 #include <vector>
 
@@ -51,6 +52,9 @@
 #include "models/bim_element.h"
 #include "models/bim_parameter.h"
 #include "services/geometry/wall_geometry_service.h"
+#include "services/geometry/beam_geometry_service.h"
+#include "services/geometry/column_geometry_service.h"
+#include "services/geometry/slab_geometry_service.h"
 
 class MyApp : public ExSystemServices
 {
@@ -67,6 +71,8 @@ class MyGLItem : public QQuickFramebufferObject
 public:
     explicit MyGLItem(QQuickItem *parent = nullptr);
     Renderer* createRenderer() const override;
+
+    QString m_currentItem = "-1";
 
     bool m_moveUp = false;
     bool m_moveDown = false;
@@ -91,6 +97,8 @@ public slots:
     void requestPick(int x, int y);
 
     void handlePick(int id);
+
+    void setCurrentItem(QString strCurrentItem);
 
 private:
 

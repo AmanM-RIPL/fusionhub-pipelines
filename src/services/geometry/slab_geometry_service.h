@@ -1,13 +1,13 @@
-#ifndef WALL_GEOMETRY_SERVICE_H
-#define WALL_GEOMETRY_SERVICE_H
+#ifndef SLAB_GEOMETRY_SERVICE_H
+#define SLAB_GEOMETRY_SERVICE_H
 
 #include "common/opengl/classes/opengl_helper.h"
 
-class WallGeometryService : public QObject
+class SlabGeometryService : public QObject
 {
     Q_OBJECT
 public:
-    explicit WallGeometryService(QObject *parent = nullptr);
+    explicit SlabGeometryService(QObject *parent = nullptr);
 
     void generateMesh2D(BIMElement* wallElement, Mesh* mesh);
     void generateMesh3D(BIMElement *wallElement, Mesh* mesh);
@@ -18,4 +18,4 @@ private:
     OpenglHelper m_openglHelper;   
 };
 
-#endif // WALL_GEOMETRY_SERVICE_H
+#endif // SLAB_GEOMETRY_SERVICE_H

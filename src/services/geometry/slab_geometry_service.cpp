@@ -1,11 +1,10 @@
-#include "wall_geometry_service.h"
+#include "slab_geometry_service.h"
 
-WallGeometryService::WallGeometryService(QObject *parent)
+SlabGeometryService::SlabGeometryService(QObject *parent)
     : QObject{parent}
 {}
 
-
-void WallGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
+void SlabGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
 {
     std::vector<std::vector<Point>> polygon;
     std::vector<Point> referenceLine = {};
@@ -16,9 +15,9 @@ void WallGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
     m_openglHelper.extractBIMParameters(wallElement, referenceLine, width, height, distance);
 
     // 3. Generate a parallel line
-    std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
+    //std::vector<Point> parallelLine = generateParallelCurve(referenceLine, width);
 
-    referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
+    //referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
 
     // for (Point point: referenceLine)
     // {
@@ -90,20 +89,18 @@ void WallGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
     // return mesh;
 }
 
-void WallGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
+void SlabGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
 {
     std::vector<Point> referenceLine = {};
     float width = 0;
     float height = 0;
     float distance = 0;
 
-
     m_openglHelper.extractBIMParameters(wallElement, referenceLine, width, height, distance);
 
     // 3. Generate a parallel line
-    std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
-
-    referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
+    //std::vector<Point> parallelLine = generateParallelCurve(referenceLine, width);
+    //referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
 
     // Create a contour2D
     FacetModeler::Contour2D polygon;
@@ -129,7 +126,15 @@ void WallGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
     FacetModeler::Profile2D profile(polygon);
     FacetModeler::Body body = FacetModeler::Body::extrusion(profile, OdGeVector3d(0.0, 0.0, 1.0) * height);
 
-    // Mesh geometry generation
+    //Create a translation matrix to move the body by 5 units in the Z direction
+    OdGeMatrix3d translationMatrix;
+    OdGeVector3d moveVector(0.0, 0.0, distance);
+    translationMatrix.setTranslation(moveVector);
+
+    //Apply the transformation to the body
+    body.transform(translationMatrix);
+
+    //Mesh geometry generation
     OdGePoint3dArray pointArray = {};
     std::vector<uint32_t> meshIndices = {};
     std::vector<uint32_t> borderIndices = {};
