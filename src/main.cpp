@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
     // MyGLItem::setModelId(modelId);
 
 
-    // // Read IFC File
+    // Read IFC File
     // OdString ifcFileName("C:\\Users\\RIPL\\Downloads\\BasicHouse.ifc");
 
     // OdIfcFilePtr pDatabase;
@@ -123,14 +123,14 @@ int main(int argc, char *argv[])
 
     // OdIfcModelContext& modelContext = pDatabase->getContext();
 
-    // // Choose what kinds of entities to compose (optional, but recommended)
+    // Choose what kinds of entities to compose (optional, but recommended)
     // modelContext.getGeometryComposeTypes().append(OdIfc::kIfcProduct);
 
-    // // Set geometry options
+    // Set geometry options
     // modelContext.setComposeOutOfSpatialStructure(true);
     // modelContext.setDrawOpenings(true);
 
-    // // Compose IFC geometry
+    // Compose IFC geometry
     // OdResult composeR =  pDatabase->composeEntities();
 
     // // get CDA data
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
     // CDAWalker walker(new CDATreePrinter);
     // walker.run(pDatabase, rootItem);
 
-     //TreeModel* treeModel = new TreeModel(rootItem, nullptr);
+    //TreeModel* treeModel = new TreeModel(rootItem, nullptr);
 
 
     // const OdDAI::SetOfOdDAIObjectId* productIdSet = pIfcModel->getEntityExtent("IfcProduct");
@@ -152,7 +152,12 @@ int main(int argc, char *argv[])
 
     // for (OdDAIObjectIds::size_type iProduct = 0; iProduct < productIds.size(); ++iProduct)
     // {
-    //     // if (totalPrinouts > 10)
+    //     // if (totalPrinouts > 1)
+    //     // {
+    //     //     break;
+    //     // }
+
+    //     // if (iProduct > 1)
     //     // {
     //     //     break;
     //     // }
@@ -172,23 +177,23 @@ int main(int argc, char *argv[])
     //     OdRxValue result = pEntity->getAttrCaseInsensitive("Name");
     //     OdString nameValue;
     //     result >> nameValue;
-    //     //qInfo() << "Name: " << nameValue;
+    //     qInfo() << "Name: " << nameValue;
 
     //     OdString entityType = pEntity->isA()->name();
-    //     //qInfo() << "Class: " << entityType;
+    //     qInfo() << "Class: " << entityType;
 
     //     OdRxValue globalIdResult = pEntity->getAttrCaseInsensitive("GlobalId");
     //     OdString globalIdValue;
     //     globalIdResult >> globalIdValue;
-    //     //qInfo() << "Name: " << nameValue;
+    //     qInfo() << "Name: " << nameValue;
 
     //     const OdIfc::OdIfcGeometricRepresentationItemPtrArray geomItems = pProduct->getGeometricRepresentationItems();
     //     OdGeMatrix3d placementMatrix = pProduct->getObjectPlacement();
 
-    //     //qInfo() << "Length of Gom items: " << geomItems.length();
-    //     //qInfo() << "LogicalLength of Gom items: " << geomItems.logicalLength();
-    //     //qInfo() << "Size of Gom items: " << geomItems.size();
-    //     //qInfo() << "Physial Length of Gom items: " << geomItems.physicalLength();
+    //     qInfo() << "Length of Gom items: " << geomItems.length();
+    //     qInfo() << "LogicalLength of Gom items: " << geomItems.logicalLength();
+    //     qInfo() << "Size of Gom items: " << geomItems.size();
+    //     qInfo() << "Physial Length of Gom items: " << geomItems.physicalLength();
 
     //     for (OdDAIObjectIds::size_type iItem = 0; iItem < geomItems.size(); ++iItem)
     //     {

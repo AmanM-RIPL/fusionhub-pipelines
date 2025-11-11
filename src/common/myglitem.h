@@ -85,7 +85,7 @@ public:
 
     int m_lastClickX = -1;
     int m_lastClickY = -1;
-    Mesh* mesh = nullptr;
+    BIMElement* bimElement = nullptr;
 
 public slots:
     void cameraMoveUp();
@@ -114,7 +114,7 @@ signals:
 class MyGLRenderer : public QQuickFramebufferObject::Renderer, protected QOpenGLFunctions_3_3_Core
 {
 public:
-    MyGLRenderer(Mesh* mesh);
+    MyGLRenderer();
     ~MyGLRenderer();
 
     void synchronize(QQuickFramebufferObject *item) override;
@@ -131,6 +131,8 @@ private:
     GLuint m_projLoc = -1;
     GLfloat m_vertices[9];
     QVector3D m_cameraPos = QVector3D(0.0f, 0.0f, 20.0f);
+
+    bool meshInitialized = false;
 
     Mesh* m_mesh = nullptr;
     Camera* m_camera = nullptr;

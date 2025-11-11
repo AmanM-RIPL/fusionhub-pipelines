@@ -29,7 +29,7 @@ void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat
     }
 }
 
-MyGLRenderer::MyGLRenderer(Mesh* mesh)
+MyGLRenderer::MyGLRenderer()
 {
     initializeOpenGLFunctions();
     // initGL();
@@ -209,6 +209,11 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         // reset the stored GUI-side coords so we don't re-process
         glItem->m_lastClickX = -1;
         glItem->m_lastClickY = -1;
+    }
+
+    if (!meshInitialized)
+    {
+
     }
 }
 
@@ -621,7 +626,7 @@ MyGLItem::MyGLItem(QQuickItem *parent)
     // BIMElementController* bimElementController = new BIMElementController(this);
 
 
-    BIMElement* newElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
+    bimElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
     BIMParameter* widthParameter = new BIMParameter(1,"1",false,"Width","1",1,this);
     BIMParameter* rlParameter = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [0,4], [4,4]]",1,this);
     newElement->addParameter(widthParameter);
@@ -636,8 +641,8 @@ MyGLItem::MyGLItem(QQuickItem *parent)
     // qInfo() << "BIM Element with Params is null: " << (newElement == nullptr);
 
     mesh = new Mesh(this);
-    WallGeometryService* service = new WallGeometryService(this);
-    service->generateMesh3D(newElement, mesh);
+    WallGeometryService service = WallGeometryService();
+    service.generateMesh3D(newElement, mesh);
 
     // GLfloat* vertices = mesh->getVerticies();
     // unsigned int* indices = mesh->getIndices();
@@ -657,7 +662,7 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 
 QQuickFramebufferObject::Renderer* MyGLItem::createRenderer() const {
     // qInfo() << "Create Renderer";
-    return new MyGLRenderer(mesh);
+    return new MyGLRenderer();
 }
 
 
