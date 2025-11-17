@@ -16,7 +16,7 @@ void Mesh::Initialize(const std::vector<GLfloat>& vertices, const std::vector<un
 
 void Mesh::Copy(Mesh *mesh)
 {
-    mesh->Initialize(m_verticies, m_indices, m_border_indices, m_numOfVertices, m_numOfIndices, m_numOfBorderIndices);
+     mesh->Initialize(m_verticies, m_indices, m_border_indices, m_numOfVertices, m_numOfIndices, m_numOfBorderIndices);
 }
 
 GLfloat *Mesh::getVerticies()

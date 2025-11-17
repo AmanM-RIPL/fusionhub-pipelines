@@ -1,5 +1,6 @@
 #include "myglitem.h"
 
+
 void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount, unsigned int vLength, unsigned int normalOffset)
 {
     for (size_t i = 0; i < indiceCount; i += 3)
@@ -397,8 +398,8 @@ void MyGLRenderer::moveTopVertexToClick(int mouseX, int mouseY, const QMatrix4x4
 
 
 void MyGLRenderer::render() {
-    // qInfo() << "Render Function";
 
+    // qInfo() << "Render Function";
     int w = framebufferObject()->width();
     int h = framebufferObject()->height();
     GLuint defaultFbo = framebufferObject()->handle();
@@ -415,6 +416,7 @@ void MyGLRenderer::render() {
     m_view->SetHeight(h);
     m_view->SetDefaultFBO(defaultFbo);
 
+
     if (m_pickRequested)
     {
         m_view->SetSelectionCoordinates(m_pickX, m_pickY);
@@ -423,7 +425,6 @@ void MyGLRenderer::render() {
         // m_view->UpdateGeometry();
         m_pickRequested = false;
     }
-
     m_view->Render();
 
     // // all variables are added here
@@ -549,8 +550,11 @@ QOpenGLFramebufferObject* MyGLRenderer::createFramebufferObject(const QSize &siz
 MyGLItem::MyGLItem(QQuickItem *parent)
     : QQuickFramebufferObject(parent)
 {
+    pIfcDetailController = new IFCDetailController(this);;
+    pIfcGeometryService = new IfcGeometryService(this);
+    mesh = getMeshptr();
 
-    /*if(m_currentItem == "Beam")
+   /* if(m_currentItem == "Beam")
     {
         BIMElement* newElement = new BIMElement(1, "1", false, "Beam", "Front Beam", 0, this);
         BIMParameter* widthParameter = new BIMParameter(1, "1", false, "Width", "1.5", 22, this);
@@ -564,6 +568,7 @@ MyGLItem::MyGLItem(QQuickItem *parent)
         BeamGeometryService* service = new BeamGeometryService(this);
         service->generateMesh3D(newElement, mesh);
     }
+
    else if(m_currentItem == "Column")
     {
         BIMElement* newElement = new BIMElement(23,"1",false,"Column", "Front Column", 0, this);
@@ -578,7 +583,7 @@ MyGLItem::MyGLItem(QQuickItem *parent)
         ColumnGeometryService* service = new ColumnGeometryService(this);
         service->generateMesh3D(newElement, mesh);
     }
-    else if(m_currentItem == "Slab")*/
+    else if(m_currentItem == "Slab")
     {
 
         BIMElement* newElement = new BIMElement(15, "1", false, "Slab", "Front Slab", 0, this);
@@ -596,7 +601,7 @@ MyGLItem::MyGLItem(QQuickItem *parent)
     }
 
 
-    /*else
+    else if(m_currentItem == "Wall")
     {
         // BIMElementController* bimElementController = new BIMElementController(this);
 
@@ -634,11 +639,16 @@ MyGLItem::MyGLItem(QQuickItem *parent)
         //     qInfo() << indices[i];
         // }
    }*/
+
+    //else{
+
+   //}
+
 }
 
 
 QQuickFramebufferObject::Renderer* MyGLItem::createRenderer() const {
-    // qInfo() << "Create Renderer";
+    // qInfo() << "Create Renderer";    
     return new MyGLRenderer(mesh);
 }
 
@@ -646,6 +656,14 @@ void MyGLItem::setCurrentItem(QString currentSelctedItem){
     m_currentItem = currentSelctedItem;
 }
 
+Mesh* MyGLItem::getMeshptr()
+{
+    if(mesh == nullptr)
+    {
+         mesh = new Mesh(this);
+    }
+    return mesh;
+}
 
 void MyGLItem::cameraMoveUp() {
     m_moveUp = true;
@@ -687,4 +705,41 @@ void MyGLItem::requestPick(int x, int y) {
 
 void MyGLItem::handlePick(int id) {
     emit selectionChanged(id);
+}
+
+void MyGLItem::viewIfc()
+{
+    //QString strFilePath = "://resources//bimFamily//DblDoor-1-Panel.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\proj004\\proj004.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-1-Panel.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\proj004\\proj004.ifc";
+
+    QString strFilePath = pIfcDetailController->getIfcFilePath();
+    OdIfcModelPtr odIfcModelPtr = pIfcDetailController->getModelptrFromLoadedIFC(strFilePath);
+
+    if(odIfcModelPtr)
+    {
+        delete mesh;
+        mesh = NULL;
+        mesh = new Mesh(this);
+        pIfcGeometryService->generateMesh3D(odIfcModelPtr, mesh);       
+        odIfcModelPtr.release();
+        odIfcModelPtr = NULL;
+    }
+    update();
+}
+
+MyGLItem::~MyGLItem()
+{
+    if(pIfcDetailController)
+    {
+        delete pIfcDetailController;
+        pIfcDetailController = NULL;
+    }
+
+    if(pIfcGeometryService)
+    {
+        delete pIfcGeometryService;
+        pIfcGeometryService = NULL;
+    }
 }

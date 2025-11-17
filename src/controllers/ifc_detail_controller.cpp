@@ -16,6 +16,11 @@ QList<IFCDetail*> IFCDetailController::loadIFC(const QString& ifcFilePath)
     return m_ifcDetailRepository->loadIFC(ifcFilePath);
 }
 
+OdIfcModelPtr IFCDetailController::getModelptrFromLoadedIFC(const QString& ifcFilePath)
+{
+    return m_ifcDetailRepository->getModelptrFromLoadedIFC(ifcFilePath);
+}
+
 TreeModel* IFCDetailController::getTreeModel()
 {
     return m_ifcDetailRepository->getTreeModel();

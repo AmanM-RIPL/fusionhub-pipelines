@@ -9,8 +9,8 @@ class BeamGeometryService : public QObject
 public:
     explicit BeamGeometryService(QObject *parent = nullptr);
 
-    void generateMesh2D(BIMElement* wallElement, Mesh* mesh);
-    void generateMesh3D(BIMElement *wallElement, Mesh* mesh);
+    void generateMesh2D(BIMElement* beamElement, Mesh* mesh);
+    void generateMesh3D(BIMElement* beamElement, Mesh* mesh);
 
 signals:
 

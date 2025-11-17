@@ -29,6 +29,13 @@
 #include "FMContour2D.h"
 #include "FMProfile2D.h"
 #include "Ge/GeTrMeshSimplification.h"
+#include <IfcModel.h>
+//#include <OdIfcCore_dai.h>
+#include "Modeler/FMMdlIterators.h"
+//#include "OdBrBrep.h"
+//#include "OdBrFace.h"
+
+#include "Entities/IfcGeometricRepresentationItem.h"
 
 #include "models/bim_element.h"
 #include "common/opengl/classes/mesh.h"
@@ -59,7 +66,25 @@ public:
     // [10, 2] where 10 is x and 2 is y
     Point getParallelProjectionPoint(Point point1, Point point2, float width);
 
+    /*
     void getMeshGeometry(const FacetModeler::Body& body, OdGePoint3dArray& pointArray, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, OdGeVector3dArray& normalArray);
+
+    void getMeshGeometry(const OdMdBody& body, OdGePoint3dArray& pointArray, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, OdGeVector3dArray& normalArray);
+
+    void getMeshGeometry(const BODY& body, OdGePoint3dArray& pointArray, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, OdGeVector3dArray& normalArray);
+
+    void getMeshGeometry(const OdBrBrep& brep, OdGePoint3dArray& pointArray, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, OdGeVector3dArray& normalArray);
+    */
+
+    // std::vector<GLfloat> verticesVector
+    void getMeshGeometry(const FacetModeler::Body& body, std::vector<GLfloat>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices);
+
+    void getMeshGeometry(const OdMdBody& body, std::vector<GLfloat>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices);
+
+    void getMeshGeometry(const BODY& body, std::vector<GLfloat>& verticesVector,  std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndicesy);
+
+    void getMeshGeometry(const OdBrBrep& brep, std::vector<GLfloat>& verticesVector,  std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices);
+
 };
 
 #endif // OPENGL_HELPER_H

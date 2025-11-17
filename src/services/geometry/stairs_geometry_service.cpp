@@ -1,10 +1,11 @@
-#include "beam_geometry_service.h"
+#include "stairs_geometry_service.h"
 
-BeamGeometryService::BeamGeometryService(QObject *parent)
+StairsGeometryService::StairsGeometryService(QObject *parent)
     : QObject{parent}
 {}
 
-void BeamGeometryService::generateMesh2D(BIMElement* beamElement, Mesh* mesh)
+
+void StairsGeometryService::generateMesh2D(BIMElement* stairsElement, Mesh* mesh)
 {
     std::vector<std::vector<Point>> polygon;
     std::vector<Point> referenceLine = {};
@@ -12,12 +13,12 @@ void BeamGeometryService::generateMesh2D(BIMElement* beamElement, Mesh* mesh)
     float height = 0;
     float distance = 0;
 
-    m_openglHelper.extractBIMParameters(beamElement, referenceLine, width, height, distance);
+    m_openglHelper.extractBIMParameters(stairsElement, referenceLine, width, height, distance);
 
     // 3. Generate a parallel line
-    std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
+    //std::vector<Point> parallelLine = generateParallelCurve(referenceLine, width);
 
-    referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
+    //referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
 
     // for (Point point: referenceLine)
     // {
@@ -89,21 +90,20 @@ void BeamGeometryService::generateMesh2D(BIMElement* beamElement, Mesh* mesh)
     // return mesh;
 }
 
-void BeamGeometryService::generateMesh3D(BIMElement* beamElement, Mesh* mesh)
+void StairsGeometryService::generateMesh3D(BIMElement* stairsElement, Mesh* mesh)
 {
     std::vector<Point> referenceLine = {};
     float width = 0;
     float height = 0;
     float distance = 0;
 
-    m_openglHelper.extractBIMParameters(beamElement, referenceLine, width, height, distance);
+    m_openglHelper.extractBIMParameters(stairsElement, referenceLine, width, height, distance);
 
     // 3. Generate a parallel line
-    std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
+    //std::vector<Point> parallelLine = generateParallelCurve(referenceLine, width);
+    //referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
 
-    referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
-
-    //Create a contour2D
+    // Create a contour2D
     FacetModeler::Contour2D polygon;
 
     OdGePoint2dArray points;
@@ -127,7 +127,15 @@ void BeamGeometryService::generateMesh3D(BIMElement* beamElement, Mesh* mesh)
     FacetModeler::Profile2D profile(polygon);
     FacetModeler::Body body = FacetModeler::Body::extrusion(profile, OdGeVector3d(0.0, 0.0, 1.0) * height);
 
-    //Mesh geometry generation    
+    //Create a translation matrix to move the body by 5 units in the Z direction
+    OdGeMatrix3d translationMatrix;
+    OdGeVector3d moveVector(0.0, 0.0, distance);
+    translationMatrix.setTranslation(moveVector);
+
+    //Apply the transformation to the body
+    body.transform(translationMatrix);
+
+    //Mesh geometry generation   
     std::vector<uint32_t> meshIndices = {};
     std::vector<uint32_t> borderIndices = {};
     std::vector<GLfloat> verticesVector = {};

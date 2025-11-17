@@ -197,7 +197,7 @@ int main(int argc, char *argv[])
 
     //         switch (bodyContainer.kind())
     //         {
-    //         case OdDAI::OdBodyVariant::kFacetModelerBody:
+             //case OdDAI::OdBodyVariant::kFacetModelerBody:
     //         {
     //             //qInfo() << "Facet Modeler Body";
     //             totalPrinouts = totalPrinouts + 1;

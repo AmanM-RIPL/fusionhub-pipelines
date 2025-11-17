@@ -9,8 +9,8 @@ class ColumnGeometryService : public QObject
 public:
     explicit ColumnGeometryService(QObject *parent = nullptr);
 
-    void generateMesh2D(BIMElement* wallElement, Mesh* mesh);
-    void generateMesh3D(BIMElement *wallElement, Mesh* mesh);
+    void generateMesh2D(BIMElement* columnElement, Mesh* mesh);
+    void generateMesh3D(BIMElement* columnElement, Mesh* mesh);
 
 signals:
 

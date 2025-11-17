@@ -5,7 +5,7 @@ WallGeometryService::WallGeometryService(QObject *parent)
 {}
 
 
-void WallGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
+void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
 {
     std::vector<std::vector<Point>> polygon;
     std::vector<Point> referenceLine = {};
@@ -90,7 +90,7 @@ void WallGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
     // return mesh;
 }
 
-void WallGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
+void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
 {
     std::vector<Point> referenceLine = {};
     float width = 0;
@@ -133,24 +133,9 @@ void WallGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
     OdGePoint3dArray pointArray = {};
     std::vector<uint32_t> meshIndices = {};
     std::vector<uint32_t> borderIndices = {};
-    OdGeVector3dArray normalArray = {};
-
-    m_openglHelper.getMeshGeometry(body, pointArray, meshIndices, borderIndices, normalArray);
-
-    // Create local mesh
     std::vector<GLfloat> verticesVector = {};
-    for (int i = 0; i < pointArray.size(); i++)
-    {
-        OdGePoint3d point = pointArray[i];
-        verticesVector.push_back(point.x); // x
-        verticesVector.push_back(point.y); // y
-        verticesVector.push_back(point.z); // z
 
-        OdGeVector3d normal = normalArray[i];
-        verticesVector.push_back(normal.x); // n.x
-        verticesVector.push_back(normal.y); // n.y
-        verticesVector.push_back(normal.z); // n.z
-    }
+    m_openglHelper.getMeshGeometry(body, verticesVector, meshIndices, borderIndices);
 
     mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
 }

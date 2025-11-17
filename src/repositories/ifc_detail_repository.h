@@ -44,6 +44,8 @@
 #include "common/ifcdetail.h"
 #include <memory>
 
+#include "common/opengl/classes/opengl_helper.h"
+
 using namespace OdIfc;
 using namespace OdIfc4x3_add2;
 using namespace OdDAI;
@@ -57,6 +59,7 @@ public:
     //explicit IFCDetailRepository(QList<IFCDetail*> ifcDetailList, QObject *parent = nullptr);
 
     QList<IFCDetail*> loadIFC(const QString& ifcFilePath);
+    OdIfcModelPtr getModelptrFromLoadedIFC(const QString& ifcFilePath);
     QList<IFCDetail*> getIFCDetails();
     TreeModel* getTreeModel();
     QString getIfcFilePath(const QString& projectName, const QString& ifcFileName);
@@ -73,6 +76,10 @@ public:
     void initHeader(OdIfcFile *pDb);
     void fillModel(OdIfcFile *pDb);
 
+    //void generateMesh3D(FA)
+
+    OpenglHelper  m_openglHelper;
+
 protected:
     QString getTableName() const{return "";};
     std::unique_ptr<IFCDetail> mapFromQuery(const QSqlQuery& query) const{return{};}
@@ -86,7 +93,7 @@ signals:
 
 private:
     QList<IFCDetail*> m_ifcDetailList;
-    TreeModel* m_treeModel;
+    TreeModel* m_treeModel;   
     OdArray<OdGePoint3d> getCartesianPoints(OdIfc::OdIfcInstancePtr ifcInstance);
 };
 

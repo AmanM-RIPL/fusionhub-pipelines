@@ -1,10 +1,10 @@
-#include "beam_geometry_service.h"
+#include "door_geometry_service.h"
 
-BeamGeometryService::BeamGeometryService(QObject *parent)
+DoorGeometryService::DoorGeometryService(QObject *parent)
     : QObject{parent}
 {}
 
-void BeamGeometryService::generateMesh2D(BIMElement* beamElement, Mesh* mesh)
+void DoorGeometryService::generateMesh2D(BIMElement* doorElement, Mesh* mesh)
 {
     std::vector<std::vector<Point>> polygon;
     std::vector<Point> referenceLine = {};
@@ -12,7 +12,7 @@ void BeamGeometryService::generateMesh2D(BIMElement* beamElement, Mesh* mesh)
     float height = 0;
     float distance = 0;
 
-    m_openglHelper.extractBIMParameters(beamElement, referenceLine, width, height, distance);
+    m_openglHelper.extractBIMParameters(doorElement, referenceLine, width, height, distance);
 
     // 3. Generate a parallel line
     std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
@@ -89,21 +89,22 @@ void BeamGeometryService::generateMesh2D(BIMElement* beamElement, Mesh* mesh)
     // return mesh;
 }
 
-void BeamGeometryService::generateMesh3D(BIMElement* beamElement, Mesh* mesh)
+void DoorGeometryService::generateMesh3D(BIMElement* doorElement, Mesh* mesh)
 {
     std::vector<Point> referenceLine = {};
     float width = 0;
     float height = 0;
     float distance = 0;
 
-    m_openglHelper.extractBIMParameters(beamElement, referenceLine, width, height, distance);
+
+    m_openglHelper.extractBIMParameters(doorElement, referenceLine, width, height, distance);
 
     // 3. Generate a parallel line
     std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
 
     referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
 
-    //Create a contour2D
+    // Create a contour2D
     FacetModeler::Contour2D polygon;
 
     OdGePoint2dArray points;
@@ -127,7 +128,7 @@ void BeamGeometryService::generateMesh3D(BIMElement* beamElement, Mesh* mesh)
     FacetModeler::Profile2D profile(polygon);
     FacetModeler::Body body = FacetModeler::Body::extrusion(profile, OdGeVector3d(0.0, 0.0, 1.0) * height);
 
-    //Mesh geometry generation    
+    //Mesh geometry generation
     std::vector<uint32_t> meshIndices = {};
     std::vector<uint32_t> borderIndices = {};
     std::vector<GLfloat> verticesVector = {};
@@ -136,3 +137,4 @@ void BeamGeometryService::generateMesh3D(BIMElement* beamElement, Mesh* mesh)
 
     mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
 }
+

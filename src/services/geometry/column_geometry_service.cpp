@@ -4,7 +4,7 @@ ColumnGeometryService::ColumnGeometryService(QObject *parent)
     : QObject{parent}
 {}
 
-void ColumnGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
+void ColumnGeometryService::generateMesh2D(BIMElement* columnElement, Mesh* mesh)
 {
     std::vector<std::vector<Point>> polygon;
     std::vector<Point> referenceLine = {};
@@ -12,7 +12,7 @@ void ColumnGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
     float height = 0;
     float distance = 0;
 
-    m_openglHelper.extractBIMParameters(wallElement, referenceLine, width, height, distance);
+    m_openglHelper.extractBIMParameters(columnElement, referenceLine, width, height, distance);
 
     // 3. Generate a parallel line
     std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
@@ -89,7 +89,7 @@ void ColumnGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
     // return mesh;
 }
 
-void ColumnGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
+void ColumnGeometryService::generateMesh3D(BIMElement* columnElement, Mesh* mesh)
 {
     std::vector<Point> referenceLine = {};
     float width = 0;
@@ -97,7 +97,7 @@ void ColumnGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
     float distance = 0;
 
 
-    m_openglHelper.extractBIMParameters(wallElement, referenceLine, width, height, distance);
+    m_openglHelper.extractBIMParameters(columnElement, referenceLine, width, height, distance);
 
     // 3. Generate a parallel line
     std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
@@ -129,28 +129,12 @@ void ColumnGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
     FacetModeler::Body body = FacetModeler::Body::extrusion(profile, OdGeVector3d(0.0, 0.0, 1.0) * height);
 
 
-    //Mesh geometry generation
-    OdGePoint3dArray pointArray = {};
+    //Mesh geometry generation    
     std::vector<uint32_t> meshIndices = {};
     std::vector<uint32_t> borderIndices = {};
-    OdGeVector3dArray normalArray = {};
+     std::vector<GLfloat> verticesVector = {};
 
-    m_openglHelper.getMeshGeometry(body, pointArray, meshIndices, borderIndices, normalArray);
-
-    //Create local mesh
-    std::vector<GLfloat> verticesVector = {};
-    for (int i = 0; i < pointArray.size(); i++)
-    {
-        OdGePoint3d point = pointArray[i];
-        verticesVector.push_back(point.x); // x
-        verticesVector.push_back(point.y); // y
-        verticesVector.push_back(point.z); // z
-
-        OdGeVector3d normal = normalArray[i];
-        verticesVector.push_back(normal.x); // n.x
-        verticesVector.push_back(normal.y); // n.y
-        verticesVector.push_back(normal.z); // n.z
-    }
+    m_openglHelper.getMeshGeometry(body, verticesVector, meshIndices, borderIndices);
 
     mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
 }

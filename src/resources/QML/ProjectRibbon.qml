@@ -7,28 +7,38 @@ Column {
     signal logOutButtonClicked()
     signal projectPageToRedirect(string pageName)
 
-
     width: parent.width
     height: 131
     // border.color: "black"
     // anchors.horizontalCenter: parent.horizontalCenter
     // anchors.top: parent.top
     // anchors.topMargin: 23
+
+
     TabBar {
         id: mainBar
         width: 300
 
         TabButton {
-            text: qsTr("Project")
+            text: qsTr("Project")            
+            onClicked: {
+                projectPageToRedirect("TaskBoard")                
+            }
         }
-        TabButton {
+        TabButton {            
             text: qsTr("BIM")
+            onClicked: {
+                projectPageToRedirect("PlannedBIM")
+            }
         }
         TabButton {
             text: qsTr("Analytics")
         }
         TabButton {
             text: qsTr("Master")
+            onClicked: {
+                projectPageToRedirect("ScheduleSetup")
+            }
         }
     }
 
@@ -45,7 +55,8 @@ Column {
             color: "white"
             //anchors.horizontalCenter: parent.horizontalCenter
             Layout.alignment: parent.anchors.alignWhenCentered
-            onVisibleChanged:   {
+
+             onVisibleChanged:   {
                 projectPageToRedirect("TaskBoard")
             }
 
@@ -252,8 +263,6 @@ Column {
                     }
                 }
             }
-
-
         }
 
         Rectangle {
@@ -264,12 +273,7 @@ Column {
             border.color: "#7676801F"//"#8A888629"
             color: "white"
             //anchors.horizontalCenter: parent.horizontalCenter
-            Layout.alignment: parent.anchors.alignWhenCentered
-
-            onVisibleChanged:   {
-                  projectPageToRedirect("PlannedBIM")
-            }
-
+            Layout.alignment: parent.anchors.alignWhenCentered            
 
             Row {
                 spacing: 7
@@ -284,7 +288,7 @@ Column {
                     MouseArea {
                         anchors.fill: parent
 
-                        onClicked: {                            
+                        onClicked: {
                             projectPageToRedirect("PlannedBIM")
                         }
                     }

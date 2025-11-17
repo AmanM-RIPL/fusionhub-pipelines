@@ -81,7 +81,7 @@ Rectangle {
 
         PlannedBIMPage {
             pageType: pageName
-            visible: pageType !== ""
+            visible: pageType !== ""            
             onPageTypeChanged: {
                 switch (pageType) {
                 case "PlannedBIM":

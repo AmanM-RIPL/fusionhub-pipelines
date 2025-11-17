@@ -21,6 +21,7 @@
 #include <IfcModelerGeometry/IfcModelerGeometry.h>
 #include <IfcProductRepresentation.h>
 #include <IfcGeometricRepresentationItem.h>
+#include "common/myglitem.h"
 
 
 extern QString gEnvironmentPath;
@@ -105,26 +106,12 @@ QString IFCDetailRepository::getIfcFilePath(const QString& projectName, const QS
 
 QList<IFCDetail*> IFCDetailRepository::loadIFC(const QString& qstrFilePath)
 {
-
     //Here need to populate m_ifcDetailList
     QList<IFCDetail*> ifcDetailList;
 
     if(qstrFilePath.isEmpty()){
         return ifcDetailList;
-    }
-
-    /*
-    OdTvFactoryId factId = odTvGetFactory();
-    OdTvResult rc;
-    OdTvDatabaseId dbId = factId.createDatabase(&rc);
-    OdTvDatabasePtr pTvDatabase = dbId.openObject(OdTv::kForWrite, &rc);
-
-    OdTvModelId modelId = pTvDatabase->createModel(OD_T("Model1"));
-    OdTvModelPtr modelPtr = modelId.openObject(OdTv::kForWrite, &rc);
-
-    MyGLItem::setDatabaseId(dbId);
-    MyGLItem::setModelId(modelId);
-    */
+    }    
 
     QByteArray utf8ByteArray = qstrFilePath.toUtf8();
     OdString ifcFileName = OdString(utf8ByteArray.constData());
@@ -154,10 +141,21 @@ QList<IFCDetail*> IFCDetailRepository::loadIFC(const QString& qstrFilePath)
             qDebug() << "IFCDatabase Loaded: Failed to read file with OdResult: ";
         }
         else{
-                pIfcModel = pDatabase->getModel();
-                if (pIfcModel.isNull()) {
-                    qDebug() << "IFCDatabase Loaded: Failed to retrieve IFC model after successful read.";
-                } else {
+            pIfcModel = pDatabase->getModel();
+
+            if (pIfcModel.isNull()) {
+                qDebug() << "IFCDatabase Loaded: Failed to retrieve IFC model after successful read.";
+
+               /* FacetModeler::Body body = m_openglHelper.createBodyFromIfcFacetedBrep(pIfcModel);
+
+                //if(body)
+                {
+
+                }*/
+
+
+            }
+            else {
                 qDebug() << "IFCDatabase Loaded: Success!";
             }
         }
@@ -234,12 +232,79 @@ QList<IFCDetail*> IFCDetailRepository::loadIFC(const QString& qstrFilePath)
    pDatabase.release();
    pDatabase = NULL;
 
+   pIfcModel.release();
+   pIfcModel = NULL;
+
    for(IFCDetail* obj : ifcDetailList) {
        m_ifcDetailList.append(obj);
    }
 
    return ifcDetailList;
 }
+
+OdIfcModelPtr IFCDetailRepository::getModelptrFromLoadedIFC(const QString& qstrFilePath)
+{
+
+     QByteArray utf8ByteArray = qstrFilePath.toUtf8();
+     OdString ifcFileName = OdString(utf8ByteArray.constData());
+
+     QFile file(qstrFilePath);
+     if (file.exists()) {
+         qDebug() << "Ifc file exists.";
+     }
+     else
+     {
+         qDebug() << "Error: No ifc file exist.";
+     }
+
+     OdIfcFilePtr pDatabase;
+     OdIfcModelPtr odIfcModelPtr;
+     try {
+         pDatabase = svcs.createDatabase();
+
+         if (!pDatabase) {
+             qDebug() << "Error: createDatabase returned a null pointer.";
+         }
+
+         OdResult result = pDatabase->readFile(ifcFileName);
+         if (result != tvOk) {
+             qDebug() << "IFCDatabase Loaded: Failed to read file with OdResult: ";
+         }
+         else{
+
+            OdIfcModelContext& modelContext = pDatabase->getContext();
+
+            //Choose what kinds of entities to compose (optional, but recommended)
+            modelContext.getGeometryComposeTypes().append(OdIfc::kIfcProduct);
+            //modelContext.getGeometryComposeTypes().push_back(OdIfc::kIfcProduct);
+
+            //Set geometry options
+            modelContext.setComposeOutOfSpatialStructure(true);
+            modelContext.setDrawOpenings(true);
+
+            //Compose IFC geometry
+            OdResult composeR =  pDatabase->composeEntities();
+
+            odIfcModelPtr = pDatabase->getModel();
+            if (!odIfcModelPtr.isNull()) {
+                // pDatabase.release();
+                // pDatabase = NULL;
+                return odIfcModelPtr;
+            }
+            else{
+                qDebug() << "IFCDatabase Loaded: Failed to retrieve IFC model after successful read.";
+            }
+        }
+     }
+     catch (const OdError& e){
+         qDebug() << "IFCDatabase Loaded: Failed with exception: " << e.description();
+     }
+
+    //pDatabase.release();
+    //pDatabase = NULL;
+    return odIfcModelPtr;
+}
+
 
 TreeModel* IFCDetailRepository::getTreeModel()
 {
@@ -493,8 +558,4 @@ OdArray<OdGePoint3d> IFCDetailRepository::getCartesianPoints(OdIfc::OdIfcInstanc
    */
     return points;
 }
-
-
-
-
 

@@ -4,10 +4,35 @@
 #include "common/opengl/classes/mesh.h"
 #include "common/opengl/classes/earcut_algorithm.h"
 
+#include "IfcCore.h"
+#include "IfcModel.h"
+#include "IfcProduct.h"
+//#include "FacetModeler/Body.h"
+//#include "OdIfcRoot.h"
 
-/*OpenglHelper::OpenglHelper(QObject *parent)
-    : QObject{parent}
-{}*/
+
+#include "OdaCommon.h"
+#include "OdString.h"
+#include "daiObjectId.h"
+#include "OdArray.h"
+#include "Ge/GeVector3dArray.h"
+
+#include "common/myglitem.h"
+#include "common/ifcdetail.h"
+
+#include "database/database_manager.h"
+
+#include "Br/BrBrep.h"
+#include "BrepRenderer/BrepRendererImpl.h"
+#include "Br/BrFace.h"
+#include "Br/BrTraverser.h"
+
+#include "Modeler/FMMdlBody.h"
+#include "Modeler/FMDrawBody.h"
+#include "Ge/GeCircArc2d.h"
+#include <vector>
+using namespace FacetModeler;
+using namespace std;
 
 OpenglHelper::OpenglHelper()
 {}
@@ -184,8 +209,11 @@ Point OpenglHelper::getParallelProjectionPoint(Point point1, Point point2, float
     return result;
 }
 
-void OpenglHelper::getMeshGeometry(const FacetModeler::Body& body, OdGePoint3dArray& pointArray, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, OdGeVector3dArray& normalArray)
+void OpenglHelper::getMeshGeometry(const FacetModeler::Body& body, std::vector<GLfloat>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices)
 {
+    OdGePoint3dArray pointArray = {};
+    OdGeVector3dArray normalArray = {};
+
     FacetModeler::Face* face = body.faceList();
     for (int faceIndex = 0; faceIndex < body.faceCount(); faceIndex++)
     {
@@ -265,4 +293,328 @@ void OpenglHelper::getMeshGeometry(const FacetModeler::Body& body, OdGePoint3dAr
 
         face = face->next();
     }
+
+
+    for (int i = 0; i < pointArray.size(); i++)
+    {
+        OdGePoint3d point = pointArray[i];
+        verticesVector.push_back(point.x); // x
+        verticesVector.push_back(point.y); // y
+        verticesVector.push_back(point.z); // z
+
+        OdGeVector3d normal = normalArray[i];
+        verticesVector.push_back(normal.x); // n.x
+        verticesVector.push_back(normal.y); // n.y
+        verticesVector.push_back(normal.z); // n.z
+    }
 }
+
+void OpenglHelper::getMeshGeometry(const OdMdBody& body, std::vector<GLfloat>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices)
+{
+    OdGePoint3dArray pointArray = {};
+    OdGeVector3dArray normalArray = {};
+
+    //FacetModeler::FaceIterator itf(body);
+    //itf.get()->normal();
+    /*
+    FacetModeler::Face* face = body.faceList();
+    for (int faceIndex = 0; faceIndex < body.faceCount(); faceIndex++)
+    {
+        OdGePoint3dArray facePointArray = {};
+        std::vector<int> numOfEdgesInLoop = {};
+        std::vector<std::vector<Point>> earcutPolygon = {};
+
+        //Face Plane Coordinate System
+        OdGePoint3d origin;
+        OdGeVector3d axis1;
+        OdGeVector3d axis2; // this is in the plane not normal to it.
+        OdGeVector3d normal = face->normal();
+
+        face->plane().getCoordSystem(origin, axis1, axis2);
+
+        for (int loopIndex = 0; loopIndex < face->loopCount(); loopIndex++)
+        {
+            std::vector<Point> loopPolygon = {};
+            numOfEdgesInLoop.push_back(face->loopEdgeCount(loopIndex));
+
+            FacetModeler::Edge* edge = face->edge(loopIndex);
+            for (int edgeIndex = 0; edgeIndex < face->loopEdgeCount(loopIndex); edgeIndex++)
+            {
+                facePointArray.append(edge->startPoint());
+
+                unsigned int startPointIndex = 0;
+                bool startResult = pointArray.find(edge->startPoint(), startPointIndex);
+                if (!startResult)
+                {
+                    pointArray.append(edge->startPoint());
+                    normalArray.append(normal);
+
+                    startPointIndex = pointArray.size() - 1;
+                }
+
+
+                unsigned int endPointIndex = 0;
+                bool endResult = pointArray.find(edge->endPoint(), endPointIndex);
+                if (!endResult)
+                {
+                    pointArray.append(edge->endPoint());
+                    normalArray.append(normal);
+
+                    endPointIndex = pointArray.size() - 1;
+                }
+
+                borderIndices.push_back(startPointIndex);
+                borderIndices.push_back(endPointIndex);
+
+                // get two dimensional point on the Face Plane
+                OdGeVector3d vecOnPlane = edge->startPoint() - origin;
+                float x = vecOnPlane.dotProduct(axis1);
+                float y = vecOnPlane.dotProduct(axis2);
+                loopPolygon.push_back({x,y});
+
+                edge = edge->next();
+            }
+
+            earcutPolygon.push_back(loopPolygon);
+        }
+
+        // generate the 2D tessellations
+        std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(earcutPolygon);
+
+        // project index from indices to pointArray
+        for (uint32_t index: indices)
+        {
+            OdGePoint3d pointInFacePointArray = facePointArray[index];
+
+            unsigned int selectedIndex = 0;
+            bool result = pointArray.find(pointInFacePointArray, selectedIndex);
+
+            meshIndices.push_back(selectedIndex);
+            normalArray[selectedIndex] = normalArray[selectedIndex] + normal;
+            normalArray[selectedIndex].normalize();
+        }
+
+        face = face->next();
+    }
+   */
+
+    for (int i = 0; i < pointArray.size(); i++)
+    {
+        OdGePoint3d point = pointArray[i];
+        verticesVector.push_back(point.x); // x
+        verticesVector.push_back(point.y); // y
+        verticesVector.push_back(point.z); // z
+
+        OdGeVector3d normal = normalArray[i];
+        verticesVector.push_back(normal.x); // n.x
+        verticesVector.push_back(normal.y); // n.y
+        verticesVector.push_back(normal.z); // n.z
+    }
+}
+
+void OpenglHelper::getMeshGeometry(const BODY& body, std::vector<GLfloat>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices)
+{
+    OdGePoint3dArray pointArray = {};
+    OdGeVector3dArray normalArray = {};
+
+    //FacetModeler::FaceIterator itf(body);
+    //itf.get()->normal();
+
+    /*
+    FacetModeler::Face* face = body.faceList();
+    for (int faceIndex = 0; faceIndex < body.faceCount(); faceIndex++)
+    {
+        OdGePoint3dArray facePointArray = {};
+        std::vector<int> numOfEdgesInLoop = {};
+        std::vector<std::vector<Point>> earcutPolygon = {};
+
+        //Face Plane Coordinate System
+        OdGePoint3d origin;
+        OdGeVector3d axis1;
+        OdGeVector3d axis2; // this is in the plane not normal to it.
+        OdGeVector3d normal = face->normal();
+
+        face->plane().getCoordSystem(origin, axis1, axis2);
+
+        for (int loopIndex = 0; loopIndex < face->loopCount(); loopIndex++)
+        {
+            std::vector<Point> loopPolygon = {};
+            numOfEdgesInLoop.push_back(face->loopEdgeCount(loopIndex));
+
+            FacetModeler::Edge* edge = face->edge(loopIndex);
+            for (int edgeIndex = 0; edgeIndex < face->loopEdgeCount(loopIndex); edgeIndex++)
+            {
+                facePointArray.append(edge->startPoint());
+
+                unsigned int startPointIndex = 0;
+                bool startResult = pointArray.find(edge->startPoint(), startPointIndex);
+                if (!startResult)
+                {
+                    pointArray.append(edge->startPoint());
+                    normalArray.append(normal);
+
+                    startPointIndex = pointArray.size() - 1;
+                }
+
+
+                unsigned int endPointIndex = 0;
+                bool endResult = pointArray.find(edge->endPoint(), endPointIndex);
+                if (!endResult)
+                {
+                    pointArray.append(edge->endPoint());
+                    normalArray.append(normal);
+
+                    endPointIndex = pointArray.size() - 1;
+                }
+
+                borderIndices.push_back(startPointIndex);
+                borderIndices.push_back(endPointIndex);
+
+                // get two dimensional point on the Face Plane
+                OdGeVector3d vecOnPlane = edge->startPoint() - origin;
+                float x = vecOnPlane.dotProduct(axis1);
+                float y = vecOnPlane.dotProduct(axis2);
+                loopPolygon.push_back({x,y});
+
+                edge = edge->next();
+            }
+
+            earcutPolygon.push_back(loopPolygon);
+        }
+
+        // generate the 2D tessellations
+        std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(earcutPolygon);
+
+        // project index from indices to pointArray
+        for (uint32_t index: indices)
+        {
+            OdGePoint3d pointInFacePointArray = facePointArray[index];
+
+            unsigned int selectedIndex = 0;
+            bool result = pointArray.find(pointInFacePointArray, selectedIndex);
+
+            meshIndices.push_back(selectedIndex);
+            normalArray[selectedIndex] = normalArray[selectedIndex] + normal;
+            normalArray[selectedIndex].normalize();
+        }
+
+        face = face->next();
+    }
+    */
+
+    for (int i = 0; i < pointArray.size(); i++)
+    {
+        OdGePoint3d point = pointArray[i];
+        verticesVector.push_back(point.x); // x
+        verticesVector.push_back(point.y); // y
+        verticesVector.push_back(point.z); // z
+
+        OdGeVector3d normal = normalArray[i];
+        verticesVector.push_back(normal.x); // n.x
+        verticesVector.push_back(normal.y); // n.y
+        verticesVector.push_back(normal.z); // n.z
+    }
+}
+
+void OpenglHelper::getMeshGeometry(const OdBrBrep& brep, std::vector<GLfloat>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices)
+{
+    OdGePoint3dArray pointArray = {};
+    OdGeVector3dArray normalArray = {};
+
+    /*
+    FacetModeler::Face* face = body.faceList();
+
+    for (int faceIndex = 0; faceIndex < body.faceCount(); faceIndex++)
+    {
+        OdGePoint3dArray facePointArray = {};
+        std::vector<int> numOfEdgesInLoop = {};
+        std::vector<std::vector<Point>> earcutPolygon = {};
+
+        //Face Plane Coordinate System
+        OdGePoint3d origin;
+        OdGeVector3d axis1;
+        OdGeVector3d axis2; // this is in the plane not normal to it.
+        OdGeVector3d normal = face->normal();
+
+        face->plane().getCoordSystem(origin, axis1, axis2);
+
+        for (int loopIndex = 0; loopIndex < face->loopCount(); loopIndex++)
+        {
+            std::vector<Point> loopPolygon = {};
+            numOfEdgesInLoop.push_back(face->loopEdgeCount(loopIndex));
+
+            FacetModeler::Edge* edge = face->edge(loopIndex);
+            for (int edgeIndex = 0; edgeIndex < face->loopEdgeCount(loopIndex); edgeIndex++)
+            {
+                facePointArray.append(edge->startPoint());
+
+                unsigned int startPointIndex = 0;
+                bool startResult = pointArray.find(edge->startPoint(), startPointIndex);
+                if (!startResult)
+                {
+                    pointArray.append(edge->startPoint());
+                    normalArray.append(normal);
+
+                    startPointIndex = pointArray.size() - 1;
+                }
+
+
+                unsigned int endPointIndex = 0;
+                bool endResult = pointArray.find(edge->endPoint(), endPointIndex);
+                if (!endResult)
+                {
+                    pointArray.append(edge->endPoint());
+                    normalArray.append(normal);
+
+                    endPointIndex = pointArray.size() - 1;
+                }
+
+                borderIndices.push_back(startPointIndex);
+                borderIndices.push_back(endPointIndex);
+
+                // get two dimensional point on the Face Plane
+                OdGeVector3d vecOnPlane = edge->startPoint() - origin;
+                float x = vecOnPlane.dotProduct(axis1);
+                float y = vecOnPlane.dotProduct(axis2);
+                loopPolygon.push_back({x,y});
+
+                edge = edge->next();
+            }
+
+            earcutPolygon.push_back(loopPolygon);
+        }
+
+        // generate the 2D tessellations
+        std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(earcutPolygon);
+
+        // project index from indices to pointArray
+        for (uint32_t index: indices)
+        {
+            OdGePoint3d pointInFacePointArray = facePointArray[index];
+
+            unsigned int selectedIndex = 0;
+            bool result = pointArray.find(pointInFacePointArray, selectedIndex);
+
+            meshIndices.push_back(selectedIndex);
+            normalArray[selectedIndex] = normalArray[selectedIndex] + normal;
+            normalArray[selectedIndex].normalize();
+        }
+
+        face = face->next();
+    }
+*/
+
+    for (int i = 0; i < pointArray.size(); i++)
+    {
+        OdGePoint3d point = pointArray[i];
+        verticesVector.push_back(point.x); // x
+        verticesVector.push_back(point.y); // y
+        verticesVector.push_back(point.z); // z
+
+        OdGeVector3d normal = normalArray[i];
+        verticesVector.push_back(normal.x); // n.x
+        verticesVector.push_back(normal.y); // n.y
+        verticesVector.push_back(normal.z); // n.z
+    }
+}
+

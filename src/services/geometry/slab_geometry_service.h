@@ -9,8 +9,8 @@ class SlabGeometryService : public QObject
 public:
     explicit SlabGeometryService(QObject *parent = nullptr);
 
-    void generateMesh2D(BIMElement* wallElement, Mesh* mesh);
-    void generateMesh3D(BIMElement *wallElement, Mesh* mesh);
+    void generateMesh2D(BIMElement* slabElement, Mesh* mesh);
+    void generateMesh3D(BIMElement* slabElement, Mesh* mesh);
 
 signals:
 

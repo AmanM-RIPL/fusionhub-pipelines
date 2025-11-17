@@ -26,6 +26,9 @@ Row {
     property int beamExpandedIndex: -1
     property int columnExpandedIndex: -1
     property int slabExpandedIndex: -1
+    property int doorExpandedIndex: -1
+    property int windowExpandedIndex: -1
+    property int stairsExpandedIndex: -1
 
 
     IFCWallController {
@@ -421,6 +424,18 @@ Row {
                                 else if(itemName === "Slab")
                                 {
                                     slabSettingsPopup.open();
+                                }
+                                else if(itemName === "Door")
+                                {
+                                    doorSettingsPopup.open();
+                                }
+                                else if(itemName === "Window")
+                                {
+                                    windowSettingsPopup.open();
+                                }
+                                else if(itemName === "Stairs")
+                                {
+                                    stairsSettingsPopup.open();
                                 }
                             }
 
@@ -944,6 +959,380 @@ Row {
             }
         }
         //End of SlabSettings
+
+
+        //Start of DoorSettings
+        FHPopup {
+            id: doorSettingsPopup
+            popupWidth: 500
+            popupHeight: 600
+            title: "Door Settings"
+            //parent: Overlay
+            anchors.centerIn: Overlay.overlay
+
+            property string doorTotalHeightText: ""
+            property string doorDistanceText: ""
+            property string doorWidthText: ""
+
+
+            onAcceptCallback: function () {
+                //doorController.create("projectname", doorTotalHeightTextBox.text, doorWidthTextBox.text);
+                let bimElementPtr = bimElementController.create("Door", "Front Door", 0);
+                bimElementController.addParameter(bimElementPtr, "Height", doorTotalHeightText);
+                bimElementController.addParameter(bimElementPtr, "Width", doorWidthText);
+                bimElementController.addParameter(bimElementPtr, "Distance", doorDistanceText);
+                bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
+
+                doorTotalHeightText = "";
+                doorDistanceText = "";
+                doorWidthText = "";
+
+                glscene.setCurrentItem("Door");
+                glscene.update();
+            }
+
+            onCancelCallback: function () {
+                doorTotalHeightText = "";
+                doorDistanceText= "";
+                doorWidthText= "";
+
+                 glscene.update();
+            }
+
+
+            ColumnLayout {
+                id:doorColumnLayout
+                width: doorSettingsPopup.popupWidth-65
+                height: doorSettingsPopup.popupHeight-65
+                ListView{
+                    id:doorMainListView
+                    model: popupModel
+                    clip: true
+                    orientation: Qt.Vertical
+                    spacing: 10
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    delegate: Rectangle {
+                        //id: firstColumn
+                        id: doorRectId
+                        width:columnLayout.width
+                        height: doorExpandedIndex === index ? 460 : 60
+                        radius: 5
+                        color:height === 60 ? "lightgray": "white"
+
+                        // Animate the height change
+                        Behavior on height {
+                            NumberAnimation { duration: 200 }
+                        }
+
+                        Text {
+                            id: doorNameId
+                            text: name
+                            objectName:rowIndexText
+                            topPadding: 10
+                            bottomPadding: 10
+                            font.pointSize: 14
+                            color: "black"
+                            font.weight: 700
+                            font.family: "Segoe UI"
+                            anchors.left: parent.left
+                            anchors.leftMargin: 10
+                        }
+
+                        //Start of row
+                        RowLayout{
+                            id: doorRowLayout
+                            width: parent.width
+                            height: 300
+                            spacing: 5
+                            anchors.top: doorNameId.bottom
+                            anchors.left: doorNameId.left
+                            visible: doorExpandedIndex === index
+                            Loader {
+                                        Layout.fillWidth: true
+                                        sourceComponent: {
+                                            if (doorNameId.objectName === "0")
+                                            {
+                                                return gpDelegateComponentForDoor;
+                                            }
+                                            else if (doorNameId.objectName === "1")
+                                            {
+                                                return modelDelegateComponentForDoor;
+                                            }
+                                            else
+                                            {
+                                                return cpDelegateComponentForDoor;
+                                            }
+                                        }
+                                    }
+                        }//End of row
+                        MouseArea {
+                            anchors.fill: doorNameId
+                            onClicked: {
+                               //If this item is already expanded, collapse it. Otherwise, expand it.
+                                if (doorExpandedIndex === index) {
+                                    doorExpandedIndex = -1
+                                }
+                                else {
+                                    doorExpandedIndex = index
+                                    doorRectId.border.color = "lightgray"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        //End of DoorSettings
+
+
+        //Start of WindowSettings
+        FHPopup {
+            id: windowSettingsPopup
+            popupWidth: 500
+            popupHeight: 600
+            title: "Window Settings"
+            //parent: Overlay
+            anchors.centerIn: Overlay.overlay
+
+            property string windowTotalHeightText: ""
+            property string windowDistanceText: ""
+            property string windowWidthText: ""
+
+
+            onAcceptCallback: function () {
+                //windowController.create("projectname", windowTotalHeightTextBox.text, windowWidthTextBox.text);
+                let bimElementPtr = bimElementController.create("Window", "Front Window", 0);
+                bimElementController.addParameter(bimElementPtr, "Height", windowTotalHeightText);
+                bimElementController.addParameter(bimElementPtr, "Distance", windowDistanceText);
+                bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
+
+                windowTotalHeightText = "";
+                windowDistanceText = "";
+                windowWidthText = "";
+
+                glscene.setCurrentItem("Window");
+                glscene.update();
+            }
+
+            onCancelCallback: function () {
+                windowTotalHeightText = "";
+                windowDistanceText = "";
+                windowWidthText = "";
+
+                glscene.update();
+            }
+
+
+            ColumnLayout {
+                id:windowColumnLayout
+                width: windowSettingsPopup.popupWidth-65
+                height: windowSettingsPopup.popupHeight-65
+                ListView{
+                    id:windowMainListView
+                    model: popupModel
+                    clip: true
+                    orientation: Qt.Vertical
+                    spacing: 10
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    delegate: Rectangle {
+                        //id: firstColumn
+                        id: windowRectId
+                        width:columnLayout.width
+                        //height: windowExpandedIndex === index ? 360 : 60
+                        height: windowExpandedIndex === index ? 460 : 60
+                        radius: 5
+                        color:height === 60 ? "lightgray": "white"
+
+                        // Animate the height change
+                        Behavior on height {
+                            NumberAnimation { duration: 200 }
+                        }
+
+                        Text {
+                            id: windowNameId
+                            text: name
+                            objectName:rowIndexText
+                            topPadding: 10
+                            bottomPadding: 10
+                            font.pointSize: 14
+                            color: "black"
+                            font.weight: 700
+                            font.family: "Segoe UI"
+                            anchors.left: parent.left
+                            anchors.leftMargin: 10
+                        }
+
+                        //Start of row
+                        RowLayout{
+                            id: windowRowLayout
+                            width: parent.width
+                            height: 300
+                            spacing: 5
+                            anchors.top: windowNameId.bottom
+                            anchors.left: windowNameId.left
+                            visible: windowExpandedIndex === index
+                            Loader {
+                                        Layout.fillWidth: true
+                                        sourceComponent: {
+                                            if (windowNameId.objectName === "0")
+                                            {
+                                                return gpDelegateComponentForWindow;
+                                            }
+                                            else if (windowNameId.objectName === "1")
+                                            {
+                                                return modelDelegateComponentForWindow;
+                                            }
+                                            else
+                                            {
+                                                return cpDelegateComponentForWindow;
+                                            }
+                                        }
+                                    }
+                        }//End of row
+                        MouseArea {
+                            anchors.fill: windowNameId
+                            onClicked: {
+                               //If this item is already expanded, collapse it. Otherwise, expand it.
+                                if (windowExpandedIndex === index) {
+                                    windowExpandedIndex = -1
+                                }
+                                else {
+                                    windowExpandedIndex = index
+                                    windowRectId.border.color = "lightgray"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        //End of WindowSettings
+
+
+        //Start of StairsSettings
+        FHPopup {
+            id: stairsSettingsPopup
+            popupWidth: 500
+            popupHeight: 600
+            title: "Stairs Settings"
+            //parent: Overlay
+            anchors.centerIn: Overlay.overlay
+
+            property string stairsTotalHeightText: ""
+            property string stairsDistanceText: ""
+
+
+            onAcceptCallback: function () {
+                //stairsController.create("projectname", stairsTotalHeightTextBox.text, stairsWidthTextBox.text);
+                let bimElementPtr = bimElementController.create("Stairs", "Front Stairs", 0);
+                bimElementController.addParameter(bimElementPtr, "Height", stairsTotalHeightText);
+                bimElementController.addParameter(bimElementPtr, "Distance", stairsDistanceText);
+                bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
+
+                stairsTotalHeightText = "";
+                stairsDistanceText = "";
+
+                glscene.setCurrentItem("Stairs");
+                glscene.update();
+            }
+
+            onCancelCallback: function () {
+                stairsTotalHeightText = "";
+                stairsDistanceText= "";
+
+                 glscene.update();
+            }
+
+
+            ColumnLayout {
+                id:stairsColumnLayout
+                width: stairsSettingsPopup.popupWidth-65
+                height: stairsSettingsPopup.popupHeight-65
+                ListView{
+                    id:stairsMainListView
+                    model: popupModel
+                    clip: true
+                    orientation: Qt.Vertical
+                    spacing: 10
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    delegate: Rectangle {
+                        //id: firstColumn
+                        id: stairsRectId
+                        width:columnLayout.width
+                        height: stairsExpandedIndex === index ? 360 : 60
+                        radius: 5
+                        color:height === 60 ? "lightgray": "white"
+
+                        // Animate the height change
+                        Behavior on height {
+                            NumberAnimation { duration: 200 }
+                        }
+
+                        Text {
+                            id: stairsNameId
+                            text: name
+                            objectName:rowIndexText
+                            topPadding: 10
+                            bottomPadding: 10
+                            font.pointSize: 14
+                            color: "black"
+                            font.weight: 700
+                            font.family: "Segoe UI"
+                            anchors.left: parent.left
+                            anchors.leftMargin: 10
+                        }
+
+                        //Start of row
+                        RowLayout{
+                            id: stairsRowLayout
+                            width: parent.width
+                            height: 300
+                            spacing: 5
+                            anchors.top: stairsNameId.bottom
+                            anchors.left: stairsNameId.left
+                            visible: stairsExpandedIndex === index
+                            Loader {
+                                        Layout.fillWidth: true
+                                        sourceComponent: {
+                                            if (stairsNameId.objectName === "0")
+                                            {
+                                                return gpDelegateComponentForStairs;
+                                            }
+                                            else if (stairsNameId.objectName === "1")
+                                            {
+                                                return modelDelegateComponentForStairs;
+                                            }
+                                            else
+                                            {
+                                                return cpDelegateComponentForStairs;
+                                            }
+                                        }
+                                    }
+                        }//End of row
+                        MouseArea {
+                            anchors.fill: stairsNameId
+                            onClicked: {
+                               //If this item is already expanded, collapse it. Otherwise, expand it.
+                                if (stairsExpandedIndex === index) {
+                                    stairsExpandedIndex = -1
+                                }
+                                else {
+                                    stairsExpandedIndex = index
+                                    stairsRectId.border.color = "lightgray"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        //End of StairsSettings
     }
 
 
@@ -957,7 +1346,6 @@ Row {
         GLScene {
             id: glscene
             anchors.fill: parent
-
 
             MouseArea {
                 anchors.fill: parent
@@ -1005,23 +1393,27 @@ Row {
     }
 
     Component.onCompleted: {
-        //if(plannedBIMRoot.visible){
+        //if(plannedBIMRoot.visible)
+        {
             //ifcDetailList = ifcDetailRepository.getIFCDetails();
              // ifcDetailList = ifcDetailController.loadIFC(ifcDetailController.getIfcFilePath());
              //treeModel = ifcDetailController.getTreeModel();
-        //}
-
+            glscene.viewIfc();
+            glscene.update();
+        }
     }
 
     onVisibleChanged: {
-        //if(plannedBIMRoot.visible && plannedBIMRoot.pageType === "PlannedBIM"){
+        //if(plannedBIMRoot.visible && plannedBIMRoot.pageType === "PlannedBIM")
+        {
             //ifcDetailList = ifcDetailRepository.getIFCDetails();
-            // ifcDetailList = ifcDetailController.loadIFC(ifcDetailController.getIfcFilePath());
-             //treeModel = ifcDetailController.getTreeModel();
-        //}
+            //ifcDetailList = ifcDetailController.loadIFC(ifcDetailController.getIfcFilePath());
+            //treeModel = ifcDetailController.getTreeModel();
+            glscene.viewIfc();
+            glscene.update();
+
+        }
     }
-
-
 
     //Components for Geometry and Positioning For WallSettings
     Component {
@@ -1843,4 +2235,703 @@ Row {
         }
     }
     //End of SlabSettings Component
+
+
+    //Components for Geometry and Positioning For DoorSettings
+    Component {
+        id: gpDelegateComponentForDoor
+        RowLayout {
+            id:doorRowLayoutGP
+            width: parent.width
+            height: 400
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (doorRowLayoutGP.width - doorRowLayoutGP.spacing) / 2-10
+                height: 400
+
+                ColumnLayout {
+                    width: firstColumn.width
+                    height: firstColumn.height
+
+                    Text{
+                        id: doorTopLinkLabel
+                        text: "Door top link"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                    }
+                    CustomTextBox{
+                        id: doorTopLinkTextBox
+                        placeholderText: "Top Link"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: doorHeightFromTopLabel
+                        text: "Height From Top"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: doorHeightFromTopTextBox
+                        placeholderText: "Height From Top"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: doorTotalHeightLabel
+                        text: "Total Height"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: doorTotalHeightTextBox
+                        placeholderText: "Total Height"
+                        text:""
+                        color: "#323130"
+
+                        onTextChanged: {
+                            doorSettingsPopup.doorTotalHeightText = doorTotalHeightTextBox.text;
+                        }
+                    }
+
+
+                    Text{
+                        id: doorWidthLabel
+                        text: "Width"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: doorWidthTextBox
+                        placeholderText: "Width"
+                        text:""
+                        color: "#323130"
+
+                        onTextChanged: {
+                            doorSettingsPopup.doorWidthText = doorWidthTextBox.text;
+                        }
+                    }
+
+
+                    Text{
+                        id: doorTypeLabel
+                        text: "Door Type"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: doorTypeTextBox
+                        placeholderText: "Door Type"
+                        text:""
+                        color: "#323130"
+                    }
+                }
+            }
+
+            Rectangle {
+                id:secondColumn
+                width: (doorRowLayoutGP.width - doorRowLayoutGP.spacing) / 2-10
+                height: 400
+
+
+                ColumnLayout {
+                    width: secondColumn.width
+                    height: secondColumn.height
+
+                    Text{
+                        id: doorHomeFloorLabel
+                        text: "Home Floor"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                    }
+                    CustomTextBox{
+                        id: doorHomeFloorTextBox
+                        placeholderText: "Home Floor"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: doorHeightFromBottomLabel
+                        text: "Height From Bottom"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: doorHeightFromBottomTextBox
+                        placeholderText: "Height From Bottom"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: doorDistanceLabel
+                        text: "Distance From Level"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: doorDistanceTextBox
+                        placeholderText: "Distance"
+                        text:""
+                        color: "#323130"
+
+                        onTextChanged: {
+                            doorSettingsPopup.doorDistanceText = doorDistanceTextBox.text;
+                        }
+                    }
+
+
+                    Text{
+                        id: doorGeometryTypeLabel
+                        text: "Geometry Type"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                     }
+                    CustomTextBox{
+                        id: doorGeometryTypeTextBox
+                        placeholderText: "Geometry Type"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+
+                    Text{
+                        id: doorGeometryTypeLabelDummy
+                        text:""// "Geometry TypeDummy"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                     }
+                    Text{//CustomTextBox{
+                        id: doorGeometryTypeTextBoxDummy
+                        //placeholderText: "Geometry TypeDummy"
+                        text:""
+                        color: "#323130"
+                        topPadding: 25
+                    }
+                }
+            }
+        }
+    }
+
+   //Components for Door Model
+    Component {
+        id: modelDelegateComponentForDoor
+        RowLayout {
+            id:doorRowLayoutModel
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (doorRowLayoutModel.width - doorRowLayoutModel.spacing) / 2-20
+                height: 300
+            }
+        }
+    }
+
+    //Components for Door Classification and Properties
+    Component {
+        id: cpDelegateComponentForDoor
+        RowLayout {
+            id: doorRowLayoutCP
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (doorRowLayoutCP.width - doorRowLayoutCP.spacing) / 2-20
+                height: 300
+            }
+        }
+    }
+    //End of DoorSettings Component
+
+
+    //Components for Geometry and Positioning For WindowSettings
+    Component {
+        id: gpDelegateComponentForWindow
+        RowLayout {
+            id:windowRowLayoutGP
+            width: parent.width
+            height: 400
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (windowRowLayoutGP.width - windowRowLayoutGP.spacing) / 2-10
+                height: 400
+
+                ColumnLayout {
+                    width: firstColumn.width
+                    height: firstColumn.height
+
+                    Text{
+                        id: windowTopLinkLabel
+                        text: "Window top link"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                    }
+                    CustomTextBox{
+                        id: windowTopLinkTextBox
+                        placeholderText: "Top Link"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: windowHeightFromTopLabel
+                        text: "Height From Top"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: windowHeightFromTopTextBox
+                        placeholderText: "Height From Top"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: windowTotalHeightLabel
+                        text: "Total Height"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: windowTotalHeightTextBox
+                        placeholderText: "Total Height"
+                        text:""
+                        color: "#323130"
+
+                        onTextChanged: {
+                            windowSettingsPopup.windowTotalHeightText = windowTotalHeightTextBox.text;
+                        }
+                    }
+
+
+                    Text{
+                        id: windowWidthLabel
+                        text: "Width"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: windowWidthTextBox
+                        placeholderText: "Width"
+                        text:""
+                        color: "#323130"
+
+                        onTextChanged: {
+                            windowSettingsPopup.windowWidthText = windowWidthTextBox.text;
+                        }
+                    }
+
+
+                    Text{
+                        id: windowTypeLabel
+                        text: "Window Type"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: windowTypeTextBox
+                        placeholderText: "Window Type"
+                        text:""
+                        color: "#323130"
+                    }
+                }
+            }
+
+            Rectangle {
+                id:secondColumn
+                width: (windowRowLayoutGP.width - windowRowLayoutGP.spacing) / 2-10
+                height: 400
+
+                ColumnLayout {
+                    width: secondColumn.width
+                    height: secondColumn.height
+
+                    Text{
+                        id: windowHomeFloorLabel
+                        text: "Home Floor"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                    }
+                    CustomTextBox{
+                        id: windowHomeFloorTextBox
+                        placeholderText: "Home Floor"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: windowHeightFromBottomLabel
+                        text: "Height From Bottom"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: windowHeightFromBottomTextBox
+                        placeholderText: "Height From Bottom"
+                        text:""
+                        color: "#323130"
+                    }
+
+                    Text{
+                        id: windowDistanceLabel
+                        text: "Distance From Level"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: windowDistanceTextBox
+                        placeholderText: "Distance"
+                        text:""
+                        color: "#323130"
+
+                        onTextChanged: {
+                            windowSettingsPopup.windowDistanceText = windowDistanceTextBox.text;
+                        }
+                    }
+
+
+                    Text{
+                        id: windowGeometryTypeLabel
+                        text: "Geometry Type"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                     }
+                    CustomTextBox{
+                        id: windowGeometryTypeTextBox
+                        placeholderText: "Geometry Type"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+
+                    Text{
+                        id: windowGeometryTypeLabelDummy
+                        text:""// "Geometry TypeDummy"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+
+                     }
+                    Text{//CustomTextBox{
+                        id: windowGeometryTypeTextBoxDummy
+                        //placeholderText: "Geometry TypeDummy"
+                        text:""
+                        color: "#323130"
+                        topPadding: 25
+                    }
+                }
+            }
+        }
+    }
+
+   //Components for Window Model
+    Component {
+        id: modelDelegateComponentForWindow
+        RowLayout {
+            id:windowRowLayoutModel
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (windowRowLayoutModel.width - windowRowLayoutModel.spacing) / 2-20
+                height: 300
+            }
+        }
+    }
+
+    //Components for Window Classification and Properties
+    Component {
+        id: cpDelegateComponentForWindow
+        RowLayout {
+            id: windowRowLayoutCP
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (windowRowLayoutCP.width - windowRowLayoutCP.spacing) / 2-20
+                height: 300
+            }
+        }
+    }
+    //End of WindowSettings Component
+
+
+    //Components for Geometry and Positioning For StairsSettings
+    Component {
+        id: gpDelegateComponentForStairs
+        RowLayout {
+            id:stairsRowLayoutGP
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (stairsRowLayoutGP.width - stairsRowLayoutGP.spacing) / 2-10
+                height: 300
+
+                ColumnLayout {
+                    width: firstColumn.width
+                    height: firstColumn.height
+
+                    Text{
+                        id: stairsTopLinkLabel
+                        text: "Stairs top link"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                    }
+                    CustomTextBox{
+                        id: stairsTopLinkTextBox
+                        placeholderText: "Top Link"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: stairsHeightFromTopLabel
+                        text: "Height From Top"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: stairsHeightFromTopTextBox
+                        placeholderText: "Height From Top"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: stairsTotalHeightLabel
+                        text: "Total Height"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: stairsTotalHeightTextBox
+                        placeholderText: "Total Height"
+                        text:""
+                        color: "#323130"
+
+                        onTextChanged: {
+                            stairsSettingsPopup.stairsTotalHeightText = stairsTotalHeightTextBox.text;
+                        }
+                    }
+
+
+                    Text{
+                        id: stairsTypeLabel
+                        text: "Stairs Type"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: stairsTypeTextBox
+                        placeholderText: "Stairs Type"
+                        text:""
+                        color: "#323130"
+                    }
+                }
+            }
+
+            Rectangle {
+                id:secondColumn
+                width: (stairsRowLayoutGP.width - stairsRowLayoutGP.spacing) / 2-10
+                height: 300
+
+                ColumnLayout {
+                    width: secondColumn.width
+                    height: secondColumn.height
+
+                    Text{
+                        id: stairsHomeFloorLabel
+                        text: "Home Floor"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                    }
+                    CustomTextBox{
+                        id: stairsHomeFloorTextBox
+                        placeholderText: "Home Floor"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: stairsHeightFromBottomLabel
+                        text: "Height From Bottom"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: stairsHeightFromBottomTextBox
+                        placeholderText: "Height From Bottom"
+                        text:""
+                        color: "#323130"
+                    }
+
+
+                    Text{
+                        id: stairsDistanceLabel
+                        text: "Distance From Level"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                    }
+                    CustomTextBox{
+                        id: stairsDistanceTextBox
+                        placeholderText: "Distance"
+                        text:""
+                        color: "#323130"
+
+                        onTextChanged: {
+                            stairsSettingsPopup.stairsDistanceText = stairsDistanceTextBox.text;
+                        }
+                    }
+
+
+                    Text{
+                        id: stairsGeometryTypeLabel
+                        text: "Geometry Type"
+                        color: "#323130"
+                        //font.weight: 700
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                        topPadding: 10
+                     }
+                    CustomTextBox{
+                        id: stairsGeometryTypeTextBox
+                        placeholderText: "Geometry Type"
+                        text:""
+                        color: "#323130"
+                    }
+                }
+            }
+        }
+    }
+
+   //Components for Stairs Model
+    Component {
+        id: modelDelegateComponentForStairs
+        RowLayout {
+            id:stairsRowLayoutModel
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (stairsRowLayoutModel.width - stairsRowLayoutModel.spacing) / 2-20
+                height: 300
+            }
+        }
+    }
+
+    //Components for Stairs Classification and Properties
+    Component {
+        id: cpDelegateComponentForStairs
+        RowLayout {
+            id: stairsRowLayoutCP
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (stairsRowLayoutCP.width - stairsRowLayoutCP.spacing) / 2-20
+                height: 300
+            }
+        }
+    }
+    //End of StairsSettings Component
 }
