@@ -74,7 +74,7 @@ MyGLRenderer::MyGLRenderer()
 
     m_mesh = new Mesh();
     // m_mesh->Initialize(verticies, indices, 24, 12);
-    mesh->Copy(m_mesh);
+    // mesh->Copy(m_mesh);
 
     // initialize Camera
     m_camera = new Camera();
@@ -110,7 +110,7 @@ MyGLRenderer::MyGLRenderer()
     m_view->AddCamera(m_camera);
     m_view->AddShader(m_shader);
     m_view->AddPickingShader(m_picking_shader);
-    m_view->Initialize();
+    // m_view->Initialize();
 }
 
 MyGLRenderer::~MyGLRenderer()
@@ -213,7 +213,11 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
     if (!meshInitialized)
     {
+        GeometryServiceFactory::generateMesh3D(glItem->bimElement, m_mesh);
 
+        m_view->Initialize();
+
+        meshInitialized = true;
     }
 }
 
@@ -629,8 +633,8 @@ MyGLItem::MyGLItem(QQuickItem *parent)
     bimElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
     BIMParameter* widthParameter = new BIMParameter(1,"1",false,"Width","1",1,this);
     BIMParameter* rlParameter = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [0,4], [4,4]]",1,this);
-    newElement->addParameter(widthParameter);
-    newElement->addParameter(rlParameter);
+    bimElement->addParameter(widthParameter);
+    bimElement->addParameter(rlParameter);
 
     // bimElementController->create("Wall", "Front Wall", 0);
 
@@ -640,9 +644,9 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 
     // qInfo() << "BIM Element with Params is null: " << (newElement == nullptr);
 
-    mesh = new Mesh(this);
-    WallGeometryService service = WallGeometryService();
-    service.generateMesh3D(newElement, mesh);
+    // mesh = new Mesh(this);
+    // WallGeometryService service = WallGeometryService();
+    // service.generateMesh3D(newElement, mesh);
 
     // GLfloat* vertices = mesh->getVerticies();
     // unsigned int* indices = mesh->getIndices();

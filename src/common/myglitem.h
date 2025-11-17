@@ -25,6 +25,17 @@
 #include "RxObjectImpl.h"
 #include "ExSystemServices.h"
 #include "StaticRxObject.h"
+
+// there needs to be a better way!!!!!!!!!!!!!!
+
+class OdDbStub {
+public:
+    OdUInt64 getHandle()
+    {
+        return 0;
+    }
+};
+
 #include "IfcCore.h"
 #include "IfcFile.h"
 #include "IfcModel.h"
@@ -33,7 +44,13 @@
 #include "IfcExamplesCommon.h"
 #include "IfcGiContext.h"
 #include "IfcGsManager.h"
+#include "IfcMappedItem.h"
+#include "IfcRepresentationMap.h"
+#include "Ifc2x3/IfcRepresentationMapAutoImpl.h"
+#include "Ifc2x3/IfcShapeRepresentationAutoImpl.h"
+
 #include "TvFactory.h"
+
 #include "FMDataSerialize.h"
 #include "FMMdlBody.h"
 #include "FMMdlFace.h"
@@ -41,6 +58,7 @@
 #include "FMMdlEdge.h"
 #include "FMMdlVertex.h"
 #include "FMMdlIterators.h"
+
 #include "Ge/GeTrMeshSimplification.h"
 
 #include "common/opengl/classes/mesh.h"
@@ -52,7 +70,7 @@
 // #include "controllers/bim_element_controller.h"
 #include "models/bim_element.h"
 #include "models/bim_parameter.h"
-#include "services/geometry/wall_geometry_service.h"
+#include "services/geometry/geometry_service_factory.h"
 
 class MyApp : public ExSystemServices
 {

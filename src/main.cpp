@@ -46,6 +46,8 @@
 #include "models/unit_of_measurement.h"
 #include "models/draft_entity.h"
 
+#include <iostream>
+
 // There has to be a better way???????????
 const OdString OdString::kEmpty;
 const OdDAIObjectId OdDAIObjectId::kNull;
@@ -111,27 +113,32 @@ int main(int argc, char *argv[])
 
 
     // Read IFC File
-    // OdString ifcFileName("C:\\Users\\RIPL\\Downloads\\BasicHouse.ifc");
+    OdString ifcFileName("C:\\Users\\RIPL\\Downloads\\DblDoor-1-Panel.ifc"); // BasicHouse
 
-    // OdIfcFilePtr pDatabase;
+    OdIfcFilePtr pDatabase;
 
-    // pDatabase = svcs.createDatabase();
-    // OdResult res = pDatabase->readFile(ifcFileName);
-    // qInfo() << "Database Loaded: " << (res == tvOk);
+    pDatabase = svcs.createDatabase();
+    OdResult res = pDatabase->readFile(ifcFileName);
+    qInfo() << "Database Loaded: " << (res == tvOk);
 
-    // OdIfcModelPtr pIfcModel = pDatabase->getModel();
+    OdIfcModelPtr pIfcModel = pDatabase->getModel();
 
-    // OdIfcModelContext& modelContext = pDatabase->getContext();
+    OdIfcModelContext& modelContext = pDatabase->getContext();
 
     // Choose what kinds of entities to compose (optional, but recommended)
-    // modelContext.getGeometryComposeTypes().append(OdIfc::kIfcProduct);
+    modelContext.getGeometryComposeTypes().append(OdIfc::kIfcProduct);
 
     // Set geometry options
-    // modelContext.setComposeOutOfSpatialStructure(true);
-    // modelContext.setDrawOpenings(true);
+    modelContext.setComposeOutOfSpatialStructure(true);
+    modelContext.setDrawOpenings(true);
+    modelContext.setDrawPoints(true);
+    modelContext.setDrawSpaces(true);
+
+    // OdArray<OdIfc::OdIfcEntityType> geomTypes = {OdIfc::kIfcDoor};
+    // modelContext.setGeometryComposeTypes(geomTypes);
 
     // Compose IFC geometry
-    // OdResult composeR =  pDatabase->composeEntities();
+    OdResult composeR =  pDatabase->composeEntities();
 
     // // get CDA data
     // TreeItem* rootItem = new TreeItem("", "", "");
@@ -142,58 +149,141 @@ int main(int argc, char *argv[])
     //TreeModel* treeModel = new TreeModel(rootItem, nullptr);
 
 
-    // const OdDAI::SetOfOdDAIObjectId* productIdSet = pIfcModel->getEntityExtent("IfcProduct");
+    const OdDAI::SetOfOdDAIObjectId* productIdSet = pIfcModel->getEntityExtent("IfcProduct");
 
-    // const OdDAIObjectIds& productIds = productIdSet->getArray();
+    const OdDAIObjectIds& productIds = productIdSet->getArray();
 
-    // qInfo() << "No of IFC products: " << productIds.length();
+    qInfo() << "No of IFC products: " << productIds.length();
 
     // long totalPrinouts = 0;
 
-    // for (OdDAIObjectIds::size_type iProduct = 0; iProduct < productIds.size(); ++iProduct)
-    // {
-    //     // if (totalPrinouts > 1)
-    //     // {
-    //     //     break;
-    //     // }
+    for (OdDAIObjectIds::size_type iProduct = 0; iProduct < productIds.size(); ++iProduct)
+    {
+        // if (totalPrinouts > 1)
+        // {
+        //     break;
+        // }
 
-    //     // if (iProduct > 1)
-    //     // {
-    //     //     break;
-    //     // }
+        // if (iProduct > 1)
+        // {
+        //     break;
+        // }
 
-    //     OdIfc::OdIfcInstancePtr pEntity = productIds[iProduct].openObject();
-    //     if (pEntity.isNull())
-    //     {
-    //         continue;
-    //     }
+        OdIfc::OdIfcInstancePtr pEntity = productIds[iProduct].openObject();
+        if (pEntity.isNull())
+        {
+            continue;
+        }
 
-    //     OdIfc::OdIfcProductPtr pProduct = OdIfc::OdIfcInstance::asCompound(pEntity);
-    //     if (pProduct.isNull())
-    //     {
-    //         continue;
-    //     }
+        OdIfc::OdIfcProductPtr pProduct = OdIfc::OdIfcInstance::asCompound(pEntity);
+        if (pProduct.isNull())
+        {
+            continue;
+        }
 
-    //     OdRxValue result = pEntity->getAttrCaseInsensitive("Name");
-    //     OdString nameValue;
-    //     result >> nameValue;
-    //     qInfo() << "Name: " << nameValue;
+        const OdIfc::OdIfcGeometricRepresentationItemPtrArray geomItems = pProduct->getGeometricRepresentationItems();
+        // OdGeMatrix3d placementMatrix = pProduct->getObjectPlacement();
 
-    //     OdString entityType = pEntity->isA()->name();
-    //     qInfo() << "Class: " << entityType;
+        if (geomItems.length() > 0)
+        {
+            qInfo() << "pEntity Type: " << pEntity->isA()->name();
+            qInfo() << "pProduct Type: " << pProduct->isA()->name();
+            // OdRxValue result = pEntity->getAttrCaseInsensitive("Name");
+            // OdString nameValue;
+            // result >> nameValue;
+            // qInfo() << "Name: " << nameValue;
 
-    //     OdRxValue globalIdResult = pEntity->getAttrCaseInsensitive("GlobalId");
-    //     OdString globalIdValue;
-    //     globalIdResult >> globalIdValue;
-    //     qInfo() << "Name: " << nameValue;
+            // OdString entityType = pEntity->isA()->name();
+            // qInfo() << "Class: " << entityType;
 
-    //     const OdIfc::OdIfcGeometricRepresentationItemPtrArray geomItems = pProduct->getGeometricRepresentationItems();
-    //     OdGeMatrix3d placementMatrix = pProduct->getObjectPlacement();
+            // // OdRxValue globalIdResult = pEntity->getAttrCaseInsensitive("GlobalId");
+            // // OdString globalIdValue;
+            // // globalIdResult >> globalIdValue;
+            // // qInfo() << "Name: " << nameValue;
 
-    //     qInfo() << "Length of Gom items: " << geomItems.length();
-    //     qInfo() << "LogicalLength of Gom items: " << geomItems.logicalLength();
-    //     qInfo() << "Size of Gom items: " << geomItems.size();
-    //     qInfo() << "Physial Length of Gom items: " << geomItems.physicalLength();
+            qInfo() << "Length of Gom items: " << geomItems.length();
+            // // qInfo() << "LogicalLength of Gom items: " << geomItems.logicalLength();
+            // // qInfo() << "Size of Gom items: " << geomItems.size();
+            // // qInfo() << "Physial Length of Gom items: " << geomItems.physicalLength();
+
+            // OdGeExtents3d ext;
+            // OdResult response = pProduct->getGeomExtents(ext);
+            // qInfo() << "Geom Extends: " << (response == eOk);
+        }
+
+        OdIfc::OdIfcRepresentationItemPtrArray repItems = pProduct->getRepresentationItems();
+        // qInfo() << "Length of Rep Items: " << repItems.length();
+
+        for (auto repItem: repItems)
+        {
+            if (repItem->type() == OdIfc::kIfcMappedItem)
+            {
+
+                OdIfc::OdIfcMappedItemPtr mappedItemPtr = OdIfc::OdIfcMappedItem::cast(repItem);
+
+                qInfo() << "Mapped is null: " << mappedItemPtr.isNull();
+
+                OdDAIObjectId mappingSource = mappedItemPtr->mappingSource();
+
+                qInfo() << "Mapping Source is null: " << mappingSource.isNull();
+
+                OdIfc::OdIfcInstancePtr pMappedEntity = mappingSource.openObject();
+
+                qInfo() << "IFC Instance is null: " << pMappedEntity.isNull();
+
+                OdIfc2x3::IfcRepresentationMapPtr mapPtr = OdIfc2x3::IfcRepresentationMap::cast(pMappedEntity);
+                qInfo() << "Map Instance is null: " << mapPtr.isNull(); //pMappedEntity->isA()->name();
+
+                OdDAIObjectId mappedRepresentation = mapPtr->getMappedRepresentation();
+                qInfo() << "Mapped Representation is null: " << mappedRepresentation.isNull();
+
+                OdIfc::OdIfcInstancePtr pMappedRep = mappedRepresentation.openObject();
+                qInfo() << "Mapped Representation Pointer is null: " << pMappedRep.isNull();
+
+                OdIfc2x3::IfcShapeRepresentationPtr shapePtr = OdIfc2x3::IfcShapeRepresentation::cast(pMappedRep);
+                qInfo() << "Shape is null: " << shapePtr.isNull();
+
+                OdDAIObjectIds shapeItems;
+                shapePtr->getItems(shapeItems);
+
+                qInfo() << shapeItems.size();
+
+                OdIfc::OdIfcInstancePtr pShapeEntity = shapeItems[0].openObject();
+                qInfo() << "pShapeEntity is null: " << pShapeEntity->isA()->name();
+
+                try
+                {
+                    //OdIfc::OdIfcProductPtr pShapeProduct = OdIfc::OdIfcInstance::asCompound(pShapeEntity);
+
+                    OdIfc::OdIfcGeometricRepresentationItemPtr pShapeProduct = OdIfc::OdIfcGeometricRepresentationItem::cast(OdIfc::OdIfcInstance::asCompound(pShapeEntity));
+
+                    qInfo() << "pShapeProduct is null: " << pShapeProduct.isNull();
+                }
+                catch (const OdError& e)
+                {
+                    // std::wcout << e.description().c_str() << std::endl;
+                    odPrintConsoleString(e.description());
+                }
+
+                // qInfo() << "pShapeProduct is null: " << pShapeProduct.isNull();
+
+                // if (pMappedEntity.isNull())
+                // {
+                //     continue;
+                // }
+
+                // OdIfc::OdIfcProductPtr pMappedProduct = OdIfc::OdIfcInstance::asCompound(pMappedRep);
+
+                // qInfo() << "IFC Product is null: " << pMappedProduct.isNull();
+                // if (pMappedProduct.isNull())
+                // {
+                //     continue;
+                // }
+
+                // const OdIfc::OdIfcGeometricRepresentationItemPtrArray geomMapItems = pMappedProduct->getGeometricRepresentationItems();
+                // qInfo() << "Length of Mapped Gom items: " << geomMapItems.length();
+            }
+        }
 
     //     for (OdDAIObjectIds::size_type iItem = 0; iItem < geomItems.size(); ++iItem)
     //     {
@@ -393,9 +483,9 @@ int main(int argc, char *argv[])
     //         }
     //         }
     //     }
-    // }
+    }
 
-    // qInfo() << "Compose Entity Count: " << modelContext.getGeometryComposeTypes().length();
+    qInfo() << "Compose Entity Count: " << modelContext.getGeometryComposeTypes().length();
     // qInfo() << "IFCDetail Length: " << ifcDetailList.length();
 
 
