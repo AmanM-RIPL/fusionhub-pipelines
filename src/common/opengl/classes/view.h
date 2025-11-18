@@ -64,6 +64,7 @@ private:
     QList<Mesh*> meshList;
     QList<OpenGLMaterial*> materialList;
     QList<Texture*> textureList;
+    Mesh* combinedMesh = nullptr; // need to delete it with view only!!
 
     int viewportWidth = 0;
     int viewportHeight = 0;

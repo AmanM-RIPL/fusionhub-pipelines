@@ -19,17 +19,69 @@ void Mesh::Copy(Mesh *mesh)
     mesh->Initialize(m_verticies, m_indices, m_border_indices, m_numOfVertices, m_numOfIndices, m_numOfBorderIndices);
 }
 
-Vertex *Mesh::getVerticies()
+void Mesh::Combine(Mesh *combinedMesh, QList<Mesh *> meshList)
+{
+    std::vector<Vertex> verticies;
+    std::vector<unsigned int> indices;
+    std::vector<unsigned int> border_indices;
+    unsigned int numOfVertices = 0;
+    unsigned int numOfIndices = 0;
+    unsigned int numOfBorderIndices = 0;
+
+    for (Mesh* mesh: meshList)
+    {
+        std::vector<Vertex> meshVerticies = mesh->getVerticies();
+        verticies.insert(verticies.end(), meshVerticies.begin(),  meshVerticies.end());
+
+        std::vector<unsigned int> meshIndices = mesh->getIndices();
+        for (unsigned int& index: meshIndices)
+        {
+            index += numOfVertices;
+        }
+        indices.insert(indices.end(), meshIndices.begin(), meshIndices.end());
+
+        std::vector<unsigned int> meshBorderIndices = mesh->getBorderIndices();
+        for (unsigned int& index: meshBorderIndices)
+        {
+            index += numOfVertices;
+        }
+        border_indices.insert(border_indices.end(), meshBorderIndices.begin(), meshBorderIndices.end());
+
+        numOfVertices += mesh->getNumOfVertices();
+        numOfIndices += mesh->getNumOfIndices();
+        numOfBorderIndices += mesh->getNumOfBorderIndices();
+    }
+
+
+    combinedMesh->Initialize(verticies, indices, border_indices, numOfVertices, numOfIndices, numOfBorderIndices);
+}
+
+std::vector<Vertex> Mesh::getVerticies()
+{
+    return m_verticies;
+}
+
+std::vector<unsigned int> Mesh::getIndices()
+{
+    return m_indices;
+}
+
+std::vector<unsigned int> Mesh::getBorderIndices()
+{
+    return m_border_indices;
+}
+
+Vertex *Mesh::getVerticiesData()
 {
     return m_verticies.data();
 }
 
-unsigned int *Mesh::getIndices()
+unsigned int *Mesh::getIndicesData()
 {
     return m_indices.data();
 }
 
-unsigned int *Mesh::getBorderIndices()
+unsigned int *Mesh::getBorderIndicesData()
 {
     return m_border_indices.data();
 }

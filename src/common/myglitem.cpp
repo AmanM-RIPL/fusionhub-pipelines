@@ -72,7 +72,7 @@ MyGLRenderer::MyGLRenderer()
 
     // calcAverageNormals(indices.data(), 12, verticies.data(), 24, 6, 3);
 
-    m_mesh = new Mesh();
+    // m_mesh = new Mesh();
     // m_mesh->Initialize(verticies, indices, 24, 12);
     // mesh->Copy(m_mesh);
 
@@ -104,7 +104,7 @@ MyGLRenderer::MyGLRenderer()
 
     // initialize View
     m_view = new View();
-    m_view->AddMesh(m_mesh);
+    // m_view->AddMesh(m_mesh);
     m_view->AddMaterial(material);
     m_view->AddTexture(texture);
     m_view->AddCamera(m_camera);
@@ -125,21 +125,29 @@ MyGLRenderer::~MyGLRenderer()
     //     this->glDeleteRenderbuffers(1, &m_pickDepthBuf);
     // }
 
-    delete m_mesh;
+    // delete m_mesh;
     delete m_camera;
     delete m_shader;
     delete m_picking_shader;
     delete m_view;
 
-    for (OpenGLMaterial* material : m_materialList) {
+    for (OpenGLMaterial* material : m_materialList)
+    {
         delete material;
     }
     m_materialList.clear();
 
-    for (Texture* texture : m_textureList) {
+    for (Texture* texture : m_textureList)
+    {
         delete texture;
     }
     m_textureList.clear();
+
+    for (Mesh* mesh: m_meshList)
+    {
+        delete mesh;
+    }
+    m_meshList.clear();
 }
 
 void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
@@ -213,7 +221,14 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
     if (!meshInitialized)
     {
-        GeometryServiceFactory::generateMesh3D(glItem->bimElement, m_mesh);
+        for (BIMElement* bimElement: glItem->bimElementList)
+        {
+            Mesh* mesh = new Mesh();
+            m_meshList.append(mesh);
+            m_view->AddMesh(mesh);
+
+            GeometryServiceFactory::generateMesh3D(bimElement, mesh);
+        }
 
         m_view->Initialize();
 
@@ -630,11 +645,13 @@ MyGLItem::MyGLItem(QQuickItem *parent)
     // BIMElementController* bimElementController = new BIMElementController(this);
 
 
-    bimElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
+    BIMElement* bimElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
     BIMParameter* widthParameter = new BIMParameter(1,"1",false,"Width","1",1,this);
     BIMParameter* rlParameter = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [0,4], [4,4]]",1,this);
     bimElement->addParameter(widthParameter);
     bimElement->addParameter(rlParameter);
+
+    bimElementList.append(bimElement);
 
     // bimElementController->create("Wall", "Front Wall", 0);
 

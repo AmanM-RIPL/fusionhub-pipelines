@@ -25,10 +25,16 @@ public:
 
     void Initialize(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<unsigned int>& borderIndices, unsigned int numOfVertices, unsigned int numOfIndices, unsigned int numOfBorderIndices);
     void Copy(Mesh* mesh);
+    static void Combine(Mesh* combinedMesh, QList<Mesh*> meshList);
 
-    Vertex* getVerticies();
-    unsigned int* getIndices();
-    unsigned int* getBorderIndices();
+    std::vector<Vertex> getVerticies();
+    std::vector<unsigned int> getIndices();
+    std::vector<unsigned int> getBorderIndices();
+    Vertex* getVerticiesData();
+    unsigned int* getIndicesData();
+    unsigned int* getBorderIndicesData();
+
+
     unsigned int getNumOfVertices();
     unsigned int getNumOfIndices();
     unsigned int getNumOfBorderIndices();

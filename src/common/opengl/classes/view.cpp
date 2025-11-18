@@ -11,12 +11,16 @@ void View::Initialize()
 
     // FOR TESTING:::: ADD MESH BEFORE HAND
     // getting the data of the first mesh
-    Vertex* vertices = meshList[0]->getVerticies();
-    unsigned int* indices = meshList[0]->getIndices();
-    unsigned int* borderIndices = meshList[0]->getBorderIndices();
-    unsigned int numOfVertices = meshList[0]->getNumOfVertices();
-    unsigned int numOfIndices = meshList[0]->getNumOfIndices();
-    unsigned int numOfBorderIndices = meshList[0]->getNumOfBorderIndices();
+    delete combinedMesh;
+    combinedMesh = new Mesh();
+    Mesh::Combine(combinedMesh, meshList);
+
+    Vertex* vertices = combinedMesh->getVerticiesData();
+    unsigned int* indices = combinedMesh->getIndicesData();
+    unsigned int* borderIndices = combinedMesh->getBorderIndicesData();
+    unsigned int numOfVertices = combinedMesh->getNumOfVertices();
+    unsigned int numOfIndices = combinedMesh->getNumOfIndices();
+    unsigned int numOfBorderIndices = combinedMesh->getNumOfBorderIndices();
 
     // Initializing the vao, vbo, and ibo
     m_indexCount = numOfIndices;
@@ -260,7 +264,7 @@ void View::UpdateGeometry()
         //IBO
         // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
             this->glBindBuffer(GL_ARRAY_BUFFER, m_static_vbo);
-                this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(meshList[0]->getVerticies()), meshList[0]->getVerticies());
+                this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(meshList[0]->getVerticies().data()), meshList[0]->getVerticies().data());
             this->glBindBuffer(GL_ARRAY_BUFFER, 0);
         // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     this->glBindVertexArray(0);
@@ -373,4 +377,6 @@ View::~View()
     this->glDeleteBuffers(1, &m_static_vbo);
     this->glDeleteBuffers(1, &m_static_ibo);
     this->glDeleteVertexArrays(1, &m_vao);
+
+    delete combinedMesh;
 }

@@ -103,7 +103,7 @@ public:
 
     int m_lastClickX = -1;
     int m_lastClickY = -1;
-    BIMElement* bimElement = nullptr;
+    QList<BIMElement*> bimElementList;
 
 public slots:
     void cameraMoveUp();
@@ -152,7 +152,7 @@ private:
 
     bool meshInitialized = false;
 
-    Mesh* m_mesh = nullptr;
+    QList<Mesh*> m_meshList;
     Camera* m_camera = nullptr;
     Shader* m_shader = nullptr;
     Shader* m_picking_shader = nullptr;
