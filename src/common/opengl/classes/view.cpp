@@ -9,8 +9,18 @@ void View::Initialize()
 {
     this->initializeOpenGLFunctions();
 
-    // FOR TESTING:::: ADD MESH BEFORE HAND
-    // getting the data of the first mesh
+    this->glEnable(GL_DEPTH_TEST);
+
+    this->glGenVertexArrays(1, &m_vao);
+    this->glGenBuffers(1, &m_static_ibo);
+    this->glGenBuffers(1, &m_static_vbo);
+    this->glGenBuffers(1, &m_static_border_ibo);
+
+    BindMeshWithOpenGL();
+}
+
+void View::BindMeshWithOpenGL()
+{
     delete combinedMesh;
     combinedMesh = new Mesh();
     Mesh::Combine(combinedMesh, meshList);
@@ -25,12 +35,6 @@ void View::Initialize()
     // Initializing the vao, vbo, and ibo
     m_indexCount = numOfIndices;
     m_borderIndexCount = numOfBorderIndices;
-    this->glEnable(GL_DEPTH_TEST);
-
-    this->glGenVertexArrays(1, &m_vao);
-    this->glGenBuffers(1, &m_static_ibo);
-    this->glGenBuffers(1, &m_static_vbo);
-    this->glGenBuffers(1, &m_static_border_ibo);
 
     // VAO
     this->glBindVertexArray(m_vao);
@@ -58,7 +62,7 @@ void View::Initialize()
             this->glVertexAttribIPointer(4, 1, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, textureIndex));
             this->glEnableVertexAttribArray(4);
 
-            // this->glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // this->glBindBuffer(GL_ARRAY_BUFFER, 0);
         // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 
@@ -273,6 +277,12 @@ void View::UpdateGeometry()
 void View::AddMesh(Mesh *mesh)
 {
     meshList.append(mesh);
+}
+
+void View::DeleteAllMesh()
+{
+    // Only clears the QList does not delete the Mesh object being pointed too
+    meshList.clear();
 }
 
 void View::AddMaterial(OpenGLMaterial *material)

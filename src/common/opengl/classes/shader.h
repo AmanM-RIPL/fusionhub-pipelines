@@ -50,7 +50,7 @@ private:
     int m_textureCount = 1;
     int textureArray[1] = {0};
 
-    int m_materialCount = 1;
+    int m_materialCount = 2;
 
     struct
     {
@@ -58,7 +58,7 @@ private:
         GLint  m_materialDiffuseId;
         GLint  m_materialSpecularId;
         GLint  m_materialShininessId;
-    } m_materialId[1];
+    } m_materialId[2];
 
     bool setPickColorId = false;
 

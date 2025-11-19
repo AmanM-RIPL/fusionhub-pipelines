@@ -22,11 +22,13 @@ public:
     ~View();
 
     void Initialize();
+    void BindMeshWithOpenGL();
     void Render();
     void Selection();
     void UpdateGeometry();
 
     void AddMesh(Mesh* mesh);
+    void DeleteAllMesh(); // will clear the QList but will not delete the Mesh pointer
     void AddMaterial(OpenGLMaterial* material);
     void AddTexture(Texture* texture);
     void AddCamera(Camera* cam);

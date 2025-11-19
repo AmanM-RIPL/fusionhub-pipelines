@@ -103,6 +103,9 @@ public:
 
     int m_lastClickX = -1;
     int m_lastClickY = -1;
+
+    QString m_viewType = "ModelView";
+
     QList<BIMElement*> bimElementList;
 
 public slots:
@@ -118,6 +121,8 @@ public slots:
 
     void zoomIn();
     void zoomOut();
+
+    void updateView(QString viewType);
 
     void requestPick(int x, int y);
 
@@ -163,6 +168,7 @@ private:
     bool m_pickRequested = false;
     int m_pickX = -1;
     int m_pickY = -1;
+    QString m_viewType = "ModelView";
 
     GLuint m_pickProgram = 0;
     GLuint m_pickColorLoc = -1;

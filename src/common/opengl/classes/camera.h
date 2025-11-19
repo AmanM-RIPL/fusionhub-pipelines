@@ -13,6 +13,7 @@ class Camera : public QObject, protected QOpenGLFunctions_3_3_Core
 public:
     explicit Camera(QObject *parent = nullptr);
     void Initialize(QVector3D startTarget, QVector3D startUp, QVector3D startPosition, GLfloat startMoveSpeed, GLfloat startTurnSpeed);
+    void SetCameraParameters(QVector3D startTarget, QVector3D startUp, QVector3D startPosition, GLfloat startMoveSpeed, GLfloat startTurnSpeed);
 
     void Zoom(bool zoomIn = true);
     void OrbitVertical(bool zDirection = true);

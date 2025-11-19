@@ -48,6 +48,8 @@ void WallGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
             -1
         };
 
+        verticesVector.push_back(v);
+
         // verticesVector.push_back(point[0]); // x
         // verticesVector.push_back(point[1]); // y
         // verticesVector.push_back(0.0f); // z

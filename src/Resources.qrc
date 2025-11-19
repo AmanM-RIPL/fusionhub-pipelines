@@ -61,5 +61,6 @@
         <file>resources/shaders/color-picking.frag</file>
         <file>resources/QML/ScheduleSetupPage.qml</file>
         <file>resources/images/brick.jpg</file>
+        <file>resources/images/blueprint.png</file>
     </qresource>
 </RCC>

@@ -56,6 +56,47 @@ void Mesh::Combine(Mesh *combinedMesh, QList<Mesh *> meshList)
     combinedMesh->Initialize(verticies, indices, border_indices, numOfVertices, numOfIndices, numOfBorderIndices);
 }
 
+void Mesh::GenerateBaseSurface(Mesh *mesh)
+{
+    std::vector<Vertex> verticies = {
+        {
+            {-10.0f, -10.0f, 0.0f}, // position
+            {0.0f, 0.0f, 1.0f}, // normal
+            {0.0f, 0.0f}, // texture uv
+            1, // materialIndex
+            -1 // textureIndex
+        },
+        {
+            {-10.0f, 10.0f, 0.0f}, // position
+            {0.0f, 0.0f, 1.0f}, // normal
+            {0.0f, 0.0f}, // texture uv
+            1, // materialIndex
+            -1 // textureIndex
+        },
+        {
+            {10.0f, 10.0f, 0.0f}, // position
+            {0.0f, 0.0f, 1.0f}, // normal
+            {0.0f, 0.0f}, // texture uv
+            1, // materialIndex
+            -1 // textureIndex
+        },
+        {
+            {10.0f, -10.0f, 0.0f}, // position
+            {0.0f, 0.0f, 1.0f}, // normal
+            {0.0f, 0.0f}, // texture uv
+            1, // materialIndex
+            -1 // textureIndex
+        }
+    };
+    std::vector<unsigned int> indices = {0,2,1, 0,3,2}; // winding order as face culling is switched on
+    std::vector<unsigned int> border_indices = {0,1,1,2,2,3,3,0};
+    unsigned int numOfVertices = 4;
+    unsigned int numOfIndices = 6;
+    unsigned int numOfBorderIndices = 8;
+
+    mesh->Initialize(verticies, indices, border_indices, numOfVertices, numOfIndices, numOfBorderIndices);
+}
+
 std::vector<Vertex> Mesh::getVerticies()
 {
     return m_verticies;

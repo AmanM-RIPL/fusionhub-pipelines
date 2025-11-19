@@ -90,12 +90,19 @@ MyGLRenderer::MyGLRenderer()
     m_picking_shader->CreateFromFiles("://resources/shaders/color-picking.vert", "://resources/shaders/color-picking.frag");
 
     // initialize Materials
-    OpenGLMaterial* material = new OpenGLMaterial();
-    material->setAmbient({1.0f, 1.0f, 1.0f}); // 0.96, 0.47f, 0.02f
-    material->setDiffuse({1.0f, 1.0f, 1.0f}); // 0.0f, 0.5f, 0.31f
-    material->setSpecular({1.0f, 1.0f, 1.0f}); // 0.5f, 0.5f, 0.5f
-    material->setShininess(32.0f);
-    m_materialList.append(material);
+    OpenGLMaterial* whiteMaterial = new OpenGLMaterial();
+    whiteMaterial->setAmbient({1.0f, 1.0f, 1.0f}); // 0.96, 0.47f, 0.02f
+    whiteMaterial->setDiffuse({1.0f, 1.0f, 1.0f}); // 0.0f, 0.5f, 0.31f
+    whiteMaterial->setSpecular({1.0f, 1.0f, 1.0f}); // 0.5f, 0.5f, 0.5f
+    whiteMaterial->setShininess(32.0f);
+    m_materialList.append(whiteMaterial);
+
+    OpenGLMaterial* blueMaterial = new OpenGLMaterial();
+    blueMaterial->setAmbient({0.68f, 0.85f, 0.90f}); // 0.96, 0.47f, 0.02f
+    blueMaterial->setDiffuse({1.0f, 1.0f, 1.0f}); // 0.0f, 0.5f, 0.31f
+    blueMaterial->setSpecular({1.0f, 1.0f, 1.0f}); // 0.5f, 0.5f, 0.5f
+    blueMaterial->setShininess(32.0f);
+    m_materialList.append(blueMaterial);
 
     // initialize Textures
     Texture* texture = new Texture();
@@ -105,7 +112,8 @@ MyGLRenderer::MyGLRenderer()
     // initialize View
     m_view = new View();
     // m_view->AddMesh(m_mesh);
-    m_view->AddMaterial(material);
+    m_view->AddMaterial(whiteMaterial);
+    m_view->AddMaterial(blueMaterial);
     m_view->AddTexture(texture);
     m_view->AddCamera(m_camera);
     m_view->AddShader(m_shader);
@@ -155,25 +163,27 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
     // qInfo() << "Syncronize Function";
     MyGLItem* glItem = static_cast<MyGLItem*>(item);
 
-    if (glItem->m_moveUp) {
+
+    // Orbit only works in 3D mode and not in 2D
+    if (glItem->m_moveUp && glItem->m_viewType == "ModelView") {
         m_camera->OrbitVertical(true);
-        glItem->m_moveUp = false;  // reset
     }
+    glItem->m_moveUp = false;  // reset
 
-    if (glItem->m_moveDown) {
+    if (glItem->m_moveDown && glItem->m_viewType == "ModelView") {
         m_camera->OrbitVertical(false);
-        glItem->m_moveDown = false;
     }
+    glItem->m_moveDown = false;
 
-    if (glItem->m_moveLeft) {
+    if (glItem->m_moveLeft && glItem->m_viewType == "ModelView") {
         m_camera->OrbitHorizontal(false);
-        glItem->m_moveLeft = false;
     }
+    glItem->m_moveLeft = false;
 
-    if (glItem->m_moveRight) {
+    if (glItem->m_moveRight && glItem->m_viewType == "ModelView") {
         m_camera->OrbitHorizontal(true);
-        glItem->m_moveRight = false;
     }
+    glItem->m_moveRight = false;
 
 
     float panLength = 0.1f;
@@ -227,12 +237,72 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
             m_meshList.append(mesh);
             m_view->AddMesh(mesh);
 
-            GeometryServiceFactory::generateMesh3D(bimElement, mesh);
+            if (glItem->m_viewType == "ModelView")
+            {
+                GeometryServiceFactory::generateMesh3D(bimElement, mesh);
+            }
+            else if (glItem->m_viewType == "PlanView")
+            {
+                GeometryServiceFactory::generateMesh2D(bimElement, mesh);
+            }
+        }
+
+        if (glItem->m_viewType == "ModelView")
+        {
+            Mesh* mesh = new Mesh();
+            m_meshList.append(mesh);
+            m_view->AddMesh(mesh);
+
+            Mesh::GenerateBaseSurface(mesh);
         }
 
         m_view->Initialize();
 
         meshInitialized = true;
+        m_viewType = glItem->m_viewType;
+    }
+
+    if (m_viewType != glItem->m_viewType)
+    {
+        // removing old geometry
+        for (Mesh* mesh: m_meshList)
+        {
+            delete mesh;
+        }
+        m_meshList.clear();
+        m_view->DeleteAllMesh();
+
+        for (BIMElement* bimElement: glItem->bimElementList)
+        {
+            // adding new geometry
+            Mesh* mesh = new Mesh();
+            m_meshList.append(mesh);
+            m_view->AddMesh(mesh);
+
+            if (glItem->m_viewType == "ModelView")
+            {
+                GeometryServiceFactory::generateMesh3D(bimElement, mesh);
+            }
+            else if (glItem->m_viewType == "PlanView")
+            {
+                GeometryServiceFactory::generateMesh2D(bimElement, mesh);
+            }
+        }
+
+        if (glItem->m_viewType == "ModelView")
+        {
+            Mesh* mesh = new Mesh();
+            m_meshList.append(mesh);
+            m_view->AddMesh(mesh);
+
+            Mesh::GenerateBaseSurface(mesh);
+        }
+
+        m_view->BindMeshWithOpenGL();
+
+        m_viewType = glItem->m_viewType;
+
+        m_camera->SetCameraParameters(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 1.0f, 0.0f), QVector3D(0.0f, 0.0f, 20.0f), 5.0f, 0.5f);
     }
 }
 
@@ -653,6 +723,14 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 
     bimElementList.append(bimElement);
 
+    BIMElement* bimElementNew = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
+    BIMParameter* widthParameterNew = new BIMParameter(1,"1",false,"Width","1",1,this);
+    BIMParameter* rlParameterNew = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0], [4,4]]",1,this);
+    bimElementNew->addParameter(widthParameterNew);
+    bimElementNew->addParameter(rlParameterNew);
+
+    bimElementList.append(bimElementNew);
+
     // bimElementController->create("Wall", "Front Wall", 0);
 
     // bimElementController->addParameter(newElement, "Height", "3000");
@@ -737,6 +815,12 @@ void MyGLItem::zoomIn()
 void MyGLItem::zoomOut()
 {
     m_zoomOut = true;
+    update();
+}
+
+void MyGLItem::updateView(QString viewType)
+{
+    m_viewType = viewType;
     update();
 }
 

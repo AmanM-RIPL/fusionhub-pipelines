@@ -17,11 +17,19 @@ Row {
 
     property var ifcDetailList: [];
     property string pageType: "PlannedBIM";
+    property string pageAction: "ModelView";
     property int treeviewWidth: parent.width/2 - 20
     property int glsceneWidth: parent.width/2
     property bool glsceneVisible: false
 
     property int expandedIndex: -1
+
+    onPageActionChanged: {
+        if (pageAction === "ModelView" || pageAction === "PlanView")
+        {
+            glscene.updateView(plannedBIMRoot.pageAction);
+        }
+    }
 
 
     IFCWallController {

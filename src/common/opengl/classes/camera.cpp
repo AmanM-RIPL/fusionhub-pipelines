@@ -8,6 +8,11 @@ void Camera::Initialize(QVector3D startTarget, QVector3D startUp, QVector3D star
 {
     this->initializeOpenGLFunctions();
 
+    SetCameraParameters(startTarget, startUp, startPosition, startMoveSpeed, startTurnSpeed);
+}
+
+void Camera::SetCameraParameters(QVector3D startTarget, QVector3D startUp, QVector3D startPosition, GLfloat startMoveSpeed, GLfloat startTurnSpeed)
+{
     // initializing camera
     worldUp = startUp;
     position = startPosition;

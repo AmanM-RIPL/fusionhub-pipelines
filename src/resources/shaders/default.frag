@@ -24,7 +24,7 @@ struct Light {
 };
 
 uniform vec3 viewPosition;
-uniform Material materials[1];
+uniform Material materials[2];
 uniform sampler2D textures[1];
 uniform Light light;
 

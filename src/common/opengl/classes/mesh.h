@@ -26,6 +26,7 @@ public:
     void Initialize(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<unsigned int>& borderIndices, unsigned int numOfVertices, unsigned int numOfIndices, unsigned int numOfBorderIndices);
     void Copy(Mesh* mesh);
     static void Combine(Mesh* combinedMesh, QList<Mesh*> meshList);
+    static void GenerateBaseSurface(Mesh* mesh);
 
     std::vector<Vertex> getVerticies();
     std::vector<unsigned int> getIndices();
