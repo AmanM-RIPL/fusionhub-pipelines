@@ -29,7 +29,8 @@ Rectangle {
 
             onProjectPageToRedirect: (pageName) => {
                 console.log(pageName);
-                baseLayout.pageName = pageName;                                         
+                baseLayout.pageName = pageName;
+
             }
         }
 
@@ -78,10 +79,10 @@ Rectangle {
             }
         }
 
-
         PlannedBIMPage {
+            //id:rootPlannedBIM
             pageType: pageName
-            visible: pageType !== ""            
+            visible: pageType !== ""
             onPageTypeChanged: {
                 switch (pageType) {
                 case "PlannedBIM":
@@ -101,6 +102,7 @@ Rectangle {
                     glsceneVisible = false
                     break;
                 }
+
             }
         }
     }

@@ -46,7 +46,7 @@
 #include "models/unit_of_measurement.h"
 #include "models/draft_entity.h"
 
-// There has to be a better way???????????
+//There has to be a better way???????????
 const OdString OdString::kEmpty;
 const OdDAIObjectId OdDAIObjectId::kNull;
 OdArrayBuffer OdArrayBuffer::g_empty_array_buffer;

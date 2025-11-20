@@ -21,6 +21,11 @@ OdIfcModelPtr IFCDetailController::getModelptrFromLoadedIFC(const QString& ifcFi
     return m_ifcDetailRepository->getModelptrFromLoadedIFC(ifcFilePath);
 }
 
+OdIfcFilePtr IFCDetailController::getIfcFilePtrFromLoadedIFC(const QString& ifcFilePath)
+{
+    return m_ifcDetailRepository->getIfcFilePtrFromLoadedIFC(ifcFilePath);
+}
+
 TreeModel* IFCDetailController::getTreeModel()
 {
     return m_ifcDetailRepository->getTreeModel();
@@ -49,5 +54,7 @@ QString IFCDetailController::getIfcFilePath(const QString& projectName, const QS
     return "";
 
 }
+
+
 
 

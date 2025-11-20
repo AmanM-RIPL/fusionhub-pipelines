@@ -250,7 +250,7 @@ void MyGLRenderer::initShaders() {
 
     // cleanup shaders
     this->glDeleteShader(vertexShaderPick);
-    this-> glDeleteShader(fragmentShaderPick);
+    this->glDeleteShader(fragmentShaderPick);
 
     // get uniform locations
     m_pickModelLoc = this->glGetUniformLocation(m_pickProgram, "u_model");
@@ -394,7 +394,6 @@ void MyGLRenderer::moveTopVertexToClick(int mouseX, int mouseY, const QMatrix4x4
         this->glBindBuffer(GL_ARRAY_BUFFER, 0);
     this->glBindVertexArray(0);
 }
-
 
 
 void MyGLRenderer::render() {
@@ -541,7 +540,7 @@ void MyGLRenderer::render() {
 
 QOpenGLFramebufferObject* MyGLRenderer::createFramebufferObject(const QSize &size) {
     QOpenGLFramebufferObjectFormat format;
-    format.setAttachment(QOpenGLFramebufferObject::Depth);  // Request depth buffer
+    format.setAttachment(QOpenGLFramebufferObject::Depth);  //Request depth buffer
 
     return new QOpenGLFramebufferObject(size, format);
 }
@@ -709,22 +708,25 @@ void MyGLItem::handlePick(int id) {
 
 void MyGLItem::viewIfc()
 {
-    //QString strFilePath = "://resources//bimFamily//DblDoor-1-Panel.ifc";
-    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\proj004\\proj004.ifc";
-    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-1-Panel.ifc";
-    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\proj004\\proj004.ifc";
+    QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-1-Panel.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-4-Panel.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\BasicHouse.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-2-Panel.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-Flush.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Door-Entry_2-Panel-Glz-Arc-Top.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Taylor_Entrance_1_Panel_High_Def.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Skylight_GTVSF_AmericanSkylites.ifc";
 
-    QString strFilePath = pIfcDetailController->getIfcFilePath();
-    OdIfcModelPtr odIfcModelPtr = pIfcDetailController->getModelptrFromLoadedIFC(strFilePath);
-
-    if(odIfcModelPtr)
+    //QString strFilePath = pIfcDetailController->getIfcFilePath();
+    OdIfcFilePtr pDatabase = pIfcDetailController->getIfcFilePtrFromLoadedIFC(strFilePath);
+    if(pDatabase)
     {
         delete mesh;
         mesh = NULL;
         mesh = new Mesh(this);
-        pIfcGeometryService->generateMesh3D(odIfcModelPtr, mesh);       
-        odIfcModelPtr.release();
-        odIfcModelPtr = NULL;
+        pIfcGeometryService->generateMesh3D(pDatabase, mesh);
+        pDatabase.release();
+        pDatabase = NULL;
     }
     update();
 }

@@ -31,6 +31,11 @@
 #include "Modeler/FMDrawBody.h"
 #include "Ge/GeCircArc2d.h"
 #include <vector>
+
+#include <QFile>
+//#include <QDataStream>
+#include <QTextStream>
+
 using namespace FacetModeler;
 using namespace std;
 
@@ -302,11 +307,39 @@ void OpenglHelper::getMeshGeometry(const FacetModeler::Body& body, std::vector<G
         verticesVector.push_back(point.y); // y
         verticesVector.push_back(point.z); // z
 
+
         OdGeVector3d normal = normalArray[i];
         verticesVector.push_back(normal.x); // n.x
         verticesVector.push_back(normal.y); // n.y
         verticesVector.push_back(normal.z); // n.z
     }
+
+
+
+    //File Writitng start
+    QString filePath = "D://Meshfile_1.txt";
+    QFile file(filePath);
+    if (file.open(QFile::WriteOnly | QFile::Append | QFile::Text)) {
+        QTextStream out(&file);
+        for (int i = 0; i < pointArray.size(); i++)
+        {
+            OdGePoint3d point = pointArray[i];
+            out<<point.x;
+            out<<", ";
+
+            out<<point.y;
+            out<<", ";
+
+            out<<point.z;
+            out<<"\n";
+        }
+        file.close();
+    }
+    else
+    {
+        qDebug() << "Could not open file for writing:" << file.errorString();
+    }
+    //End of file writting
 }
 
 void OpenglHelper::getMeshGeometry(const OdMdBody& body, std::vector<GLfloat>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices)

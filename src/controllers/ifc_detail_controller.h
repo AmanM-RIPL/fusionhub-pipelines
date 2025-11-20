@@ -16,6 +16,7 @@ public:
     Q_INVOKABLE TreeModel* getTreeModel();
     Q_INVOKABLE QString getIfcFilePath(const QString& projectName = nullptr, const QString& ifcFileName = nullptr);
     Q_INVOKABLE OdIfcModelPtr getModelptrFromLoadedIFC(const QString& ifcFilePath);
+    Q_INVOKABLE OdIfcFilePtr getIfcFilePtrFromLoadedIFC(const QString& ifcFilePath);
 
 signals:
 

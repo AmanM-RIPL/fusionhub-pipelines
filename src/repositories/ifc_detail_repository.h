@@ -60,6 +60,7 @@ public:
 
     QList<IFCDetail*> loadIFC(const QString& ifcFilePath);
     OdIfcModelPtr getModelptrFromLoadedIFC(const QString& ifcFilePath);
+    OdIfcFilePtr getIfcFilePtrFromLoadedIFC(const QString& ifcFilePath);
     QList<IFCDetail*> getIFCDetails();
     TreeModel* getTreeModel();
     QString getIfcFilePath(const QString& projectName, const QString& ifcFileName);
@@ -93,8 +94,7 @@ signals:
 
 private:
     QList<IFCDetail*> m_ifcDetailList;
-    TreeModel* m_treeModel;   
-    OdArray<OdGePoint3d> getCartesianPoints(OdIfc::OdIfcInstancePtr ifcInstance);
+    TreeModel* m_treeModel;
 };
 
 

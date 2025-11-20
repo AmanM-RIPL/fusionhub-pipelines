@@ -1398,13 +1398,13 @@ Row {
             //ifcDetailList = ifcDetailRepository.getIFCDetails();
              // ifcDetailList = ifcDetailController.loadIFC(ifcDetailController.getIfcFilePath());
              //treeModel = ifcDetailController.getTreeModel();
-            glscene.viewIfc();
+            glscene.viewIfc();           
             glscene.update();
         }
     }
 
     onVisibleChanged: {
-        //if(plannedBIMRoot.visible && plannedBIMRoot.pageType === "PlannedBIM")
+        //if(plannedBIMRoot.visible && plannedBIMRoot.pageType === "PlannedBIM")        
         {
             //ifcDetailList = ifcDetailRepository.getIFCDetails();
             //ifcDetailList = ifcDetailController.loadIFC(ifcDetailController.getIfcFilePath());

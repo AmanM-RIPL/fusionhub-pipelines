@@ -4,6 +4,14 @@
 #include <QObject>
 #include "common/opengl/classes/opengl_helper.h"
 
+class OdDbStub {
+public:
+    OdUInt64 getHandle()
+    {
+        return 0;
+    }
+};
+
 //#include "IfcCore.h"
 //#include "IfcModel.h"
 //#include "IfcProduct.h"
@@ -18,6 +26,11 @@
 #include "Entities/IfcProduct.h"
 #include "Entities/IfcGeometricRepresentationItem.h"
 
+#include "IfcMappedItem.h"
+#include "IfcRepresentationMap.h"
+#include "Ifc2x3/IfcRepresentationMapAutoImpl.h"
+#include "Ifc2x3/IfcShapeRepresentationAutoImpl.h"
+
 
 class IfcGeometryService : public QObject
 {
@@ -25,8 +38,9 @@ class IfcGeometryService : public QObject
 public:
     explicit IfcGeometryService(QObject *parent = nullptr);
 
-    void generateMesh2D(BIMElement* ifcElement, Mesh* mesh);
-    void generateMesh3D(OdIfcModelPtr pIfcModel, Mesh* mesh);   
+    void generateMesh2D(BIMElement* ifcElement, Mesh* mesh);    
+    void generateMesh3D(OdIfcFilePtr ifcFilePtr, Mesh* mesh);
+    void generateFinalMesh3D(OdDAI::OdBodyVariant bodyContainer, Mesh* mesh);
 
 signals:
 

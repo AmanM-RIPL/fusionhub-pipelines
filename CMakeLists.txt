@@ -314,6 +314,7 @@ target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_2
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_SpatialIndex.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\FacetModeler.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_ExamplesCommon.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_BrepBuilder.lib")
 
 
 
@@ -378,6 +379,7 @@ file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_BrepB
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\RxCommonDataAccess_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\tinyxml.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\FacetModeler_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_BrepBuilder_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 
 
 file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TV_Visualize_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
