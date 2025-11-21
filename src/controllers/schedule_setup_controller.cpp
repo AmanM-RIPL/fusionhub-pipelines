@@ -38,7 +38,7 @@ void ScheduleSetupController::create(const QString &scheduleName, const QString 
     setup.setResourceParameter(resourceParam);
 
 
-    m_scheduleSetupRepository->saveQML(&setup);    
+    m_scheduleSetupRepository->saveQML(&setup);
 
 
     /***********Start of DraftEntity******************/
@@ -79,7 +79,7 @@ void ScheduleSetupController::create(const QString &scheduleName, const QString 
     draftEntity.setProject(gProjectId);
     draftEntity.setEntity("ScheduleSetup");
     //draftEntity.setCreatedByUser(gUser->getUserId());
-     draftEntity.setCreatedByUser(gUser->getId());
+    draftEntity.setCreatedByUser(gUser->getId());
     draftEntity.setNextApprovingUser(0);
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);
@@ -145,7 +145,7 @@ std::vector<ScheduleSetup*> ScheduleSetupController::getSetupList(bool isApprove
             if (jsonDocResourceParam.isObject()) {
                 QJsonObject jsonObj = jsonDocResourceParam.object();
                 int totalRow = jsonObj["rows"].toInt();
-                 QString strRows = QString::number(totalRow);
+                QString strRows = QString::number(totalRow);
                 scheduleSetups[i]->setResourceParameter(strRows);
                 qDebug() << "jsonStringResourceParam:" << strRows;
             }
@@ -190,5 +190,4 @@ QString ScheduleSetupController::CreateJson(const QVariant &param) const
         return JsonString;
     }
 }
-
 

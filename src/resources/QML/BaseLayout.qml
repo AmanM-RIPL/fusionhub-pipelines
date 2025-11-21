@@ -51,6 +51,30 @@ Rectangle {
             visible: pageName === "ScheduleSetup"
         }
 
+        BillOfQuantityPage {
+            visible: pageName === "BillOfQuantity"
+        }
+
+        ScheduleOfRatesPage {
+            visible: pageName === "ScheduleOfRates"
+        }
+
+        WorkOrderPage {
+            visible: pageName === "WorkOrder"
+        }
+
+        ProjectBudgetPage {
+            visible: pageName === "ProjectBudget"
+        }
+
+        FilePage {
+            visible: pageName === "File"
+        }
+
+        PurchaseOrderPage {
+            visible: pageName === "PurchaseOrder"
+        }
+
 
         /*
 

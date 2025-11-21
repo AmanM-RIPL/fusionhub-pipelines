@@ -163,7 +163,7 @@ QList<IFCDetail*> IFCDetailRepository::loadIFC(const QString& qstrFilePath)
         }
 
     } catch (const OdError& e) {
-        qDebug() << "IFCDatabase Loaded: Failed with exception: " << e.description();
+       // qDebug() << "IFCDatabase Loaded: Failed with exception: " << e.description();
    }
 
 
