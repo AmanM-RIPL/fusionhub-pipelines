@@ -200,58 +200,7 @@ void IfcGeometryService::generateMesh3D(OdIfcFilePtr ifcFilePtr, Mesh* mesh)
                         OdIfc::OdIfcGeometricRepresentationItemPtr pShapeProduct = OdIfc::OdIfcGeometricRepresentationItem::cast(OdIfc::OdIfcInstance::asCompound(pShapeEntity));
                         qInfo() << "pShapeProduct is null: " << pShapeProduct.isNull();
                         OdDAI::OdBodyVariant bodyContainer = pShapeProduct->bodyContainer();
-                        generateFinalMesh3D(bodyContainer, mesh);
-
-                        /*
-                        std::vector<uint32_t> meshIndices = {};
-                        std::vector<uint32_t> borderIndices = {};
-                        std::vector<GLfloat> verticesVector = {};
-
-                        switch (bodyContainer.kind())
-                        {
-                        case OdDAI::OdBodyVariant::kFacetModelerBody:
-                        {
-                            qDebug() << "FacetModelerBody";
-
-                            //FacetModeler::Body body = *bodyContainer.facetModelerBody();
-                            //Apply the transformation to the body
-                            //body.transform(mappedTransformation);
-
-                            m_openglHelper.getMeshGeometry(*bodyContainer.facetModelerBody(), verticesVector, meshIndices, borderIndices);
-                            break;
-                        }
-
-                        case OdDAI::OdBodyVariant::kMdBody:
-                        {
-                            qDebug() << "Md Body";                            
-                            m_openglHelper.getMeshGeometry(*bodyContainer.mdBody(), verticesVector, meshIndices, borderIndices);
-                            break;
-                        }
-
-                        case OdDAI::OdBodyVariant::kAcisBody:
-                        {
-                            qDebug() << "Acis Body";
-                            m_openglHelper.getMeshGeometry(*bodyContainer.acisBody(), verticesVector, meshIndices, borderIndices);
-                            break;
-                        }
-
-                        case OdDAI::OdBodyVariant::kBrep:
-                        {
-                            qDebug() << "IFC Brep Body";
-                            m_openglHelper.getMeshGeometry(bodyContainer.brBrep(), verticesVector, meshIndices, borderIndices);
-                            break;
-                        }
-
-                        case OdDAI::OdBodyVariant::kEmpty:
-                        {
-                            qDebug() << "No Body";
-                            break;
-                        }
-                        }
-
-                        if(verticesVector.size() > 0 && meshIndices.size() > 0 && borderIndices.size() > 0){
-                            mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
-                        }*/
+                        generateFinalMesh3D(bodyContainer, mesh);                        
                     }
                     catch (const OdError& e)
                     {
@@ -260,7 +209,8 @@ void IfcGeometryService::generateMesh3D(OdIfcFilePtr ifcFilePtr, Mesh* mesh)
                     }
                 }
             }
-            else if(repItem->type() == OdIfc::kIfcExtrudedAreaSolid)
+            //else if(repItem->type() == OdIfc::kIfcExtrudedAreaSolid)
+            else
             {
                 qDebug() << "OdIfc:: Type::" << repItem->type();
                 try
