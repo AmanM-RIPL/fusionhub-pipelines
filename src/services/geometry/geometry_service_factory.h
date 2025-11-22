@@ -15,6 +15,7 @@ public:
 
     static void generateMesh2D(BIMElement* bimElement, Mesh* mesh);
     static void generateMesh3D(BIMElement* bimElement, Mesh* mesh);
+    static void updateGeometry(BIMElement* bimElement, const QVector3D& point);
 
 signals:
 

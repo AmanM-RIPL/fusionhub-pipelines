@@ -24,8 +24,10 @@ public:
     void Initialize();
     void BindMeshWithOpenGL();
     void Render();
+
     void Selection();
-    void UpdateGeometry();
+    QVector3D GetPointInModelSpace(int meshIndex);
+    QVector3D GetPointInViewSpace();
 
     void AddMesh(Mesh* mesh);
     void DeleteAllMesh(); // will clear the QList but will not delete the Mesh pointer

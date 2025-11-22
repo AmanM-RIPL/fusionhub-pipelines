@@ -224,11 +224,11 @@ void View::Selection()
     }
 }
 
-void View::UpdateGeometry()
+QVector3D View::GetPointInModelSpace(int meshIndex)
 {
     // --- Step 1: Screen -> NDC
     float x = (2.0f * m_pickX) / float(viewportWidth) - 1.0f;
-    float y = (2.0f * m_pickY) / float(viewportHeight) - 1.0f; // no inversion as Y-axis flip is already in proj matrix
+    float y = 1.0f - (2.0f * m_pickY) / float(viewportHeight);
     QVector4D rayClip(x, y, -1.0f, 1.0f);
 
     // --- Step 2: NDC -> Eye space
@@ -240,7 +240,7 @@ void View::UpdateGeometry()
     QVector3D rayOriginWorld = camera->getCameraPosition();
 
     // --- Step 4: Transform ray into *model space*
-    QMatrix4x4 invModel = meshList[0]->getModelMatrix().inverted();
+    QMatrix4x4 invModel = meshList[meshIndex]->getModelMatrix().inverted();
     QVector3D rayOriginModel = (invModel * QVector4D(rayOriginWorld, 1.0f)).toVector3D();
     QVector3D rayDirModel    = (invModel * QVector4D(rayDirWorld, 0.0f)).toVector3D().normalized();
 
@@ -248,30 +248,60 @@ void View::UpdateGeometry()
     QVector3D planeNormal(0, 0, 1);
     QVector3D planePoint(0, 0, 0);
     float denom = QVector3D::dotProduct(planeNormal, rayDirModel);
-    if (fabs(denom) < 1e-6f) {
-        qWarning() << "Ray parallel to model plane, no intersection";
-        return;
-    }
+    // if (fabs(denom) < 1e-6f) {
+    //     qWarning() << "Ray parallel to model plane, no intersection";
+    //     return;
+    // }
     float t = QVector3D::dotProduct(planePoint - rayOriginModel, planeNormal) / denom;
-    if (t < 0) {
-        qWarning() << "Intersection is behind camera";
-        return;
-    }
+    // if (t < 0) {
+    //     qWarning() << "Intersection is behind camera";
+    //     return;
+    // }
 
     QVector3D hitPoint = rayOriginModel + t * rayDirModel;
 
-    // --- Step 5: Update vertex (index 0 = top vertex)
-    meshList[0]->UpdateGeometry(hitPoint);
+    return hitPoint;
+}
 
-    // --- Step 6: Push updated vertices to GPU
-    this->glBindVertexArray(m_vao);
-        //IBO
-        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
-            this->glBindBuffer(GL_ARRAY_BUFFER, m_static_vbo);
-                this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(meshList[0]->getVerticies().data()), meshList[0]->getVerticies().data());
-            this->glBindBuffer(GL_ARRAY_BUFFER, 0);
-        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    this->glBindVertexArray(0);
+QVector3D View::GetPointInViewSpace()
+{
+    // --- Step 1: Screen -> NDC
+    float x = (2.0f * m_pickX) / float(viewportWidth) - 1.0f;
+    float y = 1.0f - (2.0f * m_pickY) / float(viewportHeight);
+    QVector4D rayClip(x, y, -1.0f, 1.0f);
+
+    // --- Step 2: NDC -> Eye space
+    QVector4D rayEye = m_projectionMatrix.inverted() * rayClip;
+    rayEye = QVector4D(rayEye.x(), rayEye.y(), -1.0f, 0.0f);
+
+    // --- Step 3: Eye -> World space
+    QVector3D rayDirWorld = (camera->calculateViewMatrix().inverted() * rayEye).toVector3D().normalized();
+    QVector3D rayOriginWorld = camera->getCameraPosition();
+
+    // --- Step 4: Transform ray into *model space*
+    QMatrix4x4 matrix;
+    matrix.setToIdentity();
+    QMatrix4x4 invModel = matrix.inverted();
+    QVector3D rayOriginModel = (invModel * QVector4D(rayOriginWorld, 1.0f)).toVector3D();
+    QVector3D rayDirModel    = (invModel * QVector4D(rayDirWorld, 0.0f)).toVector3D().normalized();
+
+    // --- Step 5: Ray-plane intersection in model space (Z=0 plane)
+    QVector3D planeNormal(0, 0, 1);
+    QVector3D planePoint(0, 0, 0);
+    float denom = QVector3D::dotProduct(planeNormal, rayDirModel);
+    // if (fabs(denom) < 1e-6f) {
+    //     qWarning() << "Ray parallel to model plane, no intersection";
+    //     return;
+    // }
+    float t = QVector3D::dotProduct(planePoint - rayOriginModel, planeNormal) / denom;
+    // if (t < 0) {
+    //     qWarning() << "Intersection is behind camera";
+    //     return;
+    // }
+
+    QVector3D hitPoint = rayOriginModel + t * rayDirModel;
+
+    return hitPoint;
 }
 
 void View::AddMesh(Mesh *mesh)

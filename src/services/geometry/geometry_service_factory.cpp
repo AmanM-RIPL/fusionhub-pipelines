@@ -24,3 +24,12 @@ void GeometryServiceFactory::generateMesh3D(BIMElement *bimElement, Mesh *mesh)
         service.generateMesh3D(bimElement, mesh);
     }
 }
+
+void GeometryServiceFactory::updateGeometry(BIMElement *bimElement, const QVector3D &point)
+{
+    if (bimElement->getType() == "Wall")
+    {
+        WallGeometryService service = WallGeometryService();
+        service.updateGeometry(bimElement, point);
+    }
+}

@@ -469,6 +469,8 @@ Row {
                 bimElementController.addParameter(bimElementPtr, "Width", wallWidthText);
                 bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
 
+                glscene.updateEditableBimElement(bimElementPtr);
+
                 wallTotalHeightText = "";
                 wallWidthText = "";
             }
@@ -625,6 +627,9 @@ Row {
                     glscene.cameraPanLeft();
                 } else if (event.key === Qt.Key_D) {
                     glscene.cameraPanRight();
+                } else if (event.key === Qt.Key_Return){
+                    console.log("Enter pressed");
+                    glscene.saveEditableBimElement();
                 }
             }
         }

@@ -14,6 +14,13 @@ void WallGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
 
     extractBIMParameters(wallElement, referenceLine, width, height);
 
+    // if reference line is only one point then we don't need to render
+    if (referenceLine.size() < 2)
+    {
+        mesh->Initialize({}, {}, {}, 0, 0, 0);
+        return;
+    }
+
     // 3. Generate a parallel line
     std::vector<Point> parallelLine = generateParallelCurve(referenceLine, width);
 
@@ -107,6 +114,13 @@ void WallGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
     float height = 0;
 
     extractBIMParameters(wallElement, referenceLine, width, height);
+
+    // if reference line is only one point then we don't need to render
+    if (referenceLine.size() < 2)
+    {
+        mesh->Initialize({}, {}, {}, 0, 0, 0);
+        return;
+    }
 
     // 3. Generate a parallel line
     std::vector<Point> parallelLine = generateParallelCurve(referenceLine, width);
@@ -342,6 +356,45 @@ void WallGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
     }
 
     mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
+}
+
+void WallGeometryService::updateGeometry(BIMElement *wallElement, const QVector3D &point)
+{
+    std::vector<Point> referenceLine = {};
+    float width = 0;
+    float height = 0;
+
+    extractBIMParameters(wallElement, referenceLine, width, height);
+
+    // update the new point in the reference line
+    referenceLine.push_back({ point.x(), point.y() });
+
+    // updating the BIMElement
+    QJsonArray referenceLineJsonArray;
+
+    for (const auto& pointArray : referenceLine) {
+        QJsonArray jsonInnerArray;
+        for (float value : pointArray) {
+            jsonInnerArray.append(QJsonValue(value));
+        }
+        referenceLineJsonArray.append(jsonInnerArray);
+    }
+
+    QJsonDocument jsonDoc(referenceLineJsonArray);
+    QByteArray byteArray = jsonDoc.toJson(QJsonDocument::Compact);
+    QString referenceLineString = QString(byteArray);
+
+    QList<BIMParameter*> parameterList = wallElement->getParameterList();
+
+    for (BIMParameter* parameter: parameterList)
+    {
+        if (parameter->getKey() == "ReferenceLine")
+        {
+            parameter->setValue(referenceLineString);
+
+            break;
+        }
+    }
 }
 
 void WallGeometryService::extractBIMParameters(BIMElement *wallElement, std::vector<Point> &referenceLine, float &width, float &height)

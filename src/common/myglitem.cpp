@@ -220,13 +220,73 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
     }
 
     // transfer click request safely
-    if (glItem->m_lastClickX >= 0) {
+    if (meshInitialized && projectionMatrixInitialized && glItem->m_lastClickX >= 0) {
         m_pickX = glItem->m_lastClickX;
         m_pickY = glItem->m_lastClickY;
         m_pickRequested = true;
         // reset the stored GUI-side coords so we don't re-process
         glItem->m_lastClickX = -1;
         glItem->m_lastClickY = -1;
+
+        m_view->SetSelectionCoordinates(m_pickX, m_pickY);
+        QVector3D clickedPoint = m_view->GetPointInViewSpace();
+
+        // update glItem BIM Element
+        if (glItem->editableBimElement != nullptr)
+        {
+            GeometryServiceFactory::updateGeometry(glItem->editableBimElement, clickedPoint);
+
+            // removing old geometry
+            for (Mesh* mesh: m_meshList)
+            {
+                delete mesh;
+            }
+            m_meshList.clear();
+            m_view->DeleteAllMesh();
+
+            for (BIMElement* bimElement: glItem->bimElementList)
+            {
+                // adding new geometry
+                Mesh* mesh = new Mesh();
+                m_meshList.append(mesh);
+                m_view->AddMesh(mesh);
+
+                if (glItem->m_viewType == "ModelView")
+                {
+                    GeometryServiceFactory::generateMesh3D(bimElement, mesh);
+                }
+                else if (glItem->m_viewType == "PlanView")
+                {
+                    GeometryServiceFactory::generateMesh2D(bimElement, mesh);
+                }
+            }
+
+            if (glItem->m_viewType == "ModelView")
+            {
+                Mesh* mesh = new Mesh();
+                m_meshList.append(mesh);
+                m_view->AddMesh(mesh);
+
+                Mesh::GenerateBaseSurface(mesh);
+            }
+
+            // generating mesh for Editable BIMElement
+            Mesh* mesh = new Mesh();
+            m_meshList.append(mesh);
+            m_view->AddMesh(mesh);
+
+            if (glItem->m_viewType == "ModelView")
+            {
+                GeometryServiceFactory::generateMesh3D(glItem->editableBimElement, mesh);
+            }
+            else if (glItem->m_viewType == "PlanView")
+            {
+                GeometryServiceFactory::generateMesh2D(glItem->editableBimElement, mesh);
+            }
+
+
+            m_view->BindMeshWithOpenGL();
+        }
     }
 
     if (!meshInitialized)
@@ -541,21 +601,30 @@ void MyGLRenderer::moveTopVertexToClick(int mouseX, int mouseY, const QMatrix4x4
 void MyGLRenderer::render() {
     // qInfo() << "Render Function";
 
-    int w = framebufferObject()->width();
-    int h = framebufferObject()->height();
-    GLuint defaultFbo = framebufferObject()->handle();
+    if (!projectionMatrixInitialized)
+    {
+        // famebufferObject() is null when syncronize()
+        // runs for the first time
 
-    QMatrix4x4 proj;
-    float aspect = (h > 0) ? (float)w / (float)h : 1.0f;
-    proj.perspective(45.0f, aspect, 0.1f, 100.0f);
 
-    // Flip Y so it matches Qt Quick
-    // proj.scale(1.0f, -1.0f, 1.0f);
+        int w = framebufferObject()->width();
+        int h = framebufferObject()->height();
+        GLuint defaultFbo = framebufferObject()->handle();
 
-    m_view->SetProjection(proj);
-    m_view->SetWidth(w);
-    m_view->SetHeight(h);
-    m_view->SetDefaultFBO(defaultFbo);
+        QMatrix4x4 proj;
+        float aspect = (h > 0) ? (float)w / (float)h : 1.0f;
+        proj.perspective(45.0f, aspect, 0.1f, 100.0f);
+
+        // Flip Y so it matches Qt Quick
+        // proj.scale(1.0f, -1.0f, 1.0f);
+
+        m_view->SetProjection(proj);
+        m_view->SetWidth(w);
+        m_view->SetHeight(h);
+        m_view->SetDefaultFBO(defaultFbo);
+
+        projectionMatrixInitialized = true;
+    }
 
     if (m_pickRequested)
     {
@@ -832,4 +901,18 @@ void MyGLItem::requestPick(int x, int y) {
 
 void MyGLItem::handlePick(int id) {
     emit selectionChanged(id);
+}
+
+void MyGLItem::updateEditableBimElement(QVariant bimElement)
+{
+    editableBimElement = bimElement.value<BIMElement*>();
+}
+
+void MyGLItem::saveEditableBimElement()
+{
+    bimElementList.append(editableBimElement);
+
+    // bimElement is created in the controller and its lifecycle is handled by the controller
+    editableBimElement = nullptr;
+    update();
 }

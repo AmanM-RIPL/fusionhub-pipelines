@@ -107,6 +107,7 @@ public:
     QString m_viewType = "ModelView";
 
     QList<BIMElement*> bimElementList;
+    BIMElement* editableBimElement = nullptr;
 
 public slots:
     void cameraMoveUp();
@@ -127,6 +128,8 @@ public slots:
     void requestPick(int x, int y);
 
     void handlePick(int id);
+    void updateEditableBimElement(QVariant bimElement);
+    void saveEditableBimElement();
 
 private:
 
@@ -156,6 +159,7 @@ private:
     QVector3D m_cameraPos = QVector3D(0.0f, 0.0f, 20.0f);
 
     bool meshInitialized = false;
+    bool projectionMatrixInitialized = false;
 
     QList<Mesh*> m_meshList;
     Camera* m_camera = nullptr;
