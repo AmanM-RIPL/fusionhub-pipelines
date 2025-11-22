@@ -186,9 +186,7 @@ set(HEADERS
     src/repositories/material_indent_repository.h
     src/repositories/ifc_detail_repository.h
     src/common/ifcdetail.h
-    src/common/myglitem.h
-
-    
+    src/common/myglitem.h    
 )
 
 add_executable(FusionHubQt ${SOURCES} ${HEADERS}
@@ -222,6 +220,15 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/common/tree_model.h src/common/tree_model.cpp
     src/common/opengl/classes/earcut_algorithm.h
     src/services/geometry/wall_geometry_service.h src/services/geometry/wall_geometry_service.cpp
+    src/services/geometry/beam_geometry_service.h src/services/geometry/beam_geometry_service.cpp
+    src/services/geometry/column_geometry_service.h src/services/geometry/column_geometry_service.cpp
+    src/services/geometry/slab_geometry_service.h src/services/geometry/slab_geometry_service.cpp
+    src/common/opengl/classes/opengl_helper.h
+    src/common/opengl/classes/opengl_helper.cpp
+    src/services/geometry/door_geometry_service.h src/services/geometry/door_geometry_service.cpp
+    src/services/geometry/window_geometry_service.h src/services/geometry/window_geometry_service.cpp
+    src/services/geometry/stairs_geometry_service.h src/services/geometry/stairs_geometry_service.cpp
+    src/services/geometry/ifc_geometry_service.h src/services/geometry/ifc_geometry_service.cpp
     src/common/opengl/classes/opengl_material.h src/common/opengl/classes/opengl_material.cpp
     src/common/opengl/classes/texture.h src/common/opengl/classes/texture.cpp
     src/services/geometry/geometry_service_factory.h src/services/geometry/geometry_service_factory.cpp
@@ -385,6 +392,15 @@ file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Gs
 file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Br_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Zlib.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TV_DbIO_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
+
+
+#file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcCore_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+#file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\sdai_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
+#file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcGeom_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+#file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IFC4X3_26.7_17.txexp DESTINATION ${CMAKE_BINARY_DIR})
+
+
+
 
 
 file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcCore_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})

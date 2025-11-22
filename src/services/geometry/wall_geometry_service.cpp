@@ -5,14 +5,15 @@ WallGeometryService::WallGeometryService(QObject *parent)
 {}
 
 
-void WallGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
+void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
 {
     std::vector<std::vector<Point>> polygon;
     std::vector<Point> referenceLine = {};
     float width = 0;
     float height = 0;
+    float distance = 0;
 
-    extractBIMParameters(wallElement, referenceLine, width, height);
+    m_openglHelper.extractBIMParameters(wallElement, referenceLine, width, height, distance);
 
     // if reference line is only one point then we don't need to render
     if (referenceLine.size() < 2)
@@ -22,7 +23,7 @@ void WallGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
     }
 
     // 3. Generate a parallel line
-    std::vector<Point> parallelLine = generateParallelCurve(referenceLine, width);
+    std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
 
     referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
 
@@ -107,13 +108,15 @@ void WallGeometryService::generateMesh2D(BIMElement *wallElement, Mesh* mesh)
     // return mesh;
 }
 
-void WallGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
+void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
 {
     std::vector<Point> referenceLine = {};
     float width = 0;
     float height = 0;
+    float distance = 0;
 
-    extractBIMParameters(wallElement, referenceLine, width, height);
+
+    m_openglHelper.extractBIMParameters(wallElement, referenceLine, width, height, distance);
 
     // if reference line is only one point then we don't need to render
     if (referenceLine.size() < 2)
@@ -123,7 +126,7 @@ void WallGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
     }
 
     // 3. Generate a parallel line
-    std::vector<Point> parallelLine = generateParallelCurve(referenceLine, width);
+    std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
 
     referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
 
@@ -151,11 +154,11 @@ void WallGeometryService::generateMesh3D(BIMElement *wallElement, Mesh* mesh)
     FacetModeler::Profile2D profile(polygon);
     FacetModeler::Body body = FacetModeler::Body::extrusion(profile, OdGeVector3d(0.0, 0.0, 1.0) * height);
 
-
     // Mesh geometry generation
     OdGePoint3dArray pointArray = {};
     std::vector<uint32_t> meshIndices = {};
     std::vector<uint32_t> borderIndices = {};
+    std::vector<GLfloat> verticesVector = {};
     OdGeVector3dArray normalArray = {};
     std::vector<std::array<float, 2>> textureArray = {};
     int textureIndex = 0; // if less than zero then we don't need to worry about textures
@@ -419,128 +422,7 @@ void WallGeometryService::extractBIMParameters(BIMElement *wallElement, std::vec
         }
     }
 
-    bool ok;
-    width = widthString.toFloat(&ok);
-    if (!ok)
-    {
-        // ignore for now
-    }
+    m_openglHelper.getMeshGeometry(body, verticesVector, meshIndices, borderIndices);
 
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(referenceLineString.toUtf8());
-    QJsonArray jsonArray = jsonDoc.array();
-
-    for (const QJsonValue& outerValue : jsonArray)
-    {
-        QJsonArray innerArray = outerValue.toArray();
-        Point innerList = {innerArray.at(0).toDouble(), innerArray.at(1).toDouble()};
-        referenceLine.push_back(innerList);
-    }
-
-    height = 4;
-}
-
-std::vector<Point> WallGeometryService::generateParallelCurve(std::vector<Point> referenceCurve, float width)
-{
-    std::vector<Point> parallelCurve;
-
-    // Get Line Equation for first 2 points
-    Point firstPoint = getParallelProjectionPoint(referenceCurve[0], referenceCurve[1], width);
-    parallelCurve.insert(parallelCurve.begin(), firstPoint);
-
-    // Get intersection points for the middle points
-    if (referenceCurve.size() > 2)
-    {
-        for (int i = 1; i < referenceCurve.size() - 1; i++)
-        {
-            Line line1 = getParallelLineEquation(referenceCurve[i - 1], referenceCurve[i], width);
-            Line line2 = getParallelLineEquation(referenceCurve[i], referenceCurve[i + 1], width);
-
-            // in case both line have slope of infinity then we just parallely project it
-            if (std::isinf(line1[0]) && std::isinf(line2[0]))
-            {
-                Point intersectionPoint = getParallelProjectionPoint(referenceCurve[i], referenceCurve[i + 1], width);
-                parallelCurve.insert(parallelCurve.begin(), intersectionPoint);
-            }
-            else
-            {
-                Point intersectionPoint = getIntersectionPoint(line1, line2);
-                parallelCurve.insert(parallelCurve.begin(), intersectionPoint);
-            }
-        }
-    }
-
-    // Get last point
-    Point lastPoint = getParallelProjectionPoint(referenceCurve.back(), referenceCurve[referenceCurve.size() - 2], width);
-    parallelCurve.insert(parallelCurve.begin(), lastPoint);
-
-    return parallelCurve;
-}
-
-Line WallGeometryService::getParallelLineEquation(Point point1, Point point2, float width)
-{
-    // when slope is not infinite
-    if (point2[0] - point1[0] != 0)
-    {
-        float m = (point2[1] - point1[1]) / (point2[0] - point1[0]);
-        float b = point1[1] - point1[0] * m;
-        float b_parallel = b + (width * qSqrt(qPow(m,2) + 1));
-
-        Line result = {m, b_parallel, 0};
-
-        return result;
-    }
-
-    Line result = {std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), point1[0] - width};
-    return result;
-}
-
-Point WallGeometryService::getIntersectionPoint(Line line1, Line line2)
-{
-    // both line1 and line2 cannot have m infinity
-    // if they do then use the getParallelProjectionPoint logic
-    if (std::isinf(line1[0]))
-    {
-        float x = line1[2];
-        float y = line2[0] * x + line2[1];
-
-        Point result = {x, y};
-        return result;
-    }
-    else if (std::isinf(line2[0]))
-    {
-        float x = line2[2];
-        float y = line1[0] * x + line1[1];
-
-        Point result = {x, y};
-        return result;
-    }
-
-
-    float x = (line2[1] - line1[1]) / (line1[0] - line2[0]);
-    float y = line1[0] * x + line1[1];
-
-    Point result = {x, y};
-
-    return result;
-}
-
-Point WallGeometryService::getParallelProjectionPoint(Point point1, Point point2, float width)
-{
-    // m = (y2 - y1)/(x2-x1) if x2 = x1 then the slope is infinite.
-    // so we handle that case seperately
-
-    if (point2[0] - point1[0] != 0)
-    {
-        float m = (point2[1] - point1[1]) / (point2[0] - point1[0]);
-        float x_proj = point1[0] + width * (-m/qSqrt(qPow(m,2) + 1));
-        float y_proj = point1[1] + width * (1/qSqrt(qPow(m,2) + 1));
-
-        Point result = {x_proj, y_proj};
-
-        return result;
-    }
-
-
-    Point result = {point1[0] - width, point1[1]};
-    return result;
+    mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
 }

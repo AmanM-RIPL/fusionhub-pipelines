@@ -1,5 +1,6 @@
 #include "myglitem.h"
 
+
 void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount, unsigned int vLength, unsigned int normalOffset)
 {
     for (size_t i = 0; i < indiceCount; i += 3)
@@ -451,7 +452,7 @@ void MyGLRenderer::initShaders() {
 
     // cleanup shaders
     this->glDeleteShader(vertexShaderPick);
-    this-> glDeleteShader(fragmentShaderPick);
+    this->glDeleteShader(fragmentShaderPick);
 
     // get uniform locations
     m_pickModelLoc = this->glGetUniformLocation(m_pickProgram, "u_model");
@@ -597,9 +598,7 @@ void MyGLRenderer::moveTopVertexToClick(int mouseX, int mouseY, const QMatrix4x4
 }
 
 
-
 void MyGLRenderer::render() {
-    // qInfo() << "Render Function";
 
     if (!projectionMatrixInitialized)
     {
@@ -626,6 +625,7 @@ void MyGLRenderer::render() {
         projectionMatrixInitialized = true;
     }
 
+
     if (m_pickRequested)
     {
         m_view->SetSelectionCoordinates(m_pickX, m_pickY);
@@ -634,27 +634,7 @@ void MyGLRenderer::render() {
         // m_view->UpdateGeometry();
         m_pickRequested = false;
     }
-
-
     m_view->Render();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     // // all variables are added here
     // // --- Model matrix (triangle local transform) ---
@@ -770,20 +750,50 @@ void MyGLRenderer::render() {
 
 QOpenGLFramebufferObject* MyGLRenderer::createFramebufferObject(const QSize &size) {
     QOpenGLFramebufferObjectFormat format;
-    format.setAttachment(QOpenGLFramebufferObject::Depth);  // Request depth buffer
+    format.setAttachment(QOpenGLFramebufferObject::Depth);  //Request depth buffer
 
     return new QOpenGLFramebufferObject(size, format);
 }
 
 
-
-
 MyGLItem::MyGLItem(QQuickItem *parent)
     : QQuickFramebufferObject(parent)
 {
-    // BIMElementController* bimElementController = new BIMElementController(this);
+    pIfcDetailController = new IFCDetailController(this);;
+    pIfcGeometryService = new IfcGeometryService(this);
+    mesh = getMeshptr();
 
+   /* if(m_currentItem == "Beam")
+    {
+        BIMElement* newElement = new BIMElement(1, "1", false, "Beam", "Front Beam", 0, this);
+        BIMParameter* widthParameter = new BIMParameter(1, "1", false, "Width", "1.5", 22, this);
+        BIMParameter* heightParameter = new BIMParameter(37, "1", false, "Height", "5", 15, this);
+        BIMParameter* rlParameter = new BIMParameter(1, "1", false, "ReferenceLine","[[0,0], [0,2]]", 22, this);
+        newElement->addParameter(widthParameter);
+        newElement->addParameter(heightParameter);
+        newElement->addParameter(rlParameter);
 
+        mesh = new Mesh(this);
+        BeamGeometryService* service = new BeamGeometryService(this);
+        service->generateMesh3D(newElement, mesh);
+    }
+
+   else if(m_currentItem == "Column")
+    {
+        BIMElement* newElement = new BIMElement(23,"1",false,"Column", "Front Column", 0, this);
+        BIMParameter* widthParameter = new BIMParameter(62,"1",false,"Width","3",23,this);
+        BIMParameter* heightParameter = new BIMParameter(37, "1", false, "Height", "0.05", 15, this);
+        BIMParameter* rlParameter = new BIMParameter(63,"1",false,"ReferenceLine","[[0,0], [0,4]]",23,this);
+        newElement->addParameter(widthParameter);
+        newElement->addParameter(heightParameter);
+        newElement->addParameter(rlParameter);
+
+        mesh = new Mesh(this);
+        ColumnGeometryService* service = new ColumnGeometryService(this);
+        service->generateMesh3D(newElement, mesh);
+    }
+    else if(m_currentItem == "Slab")
+    {
     BIMElement* bimElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
     BIMParameter* widthParameter = new BIMParameter(1,"1",false,"Width","1",1,this);
     BIMParameter* rlParameter = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [0,4], [4,4]]",1,this);
@@ -800,31 +810,67 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 
     bimElementList.append(bimElementNew);
 
-    // bimElementController->create("Wall", "Front Wall", 0);
+        BIMElement* newElement = new BIMElement(15, "1", false, "Slab", "Front Slab", 0, this);
+        BIMParameter* distFromLevelParameter = new BIMParameter(38, "1", false, "Distance", "5", 15, this);
+        BIMParameter* heightParameter = new BIMParameter(37, "1", false, "Height", "1", 15, this);
+        //Regular Octagonal Slab
+        BIMParameter* rlParameter = new BIMParameter(39, "1", false, "ReferenceLine", "[[5.0, 0.0], [3.54, 3.54], [0.0, 5.0], [-3.54, 3.54], [-5.0, 0.0], [-3.54, -3.54], [0.0, -5.0], [3.54, -3.54] ]", 15, this);
+        newElement->addParameter(distFromLevelParameter);
+        newElement->addParameter(heightParameter);
+        newElement->addParameter(rlParameter);
 
-    // bimElementController->addParameter(newElement, "Height", "3000");
-    // bimElementController->addParameter(newElement, "Width", "100");
-    // bimElementController->addParameter(newElement, "ReferenceLine", "");
+        mesh = new Mesh(this);
+        SlabGeometryService* service = new SlabGeometryService(this);
+        service->generateMesh3D(newElement, mesh);
+    }
 
-    // qInfo() << "BIM Element with Params is null: " << (newElement == nullptr);
 
+    else if(m_currentItem == "Wall")
+    {
+        // BIMElementController* bimElementController = new BIMElementController(this);
+
+        BIMElement* newElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
+        BIMParameter* widthParameter = new BIMParameter(1,"1",false,"Width","1",1,this);
+        BIMParameter* heightParameter = new BIMParameter(37, "1", false, "Height", "4", 15, this);
+        BIMParameter* rlParameter = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [0,4], [4,4]]",1,this);
+        newElement->addParameter(widthParameter);
+        newElement->addParameter(heightParameter);
+        newElement->addParameter(rlParameter);
     // mesh = new Mesh(this);
     // WallGeometryService service = WallGeometryService();
     // service.generateMesh3D(newElement, mesh);
 
-    // GLfloat* vertices = mesh->getVerticies();
-    // unsigned int* indices = mesh->getIndices();
-    // for (int i = 0; i < 6; i++)
-    // {
-    //     qInfo() << vertices[6*i] << " , " << vertices[6*i + 1] << " , " << vertices[6*i + 2] << " , " << vertices[6*i + 3] << " , " << vertices[6*i + 4] << " , " << vertices[6*i + 5];
-    // }
+        // bimElementController->create("Wall", "Front Wall", 0);
 
-    // qInfo() << "----------------------------------";
+        // bimElementController->addParameter(newElement, "Height", "3000");
+        // bimElementController->addParameter(newElement, "Width", "100");
+        // bimElementController->addParameter(newElement, "ReferenceLine", "");
 
-    // for (int i = 0; i < 6; i++)
-    // {
-    //     qInfo() << indices[i];
-    // }
+        // qInfo() << "BIM Element with Params is null: " << (newElement == nullptr);
+
+        mesh = new Mesh(this);
+        WallGeometryService* service = new WallGeometryService(this);
+        service->generateMesh3D(newElement, mesh);
+
+        // GLfloat* vertices = mesh->getVerticies();
+        // unsigned int* indices = mesh->getIndices();
+        // for (int i = 0; i < 6; i++)
+        // {
+        //     qInfo() << vertices[6*i] << " , " << vertices[6*i + 1] << " , " << vertices[6*i + 2] << " , " << vertices[6*i + 3] << " , " << vertices[6*i + 4] << " , " << vertices[6*i + 5];
+        // }
+
+        // qInfo() << "----------------------------------";
+
+        // for (int i = 0; i < 6; i++)
+        // {
+        //     qInfo() << indices[i];
+        // }
+   }*/
+
+    //else{
+
+   //}
+
 }
 
 
@@ -833,6 +879,18 @@ QQuickFramebufferObject::Renderer* MyGLItem::createRenderer() const {
     return new MyGLRenderer();
 }
 
+void MyGLItem::setCurrentItem(QString currentSelctedItem){
+    m_currentItem = currentSelctedItem;
+}
+
+Mesh* MyGLItem::getMeshptr()
+{
+    if(mesh == nullptr)
+    {
+         mesh = new Mesh(this);
+    }
+    return mesh;
+}
 
 void MyGLItem::cameraMoveUp() {
     m_moveUp = true;
@@ -903,6 +961,44 @@ void MyGLItem::handlePick(int id) {
     emit selectionChanged(id);
 }
 
+void MyGLItem::viewIfc()
+{
+    QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-1-Panel.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-4-Panel.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\BasicHouse.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-2-Panel.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-Flush.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Door-Entry_2-Panel-Glz-Arc-Top.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Taylor_Entrance_1_Panel_High_Def.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Skylight_GTVSF_AmericanSkylites.ifc";
+
+    //QString strFilePath = pIfcDetailController->getIfcFilePath();
+    OdIfcFilePtr pDatabase = pIfcDetailController->getIfcFilePtrFromLoadedIFC(strFilePath);
+    if(pDatabase)
+    {
+        delete mesh;
+        mesh = NULL;
+        mesh = new Mesh(this);
+        pIfcGeometryService->generateMesh3D(pDatabase, mesh);
+        pDatabase.release();
+        pDatabase = NULL;
+    }
+    update();
+}
+
+MyGLItem::~MyGLItem()
+{
+    if(pIfcDetailController)
+    {
+        delete pIfcDetailController;
+        pIfcDetailController = NULL;
+    }
+
+    if(pIfcGeometryService)
+    {
+        delete pIfcGeometryService;
+        pIfcGeometryService = NULL;
+    }
 void MyGLItem::updateEditableBimElement(QVariant bimElement)
 {
     editableBimElement = bimElement.value<BIMElement*>();

@@ -16,7 +16,7 @@ void Mesh::Initialize(const std::vector<Vertex>& vertices, const std::vector<uns
 
 void Mesh::Copy(Mesh *mesh)
 {
-    mesh->Initialize(m_verticies, m_indices, m_border_indices, m_numOfVertices, m_numOfIndices, m_numOfBorderIndices);
+     mesh->Initialize(m_verticies, m_indices, m_border_indices, m_numOfVertices, m_numOfIndices, m_numOfBorderIndices);
 }
 
 void Mesh::Combine(Mesh *combinedMesh, QList<Mesh *> meshList)

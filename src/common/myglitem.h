@@ -17,6 +17,7 @@
 #include <QMatrix4x4>
 #include <QVector3D>
 #include <QVector4D>
+#include <QString>
 
 #include <vector>
 
@@ -70,6 +71,13 @@ public:
 // #include "controllers/bim_element_controller.h"
 #include "models/bim_element.h"
 #include "models/bim_parameter.h"
+#include "services/geometry/wall_geometry_service.h"
+#include "services/geometry/beam_geometry_service.h"
+#include "services/geometry/column_geometry_service.h"
+#include "services/geometry/slab_geometry_service.h"
+#include "services/geometry/ifc_geometry_service.h"
+
+#include "controllers/ifc_detail_controller.h"
 #include "services/geometry/geometry_service_factory.h"
 
 class MyApp : public ExSystemServices
@@ -86,7 +94,11 @@ class MyGLItem : public QQuickFramebufferObject
     Q_OBJECT
 public:
     explicit MyGLItem(QQuickItem *parent = nullptr);
+    ~MyGLItem();
     Renderer* createRenderer() const override;
+
+    QString m_currentItem = "-1";
+
 
     bool m_moveUp = false;
     bool m_moveDown = false;
@@ -103,6 +115,9 @@ public:
 
     int m_lastClickX = -1;
     int m_lastClickY = -1;
+    Mesh* mesh = nullptr;
+    IFCDetailController* pIfcDetailController;
+    IfcGeometryService* pIfcGeometryService;
 
     QString m_viewType = "ModelView";
 
@@ -128,6 +143,11 @@ public slots:
     void requestPick(int x, int y);
 
     void handlePick(int id);
+    void viewIfc();
+
+    void setCurrentItem(QString strCurrentItem);
+
+    Mesh* getMeshptr();
     void updateEditableBimElement(QVariant bimElement);
     void saveEditableBimElement();
 
@@ -147,6 +167,7 @@ public:
     void render() override;
     QOpenGLFramebufferObject* createFramebufferObject(const QSize &size) override;
     void update();
+
 
 private:
     GLuint m_vbo = 0;

@@ -82,8 +82,8 @@ Rectangle {
             }
         }
 
-
         PlannedBIMPage {
+            //id:rootPlannedBIM
             pageType: pageName
             pageAction: baseLayout.pageAction
             visible: pageType !== ""
@@ -106,6 +106,7 @@ Rectangle {
                     glsceneVisible = false
                     break;
                 }
+
             }
         }
     }

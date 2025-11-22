@@ -60,6 +60,7 @@
         <file>resources/shaders/color-picking.vert</file>
         <file>resources/shaders/color-picking.frag</file>
         <file>resources/QML/ScheduleSetupPage.qml</file>
+        <file>resources/bimFamily/DblDoor-1-Panel.ifc</file>
         <file>resources/images/brick.jpg</file>
         <file>resources/images/blueprint.png</file>
     </qresource>
