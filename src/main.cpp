@@ -26,10 +26,15 @@
 #include "repositories/vendor_repository.h"
 #include "repositories/material_repository.h"
 #include "repositories/schedule_setup_repository.h"
+#include "repositories/schedule_of_rates_repository.h"
 #include "repositories/ifc_detail_repository.h"
 #include "repositories/draft_entity_repository.h"
 #include "repositories/bim_element_repository.h"
-
+#include "repositories/bill_of_quantity_repository.h"
+#include "repositories/task_repository.h"
+#include "repositories/work_order_repository.h"
+#include "repositories/file_repository.h"
+#include "repositories/purchase_order_repository.h"
 
 #include "controllers/user_controller.h"
 #include "controllers/project_controller.h"
@@ -38,9 +43,18 @@
 #include "controllers/material_controller.h"
 #include "controllers/unit_of_measurement_controller.h"
 #include "controllers/schedule_setup_controller.h"
+#include "controllers/schedule_of_rates_controller.h"
 #include "controllers/ifc_detail_controller.h"
 #include "controllers/ifc_controllers/ifc_wall_controller.h"
 #include "controllers/bim_element_controller.h"
+#include "controllers/bill_of_quantity_controller.h"
+#include "controllers/bill_of_quantity_line_controller.h"
+#include "controllers/task_controller.h"
+#include "controllers/work_order_controller.h"
+#include "controllers/project_budget_controller.h"
+#include "controllers/file_controller.h"
+#include "controllers/purchase_order_controller.h"
+
 
 #include "models/user.h"
 #include "models/unit_of_measurement.h"
@@ -515,11 +529,17 @@ int main(int argc, char *argv[])
     UserRepository* userRepository = new UserRepository(&engine);    
     MaterialRepository* materialRepository = new MaterialRepository(&engine);
     ScheduleSetupRepository* scheduleSetupRepository = new ScheduleSetupRepository(&engine);
+    ScheduleOfRatesRepository* scheduleOfRatesRepository = new ScheduleOfRatesRepository(&engine);
     DraftEntityRepository* draftEntityRepository = new DraftEntityRepository(&engine);
     ProjectRepository* projectRepository = new ProjectRepository(&engine);
     IFCDetailRepository* ifcDetailRepository = new IFCDetailRepository(&engine);
     BIMElementRepository* bimElementRepository = new BIMElementRepository(&engine);
-
+    BillOfQuantityRepository* billOfQuantityRepository = new BillOfQuantityRepository(&engine);
+    TaskRepository* taskRepository = new TaskRepository(&engine);
+    WorkOrderRepository* workOrderRepository = new WorkOrderRepository(&engine);
+    ProjectBudgetRepository* projectBudgetRepository = new ProjectBudgetRepository(&engine);
+    FileRepository* fileRepository = new FileRepository(&engine);
+    PurchaseOrderRepository* purchaseOrderRepository = new PurchaseOrderRepository(&engine);
 
    // IFCDetailRepository* ifcDetailRepository = new IFCDetailRepository(ifcDetailList, &engine);
 
@@ -594,20 +614,34 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("userRepository", userRepository);   
     engine.rootContext()->setContextProperty("materialRepository", materialRepository);
     engine.rootContext()->setContextProperty("scheduleSetupRepository", scheduleSetupRepository);
+    engine.rootContext()->setContextProperty("scheduleOfRatesRepository", scheduleOfRatesRepository);
     engine.rootContext()->setContextProperty("draftEntityRepository", draftEntityRepository);
     engine.rootContext()->setContextProperty("projectRepository", projectRepository);
     engine.rootContext()->setContextProperty("ifcDetailRepository", ifcDetailRepository);
+    engine.rootContext()->setContextProperty("taskRepository", taskRepository);
+    engine.rootContext()->setContextProperty("workOrderRepository", workOrderRepository);
+    engine.rootContext()->setContextProperty("projectBudgetRepository", projectBudgetRepository);
+    engine.rootContext()->setContextProperty("fileRepository", fileRepository);
+    engine.rootContext()->setContextProperty("purchaseOrderRepository", purchaseOrderRepository);
 
     engine.rootContext()->setContextProperty("bimElementRepository", bimElementRepository);
+    engine.rootContext()->setContextProperty("billofQuantityRepository", billOfQuantityRepository);
 
 
     qmlRegisterType<MyGLItem>("com.fh.models", 1, 0, "GLScene");
     qmlRegisterType<BudgetHead>("com.fh.models", 1, 0, "BudgetHead");
     qmlRegisterType<UnitOfMeasurement>("com.fh.models", 1, 0, "UnitOfMeasurement");
     qmlRegisterType<Material>("com.fh.models", 1, 0, "Material");
+    qmlRegisterType<Task>("com.fh.models", 1, 0, "Task");
     qmlRegisterType<Vendor>("com.fh.models", 1, 0, "Vendor");
     qmlRegisterType<User>("com.fh.models", 1, 0, "User");   
     qmlRegisterType<ScheduleSetup>("com.fh.models", 1, 0, "ScheduleSetup");
+    qmlRegisterType<ScheduleOfRates>("com.fh.models", 1, 0, "ScheduleOfRates");
+    qmlRegisterType<WorkOrder>("com.fh.models", 1, 0, "WorkOrder");
+    qmlRegisterType<ProjectBudget>("com.fh.models", 1, 0, "ProjectBudget");
+    qmlRegisterType<File>("com.fh.models", 1, 0, "File");
+    qmlRegisterType<PurchaseOrder>("com.fh.models", 1, 0, "PurchaseOrder");
+
     qmlRegisterType<DraftEntity>("com.fh.models", 1, 0, "DraftEntity");
     qmlRegisterType<User>("com.fh.models", 1, 0, "Project");
 
@@ -615,15 +649,23 @@ int main(int argc, char *argv[])
     qmlRegisterType<UserController>("com.fh.controllers", 1, 0, "UserController");
     qmlRegisterType<ProjectController>("com.fh.controllers", 1, 0, "ProjectController");
     qmlRegisterType<BudgetHeadController>("com.fh.controllers", 1, 0, "BudgetHeadController");
+    qmlRegisterType<TaskController>("com.fh.controllers", 1, 0, "TaskController");
     qmlRegisterType<VendorController>("com.fh.controllers", 1, 0, "VendorController");
     qmlRegisterType<MaterialController>("com.fh.controllers", 1, 0, "MaterialController");
     qmlRegisterType<UnitOfMeasurementController>("com.fh.controllers", 1, 0, "UnitOfMeasurementController");
     qmlRegisterType<ScheduleSetupController>("com.fh.controllers", 1, 0, "ScheduleSetupController");
+    qmlRegisterType<ScheduleOfRatesController>("com.fh.controllers", 1, 0, "ScheduleOfRatesController");
     qmlRegisterType<IFCDetailController>("com.fh.controllers", 1, 0, "IFCDetailController");
     qmlRegisterType<IFCWallController>("com.fh.controllers", 1, 0, "IFCWallController");
     qmlRegisterType<BIMElementController>("com.fh.controllers", 1, 0, "BIMElementController");
+    qmlRegisterType<BillOfQuantityController>("com.fh.controllers", 1, 0, "BillOfQuantityController");
+    qmlRegisterType<BillOfQuantityLineController>("com.fh.controllers", 1, 0, "BillOfQuantityLineController");
+    qmlRegisterType<WorkOrderController>("com.fh.controllers", 1, 0, "WorkOrderController");
+    qmlRegisterType<ProjectBudgetController>("com.fh.controllers", 1, 0, "ProjectBudgetController");
+    qmlRegisterType<FileController>("com.fh.controllers", 1, 0, "FileController");
+     qmlRegisterType<PurchaseOrderController>("com.fh.controllers", 1, 0, "PurchaseOrderController");
 
-    
+
     const QUrl url(QStringLiteral("qrc:/resources/QML/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {

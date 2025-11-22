@@ -18,7 +18,7 @@ public:
 
 
 private:
-    BudgetHeadRepository* m_budgetheadRepository;
+    BudgetHeadRepository* m_budgetHeadRepository;
     DraftEntityRepository* m_draftEntityRepository;
 };
 

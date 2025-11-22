@@ -100,6 +100,7 @@ set(SOURCES
     src/models/purchase_order_line.cpp
     src/models/good_received_note.cpp
     src/models/material_indent.cpp
+
     src/repositories/abstract_repository.cpp
     src/repositories/user_repository.cpp
     src/repositories/project_repository.cpp
@@ -201,8 +202,10 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/common/opengl/classes/mesh.h src/common/opengl/classes/mesh.cpp
     src/models/bim_element.h src/models/bim_element.cpp
     src/models/bim_parameter.h src/models/bim_parameter.cpp
+
     src/repositories/bim_parameter_repository.h src/repositories/bim_parameter_repository.cpp
     src/repositories/bim_element_repository.h src/repositories/bim_element_repository.cpp
+
     src/controllers/bim_element_controller.h src/controllers/bim_element_controller.cpp
     src/controllers/budget_head_controller.h src/controllers/budget_head_controller.cpp
     src/controllers/vendor_controller.h src/controllers/vendor_controller.cpp
@@ -219,6 +222,33 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/common/ifc_filler_extender.h
     src/common/tree_model.h src/common/tree_model.cpp
     src/common/opengl/classes/earcut_algorithm.h
+    src/services/geometry/wall_geometry_service.h
+    src/services/geometry/wall_geometry_service.cpp
+    src/controllers/bill_of_quantity_controller.h
+    src/controllers/bill_of_quantity_controller.cpp
+    src/controllers/bill_of_quantity_line_controller.h
+    src/controllers/bill_of_quantity_line_controller.cpp
+    src/models/task.h src/models/task.cpp
+    src/controllers/task_controller.h
+    src/controllers/task_controller.cpp
+    src/repositories/bill_of_quantity_line_repository.h
+    src/repositories/bill_of_quantity_line_repository.cpp
+    src/repositories/bill_of_quantity_repository.h
+    src/repositories/bill_of_quantity_repository.cpp
+    src/repositories/task_repository.h
+    src/repositories/task_repository.cpp
+    src/controllers/schedule_of_rates_controller.h src/controllers/schedule_of_rates_controller.cpp
+    src/controllers/work_order_controller.h
+    src/controllers/work_order_controller.cpp
+    src/controllers/project_budget_controller.h src/controllers/project_budget_controller.cpp
+    src/controllers/file_controller.h src/controllers/file_controller.cpp
+    src/controllers/purchase_order_controller.h src/controllers/purchase_order_controller.cpp
+    src/controllers/purchase_order_controller.h
+
+
+
+
+
     src/services/geometry/wall_geometry_service.h src/services/geometry/wall_geometry_service.cpp
     src/services/geometry/beam_geometry_service.h src/services/geometry/beam_geometry_service.cpp
     src/services/geometry/column_geometry_service.h src/services/geometry/column_geometry_service.cpp

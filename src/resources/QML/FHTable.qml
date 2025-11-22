@@ -31,7 +31,7 @@ Column {
         id: headerRow
         //spacing: 20
         spacing: 2
-        width: parent.width        
+        width: parent.width
 
         Repeater {
             model: tableRoot.columns
@@ -65,7 +65,7 @@ Column {
             anchors.fill: parent
             model: tableRoot.model
             clip: true
-            focus: true            
+            focus: true
 
             /*
             ScrollBar.vertical: ScrollBar {
@@ -88,7 +88,7 @@ Column {
                         height: 30
                         color: "transparent"
                         visible: removeRow
-                        focus: true                        
+                        focus: true
                         anchors.verticalCenter: parent.verticalCenter
                     Text {
                           text: "x"
@@ -103,9 +103,9 @@ Column {
                         cursorShape: Qt.PointingHandCursor
                         onClicked:{
 
-                                if (listView.currentIndex !== -1) {                                  
+                                if (listView.currentIndex !== -1) {
                                     removedIndex = index
-                                    console.log("removedIndex:" , removedIndex, "removd:", index)                                    
+                                    console.log("removedIndex:" , removedIndex, "removd:", index)
                                     tableRoot.model.splice(index, 1)
                                     listView.model.splice(index, 1)
                                 }
@@ -129,8 +129,8 @@ Column {
                                 font.pixelSize: 15
                                 anchors.centerIn: parent
                             }
-                        }                        
-                    }                    
+                        }
+                    }
                 }
 
                 Rectangle {
@@ -138,12 +138,11 @@ Column {
                     height: 1
                     color: "#EDF1F4"
                 }
-            }           
+            }
         }
 
 
-    }    
+    }
 
 }
-
 

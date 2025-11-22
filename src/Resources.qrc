@@ -60,6 +60,14 @@
         <file>resources/shaders/color-picking.vert</file>
         <file>resources/shaders/color-picking.frag</file>
         <file>resources/QML/ScheduleSetupPage.qml</file>
+        <file>resources/QML/BillOfQuantityPage.qml</file>
+        <file>resources/QML/TaskPage.qml</file>
+        <file>resources/QML/ScheduleOfRatesPage.qml</file>
+        <file>resources/QML/WorkOrderPage.qml</file>
+        <file>resources/QML/ProjectBudgetPage.qml</file>
+        <file>resources/QML/FilePage.qml</file>
+        <file>resources/images/view.png</file>
+        <file>resources/QML/PurchaseOrderPage.qml</file>
         <file>resources/bimFamily/DblDoor-1-Panel.ifc</file>
         <file>resources/images/brick.jpg</file>
         <file>resources/images/blueprint.png</file>

@@ -35,7 +35,7 @@ Column {
 
         onAcceptCallback: function () {
             if(costParameterList.length > 0 && resourceParameterList.length > 0)
-            {                
+            {
                 scheduleSetupController.create(scheduleNameTextBox.text, descriptionTextBox.text,
                                                costParameterList, resourceParameterList);
 
@@ -47,7 +47,7 @@ Column {
             showList();
         }
 
-        onCancelCallback: function () {            
+        onCancelCallback: function () {
             scheduleNameTextBox.text = "";
             descriptionTextBox.text = "";
             costParameterList = [];
@@ -241,7 +241,7 @@ Column {
                 Column{
                     FHTable {
                         height: 130
-                        //leftPadding: 20                        
+                        //leftPadding: 20
                         removeRow: true
                         leftPadding: 2
                         model: resourceParameterList

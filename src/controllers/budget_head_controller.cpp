@@ -8,20 +8,20 @@ extern int gProjectId;
 
 BudgetHeadController::BudgetHeadController(QObject *parent)
     : QObject{parent},
-    m_budgetheadRepository(RepositoryLocator::instance().budgetheadRepository()),
+    m_budgetHeadRepository(RepositoryLocator::instance().budgetHeadRepository()),
     m_draftEntityRepository(RepositoryLocator::instance().draftEntityRepository())
 {}
 
 void BudgetHeadController::create(const QString &description) const
 {
-    BudgetHead budgethead;
+    BudgetHead budgetHead;
 
-    budgethead.setId(0);
-    budgethead.setGlobalId("123");
-    budgethead.setApprovalStatus(true);
-    budgethead.setDescription(description);
+    budgetHead.setId(0);
+    budgetHead.setGlobalId("123");
+    budgetHead.setApprovalStatus(true);
+    budgetHead.setDescription(description);
 
-    m_budgetheadRepository->saveQML(&budgethead);
+    m_budgetHeadRepository->saveQML(&budgetHead);
 
     /***********Start of DraftEntity******************/
 
@@ -73,7 +73,7 @@ std::vector<BudgetHead*> BudgetHeadController::getBudgetHeadList(bool isApproved
     qDebug()<<"IsApproved: "<< isApproved;
 
     if(isApproved){
-        return m_budgetheadRepository->findAllQML();
+        return m_budgetHeadRepository->findAllQML();
     }
     else{
         std::vector<DraftEntity*>  draftEntitys  =  m_draftEntityRepository->findAllQML("BudgetHead");

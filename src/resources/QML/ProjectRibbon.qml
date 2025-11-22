@@ -97,7 +97,7 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            // newProjectClicked()
+                              projectPageToRedirect("File")
                         }
                     }
                 }
@@ -118,14 +118,14 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            // newProjectClicked()
+                              projectPageToRedirect("ScheduleOfRates")
                         }
                     }
                 }
 
                 RibbonButton {
                     btnSource: "qrc:/resources/images/boq_icon.png"
-                    btnName: "BOQs"
+                    btnName: "BillOfQuantity"
                     btnNameColor: "#000000"
                     anchors.verticalCenter: parent.verticalCenter
 
@@ -133,7 +133,7 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            // newProjectClicked()
+                             projectPageToRedirect("BillOfQuantity")
                         }
                     }
                 }
@@ -155,7 +155,7 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            // newProjectClicked()
+                             projectPageToRedirect("ProjectBudget")
                         }
                     }
                 }
@@ -170,7 +170,7 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            // newProjectClicked()
+                            projectPageToRedirect("WorkOrder")
                         }
                     }
                 }
@@ -206,7 +206,7 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            // newProjectClicked()
+                              projectPageToRedirect("PurchaseOrder")
                         }
                     }
                 }
