@@ -9,24 +9,32 @@ void View::Initialize()
 {
     this->initializeOpenGLFunctions();
 
-    // FOR TESTING:::: ADD MESH BEFORE HAND
-    // getting the data of the first mesh
-    GLfloat* vertices = meshList[0]->getVerticies();
-    unsigned int* indices = meshList[0]->getIndices();
-    unsigned int* borderIndices = meshList[0]->getBorderIndices();
-    unsigned int numOfVertices = meshList[0]->getNumOfVertices();
-    unsigned int numOfIndices = meshList[0]->getNumOfIndices();
-    unsigned int numOfBorderIndices = meshList[0]->getNumOfBorderIndices();
-
-    // Initializing the vao, vbo, and ibo
-    m_indexCount = numOfIndices;
-    m_borderIndexCount = numOfBorderIndices;
     this->glEnable(GL_DEPTH_TEST);
 
     this->glGenVertexArrays(1, &m_vao);
     this->glGenBuffers(1, &m_static_ibo);
     this->glGenBuffers(1, &m_static_vbo);
     this->glGenBuffers(1, &m_static_border_ibo);
+
+    BindMeshWithOpenGL();
+}
+
+void View::BindMeshWithOpenGL()
+{
+    delete combinedMesh;
+    combinedMesh = new Mesh();
+    Mesh::Combine(combinedMesh, meshList);
+
+    Vertex* vertices = combinedMesh->getVerticiesData();
+    unsigned int* indices = combinedMesh->getIndicesData();
+    unsigned int* borderIndices = combinedMesh->getBorderIndicesData();
+    unsigned int numOfVertices = combinedMesh->getNumOfVertices();
+    unsigned int numOfIndices = combinedMesh->getNumOfIndices();
+    unsigned int numOfBorderIndices = combinedMesh->getNumOfBorderIndices();
+
+    // Initializing the vao, vbo, and ibo
+    m_indexCount = numOfIndices;
+    m_borderIndexCount = numOfBorderIndices;
 
     // VAO
     this->glBindVertexArray(m_vao);
@@ -35,14 +43,26 @@ void View::Initialize()
             this->glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * numOfVertices, vertices, GL_STATIC_DRAW);
 
             // postition in verticies
-            this->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(vertices[0]), (void*)0);
+            this->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
             this->glEnableVertexAttribArray(0);
 
             // normal in verticies
-            this->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(vertices[0]), (void*)(3 * sizeof(vertices[0])));
+            this->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
             this->glEnableVertexAttribArray(1);
 
-            // this->glBindBuffer(GL_ARRAY_BUFFER, 0);
+            // texture uv in verticies
+            this->glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv));
+            this->glEnableVertexAttribArray(2);
+
+            //materialIndex in verticies
+            this->glVertexAttribIPointer(3, 1, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, materialIndex));
+            this->glEnableVertexAttribArray(3);
+
+            //textureIndex in verticies
+            this->glVertexAttribIPointer(4, 1, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, textureIndex));
+            this->glEnableVertexAttribArray(4);
+
+        // this->glBindBuffer(GL_ARRAY_BUFFER, 0);
         // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 
@@ -58,6 +78,15 @@ void View::Initialize()
 
 void View::Render()
 {
+    this->glEnable(GL_DEPTH_TEST);
+    this->glDepthFunc(GL_LEQUAL);
+    this->glDepthMask(GL_TRUE);
+    this->glDisable(GL_BLEND);
+
+    this->glEnable(GL_CULL_FACE);
+    this->glCullFace(GL_BACK);
+    this->glFrontFace(GL_CW); // GL_CW or GL_CCW ??? GL_CW seems to work because we flipped Y in the vertex shader
+
     this->glViewport(0, 0, viewportWidth, viewportHeight);
     this->glClearColor(0.97f, 0.99f, 0.98f, 1.0f);
     this->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -69,14 +98,32 @@ void View::Render()
     this->glUniform3f(shader->getViewPositionId(), cameraPosition.x(), cameraPosition.y(), cameraPosition.z());
 
     // For 3D
-    this->glUniform3f(shader->getMaterialAmbientId(), 0.96f, 0.47f, 0.02f);
-    this->glUniform3f(shader->getMaterialDiffuseId(), 0.0f, 0.5f, 0.31f);
-    this->glUniform3f(shader->getMaterialSpecularId(), 0.5f, 0.5f, 0.5f);
-    this->glUniform1f(shader->getMaterialShininessId(), 32.0f);
+    for (int i = 0; i < materialList.size(); i++)
+    {
+        OpenGLMaterial* material = materialList[i];
 
-    this->glUniform3f(shader->getLightPositionId(), 0.0f, 0.0f, 20.0f);
-    this->glUniform3f(shader->getLightAmbientId(), 0.2f, 0.2f, 0.2f);
-    this->glUniform3f(shader->getLightDiffuseId(), 0.5f, 0.5f, 0.5f);
+        auto ambient = material->ambient();
+        this->glUniform3f(shader->getMaterialAmbientId(i), ambient[0], ambient[1], ambient[2]); // 0.96, 0.47f, 0.02f
+
+        auto diffuse = material->diffuse();
+        this->glUniform3f(shader->getMaterialDiffuseId(i), diffuse[0], diffuse[1], diffuse[2]); // 0.0f, 0.5f, 0.31f
+
+        auto specular = material->specular();
+        this->glUniform3f(shader->getMaterialSpecularId(i), specular[0], specular[1], specular[2]); //0.5f, 0.5f, 0.5f
+
+        this->glUniform1f(shader->getMaterialShininessId(i), material->shininess());
+    }
+
+    for (int i = 0; i < 1; ++i) {
+        this->glActiveTexture(GL_TEXTURE0 + i);
+        this->glBindTexture(GL_TEXTURE_2D, textureList[i]->getTextureId());
+    }
+
+    this->glUniform1iv(shader->getTextureArrayId(), 1, shader->getTextureUnitArray());
+
+    this->glUniform3f(shader->getLightPositionId(), 20.0f, 0.0f, 0.0f);
+    this->glUniform3f(shader->getLightAmbientId(), 1.0f, 1.0f, 1.0f); // 0.2f, 0.2f, 0.2f
+    this->glUniform3f(shader->getLightDiffuseId(), 0.5f, 0.5f, 0.5f); // 0.5f, 0.5f, 0.5f
     this->glUniform3f(shader->getLightSpecularId(), 1.0f, 1.0f, 1.0f);
 
     // For 2D
@@ -95,6 +142,27 @@ void View::Render()
     this->glUniformMatrix4fv(shader->getViewId(),  1, GL_FALSE, camera->calculateViewMatrix().constData());
     this->glUniformMatrix4fv(shader->getProjectionId(),  1, GL_FALSE, m_projectionMatrix.constData());
 
+    // GLint depthTestEnabled = 1;
+    // this->glGetIntegerv(GL_DEPTH_TEST, &depthTestEnabled);
+    // qInfo() << "Depth test:" << (depthTestEnabled ? "ON" : "OFF");
+    // this->glGetIntegerv(GL_DEPTH_BITS, &depthTestEnabled);
+    // qInfo() << "Depth bits:" << depthTestEnabled;
+
+    // GLint depthBits = 0;
+
+    // // Use glGetFramebufferAttachmentParameteriv to query the specific attachment
+    // // for the currently bound FBO.
+    // // The attachment point for a renderbuffer (which Qt uses by default for depth) is GL_DEPTH_ATTACHMENT
+    // this->glGetFramebufferAttachmentParameteriv(
+    //     GL_FRAMEBUFFER,
+    //     GL_DEPTH_ATTACHMENT,
+    //     GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE,
+    //     &depthBits
+    //     );
+
+    // qInfo() << "FBO Depth bits:" << depthBits;
+
+
 
     // Draw
     this->glBindVertexArray(m_vao);
@@ -102,7 +170,7 @@ void View::Render()
             this->glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
         // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        this->glUniform3f(shader->getMaterialAmbientId(), 0.0f, 0.0f, 0.0f);
+        this->glUniform3f(shader->getMaterialAmbientId(0), 0.0f, 0.0f, 0.0f);
 
         this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_border_ibo);
             this->glDrawElements(GL_LINES, m_borderIndexCount, GL_UNSIGNED_INT, 0);
@@ -136,7 +204,7 @@ void View::Selection()
             this->glUniformMatrix4fv(pickingShader->getProjectionId(),  1, GL_FALSE, m_projectionMatrix.constData());
 
             this->glBindVertexArray(m_vao);
-                // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
+                this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
                     this->glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
                 // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             this->glBindVertexArray(0);
@@ -156,11 +224,11 @@ void View::Selection()
     }
 }
 
-void View::UpdateGeometry()
+QVector3D View::GetPointInModelSpace(int meshIndex)
 {
     // --- Step 1: Screen -> NDC
     float x = (2.0f * m_pickX) / float(viewportWidth) - 1.0f;
-    float y = (2.0f * m_pickY) / float(viewportHeight) - 1.0f; // no inversion as Y-axis flip is already in proj matrix
+    float y = 1.0f - (2.0f * m_pickY) / float(viewportHeight);
     QVector4D rayClip(x, y, -1.0f, 1.0f);
 
     // --- Step 2: NDC -> Eye space
@@ -172,7 +240,7 @@ void View::UpdateGeometry()
     QVector3D rayOriginWorld = camera->getCameraPosition();
 
     // --- Step 4: Transform ray into *model space*
-    QMatrix4x4 invModel = meshList[0]->getModelMatrix().inverted();
+    QMatrix4x4 invModel = meshList[meshIndex]->getModelMatrix().inverted();
     QVector3D rayOriginModel = (invModel * QVector4D(rayOriginWorld, 1.0f)).toVector3D();
     QVector3D rayDirModel    = (invModel * QVector4D(rayDirWorld, 0.0f)).toVector3D().normalized();
 
@@ -180,35 +248,81 @@ void View::UpdateGeometry()
     QVector3D planeNormal(0, 0, 1);
     QVector3D planePoint(0, 0, 0);
     float denom = QVector3D::dotProduct(planeNormal, rayDirModel);
-    if (fabs(denom) < 1e-6f) {
-        qWarning() << "Ray parallel to model plane, no intersection";
-        return;
-    }
+    // if (fabs(denom) < 1e-6f) {
+    //     qWarning() << "Ray parallel to model plane, no intersection";
+    //     return;
+    // }
     float t = QVector3D::dotProduct(planePoint - rayOriginModel, planeNormal) / denom;
-    if (t < 0) {
-        qWarning() << "Intersection is behind camera";
-        return;
-    }
+    // if (t < 0) {
+    //     qWarning() << "Intersection is behind camera";
+    //     return;
+    // }
 
     QVector3D hitPoint = rayOriginModel + t * rayDirModel;
 
-    // --- Step 5: Update vertex (index 0 = top vertex)
-    meshList[0]->UpdateGeometry(hitPoint);
+    return hitPoint;
+}
 
-    // --- Step 6: Push updated vertices to GPU
-    this->glBindVertexArray(m_vao);
-        //IBO
-        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
-            this->glBindBuffer(GL_ARRAY_BUFFER, m_static_vbo);
-                this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(meshList[0]->getVerticies()), meshList[0]->getVerticies());
-            this->glBindBuffer(GL_ARRAY_BUFFER, 0);
-        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    this->glBindVertexArray(0);
+QVector3D View::GetPointInViewSpace()
+{
+    // --- Step 1: Screen -> NDC
+    float x = (2.0f * m_pickX) / float(viewportWidth) - 1.0f;
+    float y = 1.0f - (2.0f * m_pickY) / float(viewportHeight);
+    QVector4D rayClip(x, y, -1.0f, 1.0f);
+
+    // --- Step 2: NDC -> Eye space
+    QVector4D rayEye = m_projectionMatrix.inverted() * rayClip;
+    rayEye = QVector4D(rayEye.x(), rayEye.y(), -1.0f, 0.0f);
+
+    // --- Step 3: Eye -> World space
+    QVector3D rayDirWorld = (camera->calculateViewMatrix().inverted() * rayEye).toVector3D().normalized();
+    QVector3D rayOriginWorld = camera->getCameraPosition();
+
+    // --- Step 4: Transform ray into *model space*
+    QMatrix4x4 matrix;
+    matrix.setToIdentity();
+    QMatrix4x4 invModel = matrix.inverted();
+    QVector3D rayOriginModel = (invModel * QVector4D(rayOriginWorld, 1.0f)).toVector3D();
+    QVector3D rayDirModel    = (invModel * QVector4D(rayDirWorld, 0.0f)).toVector3D().normalized();
+
+    // --- Step 5: Ray-plane intersection in model space (Z=0 plane)
+    QVector3D planeNormal(0, 0, 1);
+    QVector3D planePoint(0, 0, 0);
+    float denom = QVector3D::dotProduct(planeNormal, rayDirModel);
+    // if (fabs(denom) < 1e-6f) {
+    //     qWarning() << "Ray parallel to model plane, no intersection";
+    //     return;
+    // }
+    float t = QVector3D::dotProduct(planePoint - rayOriginModel, planeNormal) / denom;
+    // if (t < 0) {
+    //     qWarning() << "Intersection is behind camera";
+    //     return;
+    // }
+
+    QVector3D hitPoint = rayOriginModel + t * rayDirModel;
+
+    return hitPoint;
 }
 
 void View::AddMesh(Mesh *mesh)
 {
     meshList.append(mesh);
+}
+
+void View::DeleteAllMesh()
+{
+    // Only clears the QList does not delete the Mesh object being pointed too
+    meshList.clear();
+}
+
+void View::AddMaterial(OpenGLMaterial *material)
+{
+    materialList.append(material);
+}
+
+void View::AddTexture(Texture *texture)
+{
+    textureList.append(texture);
 }
 
 void View::AddCamera(Camera *cam)
@@ -303,4 +417,6 @@ View::~View()
     this->glDeleteBuffers(1, &m_static_vbo);
     this->glDeleteBuffers(1, &m_static_ibo);
     this->glDeleteVertexArrays(1, &m_vao);
+
+    delete combinedMesh;
 }

@@ -30,7 +30,7 @@ void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat
     }
 }
 
-MyGLRenderer::MyGLRenderer(Mesh* mesh)
+MyGLRenderer::MyGLRenderer()
 {
     initializeOpenGLFunctions();
     // initGL();
@@ -73,13 +73,13 @@ MyGLRenderer::MyGLRenderer(Mesh* mesh)
 
     // calcAverageNormals(indices.data(), 12, verticies.data(), 24, 6, 3);
 
-    m_mesh = new Mesh();
+    // m_mesh = new Mesh();
     // m_mesh->Initialize(verticies, indices, 24, 12);
-    mesh->Copy(m_mesh);
+    // mesh->Copy(m_mesh);
 
     // initialize Camera
     m_camera = new Camera();
-    m_camera->Initialize(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 1.0f, 0.0f), 90.0f, 0.0f, 20.0f, 5.0f, 0.5f);
+    m_camera->Initialize(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 1.0f, 0.0f), QVector3D(0.0f, 0.0f, 20.0f), 5.0f, 0.5f);
 
     // initialize Shader
     m_shader = new Shader();
@@ -90,13 +90,36 @@ MyGLRenderer::MyGLRenderer(Mesh* mesh)
     m_picking_shader->SetPickColor(true);
     m_picking_shader->CreateFromFiles("://resources/shaders/color-picking.vert", "://resources/shaders/color-picking.frag");
 
+    // initialize Materials
+    OpenGLMaterial* whiteMaterial = new OpenGLMaterial();
+    whiteMaterial->setAmbient({1.0f, 1.0f, 1.0f}); // 0.96, 0.47f, 0.02f
+    whiteMaterial->setDiffuse({1.0f, 1.0f, 1.0f}); // 0.0f, 0.5f, 0.31f
+    whiteMaterial->setSpecular({1.0f, 1.0f, 1.0f}); // 0.5f, 0.5f, 0.5f
+    whiteMaterial->setShininess(32.0f);
+    m_materialList.append(whiteMaterial);
+
+    OpenGLMaterial* blueMaterial = new OpenGLMaterial();
+    blueMaterial->setAmbient({0.68f, 0.85f, 0.90f}); // 0.96, 0.47f, 0.02f
+    blueMaterial->setDiffuse({1.0f, 1.0f, 1.0f}); // 0.0f, 0.5f, 0.31f
+    blueMaterial->setSpecular({1.0f, 1.0f, 1.0f}); // 0.5f, 0.5f, 0.5f
+    blueMaterial->setShininess(32.0f);
+    m_materialList.append(blueMaterial);
+
+    // initialize Textures
+    Texture* texture = new Texture();
+    texture->LoadTexture("://resources/images/brick.jpg");
+    m_textureList.append(texture);
+
     // initialize View
     m_view = new View();
-    m_view->AddMesh(m_mesh);
+    // m_view->AddMesh(m_mesh);
+    m_view->AddMaterial(whiteMaterial);
+    m_view->AddMaterial(blueMaterial);
+    m_view->AddTexture(texture);
     m_view->AddCamera(m_camera);
     m_view->AddShader(m_shader);
     m_view->AddPickingShader(m_picking_shader);
-    m_view->Initialize();
+    // m_view->Initialize();
 }
 
 MyGLRenderer::~MyGLRenderer()
@@ -111,11 +134,29 @@ MyGLRenderer::~MyGLRenderer()
     //     this->glDeleteRenderbuffers(1, &m_pickDepthBuf);
     // }
 
-    delete m_mesh;
+    // delete m_mesh;
     delete m_camera;
     delete m_shader;
     delete m_picking_shader;
     delete m_view;
+
+    for (OpenGLMaterial* material : m_materialList)
+    {
+        delete material;
+    }
+    m_materialList.clear();
+
+    for (Texture* texture : m_textureList)
+    {
+        delete texture;
+    }
+    m_textureList.clear();
+
+    for (Mesh* mesh: m_meshList)
+    {
+        delete mesh;
+    }
+    m_meshList.clear();
 }
 
 void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
@@ -123,25 +164,50 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
     // qInfo() << "Syncronize Function";
     MyGLItem* glItem = static_cast<MyGLItem*>(item);
 
-    if (glItem->m_moveUp) {
+
+    // Orbit only works in 3D mode and not in 2D
+    if (glItem->m_moveUp && glItem->m_viewType == "ModelView") {
         m_camera->OrbitVertical(true);
-        glItem->m_moveUp = false;  // reset
     }
+    glItem->m_moveUp = false;  // reset
 
-    if (glItem->m_moveDown) {
+    if (glItem->m_moveDown && glItem->m_viewType == "ModelView") {
         m_camera->OrbitVertical(false);
-        glItem->m_moveDown = false;
     }
+    glItem->m_moveDown = false;
 
-    if (glItem->m_moveLeft) {
+    if (glItem->m_moveLeft && glItem->m_viewType == "ModelView") {
         m_camera->OrbitHorizontal(false);
-        glItem->m_moveLeft = false;
+    }
+    glItem->m_moveLeft = false;
+
+    if (glItem->m_moveRight && glItem->m_viewType == "ModelView") {
+        m_camera->OrbitHorizontal(true);
+    }
+    glItem->m_moveRight = false;
+
+
+    float panLength = 0.1f;
+    if (glItem->m_panUp) {
+        m_camera->Pan(0.0f,panLength);
+        glItem->m_panUp = false;  // reset
     }
 
-    if (glItem->m_moveRight) {
-        m_camera->OrbitHorizontal(true);
-        glItem->m_moveRight = false;
+    if (glItem->m_panDown) {
+        m_camera->Pan(0.0f, -panLength);
+        glItem->m_panDown = false;
     }
+
+    if (glItem->m_panLeft) {
+        m_camera->Pan(-panLength, 0.0f);
+        glItem->m_panLeft = false;
+    }
+
+    if (glItem->m_panRight) {
+        m_camera->Pan(panLength, 0.0f);
+        glItem->m_panRight = false;
+    }
+
 
     if (glItem->m_zoomIn)
     {
@@ -155,13 +221,149 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
     }
 
     // transfer click request safely
-    if (glItem->m_lastClickX >= 0) {
+    if (meshInitialized && projectionMatrixInitialized && glItem->m_lastClickX >= 0) {
         m_pickX = glItem->m_lastClickX;
         m_pickY = glItem->m_lastClickY;
         m_pickRequested = true;
         // reset the stored GUI-side coords so we don't re-process
         glItem->m_lastClickX = -1;
         glItem->m_lastClickY = -1;
+
+        m_view->SetSelectionCoordinates(m_pickX, m_pickY);
+        QVector3D clickedPoint = m_view->GetPointInViewSpace();
+
+        // update glItem BIM Element
+        if (glItem->editableBimElement != nullptr)
+        {
+            GeometryServiceFactory::updateGeometry(glItem->editableBimElement, clickedPoint);
+
+            // removing old geometry
+            for (Mesh* mesh: m_meshList)
+            {
+                delete mesh;
+            }
+            m_meshList.clear();
+            m_view->DeleteAllMesh();
+
+            for (BIMElement* bimElement: glItem->bimElementList)
+            {
+                // adding new geometry
+                Mesh* mesh = new Mesh();
+                m_meshList.append(mesh);
+                m_view->AddMesh(mesh);
+
+                if (glItem->m_viewType == "ModelView")
+                {
+                    GeometryServiceFactory::generateMesh3D(bimElement, mesh);
+                }
+                else if (glItem->m_viewType == "PlanView")
+                {
+                    GeometryServiceFactory::generateMesh2D(bimElement, mesh);
+                }
+            }
+
+            if (glItem->m_viewType == "ModelView")
+            {
+                Mesh* mesh = new Mesh();
+                m_meshList.append(mesh);
+                m_view->AddMesh(mesh);
+
+                Mesh::GenerateBaseSurface(mesh);
+            }
+
+            // generating mesh for Editable BIMElement
+            Mesh* mesh = new Mesh();
+            m_meshList.append(mesh);
+            m_view->AddMesh(mesh);
+
+            if (glItem->m_viewType == "ModelView")
+            {
+                GeometryServiceFactory::generateMesh3D(glItem->editableBimElement, mesh);
+            }
+            else if (glItem->m_viewType == "PlanView")
+            {
+                GeometryServiceFactory::generateMesh2D(glItem->editableBimElement, mesh);
+            }
+
+
+            m_view->BindMeshWithOpenGL();
+        }
+    }
+
+    if (!meshInitialized)
+    {
+        for (BIMElement* bimElement: glItem->bimElementList)
+        {
+            Mesh* mesh = new Mesh();
+            m_meshList.append(mesh);
+            m_view->AddMesh(mesh);
+
+            if (glItem->m_viewType == "ModelView")
+            {
+                GeometryServiceFactory::generateMesh3D(bimElement, mesh);
+            }
+            else if (glItem->m_viewType == "PlanView")
+            {
+                GeometryServiceFactory::generateMesh2D(bimElement, mesh);
+            }
+        }
+
+        if (glItem->m_viewType == "ModelView")
+        {
+            Mesh* mesh = new Mesh();
+            m_meshList.append(mesh);
+            m_view->AddMesh(mesh);
+
+            Mesh::GenerateBaseSurface(mesh);
+        }
+
+        m_view->Initialize();
+
+        meshInitialized = true;
+        m_viewType = glItem->m_viewType;
+    }
+
+    if (m_viewType != glItem->m_viewType)
+    {
+        // removing old geometry
+        for (Mesh* mesh: m_meshList)
+        {
+            delete mesh;
+        }
+        m_meshList.clear();
+        m_view->DeleteAllMesh();
+
+        for (BIMElement* bimElement: glItem->bimElementList)
+        {
+            // adding new geometry
+            Mesh* mesh = new Mesh();
+            m_meshList.append(mesh);
+            m_view->AddMesh(mesh);
+
+            if (glItem->m_viewType == "ModelView")
+            {
+                GeometryServiceFactory::generateMesh3D(bimElement, mesh);
+            }
+            else if (glItem->m_viewType == "PlanView")
+            {
+                GeometryServiceFactory::generateMesh2D(bimElement, mesh);
+            }
+        }
+
+        if (glItem->m_viewType == "ModelView")
+        {
+            Mesh* mesh = new Mesh();
+            m_meshList.append(mesh);
+            m_view->AddMesh(mesh);
+
+            Mesh::GenerateBaseSurface(mesh);
+        }
+
+        m_view->BindMeshWithOpenGL();
+
+        m_viewType = glItem->m_viewType;
+
+        m_camera->SetCameraParameters(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 1.0f, 0.0f), QVector3D(0.0f, 0.0f, 20.0f), 5.0f, 0.5f);
     }
 }
 
@@ -398,22 +600,30 @@ void MyGLRenderer::moveTopVertexToClick(int mouseX, int mouseY, const QMatrix4x4
 
 void MyGLRenderer::render() {
 
-    // qInfo() << "Render Function";
-    int w = framebufferObject()->width();
-    int h = framebufferObject()->height();
-    GLuint defaultFbo = framebufferObject()->handle();
+    if (!projectionMatrixInitialized)
+    {
+        // famebufferObject() is null when syncronize()
+        // runs for the first time
 
-    QMatrix4x4 proj;
-    float aspect = (h > 0) ? (float)w / (float)h : 1.0f;
-    proj.perspective(45.0f, aspect, 0.1f, 100.0f);
 
-    // Flip Y so it matches Qt Quick
-    proj.scale(1.0f, -1.0f, 1.0f);
+        int w = framebufferObject()->width();
+        int h = framebufferObject()->height();
+        GLuint defaultFbo = framebufferObject()->handle();
 
-    m_view->SetProjection(proj);
-    m_view->SetWidth(w);
-    m_view->SetHeight(h);
-    m_view->SetDefaultFBO(defaultFbo);
+        QMatrix4x4 proj;
+        float aspect = (h > 0) ? (float)w / (float)h : 1.0f;
+        proj.perspective(45.0f, aspect, 0.1f, 100.0f);
+
+        // Flip Y so it matches Qt Quick
+        // proj.scale(1.0f, -1.0f, 1.0f);
+
+        m_view->SetProjection(proj);
+        m_view->SetWidth(w);
+        m_view->SetHeight(h);
+        m_view->SetDefaultFBO(defaultFbo);
+
+        projectionMatrixInitialized = true;
+    }
 
 
     if (m_pickRequested)
@@ -584,6 +794,21 @@ MyGLItem::MyGLItem(QQuickItem *parent)
     }
     else if(m_currentItem == "Slab")
     {
+    BIMElement* bimElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
+    BIMParameter* widthParameter = new BIMParameter(1,"1",false,"Width","1",1,this);
+    BIMParameter* rlParameter = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [0,4], [4,4]]",1,this);
+    bimElement->addParameter(widthParameter);
+    bimElement->addParameter(rlParameter);
+
+    bimElementList.append(bimElement);
+
+    BIMElement* bimElementNew = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
+    BIMParameter* widthParameterNew = new BIMParameter(1,"1",false,"Width","1",1,this);
+    BIMParameter* rlParameterNew = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0], [4,4]]",1,this);
+    bimElementNew->addParameter(widthParameterNew);
+    bimElementNew->addParameter(rlParameterNew);
+
+    bimElementList.append(bimElementNew);
 
         BIMElement* newElement = new BIMElement(15, "1", false, "Slab", "Front Slab", 0, this);
         BIMParameter* distFromLevelParameter = new BIMParameter(38, "1", false, "Distance", "5", 15, this);
@@ -611,6 +836,9 @@ MyGLItem::MyGLItem(QQuickItem *parent)
         newElement->addParameter(widthParameter);
         newElement->addParameter(heightParameter);
         newElement->addParameter(rlParameter);
+    // mesh = new Mesh(this);
+    // WallGeometryService service = WallGeometryService();
+    // service.generateMesh3D(newElement, mesh);
 
         // bimElementController->create("Wall", "Front Wall", 0);
 
@@ -647,8 +875,8 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 
 
 QQuickFramebufferObject::Renderer* MyGLItem::createRenderer() const {
-    // qInfo() << "Create Renderer";    
-    return new MyGLRenderer(mesh);
+    // qInfo() << "Create Renderer";
+    return new MyGLRenderer();
 }
 
 void MyGLItem::setCurrentItem(QString currentSelctedItem){
@@ -684,6 +912,27 @@ void MyGLItem::cameraMoveRight() {
     update();
 }
 
+void MyGLItem::cameraPanUp() {
+    m_panUp = true;
+    update();
+}
+
+void MyGLItem::cameraPanDown() {
+    m_panDown = true;
+    update();
+}
+
+void MyGLItem::cameraPanLeft() {
+    m_panLeft = true;
+    update();
+}
+
+void MyGLItem::cameraPanRight() {
+    m_panRight = true;
+    update();
+}
+
+
 void MyGLItem::zoomIn()
 {
     m_zoomIn = true;
@@ -693,6 +942,12 @@ void MyGLItem::zoomIn()
 void MyGLItem::zoomOut()
 {
     m_zoomOut = true;
+    update();
+}
+
+void MyGLItem::updateView(QString viewType)
+{
+    m_viewType = viewType;
     update();
 }
 
@@ -744,4 +999,16 @@ MyGLItem::~MyGLItem()
         delete pIfcGeometryService;
         pIfcGeometryService = NULL;
     }
+void MyGLItem::updateEditableBimElement(QVariant bimElement)
+{
+    editableBimElement = bimElement.value<BIMElement*>();
+}
+
+void MyGLItem::saveEditableBimElement()
+{
+    bimElementList.append(editableBimElement);
+
+    // bimElement is created in the controller and its lifecycle is handled by the controller
+    editableBimElement = nullptr;
+    update();
 }

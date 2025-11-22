@@ -9,25 +9,29 @@ BIMElementController::BIMElementController(QObject *parent)
 BIMElement* BIMElementController::create(const QString &type, const QString &name, int level)
 {
     BIMElement* bimElement = new BIMElement(0, "1", false, type, name, level, this);
-    bool result = m_bimElementRepository->saveQML(bimElement);
+    // bool result = m_bimElementRepository->saveQML(bimElement);
 
-    if (result)
-    {
-        return bimElement;
-    }
+    // if (result)
+    // {
+    //     return bimElement;
+    // }
 
-    return nullptr;
+    // return nullptr;
+
+    return bimElement;
 }
 
 void BIMElementController::addParameter(BIMElement* bim_element, const QString &key, const QString &value)
 {
     BIMParameter* bimParameter = new BIMParameter(0, "1", false, key, value, bim_element->getId(), this);
-    bool result = m_bimParameterRepository->saveQML(bimParameter);
+    // bool result = m_bimParameterRepository->saveQML(bimParameter);
 
-    if (result)
-    {
-        bim_element->addParameter(bimParameter);
-    }
+    // if (result)
+    // {
+    //     bim_element->addParameter(bimParameter);
+    // }
+
+    bim_element->addParameter(bimParameter);
 }
 
 std::vector<BIMElement*> BIMElementController::getAllElements() const

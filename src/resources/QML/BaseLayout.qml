@@ -15,6 +15,7 @@ Rectangle {
 
     signal logOutClicked()
     property string pageName: "TaskBoard";
+    property string pageAction: "ModelView";
     property string projectName: "NA";
 
 
@@ -28,9 +29,11 @@ Rectangle {
             }
 
             onProjectPageToRedirect: (pageName) => {
-                console.log(pageName);
-                baseLayout.pageName = pageName;
+                baseLayout.pageName = pageName;                                         
+            }
 
+            onProjectPageAction: (pageAction) => {
+                baseLayout.pageAction = pageAction;
             }
         }
 
@@ -82,6 +85,7 @@ Rectangle {
         PlannedBIMPage {
             //id:rootPlannedBIM
             pageType: pageName
+            pageAction: baseLayout.pageAction
             visible: pageType !== ""
             onPageTypeChanged: {
                 switch (pageType) {

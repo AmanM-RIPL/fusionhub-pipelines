@@ -10,7 +10,9 @@ public:
     explicit WallGeometryService(QObject *parent = nullptr);
 
     void generateMesh2D(BIMElement* wallElement, Mesh* mesh);
-    void generateMesh3D(BIMElement* wallElement, Mesh* mesh);
+    void generateMesh3D(BIMElement *wallElement, Mesh* mesh);
+    void updateGeometry(BIMElement* wallElement, const QVector3D &point);
+
 
 signals:
 
