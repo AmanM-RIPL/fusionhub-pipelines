@@ -21,6 +21,9 @@
 #include <IfcModelerGeometry/IfcModelerGeometry.h>
 #include <IfcProductRepresentation.h>
 #include <IfcGeometricRepresentationItem.h>
+#include "common/myglitem.h"
+
+#include <QTemporaryFile>
 
 
 extern QString gEnvironmentPath;
@@ -28,9 +31,7 @@ extern OdStaticRxObject<MyServices> svcs;
 
 
 IFCDetailRepository::IFCDetailRepository(QObject* parent) : QObject(parent) {
-
     m_treeModel = nullptr;
-
 }
 
 /*IFCDetailRepository::IFCDetailRepository(QList<IFCDetail*> ifcDetailList, QObject *parent)
@@ -47,9 +48,7 @@ bool IFCDetailRepository::save(const IFCDetail& entity)
 
 bool IFCDetailRepository::create(const QString& projectName, const IFCDetail& entity)
 {
-   //return createFromBuffer(projectName, entity);
-
-   QString projectPath = gEnvironmentPath + "\\" + projectName;
+    QString projectPath = gEnvironmentPath + "\\" + projectName;
 
     QDir dir;
     if (!dir.mkpath(projectPath)) {
@@ -105,26 +104,12 @@ QString IFCDetailRepository::getIfcFilePath(const QString& projectName, const QS
 
 QList<IFCDetail*> IFCDetailRepository::loadIFC(const QString& qstrFilePath)
 {
-
     //Here need to populate m_ifcDetailList
     QList<IFCDetail*> ifcDetailList;
 
     if(qstrFilePath.isEmpty()){
         return ifcDetailList;
-    }
-
-    /*
-    OdTvFactoryId factId = odTvGetFactory();
-    OdTvResult rc;
-    OdTvDatabaseId dbId = factId.createDatabase(&rc);
-    OdTvDatabasePtr pTvDatabase = dbId.openObject(OdTv::kForWrite, &rc);
-
-    OdTvModelId modelId = pTvDatabase->createModel(OD_T("Model1"));
-    OdTvModelPtr modelPtr = modelId.openObject(OdTv::kForWrite, &rc);
-
-    MyGLItem::setDatabaseId(dbId);
-    MyGLItem::setModelId(modelId);
-    */
+    }    
 
     QByteArray utf8ByteArray = qstrFilePath.toUtf8();
     OdString ifcFileName = OdString(utf8ByteArray.constData());
@@ -154,10 +139,12 @@ QList<IFCDetail*> IFCDetailRepository::loadIFC(const QString& qstrFilePath)
             qDebug() << "IFCDatabase Loaded: Failed to read file with OdResult: ";
         }
         else{
-                pIfcModel = pDatabase->getModel();
-                if (pIfcModel.isNull()) {
-                    qDebug() << "IFCDatabase Loaded: Failed to retrieve IFC model after successful read.";
-                } else {
+            pIfcModel = pDatabase->getModel();
+
+            if (pIfcModel.isNull()) {
+                qDebug() << "IFCDatabase Loaded: Failed to retrieve IFC model after successful read.";
+            }
+            else {
                 qDebug() << "IFCDatabase Loaded: Success!";
             }
         }
@@ -166,45 +153,7 @@ QList<IFCDetail*> IFCDetailRepository::loadIFC(const QString& qstrFilePath)
        // qDebug() << "IFCDatabase Loaded: Failed with exception: " << e.description();
    }
 
-
-    /**********For Testing***************/
-      /*
-     OdIfcModelContext& modelContext = pDatabase->getContext();
-
-     // Choose what kinds of entities to compose (optional, but recommended)
-     modelContext.getGeometryComposeTypes().append(OdIfc::kIfcProduct);
-     modelContext.getGeometryComposeTypes().append(OdIfc::kIfcCartesianPoint);
-     modelContext.getGeometryComposeTypes().append(OdIfc::kIfcShapeRepresentation);
-
-
-
-     // Set geometry options
-     modelContext.setComposeOutOfSpatialStructure(true);
-     modelContext.setDrawOpenings(true);
-
-     // Compose IFC geometry
-     OdResult composeR =  pDatabase->composeEntities();
-
-     if (composeR == tvOk)
-     {
-         qDebug()<<"asdasdads";
-     }
-
-
-
-    // get CDA data
-     //TreeItem* rootItem = new TreeItem("", "", "");
-
-     //CDAWalker walker(new CDATreePrinter);
-     //walker.run(pDatabase, rootItem);
-
-    //TreeModel* treeModel = new TreeModel(rootItem, nullptr);
-     //m_treeModel = new TreeModel(rootItem, nullptr);
-    */
-
-    /***********End of Testing***********/
-
-
+   /*
    OdDAI::InstanceIteratorPtr it = pIfcModel->newIterator();
    unsigned int entIdx;
    for (entIdx = 0; !it->done(); it->step(), ++entIdx)
@@ -229,16 +178,119 @@ QList<IFCDetail*> IFCDetailRepository::loadIFC(const QString& qstrFilePath)
            }
        }
    }   
-   //Finalize the process, OdIfcFile and underlying header section and Model will be released.  
+   //Finalize the process, OdIfcFile and underlying header section and Model will be released.
+   */
 
    pDatabase.release();
    pDatabase = NULL;
+
+   pIfcModel.release();
+   pIfcModel = NULL;
 
    for(IFCDetail* obj : ifcDetailList) {
        m_ifcDetailList.append(obj);
    }
 
    return ifcDetailList;
+}
+
+OdIfcFilePtr IFCDetailRepository::getIfcFilePtrFromLoadedIFC(const QString& qstrFilePath)
+{
+    QByteArray utf8ByteArray = qstrFilePath.toUtf8();
+    OdString ifcFileName = OdString(utf8ByteArray.constData());
+
+    QFile file(qstrFilePath);
+    if (file.exists()) {
+        qDebug() << "Ifc file exists.";
+    }
+    else
+    {
+        qDebug() << "Error: No ifc file exist.";
+        return nullptr;
+    }
+
+    OdIfcFilePtr ifcFilePtr;
+    try {
+        ifcFilePtr = svcs.createDatabase();
+
+        if (!ifcFilePtr) {
+            qDebug() << "Error: createDatabase returned a null pointer.";
+        }
+
+        OdResult result = ifcFilePtr->readFile(ifcFileName);
+        if (result != tvOk) {
+            qDebug() << "IFCDatabase Loaded: Failed to read file with OdResult: ";
+            return nullptr;
+        }
+
+    }
+    catch (const OdError& e){
+        qDebug() << "IFCDatabase Loaded: Failed with exception: " << e.description();
+        return nullptr;
+    }
+
+    return ifcFilePtr;
+}
+
+
+OdIfcModelPtr IFCDetailRepository::getModelptrFromLoadedIFC(const QString& qstrFilePath)
+{
+    QByteArray utf8ByteArray = qstrFilePath.toUtf8();
+    OdString ifcFileName = OdString(utf8ByteArray.constData());
+
+     QFile file(qstrFilePath);
+     if (file.exists()) {
+         qDebug() << "Ifc file exists.";
+     }
+     else
+     {
+         qDebug() << "Error: No ifc file exist.";
+     }
+
+     OdIfcFilePtr pDatabase;
+     OdIfcModelPtr odIfcModelPtr;
+     try {
+         pDatabase = svcs.createDatabase();
+
+         if (!pDatabase) {
+             qDebug() << "Error: createDatabase returned a null pointer.";
+         }
+
+         OdResult result = pDatabase->readFile(ifcFileName);
+
+         if (result != tvOk) {
+             qDebug() << "IFCDatabase Loaded: Failed to read file with OdResult: ";
+         }
+         else{
+
+            OdIfcModelContext& modelContext = pDatabase->getContext();
+
+            //Choose what kinds of entities to compose (optional, but recommended)
+            modelContext.getGeometryComposeTypes().append(OdIfc::kIfcProduct);
+            //modelContext.getGeometryComposeTypes().push_back(OdIfc::kIfcProduct);
+
+            //Set geometry options
+            modelContext.setComposeOutOfSpatialStructure(true);
+            modelContext.setDrawOpenings(true);
+            modelContext.setDrawPoints(true);
+            modelContext.setDrawSpaces(true);
+
+            //Compose IFC geometry
+            OdResult composeR =  pDatabase->composeEntities();
+
+            odIfcModelPtr = pDatabase->getModel();
+            if (!odIfcModelPtr.isNull()) {
+                return odIfcModelPtr;
+            }
+            else{
+                qDebug() << "IFCDatabase Loaded: Failed to retrieve IFC model after successful read.";
+            }
+        }
+     }
+     catch (const OdError& e){
+         qDebug() << "IFCDatabase Loaded: Failed with exception: " << e.description();
+     }
+    return odIfcModelPtr;
 }
 
 TreeModel* IFCDetailRepository::getTreeModel()
@@ -446,55 +498,5 @@ void IFCDetailRepository::initHeader(OdIfcFile *pDb)
     arrOrganization.append("ODA");
     fileName->setOrganization(arrOrganization);
 }
-
-
-OdArray<OdGePoint3d> IFCDetailRepository::getCartesianPoints(OdIfc::OdIfcInstancePtr ifcInstance) {
-    OdArray<OdGePoint3d> points;
- /*
-    // Cast the instance to an IfcProduct
-    if (!ifcInstance.isNull() && ifcInstance->isKindOf(OdIfc::kIfcProduct)) {
-        OdIfc::OdIfcProductPtr ifcProduct = static_cast<OdIfc::OdIfcProductPtr>(ifcInstance);
-
-        // Get the product's representation
-        if (ifcProduct->getRepresentation()) {
-            //OdIfc::OdIfcProductRepresentationPtr productRep = ifcProduct->getRepresentation();
-
-            // Iterate through the list of representations
-            for (auto const& representation : ifcProduct->getRepresentation().) {
-                // Find shape representations
-                if (representation->isKindOf(OdIfc::kIfcShapeRepresentation)) {
-                    OdIfc::IfcShapeRepresentationPtr shapeRep = OdIfc::IfcShapeRepresentation::cast(representation);
-
-                    // Iterate through the list of geometric items
-                    for (auto const& item : shapeRep->Items().asVector()) {
-                        // Process tessellated face sets (triangulated geometry)
-                        if (item->isKindOf(OdIfc4x3_add2::IfcTessellatedFaceSet::desc())) {
-                            OdIfc4x3_add2::IfcTessellatedFaceSetPtr faceSet = OdIfc4x3_add2::IfcTessellatedFaceSet::cast(item);
-
-                            // The points are stored in a coordinate index list
-                            if (faceSet->Coordinates().get()) {
-                                OdIfc4x3_add2::IfcCartesianPointList3DPtr pointList = faceSet->get);
-
-                                // Retrieve the coordinates from the point list
-                                for (auto const& point : pointList->CoordList().asVector()) {
-                                    // Extract coordinates and create an OdGePoint3d
-                                    OdGePoint3d pt(point->get(0), point->get(1), point->get(2));
-                                    points.append(pt);
-                                }
-                            }
-                        }
-                        // Add handlers for other geometric types like IfcBrep
-                        // ...
-                    }
-                }
-            }
-        }
-    }
-   */
-    return points;
-}
-
-
-
 
 

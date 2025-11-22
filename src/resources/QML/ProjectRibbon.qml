@@ -6,7 +6,7 @@ Column {
 
     signal logOutButtonClicked()
     signal projectPageToRedirect(string pageName)
-
+    signal projectPageAction(string pageAction)
 
     width: parent.width
     height: 131
@@ -14,21 +14,32 @@ Column {
     // anchors.horizontalCenter: parent.horizontalCenter
     // anchors.top: parent.top
     // anchors.topMargin: 23
+
+
     TabBar {
         id: mainBar
         width: 300
 
         TabButton {
-            text: qsTr("Project")
+            text: qsTr("Project")            
+            onClicked: {
+                projectPageToRedirect("TaskBoard")                
+            }
         }
-        TabButton {
+        TabButton {            
             text: qsTr("BIM")
+            onClicked: {
+                projectPageToRedirect("PlannedBIM")
+            }
         }
         TabButton {
             text: qsTr("Analytics")
         }
         TabButton {
             text: qsTr("Master")
+            onClicked: {
+                projectPageToRedirect("ScheduleSetup")
+            }
         }
     }
 
@@ -45,7 +56,8 @@ Column {
             color: "white"
             //anchors.horizontalCenter: parent.horizontalCenter
             Layout.alignment: parent.anchors.alignWhenCentered
-            onVisibleChanged:   {
+
+             onVisibleChanged:   {
                 projectPageToRedirect("TaskBoard")
             }
 
@@ -252,8 +264,6 @@ Column {
                     }
                 }
             }
-
-
         }
 
         Rectangle {
@@ -264,12 +274,7 @@ Column {
             border.color: "#7676801F"//"#8A888629"
             color: "white"
             //anchors.horizontalCenter: parent.horizontalCenter
-            Layout.alignment: parent.anchors.alignWhenCentered
-
-            onVisibleChanged:   {
-                  projectPageToRedirect("PlannedBIM")
-            }
-
+            Layout.alignment: parent.anchors.alignWhenCentered            
 
             Row {
                 spacing: 7
@@ -277,15 +282,32 @@ Column {
 
                 RibbonButton {
                     btnSource: "qrc:/resources/images/bim_icon.png"
-                    btnName: "Planned"
+                    btnName: "Model"
                     btnNameColor: "#000000"
                     anchors.verticalCenter: parent.verticalCenter
 
                     MouseArea {
                         anchors.fill: parent
 
-                        onClicked: {                            
+                        onClicked: {
                             projectPageToRedirect("PlannedBIM")
+                            projectPageAction("ModelView")
+                        }
+                    }
+                }
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/blueprint.png"
+                    btnName: "Plan"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            projectPageToRedirect("PlannedBIM")
+                            projectPageAction("PlanView")
                         }
                     }
                 }

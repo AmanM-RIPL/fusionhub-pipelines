@@ -68,17 +68,6 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -198,9 +187,7 @@ set(HEADERS
     src/repositories/material_indent_repository.h
     src/repositories/ifc_detail_repository.h
     src/common/ifcdetail.h
-    src/common/myglitem.h
-
-    
+    src/common/myglitem.h    
 )
 
 add_executable(FusionHubQt ${SOURCES} ${HEADERS}
@@ -262,6 +249,19 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
 
 
 
+    src/services/geometry/wall_geometry_service.h src/services/geometry/wall_geometry_service.cpp
+    src/services/geometry/beam_geometry_service.h src/services/geometry/beam_geometry_service.cpp
+    src/services/geometry/column_geometry_service.h src/services/geometry/column_geometry_service.cpp
+    src/services/geometry/slab_geometry_service.h src/services/geometry/slab_geometry_service.cpp
+    src/common/opengl/classes/opengl_helper.h
+    src/common/opengl/classes/opengl_helper.cpp
+    src/services/geometry/door_geometry_service.h src/services/geometry/door_geometry_service.cpp
+    src/services/geometry/window_geometry_service.h src/services/geometry/window_geometry_service.cpp
+    src/services/geometry/stairs_geometry_service.h src/services/geometry/stairs_geometry_service.cpp
+    src/services/geometry/ifc_geometry_service.h src/services/geometry/ifc_geometry_service.cpp
+    src/common/opengl/classes/opengl_material.h src/common/opengl/classes/opengl_material.cpp
+    src/common/opengl/classes/texture.h src/common/opengl/classes/texture.cpp
+    src/services/geometry/geometry_service_factory.h src/services/geometry/geometry_service_factory.cpp
 )
 
 target_include_directories(FusionHubQt PRIVATE src)
@@ -342,6 +342,7 @@ target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_2
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_SpatialIndex.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\FacetModeler.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_ExamplesCommon.lib")
+target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_BrepBuilder.lib")
 
 
 
@@ -388,17 +389,6 @@ target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 #End
 
 
@@ -413,6 +403,7 @@ file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_BrepB
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\RxCommonDataAccess_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\tinyxml.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\FacetModeler_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_BrepBuilder_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 
 
 file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TV_Visualize_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
@@ -433,8 +424,24 @@ file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Zl
 file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TV_DbIO_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
 
 
+#file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcCore_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+#file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\sdai_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
+#file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcGeom_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+#file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IFC4X3_26.7_17.txexp DESTINATION ${CMAKE_BINARY_DIR})
+
+
+
+
+
 file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcCore_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcCoreTools_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\sdai_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcGeom_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcBrepBuilder_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcBrepModeler_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcFacetModeler_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IFC4X3_26.7_17.txexp DESTINATION ${CMAKE_BINARY_DIR})
-
+file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IFC2X3_26.7_17.txexp DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\hdf5.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\hdf5_cpp.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\hdf5io_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})

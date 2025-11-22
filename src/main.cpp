@@ -60,6 +60,8 @@
 #include "models/unit_of_measurement.h"
 #include "models/draft_entity.h"
 
+#include <iostream>
+
 // There has to be a better way???????????
 const OdString OdString::kEmpty;
 const OdDAIObjectId OdDAIObjectId::kNull;
@@ -124,8 +126,8 @@ int main(int argc, char *argv[])
     // MyGLItem::setModelId(modelId);
 
 
-    // // Read IFC File
-    // OdString ifcFileName("C:\\Users\\RIPL\\Downloads\\BasicHouse.ifc");
+    // Read IFC File
+    // OdString ifcFileName("C:\\Users\\RIPL\\Downloads\\DblDoor-1-Panel.ifc"); // BasicHouse
 
     // OdIfcFilePtr pDatabase;
 
@@ -143,8 +145,13 @@ int main(int argc, char *argv[])
     // // Set geometry options
     // modelContext.setComposeOutOfSpatialStructure(true);
     // modelContext.setDrawOpenings(true);
+    // modelContext.setDrawPoints(true);
+    // modelContext.setDrawSpaces(true);
 
-    // // Compose IFC geometry
+    // OdArray<OdIfc::OdIfcEntityType> geomTypes = {OdIfc::kIfcDoor};
+    // modelContext.setGeometryComposeTypes(geomTypes);
+
+    // Compose IFC geometry
     // OdResult composeR =  pDatabase->composeEntities();
 
     // // get CDA data
@@ -153,7 +160,7 @@ int main(int argc, char *argv[])
     // CDAWalker walker(new CDATreePrinter);
     // walker.run(pDatabase, rootItem);
 
-     //TreeModel* treeModel = new TreeModel(rootItem, nullptr);
+    //TreeModel* treeModel = new TreeModel(rootItem, nullptr);
 
 
     // const OdDAI::SetOfOdDAIObjectId* productIdSet = pIfcModel->getEntityExtent("IfcProduct");
@@ -166,7 +173,12 @@ int main(int argc, char *argv[])
 
     // for (OdDAIObjectIds::size_type iProduct = 0; iProduct < productIds.size(); ++iProduct)
     // {
-    //     // if (totalPrinouts > 10)
+    //     // if (totalPrinouts > 1)
+    //     // {
+    //     //     break;
+    //     // }
+
+    //     // if (iProduct > 1)
     //     // {
     //     //     break;
     //     // }
@@ -183,225 +195,308 @@ int main(int argc, char *argv[])
     //         continue;
     //     }
 
-    //     OdRxValue result = pEntity->getAttrCaseInsensitive("Name");
-    //     OdString nameValue;
-    //     result >> nameValue;
-    //     //qInfo() << "Name: " << nameValue;
-
-    //     OdString entityType = pEntity->isA()->name();
-    //     //qInfo() << "Class: " << entityType;
-
-    //     OdRxValue globalIdResult = pEntity->getAttrCaseInsensitive("GlobalId");
-    //     OdString globalIdValue;
-    //     globalIdResult >> globalIdValue;
-    //     //qInfo() << "Name: " << nameValue;
-
     //     const OdIfc::OdIfcGeometricRepresentationItemPtrArray geomItems = pProduct->getGeometricRepresentationItems();
-    //     OdGeMatrix3d placementMatrix = pProduct->getObjectPlacement();
+    //     // OdGeMatrix3d placementMatrix = pProduct->getObjectPlacement();
 
-    //     //qInfo() << "Length of Gom items: " << geomItems.length();
-    //     //qInfo() << "LogicalLength of Gom items: " << geomItems.logicalLength();
-    //     //qInfo() << "Size of Gom items: " << geomItems.size();
-    //     //qInfo() << "Physial Length of Gom items: " << geomItems.physicalLength();
-
-    //     for (OdDAIObjectIds::size_type iItem = 0; iItem < geomItems.size(); ++iItem)
+    //     if (geomItems.length() > 0)
     //     {
-    //         OdIfc::OdIfcGeometricRepresentationItemPtr pGeomItem = geomItems[iItem];
-    //         OdDAI::OdBodyVariant bodyContainer = pGeomItem->bodyContainer();
+    //         qInfo() << "pEntity Type: " << pEntity->isA()->name();
+    //         qInfo() << "pProduct Type: " << pProduct->isA()->name();
+    //         // OdRxValue result = pEntity->getAttrCaseInsensitive("Name");
+    //         // OdString nameValue;
+    //         // result >> nameValue;
+    //         // qInfo() << "Name: " << nameValue;
 
-    //         switch (bodyContainer.kind())
+    //         // OdString entityType = pEntity->isA()->name();
+    //         // qInfo() << "Class: " << entityType;
+
+    //         // // OdRxValue globalIdResult = pEntity->getAttrCaseInsensitive("GlobalId");
+    //         // // OdString globalIdValue;
+    //         // // globalIdResult >> globalIdValue;
+    //         // // qInfo() << "Name: " << nameValue;
+
+    //         qInfo() << "Length of Gom items: " << geomItems.length();
+    //         // // qInfo() << "LogicalLength of Gom items: " << geomItems.logicalLength();
+    //         // // qInfo() << "Size of Gom items: " << geomItems.size();
+    //         // // qInfo() << "Physial Length of Gom items: " << geomItems.physicalLength();
+
+    //         // OdGeExtents3d ext;
+    //         // OdResult response = pProduct->getGeomExtents(ext);
+    //         // qInfo() << "Geom Extends: " << (response == eOk);
+    //     }
+
+    //     OdIfc::OdIfcRepresentationItemPtrArray repItems = pProduct->getRepresentationItems();
+    //     // qInfo() << "Length of Rep Items: " << repItems.length();
+
+    //     for (auto repItem: repItems)
+    //     {
+    //         if (repItem->type() == OdIfc::kIfcMappedItem)
     //         {
-    //         case OdDAI::OdBodyVariant::kFacetModelerBody:
-    //         {
-    //             //qInfo() << "Facet Modeler Body";
-    //             totalPrinouts = totalPrinouts + 1;
 
-    //             // OdDAI::ArrayOfOdDAIObjectId rels;
+    //             OdIfc::OdIfcMappedItemPtr mappedItemPtr = OdIfc::OdIfcMappedItem::cast(repItem);
 
-    //             // pEntity->getInverseAttr("IsDefinedBy") >> rels;
-    //             // qInfo() << rels.getArray().length();
+    //             qInfo() << "Mapped is null: " << mappedItemPtr.isNull();
 
-    //             // OdString typeName = pEntity->getInstanceType()->name();
-    //             // odPrintConsoleString(typeName.c_str()); // in small letters only
+    //             OdDAIObjectId mappingSource = mappedItemPtr->mappingSource();
 
+    //             qInfo() << "Mapping Source is null: " << mappingSource.isNull();
 
-    //             // getting the verticies
-    //             const FacetModeler::Body* fBody = bodyContainer.facetModelerBody();
-    //             // qInfo() << "No of Faces: " << fBody->faceCount();
-    //             // qInfo() << "No of Vertices: " << fBody->vertexCount();
+    //             OdIfc::OdIfcInstancePtr pMappedEntity = mappingSource.openObject();
 
-    //             std::unordered_set<const FacetModeler::Vertex*> visitedVertex;
-    //             for (const FacetModeler::Vertex* vertex = fBody->vertexList(); vertex; vertex = vertex->next())
+    //             qInfo() << "IFC Instance is null: " << pMappedEntity.isNull();
+
+    //             OdIfc2x3::IfcRepresentationMapPtr mapPtr = OdIfc2x3::IfcRepresentationMap::cast(pMappedEntity);
+    //             qInfo() << "Map Instance is null: " << mapPtr.isNull(); //pMappedEntity->isA()->name();
+
+    //             OdDAIObjectId mappedRepresentation = mapPtr->getMappedRepresentation();
+    //             qInfo() << "Mapped Representation is null: " << mappedRepresentation.isNull();
+
+    //             OdIfc::OdIfcInstancePtr pMappedRep = mappedRepresentation.openObject();
+    //             qInfo() << "Mapped Representation Pointer is null: " << pMappedRep.isNull();
+
+    //             OdIfc2x3::IfcShapeRepresentationPtr shapePtr = OdIfc2x3::IfcShapeRepresentation::cast(pMappedRep);
+    //             qInfo() << "Shape is null: " << shapePtr.isNull();
+
+    //             OdDAIObjectIds shapeItems;
+    //             shapePtr->getItems(shapeItems);
+
+    //             qInfo() << shapeItems.size();
+
+    //             OdIfc::OdIfcInstancePtr pShapeEntity = shapeItems[0].openObject();
+    //             qInfo() << "pShapeEntity is null: " << pShapeEntity->isA()->name();
+
+    //             try
     //             {
-    //                 if (visitedVertex.count(vertex)) {
-    //                     break;
-    //                 }
-    //                 visitedVertex.insert(vertex);
+    //                 //OdIfc::OdIfcProductPtr pShapeProduct = OdIfc::OdIfcInstance::asCompound(pShapeEntity);
 
-    //                 //qInfo() << "        Vertex: " << vertex->point().x << "," << vertex->point().y << "," << vertex->point().z;
+    //                 OdIfc::OdIfcGeometricRepresentationItemPtr pShapeProduct = OdIfc::OdIfcGeometricRepresentationItem::cast(OdIfc::OdIfcInstance::asCompound(pShapeEntity));
+
+    //                 qInfo() << "pShapeProduct is null: " << pShapeProduct.isNull();
+    //             }
+    //             catch (const OdError& e)
+    //             {
+    //                 // std::wcout << e.description().c_str() << std::endl;
+    //                 odPrintConsoleString(e.description());
     //             }
 
+    //             // qInfo() << "pShapeProduct is null: " << pShapeProduct.isNull();
 
-    //             OdTvPointArray vertices = {};
-    //             OdInt32Array faces = {};
-
-    //             std::unordered_set<const FacetModeler::Face*> visited;
-    //             for (const FacetModeler::Face* face = fBody->faceList(); face; face = face->next())
-    //             {
-    //                 if (visited.count(face)) {
-    //                     break;
-    //                 }
-    //                 visited.insert(face);
-
-    //                 //qInfo() << "Face";
-
-    //                 //qInfo() << "    Loops Count: " << face->loopCount();
-
-    //                 uint numVerticies = 0;
-    //                 OdInt32Array faceLocal;
-    //                 std::unordered_set<const FacetModeler::Edge*> visitedEdge;
-    //                 for (const FacetModeler::Edge* edge = face->edge(0); edge; edge = edge->next())
-    //                 {
-    //                     if (visitedEdge.count(edge)) {
-    //                         break;
-    //                     }
-    //                     visitedEdge.insert(edge);
-
-    //                     double endX =  edge->endPoint().x;
-    //                     double endY =  edge->endPoint().y;
-    //                     double endZ =  edge->endPoint().z;
-    //                     double startX =  edge->startPoint().x;
-    //                     double startY =  edge->startPoint().y;
-    //                     double startZ =  edge->startPoint().z;
-
-    //                     if (entityType != "OdIfc4::IfcRoof")
-    //                     {
-    //                         // qInfo() << "        Edges: " << startX << "," << startY << "," << startZ << " End Edges: " << endX << "," << endY << "," << endZ;
-    //                     }
-
-    //                     numVerticies = numVerticies + 1;
-
-    //                     unsigned int vertIndex;
-    //                     if (vertices.find(edge->startPoint(), vertIndex))
-    //                     {
-    //                         faceLocal.append(vertIndex);
-    //                     }
-    //                     else
-    //                     {
-    //                         faceLocal.append(vertices.length());
-
-    //                         OdGePoint3d startPoint = edge->startPoint();
-    //                         OdGePoint3d updatedStartPoint = startPoint.transformBy(placementMatrix);
-
-    //                         vertices.append(updatedStartPoint);
-    //                     }
-    //                 }
-
-    //                 faces.append(numVerticies);
-
-    //                 for (int i = 0; i < faceLocal.length(); i++)
-    //                 {
-    //                     faces.append(faceLocal[i]);
-    //                 }
-    //             }
-
-    //             // if (entityType != "OdIfc4::IfcRoof")
+    //             // if (pMappedEntity.isNull())
     //             // {
-    //             //     qInfo() << "Faces List";
-    //             //     for (int i = 0; i < faces.length(); i++)
-    //             //     {
-    //             //         qInfo() << faces.getAt(i);
-    //             //     }
+    //             //     continue;
     //             // }
 
-    //             OdTvEntityId entityId0 = modelPtr->appendEntity(nameValue, &rc);
-    //             OdTvEntityPtr pTvEntity = entityId0.openObject(OdTv::kForWrite, &rc);
+    //             // OdIfc::OdIfcProductPtr pMappedProduct = OdIfc::OdIfcInstance::asCompound(pMappedRep);
 
+    //             // qInfo() << "IFC Product is null: " << pMappedProduct.isNull();
+    //             // if (pMappedProduct.isNull())
+    //             // {
+    //             //     continue;
+    //             // }
 
-
-    //             // get random number
-    //             // Create a random device to obtain a seed
-    //             std::random_device rd;
-
-    //             // Seed a Mersenne Twister engine
-    //             std::mt19937 gen(rd());
-
-    //             // Define a uniform integer distribution for numbers between 1 and 100
-    //             std::uniform_int_distribution<> distrib(1, 100);
-    //             int randomNumber = distrib(gen);
-    //             QString clashString = "-";
-    //             if (randomNumber > 85)
-    //             {
-    //                 double inrVal = randomNumber/40;
-    //                 QString numString = QString::number(inrVal);
-    //                 clashString = "IFC2x3::IFCBeam of value INR " + numString + "Lacs";
-    //             }
-
-    //             IFCDetail* ifcDetails = new IFCDetail(&engine);
-    //             ifcDetails->setName(QString::fromUtf16(nameValue.c_str()));
-    //             ifcDetails->setType(QString::fromUtf16(entityType.c_str()));
-    //             // ifcDetails->setGlobalId(QString::fromUtf16(globalIdValue.c_str()));
-    //             ifcDetails->setGlobalId(clashString);
-    //             ifcDetailList.append(ifcDetails);
-
-
-    //             OdTvGeometryDataId shellId = pTvEntity->appendShell(vertices, faces);
-    //             OdTvShellDataPtr shellPtr = shellId.openAsShell();
-
-    //             if (entityType == "OdIfc2x3::IfcWallStandardCase")
-    //             {
-    //                 OdTvColorDef entityColor;
-    //                 entityColor.setColor(188, 143, 143); //red
-    //                 pTvEntity->setColor(entityColor);
-    //             }
-    //             else if (entityType == "OdIfc2x3::IfcOpeningElement")
-    //             {
-    //                 OdTvColorDef entityColor;
-    //                 entityColor.setColor(165, 42, 42); //blue
-    //                 pTvEntity->setColor(entityColor);
-    //             }
-    //             else if (entityType == "OdIfc2x3::IfcBuildingElementProxy")
-    //             {
-    //                 OdTvColorDef entityColor;
-    //                 entityColor.setColor(70, 130, 180); //green
-    //                 pTvEntity->setColor(entityColor);
-    //             }
-    //             else if (entityType == "OdIfc2x3::IfcSlab")
-    //             {
-    //                 OdTvColorDef entityColor;
-    //                 entityColor.setColor(85, 107, 47); //yellow
-    //                 pTvEntity->setColor(entityColor);
-    //             }
-
-
-    //             break;
-    //         }
-    //         case OdDAI::OdBodyVariant::kMdBody:
-    //         {
-    //             //qInfo() << "Md Body";
-    //             totalPrinouts = totalPrinouts + 1;
-    //             break;
-    //         }
-    //         case OdDAI::OdBodyVariant::kAcisBody:
-    //         {
-    //             //qInfo() << "Acis Body";
-    //             totalPrinouts = totalPrinouts + 1;
-    //             break;
-    //         }
-    //         case OdDAI::OdBodyVariant::kBrep:
-    //         {
-    //             //qInfo() << "IFC Brep Body";
-    //             totalPrinouts = totalPrinouts + 1;
-    //             break;
-    //         }
-    //         case OdDAI::OdBodyVariant::kEmpty:
-    //         {
-    //             //qInfo() << "No Body";
-    //             totalPrinouts = totalPrinouts + 1;
-    //             break;
-    //         }
+    //             // const OdIfc::OdIfcGeometricRepresentationItemPtrArray geomMapItems = pMappedProduct->getGeometricRepresentationItems();
+    //             // qInfo() << "Length of Mapped Gom items: " << geomMapItems.length();
     //         }
     //     }
+
+    // //     for (OdDAIObjectIds::size_type iItem = 0; iItem < geomItems.size(); ++iItem)
+    // //     {
+    // //         OdIfc::OdIfcGeometricRepresentationItemPtr pGeomItem = geomItems[iItem];
+    // //         OdDAI::OdBodyVariant bodyContainer = pGeomItem->bodyContainer();
+
+    // //         switch (bodyContainer.kind())
+    // //         {
+    // //         case OdDAI::OdBodyVariant::kFacetModelerBody:
+    // //         {
+    // //             //qInfo() << "Facet Modeler Body";
+    // //             totalPrinouts = totalPrinouts + 1;
+
+    // //             // OdDAI::ArrayOfOdDAIObjectId rels;
+
+    // //             // pEntity->getInverseAttr("IsDefinedBy") >> rels;
+    // //             // qInfo() << rels.getArray().length();
+
+    // //             // OdString typeName = pEntity->getInstanceType()->name();
+    // //             // odPrintConsoleString(typeName.c_str()); // in small letters only
+
+
+    // //             // getting the verticies
+    // //             const FacetModeler::Body* fBody = bodyContainer.facetModelerBody();
+    // //             // qInfo() << "No of Faces: " << fBody->faceCount();
+    // //             // qInfo() << "No of Vertices: " << fBody->vertexCount();
+
+    // //             std::unordered_set<const FacetModeler::Vertex*> visitedVertex;
+    // //             for (const FacetModeler::Vertex* vertex = fBody->vertexList(); vertex; vertex = vertex->next())
+    // //             {
+    // //                 if (visitedVertex.count(vertex)) {
+    // //                     break;
+    // //                 }
+    // //                 visitedVertex.insert(vertex);
+
+    // //                 //qInfo() << "        Vertex: " << vertex->point().x << "," << vertex->point().y << "," << vertex->point().z;
+    // //             }
+
+
+    // //             OdTvPointArray vertices = {};
+    // //             OdInt32Array faces = {};
+
+    // //             std::unordered_set<const FacetModeler::Face*> visited;
+    // //             for (const FacetModeler::Face* face = fBody->faceList(); face; face = face->next())
+    // //             {
+    // //                 if (visited.count(face)) {
+    // //                     break;
+    // //                 }
+    // //                 visited.insert(face);
+
+    // //                 //qInfo() << "Face";
+
+    // //                 //qInfo() << "    Loops Count: " << face->loopCount();
+
+    // //                 uint numVerticies = 0;
+    // //                 OdInt32Array faceLocal;
+    // //                 std::unordered_set<const FacetModeler::Edge*> visitedEdge;
+    // //                 for (const FacetModeler::Edge* edge = face->edge(0); edge; edge = edge->next())
+    // //                 {
+    // //                     if (visitedEdge.count(edge)) {
+    // //                         break;
+    // //                     }
+    // //                     visitedEdge.insert(edge);
+
+    // //                     double endX =  edge->endPoint().x;
+    // //                     double endY =  edge->endPoint().y;
+    // //                     double endZ =  edge->endPoint().z;
+    // //                     double startX =  edge->startPoint().x;
+    // //                     double startY =  edge->startPoint().y;
+    // //                     double startZ =  edge->startPoint().z;
+
+    // //                     if (entityType != "OdIfc4::IfcRoof")
+    // //                     {
+    // //                         // qInfo() << "        Edges: " << startX << "," << startY << "," << startZ << " End Edges: " << endX << "," << endY << "," << endZ;
+    // //                     }
+
+    // //                     numVerticies = numVerticies + 1;
+
+    // //                     unsigned int vertIndex;
+    // //                     if (vertices.find(edge->startPoint(), vertIndex))
+    // //                     {
+    // //                         faceLocal.append(vertIndex);
+    // //                     }
+    // //                     else
+    // //                     {
+    // //                         faceLocal.append(vertices.length());
+
+    // //                         OdGePoint3d startPoint = edge->startPoint();
+    // //                         OdGePoint3d updatedStartPoint = startPoint.transformBy(placementMatrix);
+
+    // //                         vertices.append(updatedStartPoint);
+    // //                     }
+    // //                 }
+
+    // //                 faces.append(numVerticies);
+
+    // //                 for (int i = 0; i < faceLocal.length(); i++)
+    // //                 {
+    // //                     faces.append(faceLocal[i]);
+    // //                 }
+    // //             }
+
+    // //             // if (entityType != "OdIfc4::IfcRoof")
+    // //             // {
+    // //             //     qInfo() << "Faces List";
+    // //             //     for (int i = 0; i < faces.length(); i++)
+    // //             //     {
+    // //             //         qInfo() << faces.getAt(i);
+    // //             //     }
+    // //             // }
+
+    // //             OdTvEntityId entityId0 = modelPtr->appendEntity(nameValue, &rc);
+    // //             OdTvEntityPtr pTvEntity = entityId0.openObject(OdTv::kForWrite, &rc);
+
+
+
+    // //             // get random number
+    // //             // Create a random device to obtain a seed
+    // //             std::random_device rd;
+
+    // //             // Seed a Mersenne Twister engine
+    // //             std::mt19937 gen(rd());
+
+    // //             // Define a uniform integer distribution for numbers between 1 and 100
+    // //             std::uniform_int_distribution<> distrib(1, 100);
+    // //             int randomNumber = distrib(gen);
+    // //             QString clashString = "-";
+    // //             if (randomNumber > 85)
+    // //             {
+    // //                 double inrVal = randomNumber/40;
+    // //                 QString numString = QString::number(inrVal);
+    // //                 clashString = "IFC2x3::IFCBeam of value INR " + numString + "Lacs";
+    // //             }
+
+    // //             IFCDetail* ifcDetails = new IFCDetail(&engine);
+    // //             ifcDetails->setName(QString::fromUtf16(nameValue.c_str()));
+    // //             ifcDetails->setType(QString::fromUtf16(entityType.c_str()));
+    // //             // ifcDetails->setGlobalId(QString::fromUtf16(globalIdValue.c_str()));
+    // //             ifcDetails->setGlobalId(clashString);
+    // //             ifcDetailList.append(ifcDetails);
+
+
+    // //             OdTvGeometryDataId shellId = pTvEntity->appendShell(vertices, faces);
+    // //             OdTvShellDataPtr shellPtr = shellId.openAsShell();
+
+    // //             if (entityType == "OdIfc2x3::IfcWallStandardCase")
+    // //             {
+    // //                 OdTvColorDef entityColor;
+    // //                 entityColor.setColor(188, 143, 143); //red
+    // //                 pTvEntity->setColor(entityColor);
+    // //             }
+    // //             else if (entityType == "OdIfc2x3::IfcOpeningElement")
+    // //             {
+    // //                 OdTvColorDef entityColor;
+    // //                 entityColor.setColor(165, 42, 42); //blue
+    // //                 pTvEntity->setColor(entityColor);
+    // //             }
+    // //             else if (entityType == "OdIfc2x3::IfcBuildingElementProxy")
+    // //             {
+    // //                 OdTvColorDef entityColor;
+    // //                 entityColor.setColor(70, 130, 180); //green
+    // //                 pTvEntity->setColor(entityColor);
+    // //             }
+    // //             else if (entityType == "OdIfc2x3::IfcSlab")
+    // //             {
+    // //                 OdTvColorDef entityColor;
+    // //                 entityColor.setColor(85, 107, 47); //yellow
+    // //                 pTvEntity->setColor(entityColor);
+    // //             }
+
+
+    // //             break;
+    // //         }
+    // //         case OdDAI::OdBodyVariant::kMdBody:
+    // //         {
+    // //             //qInfo() << "Md Body";
+    // //             totalPrinouts = totalPrinouts + 1;
+    // //             break;
+    // //         }
+    // //         case OdDAI::OdBodyVariant::kAcisBody:
+    // //         {
+    // //             //qInfo() << "Acis Body";
+    // //             totalPrinouts = totalPrinouts + 1;
+    // //             break;
+    // //         }
+    // //         case OdDAI::OdBodyVariant::kBrep:
+    // //         {
+    // //             //qInfo() << "IFC Brep Body";
+    // //             totalPrinouts = totalPrinouts + 1;
+    // //             break;
+    // //         }
+    // //         case OdDAI::OdBodyVariant::kEmpty:
+    // //         {
+    // //             //qInfo() << "No Body";
+    // //             totalPrinouts = totalPrinouts + 1;
+    // //             break;
+    // //         }
+    // //         }
+    // //     }
     // }
 
     // qInfo() << "Compose Entity Count: " << modelContext.getGeometryComposeTypes().length();

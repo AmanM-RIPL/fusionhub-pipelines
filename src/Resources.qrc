@@ -68,5 +68,8 @@
         <file>resources/QML/FilePage.qml</file>
         <file>resources/images/view.png</file>
         <file>resources/QML/PurchaseOrderPage.qml</file>
+        <file>resources/bimFamily/DblDoor-1-Panel.ifc</file>
+        <file>resources/images/brick.jpg</file>
+        <file>resources/images/blueprint.png</file>
     </qresource>
 </RCC>

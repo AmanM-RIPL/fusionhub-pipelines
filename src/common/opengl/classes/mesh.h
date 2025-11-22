@@ -8,18 +8,34 @@
 
 #include <vector>
 
+struct Vertex
+{
+    float position[3];
+    float normal[3];
+    float uv[2];
+    int materialIndex;
+    int textureIndex;
+};
+
 class Mesh : public QObject
 {
     Q_OBJECT
 public:
     explicit Mesh(QObject *parent = nullptr);
 
-    void Initialize(const std::vector<GLfloat>& vertices, const std::vector<unsigned int>& indices, const std::vector<unsigned int>& borderIndices, unsigned int numOfVertices, unsigned int numOfIndices, unsigned int numOfBorderIndices);
+    void Initialize(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<unsigned int>& borderIndices, unsigned int numOfVertices, unsigned int numOfIndices, unsigned int numOfBorderIndices);
     void Copy(Mesh* mesh);
+    static void Combine(Mesh* combinedMesh, QList<Mesh*> meshList);
+    static void GenerateBaseSurface(Mesh* mesh);
 
-    GLfloat* getVerticies();
-    unsigned int* getIndices();
-    unsigned int* getBorderIndices();
+    std::vector<Vertex> getVerticies();
+    std::vector<unsigned int> getIndices();
+    std::vector<unsigned int> getBorderIndices();
+    Vertex* getVerticiesData();
+    unsigned int* getIndicesData();
+    unsigned int* getBorderIndicesData();
+
+
     unsigned int getNumOfVertices();
     unsigned int getNumOfIndices();
     unsigned int getNumOfBorderIndices();
@@ -30,7 +46,7 @@ public:
 signals:
 
 private:
-    std::vector<GLfloat> m_verticies;
+    std::vector<Vertex> m_verticies;
     std::vector<unsigned int> m_indices;
     std::vector<unsigned int> m_border_indices;
     unsigned int m_numOfVertices;
