@@ -6,6 +6,7 @@ Column {
 
     signal logOutButtonClicked()
     signal projectPageToRedirect(string pageName)
+    signal projectPageAction(string pageAction)
 
 
     width: parent.width
@@ -277,7 +278,7 @@ Column {
 
                 RibbonButton {
                     btnSource: "qrc:/resources/images/bim_icon.png"
-                    btnName: "Planned"
+                    btnName: "Model"
                     btnNameColor: "#000000"
                     anchors.verticalCenter: parent.verticalCenter
 
@@ -286,6 +287,23 @@ Column {
 
                         onClicked: {                            
                             projectPageToRedirect("PlannedBIM")
+                            projectPageAction("ModelView")
+                        }
+                    }
+                }
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/blueprint.png"
+                    btnName: "Plan"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            projectPageToRedirect("PlannedBIM")
+                            projectPageAction("PlanView")
                         }
                     }
                 }

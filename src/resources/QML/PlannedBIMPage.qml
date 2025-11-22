@@ -17,11 +17,19 @@ Row {
 
     property var ifcDetailList: [];
     property string pageType: "PlannedBIM";
+    property string pageAction: "ModelView";
     property int treeviewWidth: parent.width/2 - 20
     property int glsceneWidth: parent.width/2
     property bool glsceneVisible: false
 
     property int expandedIndex: -1
+
+    onPageActionChanged: {
+        if (pageAction === "ModelView" || pageAction === "PlanView")
+        {
+            glscene.updateView(plannedBIMRoot.pageAction);
+        }
+    }
 
 
     IFCWallController {
@@ -461,6 +469,8 @@ Row {
                 bimElementController.addParameter(bimElementPtr, "Width", wallWidthText);
                 bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
 
+                glscene.updateEditableBimElement(bimElementPtr);
+
                 wallTotalHeightText = "";
                 wallWidthText = "";
             }
@@ -609,6 +619,17 @@ Row {
                     glscene.cameraMoveLeft();
                 } else if (event.key === Qt.Key_Right) {
                     glscene.cameraMoveRight();
+                } else if (event.key === Qt.Key_W) {
+                    glscene.cameraPanUp();
+                } else if (event.key === Qt.Key_S) {
+                    glscene.cameraPanDown();
+                } else if (event.key === Qt.Key_A) {
+                    glscene.cameraPanLeft();
+                } else if (event.key === Qt.Key_D) {
+                    glscene.cameraPanRight();
+                } else if (event.key === Qt.Key_Return){
+                    console.log("Enter pressed");
+                    glscene.saveEditableBimElement();
                 }
             }
         }

@@ -11,6 +11,8 @@
 #include "mesh.h"
 #include "camera.h"
 #include "shader.h"
+#include "opengl_material.h"
+#include "texture.h"
 
 class View : public QObject, protected QOpenGLFunctions_3_3_Core
 {
@@ -20,11 +22,17 @@ public:
     ~View();
 
     void Initialize();
+    void BindMeshWithOpenGL();
     void Render();
+
     void Selection();
-    void UpdateGeometry();
+    QVector3D GetPointInModelSpace(int meshIndex);
+    QVector3D GetPointInViewSpace();
 
     void AddMesh(Mesh* mesh);
+    void DeleteAllMesh(); // will clear the QList but will not delete the Mesh pointer
+    void AddMaterial(OpenGLMaterial* material);
+    void AddTexture(Texture* texture);
     void AddCamera(Camera* cam);
     void AddShader(Shader* shad);
     void AddPickingShader(Shader* shad);
@@ -58,6 +66,9 @@ private:
     GLuint defaultFBO = 0;
 
     QList<Mesh*> meshList;
+    QList<OpenGLMaterial*> materialList;
+    QList<Texture*> textureList;
+    Mesh* combinedMesh = nullptr; // need to delete it with view only!!
 
     int viewportWidth = 0;
     int viewportHeight = 0;
