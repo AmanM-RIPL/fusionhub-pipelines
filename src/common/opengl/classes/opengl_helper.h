@@ -24,7 +24,7 @@
 #include "FMMdlFace.h"
 #include "FMMdlSurface.h"
 #include "FMMdlEdge.h"
-#include "FMMdlVertex.h"
+// #include "FMMdlVertex.h"
 #include "FMMdlIterators.h"
 #include "FMContour2D.h"
 #include "FMProfile2D.h"
@@ -47,11 +47,11 @@ using Line = std::array<float, 3>; // (m, b, x) for y = mx + b and x in case m i
 
 
 
-class OpenglHelper:public QObject
+class OpenglHelper: public QObject
 {
     Q_OBJECT
 public:
-    OpenglHelper();
+    explicit OpenglHelper(QObject *parent = nullptr);
 
     void extractBIMParameters(BIMElement *wallElement, std::vector<Point>& referenceLine, float& width, float& height, float& distance);
 
@@ -77,13 +77,13 @@ public:
     */
 
     // std::vector<GLfloat> verticesVector
-    void getMeshGeometry(const FacetModeler::Body& body, std::vector<GLfloat>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices);
+    void getMeshGeometry(const FacetModeler::Body& body, std::vector<Vertex>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, int textureIndex, int scalingFactor);
 
-    void getMeshGeometry(const OdMdBody& body, std::vector<GLfloat>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices);
+    void getMeshGeometry(const OdMdBody& body, std::vector<Vertex>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, int textureIndex, int scalingFactor);
 
-    void getMeshGeometry(const BODY& body, std::vector<GLfloat>& verticesVector,  std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndicesy);
+    void getMeshGeometry(const BODY& body, std::vector<Vertex>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, int textureIndex, int scalingFactor);
 
-    void getMeshGeometry(const OdBrBrep& brep, std::vector<GLfloat>& verticesVector,  std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices);
+    void getMeshGeometry(const OdBrBrep& brep, std::vector<Vertex>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, int textureIndex, int scalingFactor);
 
 };
 

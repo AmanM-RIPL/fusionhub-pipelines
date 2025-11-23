@@ -4,13 +4,7 @@
 #include <QObject>
 #include "common/opengl/classes/opengl_helper.h"
 
-class OdDbStub {
-public:
-    OdUInt64 getHandle()
-    {
-        return 0;
-    }
-};
+#include "common/oda_static_definations.h"
 
 //#include "IfcCore.h"
 //#include "IfcModel.h"

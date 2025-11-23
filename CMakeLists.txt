@@ -262,6 +262,7 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/common/opengl/classes/opengl_material.h src/common/opengl/classes/opengl_material.cpp
     src/common/opengl/classes/texture.h src/common/opengl/classes/texture.cpp
     src/services/geometry/geometry_service_factory.h src/services/geometry/geometry_service_factory.cpp
+    src/common/oda_static_definations.h
 )
 
 target_include_directories(FusionHubQt PRIVATE src)

@@ -759,9 +759,29 @@ QOpenGLFramebufferObject* MyGLRenderer::createFramebufferObject(const QSize &siz
 MyGLItem::MyGLItem(QQuickItem *parent)
     : QQuickFramebufferObject(parent)
 {
-    pIfcDetailController = new IFCDetailController(this);;
-    pIfcGeometryService = new IfcGeometryService(this);
-    mesh = getMeshptr();
+    BIMElement* bimElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
+    BIMParameter* widthParameter = new BIMParameter(1,"1",false,"Width","1",1,this);
+    BIMParameter* heightParameter = new BIMParameter(37, "1", false, "Height", "4", 1, this);
+    BIMParameter* rlParameter = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [0,4], [4,4]]",1,this);
+    bimElement->addParameter(widthParameter);
+    bimElement->addParameter(heightParameter);
+    bimElement->addParameter(rlParameter);
+
+    bimElementList.append(bimElement);
+
+    BIMElement* bimElementNew = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
+    BIMParameter* widthParameterNew = new BIMParameter(1,"1",false,"Width","1",1,this);
+    BIMParameter* heightParameterNew = new BIMParameter(37, "1", false, "Height", "4", 1, this);
+    BIMParameter* rlParameterNew = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0], [4,4]]",1,this);
+    bimElementNew->addParameter(widthParameterNew);
+    bimElement->addParameter(heightParameterNew);
+    bimElementNew->addParameter(rlParameterNew);
+
+    bimElementList.append(bimElementNew);
+
+    // pIfcDetailController = new IFCDetailController(this);;
+    // pIfcGeometryService = new IfcGeometryService(this);
+    // mesh = getMeshptr();
 
    /* if(m_currentItem == "Beam")
     {
@@ -963,42 +983,29 @@ void MyGLItem::handlePick(int id) {
 
 void MyGLItem::viewIfc()
 {
-    QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-1-Panel.ifc";
-    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-4-Panel.ifc";
-    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\BasicHouse.ifc";
-    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-2-Panel.ifc";
-    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-Flush.ifc";
-    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Door-Entry_2-Panel-Glz-Arc-Top.ifc";
-    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Taylor_Entrance_1_Panel_High_Def.ifc";
-    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Skylight_GTVSF_AmericanSkylites.ifc";
+    // QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-1-Panel.ifc";
+    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-4-Panel.ifc";
+    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\BasicHouse.ifc";
+    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-2-Panel.ifc";
+    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-Flush.ifc";
+    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Door-Entry_2-Panel-Glz-Arc-Top.ifc";
+    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Taylor_Entrance_1_Panel_High_Def.ifc";
+    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Skylight_GTVSF_AmericanSkylites.ifc";
 
-    //QString strFilePath = pIfcDetailController->getIfcFilePath();
-    OdIfcFilePtr pDatabase = pIfcDetailController->getIfcFilePtrFromLoadedIFC(strFilePath);
-    if(pDatabase)
-    {
-        delete mesh;
-        mesh = NULL;
-        mesh = new Mesh(this);
-        pIfcGeometryService->generateMesh3D(pDatabase, mesh);
-        pDatabase.release();
-        pDatabase = NULL;
-    }
-    update();
+    // //QString strFilePath = pIfcDetailController->getIfcFilePath();
+    // OdIfcFilePtr pDatabase = pIfcDetailController->getIfcFilePtrFromLoadedIFC(strFilePath);
+    // if(pDatabase)
+    // {
+    //     delete mesh;
+    //     mesh = NULL;
+    //     mesh = new Mesh(this);
+    //     pIfcGeometryService->generateMesh3D(pDatabase, mesh);
+    //     pDatabase.release();
+    //     pDatabase = NULL;
+    // }
+    // update();
 }
 
-MyGLItem::~MyGLItem()
-{
-    if(pIfcDetailController)
-    {
-        delete pIfcDetailController;
-        pIfcDetailController = NULL;
-    }
-
-    if(pIfcGeometryService)
-    {
-        delete pIfcGeometryService;
-        pIfcGeometryService = NULL;
-    }
 void MyGLItem::updateEditableBimElement(QVariant bimElement)
 {
     editableBimElement = bimElement.value<BIMElement*>();

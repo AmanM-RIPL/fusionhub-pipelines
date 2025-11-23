@@ -4,8 +4,8 @@
 //#include <QDataStream>
 #include <QTextStream>
 
-using namespace FacetModeler;
-using namespace std;
+// using namespace FacetModeler;
+// using namespace std;
 
 
 
@@ -45,16 +45,28 @@ void IfcGeometryService::generateMesh2D(BIMElement* ifcElement, Mesh* mesh)
     // }
 
     // 5. Create and export mesh
-    std::vector<GLfloat> verticesVector = {};
+    std::vector<Vertex> verticesVector = {};
     for (int i = 0; i < referenceLine.size(); i++)
     {
         Point point = referenceLine[i];
-        verticesVector.push_back(point[0]); // x
-        verticesVector.push_back(point[1]); // y
-        verticesVector.push_back(0.0f); // z
-        verticesVector.push_back(0.0f); // n.x
-        verticesVector.push_back(0.0f); // n.y
-        verticesVector.push_back(1.0f); // n.z
+
+        Vertex v = {
+            {point[0], point[1], 0.0f},
+            {0.0f, 0.0f, 1.0f},
+            {0.0f, 0.0f},
+            0,
+            -1
+        };
+
+        verticesVector.push_back(v);
+
+        // Point point = referenceLine[i];
+        // verticesVector.push_back(point[0]); // x
+        // verticesVector.push_back(point[1]); // y
+        // verticesVector.push_back(0.0f); // z
+        // verticesVector.push_back(0.0f); // n.x
+        // verticesVector.push_back(0.0f); // n.y
+        // verticesVector.push_back(1.0f); // n.z
     }
 
     std::vector<uint32_t> borderIndices = {};
@@ -79,7 +91,7 @@ void IfcGeometryService::generateMesh2D(BIMElement* ifcElement, Mesh* mesh)
     // std::copy(indices.begin(), indices.end(), indices_raw.get());
 
     // Mesh* mesh = new Mesh(this);
-    mesh->Initialize(verticesVector, indices, borderIndices, referenceLine.size() * 6, indices.size(), borderIndices.size());
+    mesh->Initialize(verticesVector, indices, borderIndices, referenceLine.size(), indices.size(), borderIndices.size());
 
 
     // GLfloat* vertices1 = mesh->getVerticies();
@@ -233,35 +245,37 @@ void IfcGeometryService::generateFinalMesh3D(OdDAI::OdBodyVariant bodyContainer,
 {
     std::vector<uint32_t> meshIndices = {};
     std::vector<uint32_t> borderIndices = {};
-    std::vector<GLfloat> verticesVector = {};
+    std::vector<Vertex> verticesVector = {};
+    int textureIndex = 0; // if less than zero then we don't need to worry about textures
+    int scalingFactor = 5;
 
     switch (bodyContainer.kind())
     {
     case OdDAI::OdBodyVariant::kFacetModelerBody:
     {
         qDebug() << "FacetModelerBody";
-        m_openglHelper.getMeshGeometry(*bodyContainer.facetModelerBody(), verticesVector, meshIndices, borderIndices);
+        m_openglHelper.getMeshGeometry(*bodyContainer.facetModelerBody(), verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
         break;
     }
 
     case OdDAI::OdBodyVariant::kMdBody:
     {
         qDebug() << "Md Body";
-        m_openglHelper.getMeshGeometry(*bodyContainer.mdBody(), verticesVector, meshIndices, borderIndices);
+        m_openglHelper.getMeshGeometry(*bodyContainer.mdBody(), verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
         break;
     }
 
     case OdDAI::OdBodyVariant::kAcisBody:
     {
         qDebug() << "Acis Body";
-        m_openglHelper.getMeshGeometry(*bodyContainer.acisBody(), verticesVector, meshIndices, borderIndices);
+        m_openglHelper.getMeshGeometry(*bodyContainer.acisBody(), verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
         break;
     }
 
     case OdDAI::OdBodyVariant::kBrep:
     {
         qDebug() << "IFC Brep Body";
-        m_openglHelper.getMeshGeometry(bodyContainer.brBrep(), verticesVector, meshIndices, borderIndices);
+        m_openglHelper.getMeshGeometry(bodyContainer.brBrep(), verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
         break;
     }
 
