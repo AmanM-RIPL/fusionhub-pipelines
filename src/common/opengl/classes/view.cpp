@@ -15,6 +15,9 @@ void View::Initialize()
     this->glGenBuffers(1, &m_static_ibo);
     this->glGenBuffers(1, &m_static_vbo);
     this->glGenBuffers(1, &m_static_border_ibo);
+    this->glGenBuffers(1, &m_tbo);
+    this->glGenBuffers(1, &m_model_matrix_vbo);
+    this->glGenTextures(1, &m_matrixTexture);
 
     BindMeshWithOpenGL();
 }
@@ -26,11 +29,15 @@ void View::BindMeshWithOpenGL()
     Mesh::Combine(combinedMesh, meshList);
 
     Vertex* vertices = combinedMesh->getVerticiesData();
+    QMatrix4x4* modelMatrices = combinedMesh->getModelMatriciesData();
     unsigned int* indices = combinedMesh->getIndicesData();
     unsigned int* borderIndices = combinedMesh->getBorderIndicesData();
+    int* modelMatrixIndices = combinedMesh->getModelMatrixIndicesData();
     unsigned int numOfVertices = combinedMesh->getNumOfVertices();
     unsigned int numOfIndices = combinedMesh->getNumOfIndices();
     unsigned int numOfBorderIndices = combinedMesh->getNumOfBorderIndices();
+    unsigned int numOfModelMatrices = combinedMesh->getNumOfModelMatricies();
+    unsigned int numOfModelMatrixIndices = combinedMesh->getNumOfModelMatrixIndices();
 
     // Initializing the vao, vbo, and ibo
     m_indexCount = numOfIndices;
@@ -40,7 +47,7 @@ void View::BindMeshWithOpenGL()
     this->glBindVertexArray(m_vao);
         //VBO
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * numOfVertices, vertices, GL_STATIC_DRAW);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * numOfVertices, vertices, GL_STATIC_DRAW);
 
             // postition in verticies
             this->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
@@ -65,14 +72,30 @@ void View::BindMeshWithOpenGL()
         // this->glBindBuffer(GL_ARRAY_BUFFER, 0);
         // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_model_matrix_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfModelMatrixIndices, modelMatrixIndices, GL_STATIC_DRAW);
+
+            this->glVertexAttribIPointer(5, 1, GL_INT, sizeof(int), (void*)0);
+            this->glEnableVertexAttribArray(5);
+
 
         //TRIANGLE IBO
         this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
-            this->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * numOfIndices, indices, GL_STATIC_DRAW);
+            this->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * numOfIndices, indices, GL_STATIC_DRAW);
 
         //LINE IBO
         this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_border_ibo);
-            this->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(borderIndices[0]) * numOfBorderIndices, borderIndices, GL_STATIC_DRAW);
+            this->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * numOfBorderIndices, borderIndices, GL_STATIC_DRAW);
+
+        // TBO for Model Matrix
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_tbo);
+            this->glBufferData(GL_TEXTURE_BUFFER, numOfModelMatrices * sizeof(QMatrix4x4), modelMatrices, GL_STATIC_DRAW);
+        this->glBindBuffer(GL_TEXTURE_BUFFER, 0);
+
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_matrixTexture);
+            this->glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, m_tbo);
+        this->glBindTexture(GL_TEXTURE_BUFFER, 0);
+
     this->glBindVertexArray(0);
 }
 
@@ -121,6 +144,10 @@ void View::Render()
 
     this->glUniform1iv(shader->getTextureArrayId(), 1, shader->getTextureUnitArray());
 
+    this->glActiveTexture(GL_TEXTURE1);
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_matrixTexture);
+    this->glUniform1i(shader->getModelMatrixBufferId(), 1);
+
     this->glUniform3f(shader->getLightPositionId(), 20.0f, 0.0f, 0.0f);
     this->glUniform3f(shader->getLightAmbientId(), 1.0f, 1.0f, 1.0f); // 0.2f, 0.2f, 0.2f
     this->glUniform3f(shader->getLightDiffuseId(), 0.5f, 0.5f, 0.5f); // 0.5f, 0.5f, 0.5f
@@ -138,7 +165,7 @@ void View::Render()
     // this->glUniform3f(shader->getLightSpecularId(), 1.0f, 1.0f, 1.0f);
 
     // --- Upload to shader ---
-    this->glUniformMatrix4fv(shader->getModelId(), 1, GL_FALSE, meshList[0]->getModelMatrix().constData());
+    // this->glUniformMatrix4fv(shader->getModelId(), 1, GL_FALSE, meshList[0]->getModelMatrix().constData());
     this->glUniformMatrix4fv(shader->getViewId(),  1, GL_FALSE, camera->calculateViewMatrix().constData());
     this->glUniformMatrix4fv(shader->getProjectionId(),  1, GL_FALSE, m_projectionMatrix.constData());
 
@@ -199,7 +226,10 @@ void View::Selection()
             this->glUniform4f(pickingShader->getPickColorId(), r/255.0f, g/255.0f, b/255.0f, 1.0f);
 
             // --- Upload to shader ---
-            this->glUniformMatrix4fv(pickingShader->getModelId(), 1, GL_FALSE, meshList[0]->getModelMatrix().constData());
+            this->glActiveTexture(GL_TEXTURE0);
+                this->glBindTexture(GL_TEXTURE_BUFFER, m_matrixTexture);
+            this->glUniform1i(shader->getModelMatrixBufferId(), 0);
+
             this->glUniformMatrix4fv(pickingShader->getViewId(),  1, GL_FALSE, camera->calculateViewMatrix().constData());
             this->glUniformMatrix4fv(pickingShader->getProjectionId(),  1, GL_FALSE, m_projectionMatrix.constData());
 
@@ -416,6 +446,9 @@ View::~View()
 {
     this->glDeleteBuffers(1, &m_static_vbo);
     this->glDeleteBuffers(1, &m_static_ibo);
+    this->glDeleteBuffers(1, &m_tbo);
+    this->glDeleteTextures(1, &m_matrixTexture);
+    this->glDeleteBuffers(1, &m_model_matrix_vbo);
     this->glDeleteVertexArrays(1, &m_vao);
 
     delete combinedMesh;

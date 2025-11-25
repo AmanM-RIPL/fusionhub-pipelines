@@ -626,6 +626,8 @@ Row {
                 bimElementController.addParameter(bimElementPtr, "Width", beamWidthText);
                 bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
 
+                glscene.updateEditableBimElement(bimElementPtr);
+
                 beamTotalHeightText = "";
                 beamWidthText = "";
 
@@ -747,6 +749,8 @@ Row {
                 bimElementController.addParameter(bimElementPtr, "Height", columnTotalHeightText);
                 bimElementController.addParameter(bimElementPtr, "Width", columnWidthText);
                 bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
+
+                // glscene.updateEditableBimElement(bimElementPtr);
 
                 columnTotalHeightText = "";
                 columnWidthText = "";
@@ -1405,8 +1409,7 @@ Row {
                     glscene.cameraPanLeft();
                 } else if (event.key === Qt.Key_D) {
                     glscene.cameraPanRight();
-                } else if (event.key === Qt.Key_Return){
-                    console.log("Enter pressed");
+                } else if (event.key === Qt.Key_Return) {
                     glscene.saveEditableBimElement();
                 }
             }
@@ -1502,7 +1505,7 @@ Row {
                         color: "#323130"
 
                         onTextChanged: {
-                            wallsettingsPopup.wallTotalHeightText = wallTotalHeightTextBox.text;
+                            wallSettingsPopup.wallTotalHeightText = wallTotalHeightTextBox.text;
                         }
                     }
 
@@ -1583,7 +1586,7 @@ Row {
                         color: "#323130"
 
                         onTextChanged: {
-                            wallsettingsPopup.wallWidthText = wallWidthTextBox.text;
+                            wallSettingsPopup.wallWidthText = wallWidthTextBox.text;
                         }
                     }
 

@@ -24,6 +24,13 @@ void Mesh::Combine(Mesh *combinedMesh, QList<Mesh *> meshList)
     std::vector<Vertex> verticies;
     std::vector<unsigned int> indices;
     std::vector<unsigned int> border_indices;
+
+    std::vector<int> model_matrix_indices;
+    std::vector<QMatrix4x4> model_matrix = {};
+    QMatrix4x4 firstModelMatrix;
+    firstModelMatrix.setToIdentity();
+    model_matrix.push_back(firstModelMatrix);
+
     unsigned int numOfVertices = 0;
     unsigned int numOfIndices = 0;
     unsigned int numOfBorderIndices = 0;
@@ -32,6 +39,20 @@ void Mesh::Combine(Mesh *combinedMesh, QList<Mesh *> meshList)
     {
         std::vector<Vertex> meshVerticies = mesh->getVerticies();
         verticies.insert(verticies.end(), meshVerticies.begin(),  meshVerticies.end());
+
+        unsigned int modelIndex = 0; // 0 for identity matrix
+        QMatrix4x4 meshModelMatrix = mesh->getModelMatrix();
+
+        if (!meshModelMatrix.isIdentity())
+        {
+            model_matrix.push_back(meshModelMatrix);
+            modelIndex = model_matrix.size();
+        }
+
+        for (Vertex meshVertex: meshVerticies)
+        {
+            model_matrix_indices.push_back(modelIndex);
+        }
 
         std::vector<unsigned int> meshIndices = mesh->getIndices();
         for (unsigned int& index: meshIndices)
@@ -54,6 +75,8 @@ void Mesh::Combine(Mesh *combinedMesh, QList<Mesh *> meshList)
 
 
     combinedMesh->Initialize(verticies, indices, border_indices, numOfVertices, numOfIndices, numOfBorderIndices);
+    combinedMesh->SetModelMatricies(model_matrix);
+    combinedMesh->SetModelMatrixIndices(model_matrix_indices);
 }
 
 void Mesh::GenerateBaseSurface(Mesh *mesh)
@@ -117,6 +140,11 @@ Vertex *Mesh::getVerticiesData()
     return m_verticies.data();
 }
 
+QMatrix4x4 *Mesh::getModelMatriciesData()
+{
+    return m_model_matrix.data();
+}
+
 unsigned int *Mesh::getIndicesData()
 {
     return m_indices.data();
@@ -125,6 +153,11 @@ unsigned int *Mesh::getIndicesData()
 unsigned int *Mesh::getBorderIndicesData()
 {
     return m_border_indices.data();
+}
+
+int *Mesh::getModelMatrixIndicesData()
+{
+    return m_model_matrix_indices.data();
 }
 
 unsigned int Mesh::getNumOfVertices()
@@ -142,12 +175,32 @@ unsigned int Mesh::getNumOfBorderIndices()
     return m_numOfBorderIndices;
 }
 
+unsigned int Mesh::getNumOfModelMatricies()
+{
+    return m_model_matrix.size();
+}
+
+unsigned int Mesh::getNumOfModelMatrixIndices()
+{
+    return m_model_matrix_indices.size();
+}
+
 QMatrix4x4 Mesh::getModelMatrix()
 {
     QMatrix4x4 matrix;
     matrix.setToIdentity();
 
     return matrix;
+}
+
+void Mesh::SetModelMatricies(std::vector<QMatrix4x4> &model_matrix)
+{
+    m_model_matrix = model_matrix;
+}
+
+void Mesh::SetModelMatrixIndices(std::vector<int> &model_matrix_indices)
+{
+    m_model_matrix_indices = model_matrix_indices;
 }
 
 void Mesh::UpdateGeometry(QVector3D hitPoint)

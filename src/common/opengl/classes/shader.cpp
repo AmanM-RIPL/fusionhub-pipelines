@@ -76,16 +76,16 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
         return;
     }
 
-    this->glValidateProgram(shaderID);
-    this->glGetProgramiv(shaderID, GL_VALIDATE_STATUS, &result);
-    if (!result)
-    {
-        this->glGetProgramInfoLog(shaderID, sizeof(eLog), NULL, eLog);
-        qInfo() << eLog;
-        return;
-    }
+    // this->glValidateProgram(shaderID);
+    // this->glGetProgramiv(shaderID, GL_VALIDATE_STATUS, &result);
 
-    m_modelId = this->glGetUniformLocation(shaderID, "model");
+    // if (!result)
+    // {
+    //     this->glGetProgramInfoLog(shaderID, sizeof(eLog), NULL, eLog);
+    //     qInfo() << eLog;
+    //     return;
+    // }
+
     m_projectionId = this->glGetUniformLocation(shaderID, "projection");
     m_viewId = this->glGetUniformLocation(shaderID, "view");
 
@@ -115,6 +115,8 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
         m_lightAmbientId = this->glGetUniformLocation(shaderID, "light.ambient");
         m_lightDiffuseId = this->glGetUniformLocation(shaderID, "light.diffuse");
         m_lightSpecularId = this->glGetUniformLocation(shaderID, "light.specular");
+
+        m_modelMatrixBufferId = this->glGetUniformLocation(shaderID, "modelMatrixBuffer");
     }
 }
 
@@ -126,11 +128,6 @@ GLuint Shader::getShaderId()
 GLuint Shader::getProjectionId()
 {
     return m_projectionId;
-}
-
-GLuint Shader::getModelId()
-{
-    return m_modelId;
 }
 
 GLuint Shader::getViewId()
@@ -196,6 +193,11 @@ GLuint Shader::getLightDiffuseId()
 GLuint Shader::getLightSpecularId()
 {
     return m_lightSpecularId;
+}
+
+GLuint Shader::getModelMatrixBufferId()
+{
+    return m_modelMatrixBufferId;
 }
 
 void Shader::SetPickColor(bool value)

@@ -774,7 +774,7 @@ MyGLItem::MyGLItem(QQuickItem *parent)
     BIMParameter* heightParameterNew = new BIMParameter(37, "1", false, "Height", "4", 1, this);
     BIMParameter* rlParameterNew = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0], [4,4]]",1,this);
     bimElementNew->addParameter(widthParameterNew);
-    bimElement->addParameter(heightParameterNew);
+    bimElementNew->addParameter(heightParameterNew);
     bimElementNew->addParameter(rlParameterNew);
 
     bimElementList.append(bimElementNew);

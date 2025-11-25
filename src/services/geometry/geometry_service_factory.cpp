@@ -14,6 +14,11 @@ void GeometryServiceFactory::generateMesh2D(BIMElement *bimElement, Mesh *mesh)
         WallGeometryService service = WallGeometryService();
         service.generateMesh2D(bimElement, mesh);
     }
+    else if (bimElement->getType() == "Beam")
+    {
+        BeamGeometryService service = BeamGeometryService();
+        service.generateMesh2D(bimElement, mesh);
+    }
 }
 
 void GeometryServiceFactory::generateMesh3D(BIMElement *bimElement, Mesh *mesh)
@@ -23,6 +28,11 @@ void GeometryServiceFactory::generateMesh3D(BIMElement *bimElement, Mesh *mesh)
         WallGeometryService service = WallGeometryService();
         service.generateMesh3D(bimElement, mesh);
     }
+    else if (bimElement->getType() == "Beam")
+    {
+        BeamGeometryService service = BeamGeometryService();
+        service.generateMesh3D(bimElement, mesh);
+    }
 }
 
 void GeometryServiceFactory::updateGeometry(BIMElement *bimElement, const QVector3D &point)
@@ -30,6 +40,11 @@ void GeometryServiceFactory::updateGeometry(BIMElement *bimElement, const QVecto
     if (bimElement->getType() == "Wall")
     {
         WallGeometryService service = WallGeometryService();
+        service.updateGeometry(bimElement, point);
+    }
+    else if (bimElement->getType() == "Beam")
+    {
+        BeamGeometryService service = BeamGeometryService();
         service.updateGeometry(bimElement, point);
     }
 }
