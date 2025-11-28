@@ -79,6 +79,11 @@ Rectangle {
             visible: pageName === "PurchaseOrder"
         }
 
+        GoodReceivedNotePage {
+            visible: pageName === "GoodReceivedNote"
+        }
+
+
 
         /*
 

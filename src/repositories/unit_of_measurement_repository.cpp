@@ -36,14 +36,14 @@ std::vector<UnitOfMeasurement*> UnitOfMeasurementRepository::findAllQML() {
 
     QSqlQuery query(dbManager->getDatabase());
 
-    /*
+
     if (query.exec("SELECT * FROM UnitOfMeasurement")) {
         while (query.next()) {
             uom.push_back(mapFromQueryQML(query, this));
         }
-    }*/
+    }
 
-    uom.push_back(mapFromQueryQML(query, this));
+    //uom.push_back(mapFromQueryQML(query, this));
 
     return uom;
 }
@@ -137,7 +137,7 @@ QString UnitOfMeasurementRepository::getTableName() const
 
 std::unique_ptr<UnitOfMeasurement> UnitOfMeasurementRepository::mapFromQuery(const QSqlQuery& query) const
 {
-    /*
+
     auto unit = std::make_unique<UnitOfMeasurement>();
     unit->setId(query.value("id").toInt());
     unit->setGlobalId(query.value("global_id").toString());
@@ -148,24 +148,24 @@ std::unique_ptr<UnitOfMeasurement> UnitOfMeasurementRepository::mapFromQuery(con
     unit->setConversionToCubicMeter(query.value("conversion_to_cubic_meter").toDouble());
     unit->setConversionToMeter(query.value("conversion_to_meter").toDouble());
     unit->setConversionToKilogram(query.value("conversion_to_kilogram").toDouble());
-    */
 
-     auto unit = std::make_unique<UnitOfMeasurement>();
-    unit->setId(1);
-    unit->setGlobalId("123");
-    unit->setApprovalStatus(true);
-    unit->setUomName("Meter");
-    unit->setUnitType("Length");
-    unit->setConversionToSqm(0.01);
-    unit->setConversionToCubicMeter(0.5);
-    unit->setConversionToMeter(0.1);
-    unit->setConversionToKilogram(0.3);
+
+    //  auto unit = std::make_unique<UnitOfMeasurement>();
+    // unit->setId(1);
+    // unit->setGlobalId("123");
+    // unit->setApprovalStatus(true);
+    // unit->setUomName("Meter");
+    // unit->setUnitType("Length");
+    // unit->setConversionToSqm(0.01);
+    // unit->setConversionToCubicMeter(0.5);
+    // unit->setConversionToMeter(0.1);
+    // unit->setConversionToKilogram(0.3);
     
     return unit;
 }
 
 UnitOfMeasurement* UnitOfMeasurementRepository::mapFromQueryQML(const QSqlQuery& query, QObject* parent) const {
-    /*
+
     auto unit = new UnitOfMeasurement(parent);
     unit->setId(query.value("id").toInt());
     unit->setGlobalId(query.value("global_id").toString());
@@ -176,17 +176,17 @@ UnitOfMeasurement* UnitOfMeasurementRepository::mapFromQueryQML(const QSqlQuery&
     unit->setConversionToCubicMeter(query.value("conversion_to_cubic_meter").toDouble());
     unit->setConversionToMeter(query.value("conversion_to_meter").toDouble());
     unit->setConversionToKilogram(query.value("conversion_to_kilogram").toDouble());
-   */
-    auto unit = new UnitOfMeasurement(parent);
-    unit->setId(1);
-    unit->setGlobalId("123");
-    unit->setApprovalStatus(true);
-    unit->setUomName("Meter");
-    unit->setUnitType("Length");
-    unit->setConversionToSqm(0.01);
-    unit->setConversionToCubicMeter(0.5);
-    unit->setConversionToMeter(0.1);
-    unit->setConversionToKilogram(0.3);
+
+    // auto unit = new UnitOfMeasurement(parent);
+    // unit->setId(1);
+    // unit->setGlobalId("123");
+    // unit->setApprovalStatus(true);
+    // unit->setUomName("Meter");
+    // unit->setUnitType("Length");
+    // unit->setConversionToSqm(0.01);
+    // unit->setConversionToCubicMeter(0.5);
+    // unit->setConversionToMeter(0.1);
+    // unit->setConversionToKilogram(0.3);
 
     return unit;
 }

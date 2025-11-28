@@ -21,6 +21,8 @@
 #include "repositories/work_order_repository.h"
 #include "repositories/file_repository.h"
 #include "repositories/purchase_order_repository.h"
+#include "repositories/purchase_order_line_repository.h"
+#include "repositories/good_received_note_repository.h"
 
 class RepositoryLocator
 {
@@ -48,7 +50,8 @@ public:
     ProjectBudgetRepository* projectBudgetRepository();
     FileRepository* fileRepository();
     PurchaseOrderRepository* purchaseOrderRepository();
-
+    PurchaseOrderLineRepository* purchaseOrderLineRepository();
+    GoodReceivedNoteRepository* goodReceivedNoteRepository();
 
     IFCWallRepository* ifcWallRepository();
 
@@ -72,7 +75,9 @@ private:
     std::unique_ptr<TaskRepository> m_taskRepository;
     std::unique_ptr<WorkOrderRepository> m_workOrderRepository;
     std::unique_ptr<FileRepository> m_fileRepository;
-     std::unique_ptr<PurchaseOrderRepository> m_purchaseOrderRepository;
+    std::unique_ptr<PurchaseOrderRepository> m_purchaseOrderRepository;
+    std::unique_ptr<PurchaseOrderLineRepository> m_purchaseOrderLineRepository;
+    std::unique_ptr<GoodReceivedNoteRepository> m_goodReceivedNoteRepository;
 
     std::unique_ptr<BillOfQuantityLineRepository> m_billOfQuantityLineRepository;
     std::unique_ptr<ProjectBudgetRepository> m_projectBudgetRepository;

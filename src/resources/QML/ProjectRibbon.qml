@@ -221,8 +221,9 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            // newProjectClicked()
+                             projectPageToRedirect("GoodReceivedNote")
                         }
+
                     }
                 }
 

@@ -13,7 +13,9 @@ class PurchaseOrderController: public QObject
     Q_OBJECT
 public:
     explicit PurchaseOrderController(QObject *parent = nullptr);
-    Q_INVOKABLE void create( const int &VendorId, const int &MaterialId, const int &UnitOfMeasurementId) const;
+    Q_INVOKABLE void create(const QString &vendor, const QVariant &purchaseOrderData) const;
+
+
     Q_INVOKABLE std::vector<PurchaseOrder*> getPurchaseOrderList(bool isApproved = false) const;
 
     Q_INVOKABLE std::vector<Vendor*> getVendorList() const;
@@ -25,6 +27,7 @@ private:
     MaterialRepository* m_materialRepository;
     UnitOfMeasurementRepository* m_unitOfMeasurementRepository;
     DraftEntityRepository* m_draftEntityRepository;
+    QString CreateJson(const QVariant &param) const;
 };
 
 #endif // PURCHASE_CONTROLLER_H

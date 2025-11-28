@@ -9,15 +9,15 @@ Column {
     width: parent.width
     padding: 10
 
-    // root properties (these are the lists used by UI)
     property var purchaseOrderList: []
     property var purchaseOrderData: []
     property bool isApproved: false
-    property var vendorList: ["Krishna PVT. Ltd", "Tata", "Saif Iron", "Saif Traiders"]
-    property var uomList: ["cubic mtr", "kg", "meter"]
-    property var materialList: ["M-30 Steel", "M-20 Steel", "Gravel", "Bamboo", "Capstones", "Cement"]
 
-    // Controllers (IDs must match uses below)
+    property var vendorList: []
+    property var uomList: []
+    property var materialList: []
+
+    // Controllers
     VendorController {
         id: vendorController
     }
@@ -31,8 +31,9 @@ Column {
     }
 
     UnitOfMeasurementController {
-        id: unitOfMeasurementController    // NOTE: spelled "Measurement" here
+        id: unitOfMeasurementController
     }
+
 
     /*--------------------------------------
                     Pop UP
@@ -44,14 +45,9 @@ Column {
         title: "Create PO"
         parent: Overlay.overlay
 
-        // Accept: create only if we have rows
         onAcceptCallback: function () {
             if (purchaseOrderData.length > 0) {
-                // pass vendor selected, and the line items
-                purchaseOrderController.create(
-                    vendor.currentText,
-                    purchaseOrderData
-                )
+                purchaseOrderController.create(vendor.currentText, purchaseOrderData)
 
                 // reset
                 purchaseOrderData = []
@@ -60,12 +56,11 @@ Column {
         }
 
         onCancelCallback: function () {
-            // reset fields
             purchaseOrderData = []
         }
 
         onOpened: {
-            // Load lists from controllers and populate root lists without shadowing variables
+            // Load lists from controllers and populate root lists
             if (purchaseOrderRoot.visible) {
                 var vendorsFromCtrl = vendorController.getVendorList(true)
                 var materialsFromCtrl = materialController.getMaterialList(true)
@@ -77,18 +72,16 @@ Column {
                 purchaseOrderRoot.uomList = []
 
                 for (var i = 0; i < vendorsFromCtrl.length; i++) {
-                    // assuming vendor object has vendorName
-                    purchaseOrderRoot.vendorList = purchaseOrderRoot.vendorList.concat(vendorsFromCtrl[i].vendorName)
+                    purchaseOrderRoot.vendorList = purchaseOrderRoot.vendorList.concat(
+                                vendorsFromCtrl[i].vendorName)
                 }
                 for (var j = 0; j < materialsFromCtrl.length; j++) {
-                    // assuming material object has materialName
-                    purchaseOrderRoot.materialList = purchaseOrderRoot.materialList.concat(materialsFromCtrl[j].materialName)
+                    purchaseOrderRoot.materialList = purchaseOrderRoot.materialList.concat(
+                                materialsFromCtrl[j].materialName)
                 }
                 for (var k = 0; k < uomFromCtrl.length; k++) {
-                    // assuming uom object has uomName or uomId; adjust as per your controller
-                    // here I'll use uomName if available, otherwise uomId
-                    var uomDisplay = uomFromCtrl[k].uomName !== undefined ? uomFromCtrl[k].uomName : uomFromCtrl[k].uomId
-                    purchaseOrderRoot.uomList = purchaseOrderRoot.uomList.concat(uomDisplay)
+                    purchaseOrderRoot.uomList = purchaseOrderRoot.uomList.concat(
+                                uomFromCtrl[k].uomName)
                 }
             }
         }
@@ -127,19 +120,34 @@ Column {
                         leftPadding: 2
                         removeRow: true
                         model: purchaseOrderData
-                        // Make keys consistent with how you store data in rows (see add row)
-                        columns: [
-                            { "label": "Material", "width": 184, "key": "material_name" },
-                            { "label": "UOM", "width": 120, "key": "unit_of_measurement" },
-                            { "label": "Quantity", "width": 100, "key": "quantity" },
-                            { "label": "Amount", "width": 100, "key": "amount" },
-                            { "label": "Tax Amount", "width": 100, "key": "tax_amount" },
-                            { "label": "Tax With Holding", "width": 230, "key": "tax_with_holding" }
-                        ]
+                        columns: [{
+                                "label": "Material",
+                                "width": 184,
+                                "key": "material_name"
+                            }, {
+                                "label": "UOM",
+                                "width": 120,
+                                "key": "unit_of_measurement"
+                            }, {
+                                "label": "Quantity",
+                                "width": 100,
+                                "key": "quantity"
+                            }, {
+                                "label": "Amount",
+                                "width": 100,
+                                "key": "amount"
+                            }, {
+                                "label": "Tax Amount",
+                                "width": 100,
+                                "key": "tax_amount"
+                            }, {
+                                "label": "Tax With Holding",
+                                "width": 230,
+                                "key": "tax_with_holding"
+                            }]
 
                         onRemoveRowChanged: {
-                            // assumes `removedIndex` is available from the FHTable component
-                            console.log("onRemoveRowChanged:", removedIndex.toString())
+                            // console.log("onRemoveRowChanged:", removedIndex.toString())
                             purchaseOrderData.splice(removedIndex, 1)
                         }
                     }
@@ -244,7 +252,6 @@ Column {
 
                                 // append to purchaseOrderData
                                 purchaseOrderData = purchaseOrderData.concat(newElements)
-
                                 // clear inputs (optional)
                                 quantityTextBox.text = ""
                                 amountTextBox.text = ""
@@ -287,64 +294,161 @@ Column {
         }
     }
 
+
     /*--------------------------------------
             Approval Type
     --------------------------------------*/
-    Row {
-        spacing: 20
-        anchors.left: parent.left
-        anchors.leftMargin: 20
+    Column {
+        spacing: 10
+        Row {
+            spacing: 20
+            anchors.left: parent.left
+            anchors.leftMargin: 20
 
-        Text {
-            id: approvalTypeLabel
-            text: "Choose Approval Type"
-            color: "#323130"
-            font.weight: 700
-            font.pixelSize: 14
-            font.family: "Segoe UI"
-            topPadding: 10
-        }
-
-        CustomComboBox {
-            id: approvalTypeComboBox
-            model: ["Approved", "Draft"]
-            width: 200
-            currentIndex: 0
-
-            onCurrentTextChanged: {
-                isApproved = (approvalTypeComboBox.currentText === "Approved")
-                showList()
+            // ------- APPROVAL TYPE --------
+            Text {
+                id: approvalTypeLabel
+                text: "Choose Approval Type"
+                color: "#323130"
+                font.weight: 700
+                font.pixelSize: 14
+                font.family: "Segoe UI"
+                topPadding: 10
             }
-        }
-    }
 
-    /*--------------------------------------
+            CustomComboBox {
+                id: approvalTypeComboBox
+                model: ["Approved", "Draft"]
+                width: 200
+                currentIndex: 0
+
+                contentItem: Text {
+                    text: approvalTypeComboBox.displayText
+                    leftPadding: 10
+                    verticalAlignment: Text.AlignVCenter
+                    color: "#323130"
+                    font.pixelSize: 14
+                }
+
+                onCurrentTextChanged: {
+                    isApproved = (approvalTypeComboBox.currentText === "Approved")
+                    showList()
+                }
+            }
+
+            // ------- VENDOR DROPDOWN --------
+            // Text {
+            //     id: vendorLabel
+            //     text: "Select Vendor"
+            //     color: "#323130"
+            //     font.weight: 700
+            //     font.pixelSize: 14
+            //     font.family: "Segoe UI"
+            //     topPadding: 10
+            // }
+
+            // CustomComboBox {
+            //     id: vendorComboBox
+            //     width: 200
+            //     model: vendorList
+            //     currentIndex: 0
+
+            //     contentItem: Text {
+            //         text: vendorComboBox.displayText
+            //         leftPadding: 10
+            //         verticalAlignment: Text.AlignVCenter
+            //         color: "#323130"
+            //         font.pixelSize: 14
+            //     }
+
+            //     onCurrentIndexChanged: {
+            //         console.log("Vendor:", vendorComboBox.currentText)
+            //     }
+            // }
+        }
+
+
+        /*--------------------------------------
                 Main Table
     --------------------------------------*/
-    FHTable {
-        height: 200
-        leftPadding: 20
-        model: purchaseOrderRoot.purchaseOrderList
-        columns: [
-            { "label": "Material", "width": 214, "key": "material_name" },
-            { "label": "Quantity", "width": 180, "key": "quantity" },
-            { "label": "UOM", "width": 170, "key": "unit_of_measurement" },
-            { "label": "Amount", "width": 170, "key": "amount" },
-            { "label": "Tax Amount", "width": 180, "key": "tax_amount" },
-            { "label": "Tax With Holding", "width": 200, "key": "tax_with_holding" }
-        ]
+        FHTable {
+            height: 200
+            leftPadding: 20
+            model: purchaseOrderRoot.purchaseOrderList
+            columns: [{
+                    "label": "Vendor",
+                    "width": 214,
+                    "key": "vendorName"
+                }, {
+                    "label": "Material",
+                    "width": 214,
+                    "key": "materialName"
+                }, {
+                    "label": "Quantity",
+                    "width": 180,
+                    "key": "quantity"
+                }, {
+                    "label": "UOM",
+                    "width": 170,
+                    "key": "unitOfMeasurementId"
+                }, {
+                    "label": "Amount",
+                    "width": 130,
+                    "key": "amount"
+                }, {
+                    "label": "Tax Amount",
+                    "width": 130,
+                    "key": "taxAmount"
+                }, {
+                    "label": "Tax With Holding",
+                    "width": 200,
+                    "key": "taxWithHolding"
+                }]
+        }
     }
 
     Component.onCompleted: showList()
     onVisibleChanged: showList()
 
     function showList() {
-        purchaseOrderRoot.purchaseOrderList = []
+        purchaseOrderRoot.purchaseOrderList = [];
+
         if (purchaseOrderRoot.visible) {
             var arr = purchaseOrderController.getPurchaseOrderList(isApproved)
-            if (arr && arr.length) {
-                purchaseOrderRoot.purchaseOrderList = purchaseOrderRoot.purchaseOrderList.concat(arr)
+
+            var flatList = []
+
+            for (var i = 0; i < arr.length; i++) {
+                var po = arr[i]
+
+                try {
+                    po.parsedPurchaseOrder = JSON.parse(po.purchaseOrderList)
+                } catch (e) {
+                    console.error("Failed to parse purchaseOrder JSON:", e,
+                                  po.purchaseOrderList)
+                    po.parsedPurchaseOrder = {
+                        "data": [],
+                        "rows": 0
+                    }
+                }
+
+                // For each in purchase order
+                for (var j = 0; j < po.parsedPurchaseOrder.data.length; j++) {
+                    var item = po.parsedPurchaseOrder.data[j]
+                    flatList.push({
+                                      "vendorName": po.vendorName,
+                                      "materialName": item.material_name,
+                                      "quantity": item.quantity,
+                                      "unitOfMeasurementId": item.unit_of_measurement,
+                                      "amount": item.amount,
+                                      "taxAmount": item.tax_amount,
+                                      "taxWithHolding": item.tax_with_holding
+                                  })
+                }
             }
+
+            purchaseOrderRoot.purchaseOrderList = flatList
+          //  console.log("Table Data:", JSON.stringify(flatList))
         }
     }
 }

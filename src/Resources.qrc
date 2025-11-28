@@ -71,5 +71,6 @@
         <file>resources/bimFamily/DblDoor-1-Panel.ifc</file>
         <file>resources/images/brick.jpg</file>
         <file>resources/images/blueprint.png</file>
+        <file>resources/QML/GoodReceivedNotePage.qml</file>
     </qresource>
 </RCC>

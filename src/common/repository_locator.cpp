@@ -20,6 +20,8 @@ RepositoryLocator::RepositoryLocator() {
     m_projectBudgetRepository = std::make_unique<ProjectBudgetRepository>();
     m_fileRepository = std::make_unique<FileRepository>();
     m_purchaseOrderRepository = std::make_unique<PurchaseOrderRepository>();
+    m_purchaseOrderLineRepository = std::make_unique<PurchaseOrderLineRepository>();
+    m_goodReceivedNoteRepository = std::make_unique<GoodReceivedNoteRepository>();
 }
 
 RepositoryLocator &RepositoryLocator::instance()
@@ -126,5 +128,15 @@ FileRepository *RepositoryLocator::fileRepository()
 PurchaseOrderRepository *RepositoryLocator::purchaseOrderRepository()
 {
     return m_purchaseOrderRepository.get();
+}
+
+PurchaseOrderLineRepository *RepositoryLocator::purchaseOrderLineRepository()
+{
+    return m_purchaseOrderLineRepository.get();
+}
+
+GoodReceivedNoteRepository *RepositoryLocator::goodReceivedNoteRepository()
+{
+    return m_goodReceivedNoteRepository.get();
 }
 

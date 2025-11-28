@@ -35,6 +35,8 @@
 #include "repositories/work_order_repository.h"
 #include "repositories/file_repository.h"
 #include "repositories/purchase_order_repository.h"
+#include "repositories/purchase_order_line_repository.h"
+#include "repositories/good_received_note_repository.h"
 
 #include "controllers/user_controller.h"
 #include "controllers/project_controller.h"
@@ -54,6 +56,9 @@
 #include "controllers/project_budget_controller.h"
 #include "controllers/file_controller.h"
 #include "controllers/purchase_order_controller.h"
+#include "controllers/purchase_order_line_controller.h"
+#include "controllers/good_received_note_controller.h"
+
 
 
 #include "models/user.h"
@@ -540,6 +545,8 @@ int main(int argc, char *argv[])
     ProjectBudgetRepository* projectBudgetRepository = new ProjectBudgetRepository(&engine);
     FileRepository* fileRepository = new FileRepository(&engine);
     PurchaseOrderRepository* purchaseOrderRepository = new PurchaseOrderRepository(&engine);
+    PurchaseOrderLineRepository* purchaseOrderLineRepository = new PurchaseOrderLineRepository(&engine);
+    GoodReceivedNoteRepository* goodReceivedNoteRepository = new GoodReceivedNoteRepository(&engine);
 
    // IFCDetailRepository* ifcDetailRepository = new IFCDetailRepository(ifcDetailList, &engine);
 
@@ -623,6 +630,9 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("projectBudgetRepository", projectBudgetRepository);
     engine.rootContext()->setContextProperty("fileRepository", fileRepository);
     engine.rootContext()->setContextProperty("purchaseOrderRepository", purchaseOrderRepository);
+    engine.rootContext()->setContextProperty("purchaseOrderLineRepository", purchaseOrderLineRepository);
+    engine.rootContext()->setContextProperty("goodReceivedNoteRepository", goodReceivedNoteRepository);
+
 
     engine.rootContext()->setContextProperty("bimElementRepository", bimElementRepository);
     engine.rootContext()->setContextProperty("billofQuantityRepository", billOfQuantityRepository);
@@ -641,6 +651,9 @@ int main(int argc, char *argv[])
     qmlRegisterType<ProjectBudget>("com.fh.models", 1, 0, "ProjectBudget");
     qmlRegisterType<File>("com.fh.models", 1, 0, "File");
     qmlRegisterType<PurchaseOrder>("com.fh.models", 1, 0, "PurchaseOrder");
+    qmlRegisterType<PurchaseOrderLine>("com.fh.models", 1, 0, "PurchaseOrderLine");
+    qmlRegisterType<GoodReceivedNote>("com.fh.models", 1, 0, "GoodReceivedNote");
+
 
     qmlRegisterType<DraftEntity>("com.fh.models", 1, 0, "DraftEntity");
     qmlRegisterType<User>("com.fh.models", 1, 0, "Project");
@@ -663,7 +676,10 @@ int main(int argc, char *argv[])
     qmlRegisterType<WorkOrderController>("com.fh.controllers", 1, 0, "WorkOrderController");
     qmlRegisterType<ProjectBudgetController>("com.fh.controllers", 1, 0, "ProjectBudgetController");
     qmlRegisterType<FileController>("com.fh.controllers", 1, 0, "FileController");
-     qmlRegisterType<PurchaseOrderController>("com.fh.controllers", 1, 0, "PurchaseOrderController");
+    qmlRegisterType<PurchaseOrderController>("com.fh.controllers", 1, 0, "PurchaseOrderController");
+    qmlRegisterType<PurchaseOrderLineController>("com.fh.controllers", 1, 0, "PurchaseOrderLineController");
+    qmlRegisterType<GoodReceivedNoteController>("com.fh.controllers", 1, 0, "GoodReceivedNoteController");
+
 
 
     const QUrl url(QStringLiteral("qrc:/resources/QML/main.qml"));
