@@ -106,6 +106,20 @@ Rectangle {
             }
         }
 
+
+        Rectangle{
+            id: gantt
+            width: parent.width
+            height: 1024 - (131 + 13)
+            visible: pageName === "Gantt"
+
+            GanttPage{
+                anchors.fill: parent
+                txtProjectName: projectName
+            }
+        }
+
+
         PlannedBIMPage {
             //id:rootPlannedBIM
             pageType: pageName
@@ -118,7 +132,7 @@ Rectangle {
                     glsceneWidth = parent.width - treeviewWidth - 30
                     glsceneVisible = true
                     break;
-                case "Gantt":
+                //case "Gantt":
                 case "Collision":
                     treeviewWidth = parent.width - 20
                     glsceneWidth = parent.width - treeviewWidth
