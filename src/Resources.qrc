@@ -72,5 +72,6 @@
         <file>resources/images/brick.jpg</file>
         <file>resources/images/blueprint.png</file>
         <file>resources/QML/GanttPage.qml</file>
+        <file>resources/QML/GanttChartTable.qml</file>
     </qresource>
 </RCC>

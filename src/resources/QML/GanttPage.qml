@@ -14,36 +14,15 @@ Rectangle {
     property int febMonthWidth: 28
     property int monthScale: 5
 
-    /*
-    property var  taskParamList: [
-        {"id":"1", "task":"Cutting", "duration":"20days", "start":"2/01/2025", "end":"22/01/2025"},
-        {"id":"2", "task":"Bending", "duration":"10days", "start":"20/02/2025", "end":"30/02/2025"},
-        {"id":"3", "task":"Clustering", "duration":"25days", "start":"5/03/2025", "end":"30/03/2025"}
-    ]
-
-
-
-    property var  monthParamList: [
-        {"duration":"20days", "id":"1", "pid":"1", "jan":"20", "feb":"0", "mar":"0", "apr":"0", "may":"0", "jun":"0",
-                                 "jul":"0", "aug":"0", "sep":"0", "oct":"0", "nov":"0", "dec":"0"},
-
-        {"duration":"10days", "id":"2", "pid":"3", "jan":"0", "feb":"10", "mar":"0", "apr":"0", "may":"0", "jun":"0",
-                                "jul":"0", "aug":"0", "sep":"0", "oct":"0", "nov":"0", "dec":"0"},
-
-        {"duration":"25days", "id":"3", "pid":"1", "jan":"0", "feb":"0", "mar":"20", "apr":"0", "may":"0", "jun":"0",
-                            "jul":"0", "aug":"0", "sep":"0", "oct":"0", "nov":"0", "dec":"0"}
-    ]
-    */
-
 
     property var  task_month_paramList: [
-        {"id":"1", "pid":"1", "task":"Cutting", "duration":"20days", "days":"20", "startx":"2", "endx":"22", "start":"2/01/2025", "end":"22/01/2025",  "jan":"20", "feb":" ", "mar":" ", "apr":" ", "may":" ", "jun":" ",
+        {"id":"1", "pid":"0", "task":"Cutting", "duration":"20 days", "days":"20", "startx":"3", "endx":"22", "start":"3/01/2025", "end":"22/01/2025",  "jan":"20", "feb":" ", "mar":" ", "apr":" ", "may":" ", "jun":" ",
                                  "jul":" ", "aug":" ", "sep":" ", "oct":" ", "nov":" ", "dec":" "},
 
-        {"id":"2", "pid":"3", "task":"Bending", "duration":"10days", "days":"10", "startx":"20", "endx":"30", "start":"20/02/2025", "end":"30/02/2025",  "jan":" ", "feb":"10", "mar":" ", "apr":" ", "may":" ", "jun":" ",
+        {"id":"2", "pid":"1", "task":"Bending", "duration":"10 days", "days":"10", "startx":"19", "endx":"28", "start":"19/02/2025", "end":"28/02/2025",  "jan":" ", "feb":"10", "mar":" ", "apr":" ", "may":" ", "jun":" ",
                                 "jul":" ", "aug":" ", "sep":" ", "oct":" ", "nov":" ", "dec":" "},
 
-        {"id":"3", "pid":"1", "task":"Clustering", "duration":"25days", "days":"25", "startx":"5", "endx":"30", "start":"5/03/2025", "end":"30/03/2025", "jan":" ", "feb":" ", "mar":"25", "apr":" ", "may":" ", "jun":" ",
+        {"id":"3", "pid":"2", "task":"Clustering", "duration":"26 days", "days":"26", "startx":"5", "endx":"30", "start":"5/03/2025", "end":"30/03/2025", "jan":" ", "feb":" ", "mar":"26", "apr":" ", "may":" ", "jun":" ",
                             "jul":" ", "aug":" ", "sep":" ", "oct":" ", "nov":" ", "dec":" "}
     ]
 
@@ -151,7 +130,6 @@ Rectangle {
                                 { label: "Start", width: 110, key: "start" },
                                 { label: "End", width: 110, key: "end" },
                             ]
-
                         }
                     }
                 }//End of LeftSide
@@ -210,10 +188,11 @@ Rectangle {
                                         color: "gray"
 
                                         Column{
-                                            FHTable {
+                                           // FHTable {
+                                            GanttChartTable{
                                                 height: 300
                                                 leftPadding: 2
-                                                removeRow: false
+                                                //removeRow: false
                                                 headerHeight:50
                                                 headerFontPixelSize:20
                                                 model: task_month_paramList //monthParamList

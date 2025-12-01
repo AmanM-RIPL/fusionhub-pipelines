@@ -17,11 +17,7 @@ Column {
     property int headerFontPixelSize: 12
     //property string rowColor: "transparent"
     property bool isTextVisible: true
-    property bool isRectVisible: false
-
-    property int monthScale: 5
-    property var rowDataForGantt: []
-
+    property bool isRectVisible: false    
 
     readonly property int totalColumnWidth: {
         var total = 0;
@@ -130,32 +126,10 @@ Column {
                         Rectangle {                            
                             width: modelData.width
                             height: 30
-                            // Text {
-                            //     text: rowData[modelData.key] !== undefined ? rowData[modelData.key] : ""
-                            //     font.pixelSize: 15
-                            //     anchors.centerIn: parent
-                            // }
-
-                            RowLayout{
-                                width: modelData.width
-                                height: 30
-                                Rectangle {
-                                    id:idRect
-                                    width: rowData[modelData.days] !== undefined ? rowData[modelData.days]*monthScale : modelData.width //monthScale = 5
-                                    Layout.leftMargin: rowData[modelData.startx] !== undefined ? rowData[modelData.startx]*monthScale : 0
-                                    height: 15
-                                    color: rowColorFunc(modelData.key, rowData[modelData.key].trim(), rowData[modelData.id], rowData[modelData.pid],  idRect.x, idRect.y, idRect.width, idRect.height)
-
-                                    Text {
-                                        text: rowData[modelData.key] !== undefined ? rowData[modelData.key] : ""
-                                        font.pixelSize: 15
-                                        anchors.centerIn: parent
-                                    }
-
-                                    /*Component.onCompleted: {
-                                         console.log("rowkey:", modelData.key, "value:", rowData[modelData.key], "id:", rowData[modelData.id], "pid:", rowData[modelData.pid], "x:",idRect.x, "y:",idRect.y ,"width:", idRect.width, "height:", idRect.height );
-                                    }*/
-                                }
+                            Text {
+                                text: rowData[modelData.key] !== undefined ? rowData[modelData.key] : ""
+                                font.pixelSize: 15
+                                anchors.centerIn: parent
                             }
                         }
                     }
@@ -166,49 +140,8 @@ Column {
                     height: 1
                     color: "#EDF1F4"
                 }
-            }
-            //onContentYChanged: linesOverlay.requestPaint()
-        }
-        /*Canvas
-        {
-            id: linesOverlay
-            anchors.fill: parent
-
-            // This ensures the canvas is transparent and above the ListView visually
-            z: 1
-            onPaint: {
-                var ctx = getContext("2d");
-                ctx.clearRect(0, 0, width, height); // Clear previous frame
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = "red";
-                ctx.beginPath();
-
-                //ctx.moveTo(startX, startY);
-                //ctx.lineTo(endX, endY);
-
-                var x = 100;// rowData[modelData.startx] !== undefined ? rowData[modelData.startx]*monthScale : 0
-
-                if(x > 1)
-                {
-                    ctx.moveTo(0, 0);
-                    ctx.lineTo(x, 200);
-                }
-                ctx.stroke();
-            }
-        }*/
-    }
-
-
-    function rowColorFunc(rowkey, value, id, pid, x, y, width, height) {
-        if((rowkey === "jan" || rowkey === "feb" || rowkey === "mar" || rowkey === "apr"
-          || rowkey === "may" || rowkey === "jun" || rowkey === "jul" || rowkey === "aug"
-          || rowkey === "sep" || rowkey === "oct" || rowkey === "nov" || rowkey === "dec")
-          //&& value !== "0" || value !== " ")
-          && value.length > 0 && value !== "0" )
-        {
-            return "red"
-        }
-        return "transparent"
+            }           
+        }        
     }
 }
 
