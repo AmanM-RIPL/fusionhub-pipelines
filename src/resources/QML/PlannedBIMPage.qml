@@ -750,7 +750,7 @@ Row {
                 bimElementController.addParameter(bimElementPtr, "Width", columnWidthText);
                 bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
 
-                // glscene.updateEditableBimElement(bimElementPtr);
+                glscene.updateEditableBimElement(bimElementPtr);
 
                 columnTotalHeightText = "";
                 columnWidthText = "";
@@ -872,6 +872,8 @@ Row {
                 bimElementController.addParameter(bimElementPtr, "Height", slabTotalHeightText);
                 bimElementController.addParameter(bimElementPtr, "Distance", slabDistanceText);
                 bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
+
+                glscene.updateEditableBimElement(bimElementPtr);
 
                 slabTotalHeightText = "";
                 slabDistanceText = "";
@@ -1422,8 +1424,8 @@ Row {
             //ifcDetailList = ifcDetailRepository.getIFCDetails();
              // ifcDetailList = ifcDetailController.loadIFC(ifcDetailController.getIfcFilePath());
              //treeModel = ifcDetailController.getTreeModel();
-            glscene.viewIfc();           
-            glscene.update();
+            // glscene.viewIfc();
+            // glscene.update();
         }
     }
 
@@ -1433,8 +1435,8 @@ Row {
             //ifcDetailList = ifcDetailRepository.getIFCDetails();
             //ifcDetailList = ifcDetailController.loadIFC(ifcDetailController.getIfcFilePath());
             //treeModel = ifcDetailController.getTreeModel();
-            glscene.viewIfc();
-            glscene.update();
+            // glscene.viewIfc();
+            // glscene.update();
 
         }
     }

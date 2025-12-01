@@ -19,6 +19,16 @@ void GeometryServiceFactory::generateMesh2D(BIMElement *bimElement, Mesh *mesh)
         BeamGeometryService service = BeamGeometryService();
         service.generateMesh2D(bimElement, mesh);
     }
+    else if (bimElement->getType() == "Column")
+    {
+        ColumnGeometryService service = ColumnGeometryService();
+        service.generateMesh2D(bimElement, mesh);
+    }
+    else if (bimElement->getType() == "Slab")
+    {
+        SlabGeometryService service = SlabGeometryService();
+        service.generateMesh2D(bimElement, mesh);
+    }
 }
 
 void GeometryServiceFactory::generateMesh3D(BIMElement *bimElement, Mesh *mesh)
@@ -33,6 +43,16 @@ void GeometryServiceFactory::generateMesh3D(BIMElement *bimElement, Mesh *mesh)
         BeamGeometryService service = BeamGeometryService();
         service.generateMesh3D(bimElement, mesh);
     }
+    else if (bimElement->getType() == "Column")
+    {
+        ColumnGeometryService service = ColumnGeometryService();
+        service.generateMesh3D(bimElement, mesh);
+    }
+    else if (bimElement->getType() == "Slab")
+    {
+        SlabGeometryService service = SlabGeometryService();
+        service.generateMesh3D(bimElement, mesh);
+    }
 }
 
 void GeometryServiceFactory::updateGeometry(BIMElement *bimElement, const QVector3D &point)
@@ -45,6 +65,16 @@ void GeometryServiceFactory::updateGeometry(BIMElement *bimElement, const QVecto
     else if (bimElement->getType() == "Beam")
     {
         BeamGeometryService service = BeamGeometryService();
+        service.updateGeometry(bimElement, point);
+    }
+    else if (bimElement->getType() == "Column")
+    {
+        ColumnGeometryService service = ColumnGeometryService();
+        service.updateGeometry(bimElement, point);
+    }
+    else if (bimElement->getType() == "Slab")
+    {
+        SlabGeometryService service = SlabGeometryService();
         service.updateGeometry(bimElement, point);
     }
 }

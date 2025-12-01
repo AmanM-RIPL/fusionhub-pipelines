@@ -14,6 +14,13 @@ void ColumnGeometryService::generateMesh2D(BIMElement* columnElement, Mesh* mesh
 
     m_openglHelper.extractBIMParameters(columnElement, referenceLine, width, height, distance);
 
+    // if reference line is only one point then we don't need to render
+    if (referenceLine.size() < 2)
+    {
+        mesh->Initialize({}, {}, {}, 0, 0, 0);
+        return;
+    }
+
     // 3. Generate a parallel line
     std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
 
@@ -110,6 +117,13 @@ void ColumnGeometryService::generateMesh3D(BIMElement* columnElement, Mesh* mesh
 
 
     m_openglHelper.extractBIMParameters(columnElement, referenceLine, width, height, distance);
+
+    // if reference line is only one point then we don't need to render
+    if (referenceLine.size() < 2)
+    {
+        mesh->Initialize({}, {}, {}, 0, 0, 0);
+        return;
+    }
 
     // 3. Generate a parallel line
     std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);

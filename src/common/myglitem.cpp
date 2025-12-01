@@ -779,7 +779,8 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 
     bimElementList.append(bimElementNew);
 
-    // pIfcDetailController = new IFCDetailController(this);;
+    pIfcDetailController = new IFCDetailController(this);
+    viewIfc();
     // pIfcGeometryService = new IfcGeometryService(this);
     // mesh = getMeshptr();
 
@@ -983,23 +984,24 @@ void MyGLItem::handlePick(int id) {
 
 void MyGLItem::viewIfc()
 {
-    // QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-1-Panel.ifc";
-    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-4-Panel.ifc";
-    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\BasicHouse.ifc";
-    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-2-Panel.ifc";
-    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-Flush.ifc";
-    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Door-Entry_2-Panel-Glz-Arc-Top.ifc";
-    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Taylor_Entrance_1_Panel_High_Def.ifc";
-    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Skylight_GTVSF_AmericanSkylites.ifc";
+    QString strFilePath = "C:\\Users\\RIPL\\Downloads\\DblDoor-1-Panel.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-4-Panel.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\BasicHouse.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-2-Panel.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-Flush.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Door-Entry_2-Panel-Glz-Arc-Top.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Taylor_Entrance_1_Panel_High_Def.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Skylight_GTVSF_AmericanSkylites.ifc";
 
-    // //QString strFilePath = pIfcDetailController->getIfcFilePath();
-    // OdIfcFilePtr pDatabase = pIfcDetailController->getIfcFilePtrFromLoadedIFC(strFilePath);
+    //QString strFilePath = pIfcDetailController->getIfcFilePath();
+    OdIfcFilePtr pDatabase = pIfcDetailController->getIfcFilePtrFromLoadedIFC(strFilePath);
     // if(pDatabase)
     // {
-    //     delete mesh;
-    //     mesh = NULL;
-    //     mesh = new Mesh(this);
-    //     pIfcGeometryService->generateMesh3D(pDatabase, mesh);
+    //     // delete mesh;
+    //     // mesh = NULL;
+    //     // mesh = new Mesh(this);
+    //     // pIfcGeometryService->generateMesh3D(pDatabase, mesh);
+    //     qInfo() << "File has been loaded";
     //     pDatabase.release();
     //     pDatabase = NULL;
     // }

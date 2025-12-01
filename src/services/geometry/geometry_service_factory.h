@@ -7,6 +7,8 @@
 #include "common/opengl/classes/mesh.h"
 #include "wall_geometry_service.h"
 #include "beam_geometry_service.h"
+#include "column_geometry_service.h"
+#include "slab_geometry_service.h"
 
 class GeometryServiceFactory : public QObject
 {

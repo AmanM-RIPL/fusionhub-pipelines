@@ -46,9 +46,9 @@
 
 #include "common/opengl/classes/opengl_helper.h"
 
-using namespace OdIfc;
-using namespace OdIfc4x3_add2;
-using namespace OdDAI;
+// using namespace OdIfc;
+// using namespace OdIfc4x3_add2;
+// using namespace OdDAI;
 
 class IFCDetailRepository : public QObject, public AbstractRepository<IFCDetail>
 {
