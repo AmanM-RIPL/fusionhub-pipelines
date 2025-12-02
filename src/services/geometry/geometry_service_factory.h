@@ -9,6 +9,10 @@
 #include "beam_geometry_service.h"
 #include "column_geometry_service.h"
 #include "slab_geometry_service.h"
+#include "door_geometry_service.h"
+#include "ifc_geometry_service.h"
+
+#include "controllers/ifc_detail_controller.h"
 
 class GeometryServiceFactory : public QObject
 {
@@ -17,7 +21,7 @@ public:
     explicit GeometryServiceFactory(QObject *parent = nullptr);
 
     static void generateMesh2D(BIMElement* bimElement, Mesh* mesh);
-    static void generateMesh3D(BIMElement* bimElement, Mesh* mesh);
+    static void generateMesh3D(BIMElement* bimElement, Mesh* mesh, IFCDetailController* pIfcDetailController, IfcGeometryService* pIfcGeometryService);
     static void updateGeometry(BIMElement* bimElement, const QVector3D& point);
 
 signals:

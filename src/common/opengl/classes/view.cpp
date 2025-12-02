@@ -29,7 +29,7 @@ void View::BindMeshWithOpenGL()
     Mesh::Combine(combinedMesh, meshList);
 
     Vertex* vertices = combinedMesh->getVerticiesData();
-    QMatrix4x4* modelMatrices = combinedMesh->getModelMatriciesData();
+    float* modelMatrices = combinedMesh->getModelMatriciesData();
     unsigned int* indices = combinedMesh->getIndicesData();
     unsigned int* borderIndices = combinedMesh->getBorderIndicesData();
     int* modelMatrixIndices = combinedMesh->getModelMatrixIndicesData();
@@ -89,7 +89,7 @@ void View::BindMeshWithOpenGL()
 
         // TBO for Model Matrix
         this->glBindBuffer(GL_TEXTURE_BUFFER, m_tbo);
-            this->glBufferData(GL_TEXTURE_BUFFER, numOfModelMatrices * sizeof(QMatrix4x4), modelMatrices, GL_STATIC_DRAW);
+            this->glBufferData(GL_TEXTURE_BUFFER, numOfModelMatrices * sizeof(float), modelMatrices, GL_STATIC_DRAW);
         this->glBindBuffer(GL_TEXTURE_BUFFER, 0);
 
         this->glBindTexture(GL_TEXTURE_BUFFER, m_matrixTexture);

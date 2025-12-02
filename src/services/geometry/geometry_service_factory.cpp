@@ -29,9 +29,14 @@ void GeometryServiceFactory::generateMesh2D(BIMElement *bimElement, Mesh *mesh)
         SlabGeometryService service = SlabGeometryService();
         service.generateMesh2D(bimElement, mesh);
     }
+    else if (bimElement->getType() == "Door")
+    {
+        DoorGeometryService service = DoorGeometryService();
+        service.generateMesh2D(bimElement, mesh);
+    }
 }
 
-void GeometryServiceFactory::generateMesh3D(BIMElement *bimElement, Mesh *mesh)
+void GeometryServiceFactory::generateMesh3D(BIMElement *bimElement, Mesh *mesh, IFCDetailController* pIfcDetailController, IfcGeometryService* pIfcGeometryService)
 {
     if (bimElement->getType() == "Wall")
     {
@@ -52,6 +57,11 @@ void GeometryServiceFactory::generateMesh3D(BIMElement *bimElement, Mesh *mesh)
     {
         SlabGeometryService service = SlabGeometryService();
         service.generateMesh3D(bimElement, mesh);
+    }
+    else if (bimElement->getType() == "Door")
+    {
+        DoorGeometryService service = DoorGeometryService();
+        service.generateMesh3D(bimElement, mesh, pIfcDetailController, pIfcGeometryService);
     }
 }
 
