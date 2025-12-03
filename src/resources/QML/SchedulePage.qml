@@ -289,11 +289,11 @@ Rectangle {
                         id:idMonthGrid
                         width: parent.width
                         height:300
-                        topPadding: 0                        
+                        topPadding: 2
                         month: month.currentIndex
                         year: yearModel.get(year.currentIndex).text
                         locale: Qt.locale("en_US")
-                        font.pixelSize: 30
+                        font.pixelSize: 25
                         font.weight: 700
 
                         /*onClicked: (date) => {
@@ -306,7 +306,7 @@ Rectangle {
                             property bool isInCurrentMonth: model.month === idMonthGrid.month
                             Rectangle {                                    
                                 width: parent.width + 8
-                                height: parent.height
+                                height: parent.height/2
 
                                 property bool isSelected: (model.year === selectedDate.getFullYear() &&
                                                             model.month === selectedDate.getMonth() &&
@@ -317,6 +317,7 @@ Rectangle {
                                 Label {
                                     text: model.day.toString()
                                     anchors.centerIn: parent
+                                    bottomPadding: 2
                                 }
                                 visible: parent.isInCurrentMonth
                             }
