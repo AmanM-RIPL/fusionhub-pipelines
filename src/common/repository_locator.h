@@ -19,10 +19,12 @@
 #include "repositories/bill_of_quantity_line_repository.h"
 #include "repositories/task_repository.h"
 #include "repositories/work_order_repository.h"
+#include "repositories/work_order_line_repository.h"
 #include "repositories/file_repository.h"
 #include "repositories/purchase_order_repository.h"
 #include "repositories/purchase_order_line_repository.h"
 #include "repositories/good_received_note_repository.h"
+#include "repositories/material_indent_repository.h"
 
 class RepositoryLocator
 {
@@ -47,11 +49,13 @@ public:
     BillOfQuantityLineRepository* billOfQuantityLineRepository();
     TaskRepository* taskRepository();
     WorkOrderRepository* workOrderRepository();
+    WorkOrderLineRepository* workOrderLineRepository();
     ProjectBudgetRepository* projectBudgetRepository();
     FileRepository* fileRepository();
     PurchaseOrderRepository* purchaseOrderRepository();
     PurchaseOrderLineRepository* purchaseOrderLineRepository();
     GoodReceivedNoteRepository* goodReceivedNoteRepository();
+    MaterialIndentRepository* materialIndentRepository();
 
     IFCWallRepository* ifcWallRepository();
 
@@ -74,6 +78,7 @@ private:
     std::unique_ptr<BillOfQuantityRepository> m_billOfQuantityRepository;
     std::unique_ptr<TaskRepository> m_taskRepository;
     std::unique_ptr<WorkOrderRepository> m_workOrderRepository;
+    std::unique_ptr<WorkOrderLineRepository> m_workOrderLineRepository;
     std::unique_ptr<FileRepository> m_fileRepository;
     std::unique_ptr<PurchaseOrderRepository> m_purchaseOrderRepository;
     std::unique_ptr<PurchaseOrderLineRepository> m_purchaseOrderLineRepository;
@@ -81,6 +86,7 @@ private:
 
     std::unique_ptr<BillOfQuantityLineRepository> m_billOfQuantityLineRepository;
     std::unique_ptr<ProjectBudgetRepository> m_projectBudgetRepository;
+    std::unique_ptr<MaterialIndentRepository> m_materialIndentRepository;
 
     std::unique_ptr<IFCWallRepository> m_ifcWallRepository;
 

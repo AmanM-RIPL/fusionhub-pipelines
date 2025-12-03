@@ -83,6 +83,10 @@ Rectangle {
             visible: pageName === "GoodReceivedNote"
         }
 
+        MaterialIndentPage {
+            visible: pageName === "MaterialIndent"
+        }
+
 
 
         /*

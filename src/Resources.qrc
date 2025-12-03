@@ -72,5 +72,6 @@
         <file>resources/images/brick.jpg</file>
         <file>resources/images/blueprint.png</file>
         <file>resources/QML/GoodReceivedNotePage.qml</file>
+        <file>resources/QML/MaterialIndentPage.qml</file>
     </qresource>
 </RCC>

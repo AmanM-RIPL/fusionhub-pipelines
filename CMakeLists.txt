@@ -70,6 +70,8 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -267,6 +269,8 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/common/oda_static_definations.h
     src/controllers/good_received_note_controller.h src/controllers/good_received_note_controller.cpp
     src/controllers/purchase_order_line_controller.h src/controllers/purchase_order_line_controller.cpp
+    src/controllers/material_indent_controller.h src/controllers/material_indent_controller.cpp
+    src/controllers/work_order_line_controller.h src/controllers/work_order_line_controller.cpp
 )
 
 target_include_directories(FusionHubQt PRIVATE src)
@@ -372,6 +376,8 @@ target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\Ifc4x3.lib")
 
 
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)

@@ -17,11 +17,13 @@ RepositoryLocator::RepositoryLocator() {
     m_billOfQuantityLineRepository = std::make_unique<BillOfQuantityLineRepository>();
     m_taskRepository = std::make_unique<TaskRepository>();
     m_workOrderRepository = std::make_unique<WorkOrderRepository>();
+    m_workOrderLineRepository = std::make_unique<WorkOrderLineRepository>();
     m_projectBudgetRepository = std::make_unique<ProjectBudgetRepository>();
     m_fileRepository = std::make_unique<FileRepository>();
     m_purchaseOrderRepository = std::make_unique<PurchaseOrderRepository>();
     m_purchaseOrderLineRepository = std::make_unique<PurchaseOrderLineRepository>();
     m_goodReceivedNoteRepository = std::make_unique<GoodReceivedNoteRepository>();
+    m_materialIndentRepository = std::make_unique<MaterialIndentRepository>();
 }
 
 RepositoryLocator &RepositoryLocator::instance()
@@ -115,6 +117,11 @@ WorkOrderRepository *RepositoryLocator::workOrderRepository()
     return m_workOrderRepository.get();
 }
 
+WorkOrderLineRepository *RepositoryLocator::workOrderLineRepository()
+{
+    return m_workOrderLineRepository.get();
+}
+
 ProjectBudgetRepository *RepositoryLocator::projectBudgetRepository()
 {
     return m_projectBudgetRepository.get();
@@ -138,5 +145,10 @@ PurchaseOrderLineRepository *RepositoryLocator::purchaseOrderLineRepository()
 GoodReceivedNoteRepository *RepositoryLocator::goodReceivedNoteRepository()
 {
     return m_goodReceivedNoteRepository.get();
+}
+
+MaterialIndentRepository *RepositoryLocator::materialIndentRepository()
+{
+    return m_materialIndentRepository.get();
 }
 
