@@ -114,7 +114,7 @@ Rectangle {
                 Rectangle{//LeftSide
                     width: parent.width/2-1
                     height: parent.height
-                    color: "green"
+                    color: "#EDF1F4"//"green"
                     Column{
                         FHTable {
                             height: 300
@@ -139,7 +139,7 @@ Rectangle {
                     width: parent.width/2-1
                     height: parent.height
                     //spacing: 3
-                    color: "green"
+                    color: "#EDF1F4"//"green"
 
                     ColumnLayout{
                         width: parent.width
@@ -150,7 +150,7 @@ Rectangle {
                             id:yearId
                             width: parent.width
                             height: 50//parent.height/2
-                            color: "gray"
+                            color: "lightgray"//"gray"
 
                             Text{
                                 text:"Year"
@@ -159,8 +159,9 @@ Rectangle {
                                 font.weight: 700
                                 anchors.left: parent.left
                                 anchors.top: parent.top
-                                anchors.topMargin: 21
-                                anchors.leftMargin: 50
+                                anchors.topMargin: 10
+                                anchors.leftMargin: 10
+
                             }
                         }
 
@@ -168,7 +169,7 @@ Rectangle {
                         Rectangle{
                             width: parent.width
                             height: parent.height-51
-                            color: "gray"
+                            color: "#EDF1F4"//"gray"
 
                             ScrollView {
                                 id: horizontalScrollView
@@ -185,7 +186,7 @@ Rectangle {
                                     Rectangle{
                                         width: parent.width
                                         height: parent.height - 50
-                                        color: "gray"
+                                        color: "#EDF1F4"//"gray"
 
                                         Column{
                                            // FHTable {

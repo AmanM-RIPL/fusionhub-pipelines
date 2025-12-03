@@ -119,6 +119,18 @@ Rectangle {
             }
         }
 
+        Rectangle{
+            id: schedule
+            width: parent.width
+            height: 1024 - (131 + 13)
+            visible: pageName === "Schedule"
+
+            SchedulePage{
+                anchors.fill: parent
+                txtProjectName: projectName
+            }
+        }
+
 
         PlannedBIMPage {
             //id:rootPlannedBIM
