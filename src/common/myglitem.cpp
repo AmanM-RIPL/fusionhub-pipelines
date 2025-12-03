@@ -254,7 +254,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
                 if (glItem->m_viewType == "ModelView")
                 {
-                    GeometryServiceFactory::generateMesh3D(bimElement, mesh);
+                    GeometryServiceFactory::generateMesh3D(bimElement, mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
                 }
                 else if (glItem->m_viewType == "PlanView")
                 {
@@ -278,7 +278,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
             if (glItem->m_viewType == "ModelView")
             {
-                GeometryServiceFactory::generateMesh3D(glItem->editableBimElement, mesh);
+                GeometryServiceFactory::generateMesh3D(glItem->editableBimElement, mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
             }
             else if (glItem->m_viewType == "PlanView")
             {
@@ -300,7 +300,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
             if (glItem->m_viewType == "ModelView")
             {
-                GeometryServiceFactory::generateMesh3D(bimElement, mesh);
+                GeometryServiceFactory::generateMesh3D(bimElement, mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
             }
             else if (glItem->m_viewType == "PlanView")
             {
@@ -342,7 +342,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
             if (glItem->m_viewType == "ModelView")
             {
-                GeometryServiceFactory::generateMesh3D(bimElement, mesh);
+                GeometryServiceFactory::generateMesh3D(bimElement, mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
             }
             else if (glItem->m_viewType == "PlanView")
             {
@@ -774,13 +774,23 @@ MyGLItem::MyGLItem(QQuickItem *parent)
     BIMParameter* heightParameterNew = new BIMParameter(37, "1", false, "Height", "4", 1, this);
     BIMParameter* rlParameterNew = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0], [4,4]]",1,this);
     bimElementNew->addParameter(widthParameterNew);
-    bimElement->addParameter(heightParameterNew);
+    bimElementNew->addParameter(heightParameterNew);
     bimElementNew->addParameter(rlParameterNew);
 
     bimElementList.append(bimElementNew);
 
-    // pIfcDetailController = new IFCDetailController(this);;
-    // pIfcGeometryService = new IfcGeometryService(this);
+    BIMElement* bimElementDoor = new BIMElement(1,"1",false,"Door", "Front Door", 0, this);
+    BIMParameter* distanceParameterDoor = new BIMParameter(1,"1",false,"Distance","1",1,this);
+    BIMParameter* heightParameterDoor = new BIMParameter(37, "1", false, "Height", "4", 1, this);
+    BIMParameter* rlParameterDoor = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0]]",1,this);
+    bimElementDoor->addParameter(distanceParameterDoor);
+    bimElementDoor->addParameter(heightParameterDoor);
+    bimElementDoor->addParameter(rlParameterDoor);
+
+    bimElementList.append(bimElementDoor);
+
+    pIfcDetailController = new IFCDetailController(this);
+    pIfcGeometryService = new IfcGeometryService(this);
     // mesh = getMeshptr();
 
    /* if(m_currentItem == "Beam")
@@ -983,26 +993,27 @@ void MyGLItem::handlePick(int id) {
 
 void MyGLItem::viewIfc()
 {
-    // QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-1-Panel.ifc";
-    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-4-Panel.ifc";
-    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\BasicHouse.ifc";
-    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-2-Panel.ifc";
-    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-Flush.ifc";
-    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Door-Entry_2-Panel-Glz-Arc-Top.ifc";
-    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Taylor_Entrance_1_Panel_High_Def.ifc";
-    // //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Skylight_GTVSF_AmericanSkylites.ifc";
+    QString strFilePath = "C:\\Users\\RIPL\\Downloads\\DblDoor-1-Panel.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-4-Panel.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\BasicHouse.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-2-Panel.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\DblDoor-Flush.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Door-Entry_2-Panel-Glz-Arc-Top.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Taylor_Entrance_1_Panel_High_Def.ifc";
+    //QString strFilePath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\Skylight_GTVSF_AmericanSkylites.ifc";
 
-    // //QString strFilePath = pIfcDetailController->getIfcFilePath();
-    // OdIfcFilePtr pDatabase = pIfcDetailController->getIfcFilePtrFromLoadedIFC(strFilePath);
-    // if(pDatabase)
-    // {
-    //     delete mesh;
-    //     mesh = NULL;
-    //     mesh = new Mesh(this);
-    //     pIfcGeometryService->generateMesh3D(pDatabase, mesh);
-    //     pDatabase.release();
-    //     pDatabase = NULL;
-    // }
+    //QString strFilePath = pIfcDetailController->getIfcFilePath();
+    OdIfcFilePtr pDatabase = pIfcDetailController->getIfcFilePtrFromLoadedIFC(strFilePath);
+    if(pDatabase)
+    {
+        // delete mesh;
+        // mesh = NULL;
+        // mesh = new Mesh(this);
+        pIfcGeometryService->generateMesh3D(pDatabase, nullptr);
+        qInfo() << "File has been loaded";
+        pDatabase.release();
+        pDatabase = NULL;
+    }
     // update();
 }
 

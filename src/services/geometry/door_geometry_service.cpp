@@ -14,6 +14,15 @@ void DoorGeometryService::generateMesh2D(BIMElement* doorElement, Mesh* mesh)
 
     m_openglHelper.extractBIMParameters(doorElement, referenceLine, width, height, distance);
 
+    // setting width to 0.5 for demo purposes
+    width = 0.5;
+
+    if (referenceLine.size() < 2)
+    {
+        mesh->Initialize({}, {}, {}, 0, 0, 0);
+        return;
+    }
+
     // 3. Generate a parallel line
     std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
 
@@ -101,7 +110,7 @@ void DoorGeometryService::generateMesh2D(BIMElement* doorElement, Mesh* mesh)
     // return mesh;
 }
 
-void DoorGeometryService::generateMesh3D(BIMElement* doorElement, Mesh* mesh)
+void DoorGeometryService::generateMesh3D(BIMElement* doorElement, Mesh* mesh, IFCDetailController* pIfcDetailController, IfcGeometryService* pIfcGeometryService)
 {
     std::vector<Point> referenceLine = {};
     float width = 0;
@@ -111,44 +120,97 @@ void DoorGeometryService::generateMesh3D(BIMElement* doorElement, Mesh* mesh)
 
     m_openglHelper.extractBIMParameters(doorElement, referenceLine, width, height, distance);
 
-    // 3. Generate a parallel line
-    std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
-
-    referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
-
-    // Create a contour2D
-    FacetModeler::Contour2D polygon;
-
-    OdGePoint2dArray points;
-    points.reserve(referenceLine.size());
-
-    for (Point point: referenceLine)
+    if (referenceLine.size() < 2)
     {
-        points.push_back(OdGePoint2d(point[0], point[1]));
+        mesh->Initialize({}, {}, {}, 0, 0, 0);
+        return;
     }
 
-    polygon.appendVertices(points);
+    // Initialize the mesh
+    mesh->Initialize({}, {}, {}, 0, 0, 0);
 
-    for (int i = 0; i < referenceLine.size(); i++)
+    QMatrix4x4 modelMatrix;
+    modelMatrix.setToIdentity();
+
+    // set scale
+    float scaleFactor = height/6; // height of IFC file is 6
+    modelMatrix.scale(scaleFactor);
+
+    // // set translation
+    // float z = distance;
+    // float x = referenceLine[0][0] - 2; // 2 is the default x coordinate of left side
+    // float y = referenceLine[0][1] - 0.5; // 0.5 is the default y coordinate of left size
+    // modelMatrix.translate(x,y,z);
+
+    // // set rotation
+    // QVector3D directionVector;
+    // directionVector.setX(referenceLine[1][0] - referenceLine[0][0]);
+    // directionVector.setY(referenceLine[1][1] - referenceLine[0][1]);
+    // directionVector.setZ(0);
+    // directionVector.normalize();
+
+    // QVector3D xAxisVector(1,0,0);
+    // float dotProductResult = QVector3D::dotProduct(directionVector,xAxisVector);
+    // float angleInRadians = qAcos(dotProductResult);
+    // float degrees = qRadiansToDegrees(angleInRadians);
+
+    // modelMatrix.rotate(degrees, 1, 0, 0);
+
+    mesh->setModelMatrix(modelMatrix);
+
+
+
+
+    // Extract IFC Geometry
+    QString strFilePath = "C:\\Users\\RIPL\\Downloads\\DblDoor-1-Panel.ifc";
+
+    OdIfcFilePtr pDatabase = pIfcDetailController->getIfcFilePtrFromLoadedIFC(strFilePath);
+    if(pDatabase)
     {
-        polygon.setOrientationAt(i, FacetModeler::efoFront);
+        pIfcGeometryService->generateMesh3D(pDatabase, mesh);
+        qInfo() << "File has been loaded";
+        pDatabase.release();
+        pDatabase = NULL;
     }
 
-    polygon.setClosed();
-    polygon.makeCCW();
+    // // 3. Generate a parallel line
+    // std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
 
-    FacetModeler::Profile2D profile(polygon);
-    FacetModeler::Body body = FacetModeler::Body::extrusion(profile, OdGeVector3d(0.0, 0.0, 1.0) * height);
+    // referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
 
-    // Mesh geometry generation
-    std::vector<uint32_t> meshIndices = {};
-    std::vector<uint32_t> borderIndices = {};
-    std::vector<Vertex> verticesVector = {};
-    int textureIndex = 0; // if less than zero then we don't need to worry about textures
-    int scalingFactor = 5;
+    // // Create a contour2D
+    // FacetModeler::Contour2D polygon;
 
-    m_openglHelper.getMeshGeometry(body, verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
+    // OdGePoint2dArray points;
+    // points.reserve(referenceLine.size());
 
-    mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
+    // for (Point point: referenceLine)
+    // {
+    //     points.push_back(OdGePoint2d(point[0], point[1]));
+    // }
+
+    // polygon.appendVertices(points);
+
+    // for (int i = 0; i < referenceLine.size(); i++)
+    // {
+    //     polygon.setOrientationAt(i, FacetModeler::efoFront);
+    // }
+
+    // polygon.setClosed();
+    // polygon.makeCCW();
+
+    // FacetModeler::Profile2D profile(polygon);
+    // FacetModeler::Body body = FacetModeler::Body::extrusion(profile, OdGeVector3d(0.0, 0.0, 1.0) * height);
+
+    // // Mesh geometry generation
+    // std::vector<uint32_t> meshIndices = {};
+    // std::vector<uint32_t> borderIndices = {};
+    // std::vector<Vertex> verticesVector = {};
+    // int textureIndex = 0; // if less than zero then we don't need to worry about textures
+    // int scalingFactor = 5;
+
+    // m_openglHelper.getMeshGeometry(body, verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
+
+    // mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
 }
 

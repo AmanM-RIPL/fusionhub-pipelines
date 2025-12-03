@@ -67,7 +67,7 @@
 #include "services/geometry/beam_geometry_service.h"
 #include "services/geometry/column_geometry_service.h"
 #include "services/geometry/slab_geometry_service.h"
-// #include "services/geometry/ifc_geometry_service.h"
+#include "services/geometry/ifc_geometry_service.h"
 
 #include "controllers/ifc_detail_controller.h"
 #include "services/geometry/geometry_service_factory.h"
@@ -108,7 +108,7 @@ public:
     int m_lastClickY = -1;
     Mesh* mesh = nullptr;
     IFCDetailController* pIfcDetailController;
-    // IfcGeometryService* pIfcGeometryService;
+    IfcGeometryService* pIfcGeometryService;
 
     QString m_viewType = "ModelView";
 

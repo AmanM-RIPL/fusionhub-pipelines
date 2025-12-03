@@ -74,5 +74,7 @@
         <file>resources/QML/GanttPage.qml</file>
         <file>resources/QML/GanttChartTable.qml</file>
         <file>resources/QML/SchedulePage.qml</file>
+        <file>resources/QML/GoodReceivedNotePage.qml</file>
+        <file>resources/QML/MaterialIndentPage.qml</file>
     </qresource>
 </RCC>

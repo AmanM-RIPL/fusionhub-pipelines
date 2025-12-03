@@ -19,7 +19,6 @@ public:
     GLuint getShaderId();
 
     GLuint getProjectionId();
-    GLuint getModelId();
     GLuint getViewId();
 
     GLuint getPickColorId();
@@ -38,13 +37,16 @@ public:
     GLuint getLightDiffuseId();
     GLuint getLightSpecularId();
 
+    GLuint getModelMatrixBufferId();
+
     void SetPickColor(bool value);
 
 private:
     GLuint shaderID,
-        m_projectionId, m_modelId, m_viewId,
+        m_projectionId, m_viewId,
         m_pickColorId, m_viewPositionId,
-        m_lightPositionId, m_lightAmbientId, m_lightDiffuseId, m_lightSpecularId;
+        m_lightPositionId, m_lightAmbientId, m_lightDiffuseId, m_lightSpecularId,
+        m_modelMatrixBufferId;
 
     GLuint m_textureArrayId;
     int m_textureCount = 1;

@@ -34,7 +34,7 @@ public:
 
     void generateMesh2D(BIMElement* ifcElement, Mesh* mesh);    
     void generateMesh3D(OdIfcFilePtr ifcFilePtr, Mesh* mesh);
-    void generateFinalMesh3D(OdDAI::OdBodyVariant bodyContainer, Mesh* mesh);
+    void generateFinalMesh3D(OdDAI::OdBodyVariant bodyContainer, Mesh* mesh, const OdGeMatrix3d &transformationMatrix);
 
 signals:
 

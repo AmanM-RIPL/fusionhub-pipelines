@@ -15,24 +15,24 @@ PurchaseOrderController::PurchaseOrderController(QObject *parent)
     m_draftEntityRepository(RepositoryLocator::instance().draftEntityRepository())
 {}
 
-void PurchaseOrderController::create(const int &vendorId,const int &materialId,const int &unitOfMeasurementId) const
+void PurchaseOrderController::create(const QString &vendorId,  const QVariant &purchaseOrderData) const
 {
-
-    /***********Start of DraftEntity******************/
+    QString purchaseOrder =  CreateJson(purchaseOrderData);
+    qDebug() <<"Created purchaseOrder:" << purchaseOrder;
 
     QJsonObject jsonObject;
-    jsonObject["vendorId"] = vendorId;
-    jsonObject["materialId"] = materialId;
-    jsonObject["unitOfMeasurementId"] = unitOfMeasurementId;
+    jsonObject["vendorName"] = vendorId;
+    jsonObject["purchaseOrder"] = purchaseOrder;
 
     QJsonDocument jsonDoc(jsonObject);
     QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
-    qDebug() << "PurchaseOrder::EntitySchema: " << entitySchema;
+    qDebug() << "PurchaseOrder:EntitySchema: " << entitySchema;
 
     QDateTime currentDateTimeUtc = QDateTime::currentDateTimeUtc();
     QString isoDateTimeString = currentDateTimeUtc.toString(Qt::ISODateWithMs);
 
     QJsonObject jsonObjectChangeHistory;
+    //jsonObjectChangeHistory["user"] = gUser->getUserId();
     jsonObjectChangeHistory["user"] = gUser->getId();
     jsonObjectChangeHistory["timestamp"] =  isoDateTimeString;
     jsonObjectChangeHistory["changeType"] =  "create";
@@ -50,6 +50,7 @@ void PurchaseOrderController::create(const int &vendorId,const int &materialId,c
     draftEntity.setCreatedOn(createdOn);
     draftEntity.setProject(gProjectId);
     draftEntity.setEntity("PurchaseOrder");
+    //draftEntity.setCreatedByUser(gUser->getUserId());
     draftEntity.setCreatedByUser(gUser->getId());
     draftEntity.setNextApprovingUser(0);
     draftEntity.setEntitySchema(entitySchema);
@@ -59,38 +60,71 @@ void PurchaseOrderController::create(const int &vendorId,const int &materialId,c
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+
 std::vector<PurchaseOrder*> PurchaseOrderController::getPurchaseOrderList(bool isApproved) const
 {
-    qDebug()<<"IsApproved: "<< isApproved;
+    qDebug() << "IsApproved: " << isApproved;
 
-    if(isApproved){
-        return m_purchaseOrderRepository->findAllQML();
+    std::vector<PurchaseOrder*> purchaseOrders;
+
+    if (isApproved)
+    {
+        purchaseOrders = m_purchaseOrderRepository->findAllQML();
     }
-    else{
-        std::vector<DraftEntity*>  draftEntitys  =  m_draftEntityRepository->findAllQML("PurchaseOrder");
-        std::vector<PurchaseOrder*> purchaseOrders;
-        for(int i = 0; i < draftEntitys.size(); i++)
+    else
+    {
+        std::vector<DraftEntity*> draftEntitys = m_draftEntityRepository->findAllQML("PurchaseOrder");
+
+        for (int i = 0; i < draftEntitys.size(); i++)
         {
-            QString  jsonString = draftEntitys[i]->getEntitySchema();
+            QString jsonString = draftEntitys[i]->getEntitySchema();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
+
             if (!jsonDoc.isNull() && jsonDoc.isObject())
             {
                 auto purchaseOrder = new PurchaseOrder();
                 QJsonObject jsonObj = jsonDoc.object();
+
                 purchaseOrder->setId(i + 1);
                 purchaseOrder->setGlobalId("123");
                 purchaseOrder->setApprovalStatus(true);
 
-                purchaseOrder->setVendorId(jsonObj["vendorId"].toInt());
-                purchaseOrder->setMaterialId(jsonObj["materialId"].toInt());
-                purchaseOrder->setUnitOfMeasurementId(jsonObj["unitOfMeasurementId"].toInt());
+                purchaseOrder->setVendorName(jsonObj["vendorName"].toString());
+
+                purchaseOrder->setPurchaseOrderList(jsonObj["purchaseOrder"].toString());
 
                 purchaseOrders.push_back(purchaseOrder);
             }
         }
-        return purchaseOrders;
     }
+
+    // Parse purchaseOrder JSON and extract "rows"
+
+    for (auto po : purchaseOrders)
+    {
+        QString purchaseOrderJsonString = po->getPurchaseOrderList();
+
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(purchaseOrderJsonString.toUtf8());
+
+        if (!jsonDoc.isNull() && jsonDoc.isObject())
+        {
+            QJsonObject jsonObj = jsonDoc.object();
+
+            int rows = jsonObj["rows"].toInt();
+
+            jsonObj["rows"] = rows;
+            QString updatedJsonString = QString(QJsonDocument(jsonObj).toJson(QJsonDocument::Compact));
+            po->setPurchaseOrderList(updatedJsonString);
+
+            qDebug() << "Updated purchaseOrder:" << updatedJsonString;
+        }
+    }
+
+    return purchaseOrders;
 }
+
+
+
 
 std::vector<Vendor*> PurchaseOrderController::getVendorList() const
 {
@@ -105,4 +139,40 @@ std::vector<Material*> PurchaseOrderController::getMaterialList() const
 std::vector<UnitOfMeasurement*> PurchaseOrderController::getUOMList() const
 {
     return m_unitOfMeasurementRepository->findAllQML();
+}
+
+QString PurchaseOrderController::CreateJson(const QVariant &param) const
+{
+    QJsonObject jsonObject;
+    if (param.canConvert<QVariantList>()) {
+        QVariantList list = param.toList();
+        int len = list.size();
+        jsonObject["rows"] = len;
+
+        QJsonArray dataArray;
+
+        for (const QVariant &item : list) {
+            qDebug() << "Item:" << item.toString();
+
+            if (item.canConvert<QVariantMap>()) {
+                QVariantMap map = item.toMap();
+                QJsonObject jsonObjectNew;
+
+                for (auto it = map.begin(); it != map.end(); ++it) {
+                    jsonObjectNew.insert(it.key(), QJsonValue::fromVariant(it.value()));
+                }
+
+                dataArray.append(jsonObjectNew);
+            } else {
+                qDebug() << "Item is not a QVariantMap!";
+            }
+        }
+
+        jsonObject["data"] = dataArray;
+        QJsonDocument jsonDoc(jsonObject);
+        QString JsonString = jsonDoc.toJson(QJsonDocument::Indented);
+        qDebug() <<"Created PurchaseOrder:" << JsonString;
+
+        return JsonString;
+    }
 }
