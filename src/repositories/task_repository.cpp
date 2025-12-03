@@ -7,11 +7,11 @@ std::vector<Task*> TaskRepository::findAllQML() {
     std::vector<Task*> tasks;
     QSqlQuery query(dbManager->getDatabase());
 
-    // if (query.exec("SELECT * FROM Task")) {
-    //     while (query.next()) {
-    //         tasks.push_back(mapFromQueryQML(query, this));
-    //     }
-    // }
+    if (query.exec("SELECT * FROM Task")) {
+        while (query.next()) {
+            tasks.push_back(mapFromQueryQML(query, this));
+        }
+    }
 
     return tasks;
 }

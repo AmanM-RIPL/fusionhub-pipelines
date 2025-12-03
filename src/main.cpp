@@ -33,8 +33,11 @@
 #include "repositories/bill_of_quantity_repository.h"
 #include "repositories/task_repository.h"
 #include "repositories/work_order_repository.h"
+#include "repositories/work_order_line_repository.h"
 #include "repositories/file_repository.h"
 #include "repositories/purchase_order_repository.h"
+#include "repositories/purchase_order_line_repository.h"
+#include "repositories/good_received_note_repository.h"
 
 #include "controllers/user_controller.h"
 #include "controllers/project_controller.h"
@@ -51,9 +54,13 @@
 #include "controllers/bill_of_quantity_line_controller.h"
 #include "controllers/task_controller.h"
 #include "controllers/work_order_controller.h"
+#include "controllers/work_order_line_controller.h"
 #include "controllers/project_budget_controller.h"
 #include "controllers/file_controller.h"
 #include "controllers/purchase_order_controller.h"
+#include "controllers/purchase_order_line_controller.h"
+#include "controllers/good_received_note_controller.h"
+#include "controllers/material_indent_controller.h"
 
 
 #include "models/user.h"
@@ -537,9 +544,13 @@ int main(int argc, char *argv[])
     BillOfQuantityRepository* billOfQuantityRepository = new BillOfQuantityRepository(&engine);
     TaskRepository* taskRepository = new TaskRepository(&engine);
     WorkOrderRepository* workOrderRepository = new WorkOrderRepository(&engine);
+    WorkOrderLineRepository* workOrderLineRepository = new WorkOrderLineRepository(&engine);
     ProjectBudgetRepository* projectBudgetRepository = new ProjectBudgetRepository(&engine);
     FileRepository* fileRepository = new FileRepository(&engine);
     PurchaseOrderRepository* purchaseOrderRepository = new PurchaseOrderRepository(&engine);
+    PurchaseOrderLineRepository* purchaseOrderLineRepository = new PurchaseOrderLineRepository(&engine);
+    GoodReceivedNoteRepository* goodReceivedNoteRepository = new GoodReceivedNoteRepository(&engine);
+    MaterialIndentRepository* materialIndentRepository = new MaterialIndentRepository(&engine);
 
    // IFCDetailRepository* ifcDetailRepository = new IFCDetailRepository(ifcDetailList, &engine);
 
@@ -620,9 +631,13 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("ifcDetailRepository", ifcDetailRepository);
     engine.rootContext()->setContextProperty("taskRepository", taskRepository);
     engine.rootContext()->setContextProperty("workOrderRepository", workOrderRepository);
+    engine.rootContext()->setContextProperty("workOrderLineRepository", workOrderLineRepository);
     engine.rootContext()->setContextProperty("projectBudgetRepository", projectBudgetRepository);
     engine.rootContext()->setContextProperty("fileRepository", fileRepository);
     engine.rootContext()->setContextProperty("purchaseOrderRepository", purchaseOrderRepository);
+    engine.rootContext()->setContextProperty("purchaseOrderLineRepository", purchaseOrderLineRepository);
+    engine.rootContext()->setContextProperty("goodReceivedNoteRepository", goodReceivedNoteRepository);
+    engine.rootContext()->setContextProperty("materialIndentRepository", materialIndentRepository);
 
     engine.rootContext()->setContextProperty("bimElementRepository", bimElementRepository);
     engine.rootContext()->setContextProperty("billofQuantityRepository", billOfQuantityRepository);
@@ -638,9 +653,14 @@ int main(int argc, char *argv[])
     qmlRegisterType<ScheduleSetup>("com.fh.models", 1, 0, "ScheduleSetup");
     qmlRegisterType<ScheduleOfRates>("com.fh.models", 1, 0, "ScheduleOfRates");
     qmlRegisterType<WorkOrder>("com.fh.models", 1, 0, "WorkOrder");
+    qmlRegisterType<WorkOrderLine>("com.fh.models", 1, 0, "WorkOrderLine");
     qmlRegisterType<ProjectBudget>("com.fh.models", 1, 0, "ProjectBudget");
     qmlRegisterType<File>("com.fh.models", 1, 0, "File");
     qmlRegisterType<PurchaseOrder>("com.fh.models", 1, 0, "PurchaseOrder");
+    qmlRegisterType<PurchaseOrderLine>("com.fh.models", 1, 0, "PurchaseOrderLine");
+    qmlRegisterType<GoodReceivedNote>("com.fh.models", 1, 0, "GoodReceivedNote");
+    qmlRegisterType<MaterialIndent>("com.fh.models", 1, 0, "MaterialIndent");
+
 
     qmlRegisterType<DraftEntity>("com.fh.models", 1, 0, "DraftEntity");
     qmlRegisterType<User>("com.fh.models", 1, 0, "Project");
@@ -661,9 +681,13 @@ int main(int argc, char *argv[])
     qmlRegisterType<BillOfQuantityController>("com.fh.controllers", 1, 0, "BillOfQuantityController");
     qmlRegisterType<BillOfQuantityLineController>("com.fh.controllers", 1, 0, "BillOfQuantityLineController");
     qmlRegisterType<WorkOrderController>("com.fh.controllers", 1, 0, "WorkOrderController");
+    qmlRegisterType<WorkOrderLineController>("com.fh.controllers", 1, 0, "WorkOrderLineController");
     qmlRegisterType<ProjectBudgetController>("com.fh.controllers", 1, 0, "ProjectBudgetController");
     qmlRegisterType<FileController>("com.fh.controllers", 1, 0, "FileController");
-     qmlRegisterType<PurchaseOrderController>("com.fh.controllers", 1, 0, "PurchaseOrderController");
+    qmlRegisterType<PurchaseOrderController>("com.fh.controllers", 1, 0, "PurchaseOrderController");
+    qmlRegisterType<PurchaseOrderLineController>("com.fh.controllers", 1, 0, "PurchaseOrderLineController");
+    qmlRegisterType<GoodReceivedNoteController>("com.fh.controllers", 1, 0, "GoodReceivedNoteController");
+    qmlRegisterType<MaterialIndentController>("com.fh.controllers", 1, 0, "MaterialIndentController");
 
 
     const QUrl url(QStringLiteral("qrc:/resources/QML/main.qml"));

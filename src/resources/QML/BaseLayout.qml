@@ -79,6 +79,15 @@ Rectangle {
             visible: pageName === "PurchaseOrder"
         }
 
+        GoodReceivedNotePage {
+            visible: pageName === "GoodReceivedNote"
+        }
+
+        MaterialIndentPage {
+            visible: pageName === "MaterialIndent"
+        }
+
+
 
         /*
 

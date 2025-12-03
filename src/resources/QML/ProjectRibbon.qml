@@ -221,8 +221,9 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            // newProjectClicked()
+                             projectPageToRedirect("GoodReceivedNote")
                         }
+
                     }
                 }
 
@@ -236,7 +237,7 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            // newProjectClicked()
+                             projectPageToRedirect("MaterialIndent")
                         }
                     }
                 }

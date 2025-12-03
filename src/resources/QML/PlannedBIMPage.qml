@@ -294,7 +294,7 @@ Row {
                         }
                     }
                 }
-                model: treeModel
+               // model: treeModel
             }
 
             /*TreeView {

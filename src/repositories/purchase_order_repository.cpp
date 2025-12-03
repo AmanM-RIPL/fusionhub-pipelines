@@ -49,8 +49,8 @@ PurchaseOrder* PurchaseOrderRepository::mapFromQueryQML(const QSqlQuery& query, 
     po->setGlobalId(query.value("global_id").toString());
     po->setApprovalStatus(query.value("approval_status").toBool());
     po->setVendorId(query.value("vendor_id").toInt());
-    po->setMaterialId(query.value("material_id").toInt());
-    po->setUnitOfMeasurementId(query.value("unit_of_measurement_id").toInt());
+    // po->setMaterialId(query.value("material_id").toInt());
+    // po->setUnitOfMeasurementId(query.value("unit_of_measurement_id").toInt());
 
 
     return po;
@@ -66,12 +66,11 @@ void PurchaseOrderRepository::bindEntityToQuery(QSqlQuery& query, const Purchase
 }
 
 QString PurchaseOrderRepository::getInsertQuery() const {
-    return "INSERT INTO PurchaseOrder (global_id, approval_status, vendor_id, "
-           " material_id, unit_of_measurement_id) "
-           "VALUES (?, ?, ?, ?, ?, ?)";
+    return "INSERT INTO PurchaseOrder (global_id, approval_status, vendor_id) "
+           "VALUES (?, ?, ?)";
 }
 
 QString PurchaseOrderRepository::getUpdateQuery() const {
     return "UPDATE PurchaseOrder SET global_id = ?, approval_status = ?, vendor_id = ?, "
-           "unit_of_measurement_id = ?, vendor_id = ?, material_id = ? WHERE id = ?";
+        " WHERE id = ?";
 }
