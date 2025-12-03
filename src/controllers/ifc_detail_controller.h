@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "repositories/ifc_detail_repository.h"
+#include "common/repository_locator.h"
 
 
 class IFCDetailController : public QObject

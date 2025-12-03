@@ -3,7 +3,8 @@
 extern QString gProjectName;
 
 IFCDetailController::IFCDetailController(QObject *parent)
-    : QObject{parent}
+    : QObject{parent},
+      m_ifcDetailRepository(RepositoryLocator::instance().ifcDetailRepository())
 {}
 
 QList<IFCDetail*> IFCDetailController::getIFCDetails()

@@ -11,6 +11,7 @@ public:
 
     void generateMesh2D(BIMElement* slabElement, Mesh* mesh);
     void generateMesh3D(BIMElement* slabElement, Mesh* mesh);
+    void updateGeometry(BIMElement* slabElement, const QVector3D& point);
 
 signals:
 

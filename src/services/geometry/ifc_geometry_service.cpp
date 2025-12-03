@@ -171,32 +171,32 @@ void IfcGeometryService::generateMesh3D(OdIfcFilePtr ifcFilePtr, Mesh* mesh)
             {
                 OdIfc::OdIfcMappedItemPtr mappedItemPtr = OdIfc::OdIfcMappedItem::cast(repItem);
 
-                qInfo() << "Mapped is null: " << mappedItemPtr.isNull();
+                // qInfo() << "Mapped is null: " << mappedItemPtr.isNull();
 
                 OdDAIObjectId mappingSource = mappedItemPtr->mappingSource();
 
-                qInfo() << "Mapping Source is null: " << mappingSource.isNull();
+                // qInfo() << "Mapping Source is null: " << mappingSource.isNull();
 
                 const OdGeMatrix3d mappedTransformation = productTransformation * mappedItemPtr->mappingTarget();
 
                 OdIfc::OdIfcInstancePtr pMappedEntity = mappingSource.openObject();
 
-                qInfo() << "IFC Instance is null: " << pMappedEntity.isNull();
+                // qInfo() << "IFC Instance is null: " << pMappedEntity.isNull();
 
                 OdIfc2x3::IfcRepresentationMapPtr mapPtr = OdIfc2x3::IfcRepresentationMap::cast(pMappedEntity);
 
                 //qInfo() << "Map Instance is null: " << mapPtr.isNull(); //pMappedEntity->isA()->name();
-                qInfo() << "Map Instance is null: " << pMappedEntity->isA()->name();
+                // qInfo() << "Map Instance is null: " << pMappedEntity->isA()->name();
 
                 OdDAIObjectId mappedRepresentation = mapPtr->getMappedRepresentation();
 
-                qInfo() << "Mapped Representation is null: " << mappedRepresentation.isNull();
+                // qInfo() << "Mapped Representation is null: " << mappedRepresentation.isNull();
 
                 OdIfc::OdIfcInstancePtr pMappedRep = mappedRepresentation.openObject();
-                qInfo() << "Mapped Representation Pointer is null: " << pMappedRep.isNull();
+                // qInfo() << "Mapped Representation Pointer is null: " << pMappedRep.isNull();
 
                 OdIfc2x3::IfcShapeRepresentationPtr shapePtr = OdIfc2x3::IfcShapeRepresentation::cast(pMappedRep);
-                qInfo() << "Shape is null: " << shapePtr.isNull();
+                // qInfo() << "Shape is null: " << shapePtr.isNull();
 
                 OdDAIObjectIds shapeItems;
                 shapePtr->getItems(shapeItems);
@@ -206,13 +206,13 @@ void IfcGeometryService::generateMesh3D(OdIfcFilePtr ifcFilePtr, Mesh* mesh)
                 for (OdDAIObjectIds::size_type iItem = 0; iItem < shapeItems.size(); ++iItem)
                 {
                     OdIfc::OdIfcInstancePtr pShapeEntity = shapeItems[iItem].openObject();                   
-                    qInfo() << "pShapeEntity is null: " << pShapeEntity->isA()->name();
+                    // qInfo() << "pShapeEntity is null: " << pShapeEntity->isA()->name();
                     try
                     {
                         OdIfc::OdIfcGeometricRepresentationItemPtr pShapeProduct = OdIfc::OdIfcGeometricRepresentationItem::cast(OdIfc::OdIfcInstance::asCompound(pShapeEntity));
-                        qInfo() << "pShapeProduct is null: " << pShapeProduct.isNull();
+                        // qInfo() << "pShapeProduct is null: " << pShapeProduct.isNull();
                         OdDAI::OdBodyVariant bodyContainer = pShapeProduct->bodyContainer();
-                        generateFinalMesh3D(bodyContainer, mesh);                        
+                        generateFinalMesh3D(bodyContainer, mesh, mappedTransformation);
                     }
                     catch (const OdError& e)
                     {
@@ -229,7 +229,7 @@ void IfcGeometryService::generateMesh3D(OdIfcFilePtr ifcFilePtr, Mesh* mesh)
                 {
                     OdIfc::OdIfcGeometricRepresentationItemPtr pGeomItem = OdIfc::OdIfcGeometricRepresentationItem::cast(repItem);
                     OdDAI::OdBodyVariant bodyContainer = pGeomItem->bodyContainer();
-                    generateFinalMesh3D(bodyContainer, mesh);
+                    generateFinalMesh3D(bodyContainer, mesh, productTransformation);
                 }
                 catch (const OdError& e)
                 {
@@ -241,7 +241,7 @@ void IfcGeometryService::generateMesh3D(OdIfcFilePtr ifcFilePtr, Mesh* mesh)
     }    
 }
 
-void IfcGeometryService::generateFinalMesh3D(OdDAI::OdBodyVariant bodyContainer, Mesh* mesh)
+void IfcGeometryService::generateFinalMesh3D(OdDAI::OdBodyVariant bodyContainer, Mesh* mesh, const OdGeMatrix3d &transformationMatrix)
 {
     std::vector<uint32_t> meshIndices = {};
     std::vector<uint32_t> borderIndices = {};
@@ -251,42 +251,49 @@ void IfcGeometryService::generateFinalMesh3D(OdDAI::OdBodyVariant bodyContainer,
 
     switch (bodyContainer.kind())
     {
-    case OdDAI::OdBodyVariant::kFacetModelerBody:
-    {
-        qDebug() << "FacetModelerBody";
-        m_openglHelper.getMeshGeometry(*bodyContainer.facetModelerBody(), verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
-        break;
+        case OdDAI::OdBodyVariant::kFacetModelerBody:
+        {
+            qDebug() << "FacetModelerBody";
+            const FacetModeler::Body* fBody = bodyContainer.facetModelerBody();
+            FacetModeler::Body clonedBody = fBody->clone();
+            clonedBody.transform(transformationMatrix);
+
+            m_openglHelper.getMeshGeometry(clonedBody, verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
+            break;
+        }
+
+        case OdDAI::OdBodyVariant::kMdBody:
+        {
+            qDebug() << "Md Body";
+            m_openglHelper.getMeshGeometry(*bodyContainer.mdBody(), verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
+            break;
+        }
+
+        case OdDAI::OdBodyVariant::kAcisBody:
+        {
+            qDebug() << "Acis Body";
+            m_openglHelper.getMeshGeometry(*bodyContainer.acisBody(), verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
+            break;
+        }
+
+        case OdDAI::OdBodyVariant::kBrep:
+        {
+            qDebug() << "IFC Brep Body";
+            m_openglHelper.getMeshGeometry(bodyContainer.brBrep(), verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
+            break;
+        }
+
+        case OdDAI::OdBodyVariant::kEmpty:
+        {
+            qDebug() << "No Body";
+            break;
+        }
     }
 
-    case OdDAI::OdBodyVariant::kMdBody:
-    {
-        qDebug() << "Md Body";
-        m_openglHelper.getMeshGeometry(*bodyContainer.mdBody(), verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
-        break;
-    }
+    if (verticesVector.size() > 0 && meshIndices.size() > 0 && borderIndices.size() > 0) {
+        mesh->AppendGeometry(verticesVector, meshIndices, borderIndices);
 
-    case OdDAI::OdBodyVariant::kAcisBody:
-    {
-        qDebug() << "Acis Body";
-        m_openglHelper.getMeshGeometry(*bodyContainer.acisBody(), verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
-        break;
-    }
-
-    case OdDAI::OdBodyVariant::kBrep:
-    {
-        qDebug() << "IFC Brep Body";
-        m_openglHelper.getMeshGeometry(bodyContainer.brBrep(), verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
-        break;
-    }
-
-    case OdDAI::OdBodyVariant::kEmpty:
-    {
-        qDebug() << "No Body";
-        break;
-    }
-    }
-    if(verticesVector.size() > 0 && meshIndices.size() > 0 && borderIndices.size() > 0){
-        mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
+        // qInfo() << "Vertices size: " << verticesVector.size() << " Mesh Index: " << meshIndices.size() << " Border Index: " << borderIndices.size();
     }
 }
 

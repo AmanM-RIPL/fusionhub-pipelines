@@ -50,6 +50,9 @@ private:
     GLuint m_static_ibo = 0;
     GLuint m_editor_ibo = 0;
     GLuint m_static_border_ibo = 0;
+    GLuint m_tbo = 0;
+    GLuint m_matrixTexture = 0;
+    GLuint m_model_matrix_vbo = 0;
 
     // for color picking
     int m_pickX = -1;

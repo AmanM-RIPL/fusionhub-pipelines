@@ -14,6 +14,13 @@ void BeamGeometryService::generateMesh2D(BIMElement* beamElement, Mesh* mesh)
 
     m_openglHelper.extractBIMParameters(beamElement, referenceLine, width, height, distance);
 
+    // if reference line is only one point then we don't need to render
+    if (referenceLine.size() < 2)
+    {
+        mesh->Initialize({}, {}, {}, 0, 0, 0);
+        return;
+    }
+
     // 3. Generate a parallel line
     std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
 
@@ -110,6 +117,13 @@ void BeamGeometryService::generateMesh3D(BIMElement* beamElement, Mesh* mesh)
 
     m_openglHelper.extractBIMParameters(beamElement, referenceLine, width, height, distance);
 
+    // if reference line is only one point then we don't need to render
+    if (referenceLine.size() < 2)
+    {
+        mesh->Initialize({}, {}, {}, 0, 0, 0);
+        return;
+    }
+
     // 3. Generate a parallel line
     std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
 
@@ -149,4 +163,45 @@ void BeamGeometryService::generateMesh3D(BIMElement* beamElement, Mesh* mesh)
     m_openglHelper.getMeshGeometry(body, verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
 
     mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
+}
+
+void BeamGeometryService::updateGeometry(BIMElement *beamElement, const QVector3D &point)
+{
+    std::vector<Point> referenceLine = {};
+    float width = 0;
+    float height = 0;
+    float distance = 0;
+
+
+    m_openglHelper.extractBIMParameters(beamElement, referenceLine, width, height, distance);
+
+    // update the new point in the reference line
+    referenceLine.push_back({ point.x(), point.y() });
+
+    // updating the BIMElement
+    QJsonArray referenceLineJsonArray;
+
+    for (const auto& pointArray : referenceLine) {
+        QJsonArray jsonInnerArray;
+        for (float value : pointArray) {
+            jsonInnerArray.append(QJsonValue(value));
+        }
+        referenceLineJsonArray.append(jsonInnerArray);
+    }
+
+    QJsonDocument jsonDoc(referenceLineJsonArray);
+    QByteArray byteArray = jsonDoc.toJson(QJsonDocument::Compact);
+    QString referenceLineString = QString(byteArray);
+
+    QList<BIMParameter*> parameterList = beamElement->getParameterList();
+
+    for (BIMParameter* parameter: parameterList)
+    {
+        if (parameter->getKey() == "ReferenceLine")
+        {
+            parameter->setValue(referenceLineString);
+
+            break;
+        }
+    }
 }
