@@ -71,6 +71,9 @@
         <file>resources/bimFamily/DblDoor-1-Panel.ifc</file>
         <file>resources/images/brick.jpg</file>
         <file>resources/images/blueprint.png</file>
+        <file>resources/QML/GanttPage.qml</file>
+        <file>resources/QML/GanttChartTable.qml</file>
+        <file>resources/QML/SchedulePage.qml</file>
         <file>resources/QML/GoodReceivedNotePage.qml</file>
         <file>resources/QML/MaterialIndentPage.qml</file>
     </qresource>

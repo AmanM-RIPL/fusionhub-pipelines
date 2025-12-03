@@ -66,6 +66,51 @@ Column {
                 spacing: 7
                 padding: 10
 
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/po_icon.png"
+                    btnName: "Gantt"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            projectPageToRedirect("Gantt")
+                        }
+                    }
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 60
+                    color: "#7676801F"
+                }
+
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/po_icon.png"
+                    btnName: "Schedule"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            projectPageToRedirect("Schedule")
+                        }
+                    }
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 60
+                    color: "#7676801F"
+                }
+
+
                 RibbonButton {
                     btnSource: "qrc:/resources/images/task_board_icon.png"
                     btnName: "Task Board"

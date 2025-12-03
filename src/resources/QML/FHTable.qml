@@ -6,14 +6,18 @@ import QtQuick.Layouts
 
 Column {
     width: totalColumnWidth
-    spacing: 10
+    spacing: 5//10
     id: tableRoot
 
     property var model
     property var columns // array of { label, key, width }
     property bool removeRow: false
     property int removedIndex: -1
-
+    property int headerHeight: 30
+    property int headerFontPixelSize: 12
+    //property string rowColor: "transparent"
+    property bool isTextVisible: true
+    property bool isRectVisible: false    
 
     readonly property int totalColumnWidth: {
         var total = 0;
@@ -37,18 +41,19 @@ Column {
             model: tableRoot.columns
             Rectangle {
                 width: modelData.width
-                height: 30
+                height: headerHeight//30
                 color: "#E0E0E0"
 
                 Text {
                     anchors.centerIn: parent
                     text: modelData.label
                     font.weight: Font.Bold
+
+                    font.pixelSize: headerFontPixelSize
                 }
             }
         }
     }
-
 
 
     Rectangle {
@@ -115,17 +120,14 @@ Column {
                     /*********Row Removed Button End************/
 
 
-
                     Repeater {
                         model: tableRoot.columns
 
-                        Rectangle {
+                        Rectangle {                            
                             width: modelData.width
                             height: 30
-
                             Text {
                                 text: rowData[modelData.key] !== undefined ? rowData[modelData.key] : ""
-
                                 font.pixelSize: 15
                                 anchors.centerIn: parent
                             }
@@ -138,11 +140,10 @@ Column {
                     height: 1
                     color: "#EDF1F4"
                 }
-            }
-        }
-
-
+            }           
+        }        
     }
-
 }
+
+
 
