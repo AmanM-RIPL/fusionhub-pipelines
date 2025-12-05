@@ -18,12 +18,17 @@ class WorkOrderLine: public QObject
     Q_PROPERTY(double amount READ getAmount WRITE setAmount NOTIFY amountChanged)
     Q_PROPERTY(double taxAmount READ getTaxAmount WRITE setTaxAmount NOTIFY taxAmountChanged)
     Q_PROPERTY(double taxWithHolding READ getTaxWithHolding WRITE setTaxWithHolding NOTIFY taxWithHoldingChanged)
-    Q_PROPERTY(double retention_amount READ getRetentionAmount WRITE setRetentionAmount NOTIFY retentionAmountChanged)
+    Q_PROPERTY(double retentionAmount READ getRetentionAmount WRITE setRetentionAmount NOTIFY retentionAmountChanged)
+
+    Q_PROPERTY(int vendorId READ getVendorId WRITE setVendorId NOTIFY vendorIdChanged)
+    Q_PROPERTY(QString taskName READ getTaskName WRITE setTaskName NOTIFY taskNameChanged)
+    Q_PROPERTY(QString vendorName READ getVendorName WRITE setVendorName NOTIFY vendorNameChanged)
+
 
 public:
     explicit WorkOrderLine(QObject* parent = nullptr): QObject(parent) {}
     WorkOrderLine(int id, const QString& globalId, bool approvalStatus,int workOrderId, const QString& description, int taskId,
-                     double amount , double taxAmount, double taxWithHolding, double retentionAmount, QObject* parent = nullptr);
+                     double amount , double taxAmount, double taxWithHolding, double retentionAmount,  QObject* parent = nullptr);
 
     // --- Getters ---
     int getId() const { return id; }
@@ -36,6 +41,10 @@ public:
     double getTaxAmount() const { return taxAmount; }
     double getTaxWithHolding() const { return taxWithHolding; }
     double getRetentionAmount() const { return retentionAmount; }
+    int getVendorId() const { return vendorId; }
+    QString getTaskName() const { return taskName; }
+    QString getVendorName() const { return vendorName; }
+
 
     // --- Setters ---
     void setId(int id) { this->id = id; }
@@ -48,6 +57,10 @@ public:
     void setTaxAmount(double taxAmount) { this->taxAmount = taxAmount; }
     void setTaxWithHolding(double taxWithHolding) { this->taxWithHolding = taxWithHolding; }
     void setRetentionAmount(double retentionAmount) { this->retentionAmount = retentionAmount; }
+    void setVendorId(int vendorId){this->vendorId = vendorId;}
+    void setTaskName(const QString& taskName){this->taskName = taskName;}
+    void setVendorName(const QString& vendorName){this->vendorName = vendorName;}
+
 
 signals:
     void globalIdChanged();
@@ -59,6 +72,10 @@ signals:
     void taxAmountChanged();
     void taxWithHoldingChanged();
     void retentionAmountChanged();
+    void vendorIdChanged();
+    void taskNameChanged();
+    void vendorNameChanged();
+
 
 private:
     int id = 0;
@@ -71,6 +88,9 @@ private:
     double taxAmount = 0;
     double taxWithHolding = 0;
     double retentionAmount = 0;
+    int vendorId = 0;
+    QString taskName;
+    QString vendorName;
 };
 
 Q_DECLARE_METATYPE(WorkOrderLine)
