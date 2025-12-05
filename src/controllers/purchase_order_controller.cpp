@@ -82,41 +82,44 @@ std::vector<PurchaseOrder*> PurchaseOrderController::getPurchaseOrderList(bool i
 
             if (!jsonDoc.isNull() && jsonDoc.isObject())
             {
-                auto purchaseOrder = new PurchaseOrder();
                 QJsonObject jsonObj = jsonDoc.object();
+                QString vendorName = jsonObj["vendorName"].toString();
 
-                purchaseOrder->setId(i + 1);
-                purchaseOrder->setGlobalId("123");
-                purchaseOrder->setApprovalStatus(true);
+                QString purchaseOrderString = jsonObj["purchaseOrder"].toString();
+                QJsonDocument jsonDocPO = QJsonDocument::fromJson(purchaseOrderString.toUtf8());
+                if (!jsonDocPO.isNull() && jsonDocPO.isObject())
+                {
+                    QJsonArray dataArray = jsonDocPO["data"].toArray();
+                    foreach (const QJsonValue & value, dataArray)
+                    {
+                        auto purchaseOrder = new PurchaseOrder();
+                        QJsonObject lineItem = value.toObject();
+                        QString vendorId = lineItem["vendor_id"].toString();
+                        QString amount = lineItem["amount"].toString();
+                        QString materialId = lineItem["material_id"].toString();
+                        QString material_name = lineItem["material_name"].toString();
+                        QString quantity = lineItem["quantity"].toString();
+                        QString tax_amount = lineItem["tax_amount"].toString();
+                        QString tax_with_holding = lineItem["tax_with_holding"].toString();
+                        QString unit_of_measurementId = lineItem["unit_of_measurement_id"].toString();
+                        QString unit_of_measurementName = lineItem["unit_of_measurement_name"].toString();
 
-                purchaseOrder->setVendorName(jsonObj["vendorName"].toString());
+                        //purchaseOrder->setAmount();
+                        purchaseOrder->setVendorName(vendorName);
+                        purchaseOrder->setVendorId(vendorId.toInt());
+                        purchaseOrder->setAmount(amount.toInt());
+                        purchaseOrder->setMaterialId(materialId.toInt());
+                        purchaseOrder->setMaterialName(material_name);
+                        purchaseOrder->setQuantity(quantity.toInt());
+                        purchaseOrder->setTaxAmount(tax_amount.toInt());
+                        purchaseOrder->setTaxWithHolding(tax_with_holding.toInt());
+                        purchaseOrder->setUnitOfMeasurementId(unit_of_measurementId.toInt());
+                        purchaseOrder->setUnitOfMeasurementName(unit_of_measurementName);
 
-                purchaseOrder->setPurchaseOrderList(jsonObj["purchaseOrder"].toString());
-
-                purchaseOrders.push_back(purchaseOrder);
+                        purchaseOrders.push_back(purchaseOrder);
+                    }
+                }
             }
-        }
-    }
-
-    // Parse purchaseOrder JSON and extract "rows"
-
-    for (auto po : purchaseOrders)
-    {
-        QString purchaseOrderJsonString = po->getPurchaseOrderList();
-
-        QJsonDocument jsonDoc = QJsonDocument::fromJson(purchaseOrderJsonString.toUtf8());
-
-        if (!jsonDoc.isNull() && jsonDoc.isObject())
-        {
-            QJsonObject jsonObj = jsonDoc.object();
-
-            int rows = jsonObj["rows"].toInt();
-
-            jsonObj["rows"] = rows;
-            QString updatedJsonString = QString(QJsonDocument(jsonObj).toJson(QJsonDocument::Compact));
-            po->setPurchaseOrderList(updatedJsonString);
-
-            qDebug() << "Updated purchaseOrder:" << updatedJsonString;
         }
     }
 

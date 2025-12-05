@@ -17,6 +17,11 @@ Column {
     property var uomList: []
     property var materialList: []
 
+    property var vendorsFromCtrl: []
+    property var materialsFromCtrl: []
+    property var uomFromCtrl: []
+
+
     // Controllers
     VendorController {
         id: vendorController
@@ -62,11 +67,18 @@ Column {
         onOpened: {
             // Load lists from controllers and populate root lists
             if (purchaseOrderRoot.visible) {
-                var vendorsFromCtrl = vendorController.getVendorList(true)
-                var materialsFromCtrl = materialController.getMaterialList(true)
-                var uomFromCtrl = unitOfMeasurementController.getUOMList(true)
+                // var vendorsFromCtrl = vendorController.getVendorList(true)
+                // var materialsFromCtrl = materialController.getMaterialList(true)
+                // var uomFromCtrl = unitOfMeasurementController.getUOMList(true)
 
-                // Clear current lists then populate
+                vendorsFromCtrl = []
+                materialsFromCtrl = []
+                uomFromCtrl = []
+                vendorsFromCtrl = vendorController.getVendorList(true)
+                materialsFromCtrl = materialController.getMaterialList(true)
+                uomFromCtrl = unitOfMeasurementController.getUOMList(true)
+
+                //Clear current lists then populate
                 purchaseOrderRoot.vendorList = []
                 purchaseOrderRoot.materialList = []
                 purchaseOrderRoot.uomList = []
@@ -127,7 +139,7 @@ Column {
                             }, {
                                 "label": "UOM",
                                 "width": 120,
-                                "key": "unit_of_measurement"
+                                "key": "unit_of_measurement_name"
                             }, {
                                 "label": "Quantity",
                                 "width": 100,
@@ -163,7 +175,7 @@ Column {
                     width: parent.width - 8
                     height: 28
                     leftPadding: 2
-                    spacing: 6
+                    spacing: 1
 
                     CustomComboBox {
                         id: materialId
@@ -175,7 +187,7 @@ Column {
 
                     CustomComboBox {
                         id: unitOfMeasurementId
-                        width: 100
+                        width: 120
                         height: 24
                         model: purchaseOrderRoot.uomList
                         currentIndex: 0
@@ -186,7 +198,7 @@ Column {
                         placeholderText: "Quantity"
                         text: ""
                         color: "#323130"
-                        width: 80
+                        width: 100
                         height: 24
                         topPadding: 1
                     }
@@ -196,7 +208,7 @@ Column {
                         placeholderText: "Amount"
                         text: ""
                         color: "#323130"
-                        width: 80
+                        width: 100
                         height: 24
                         topPadding: 1
                     }
@@ -206,7 +218,7 @@ Column {
                         placeholderText: "Tax Amount"
                         text: ""
                         color: "#323130"
-                        width: 80
+                        width: 100
                         height: 24
                         topPadding: 1
                     }
@@ -216,7 +228,7 @@ Column {
                         placeholderText: "Tax With Holding"
                         text: ""
                         color: "#323130"
-                        width: 200
+                        width: 210
                         height: 24
                         topPadding: 1
                     }
@@ -242,8 +254,11 @@ Column {
                             onClicked: {
                                 // create new row object with consistent keys
                                 var newElements = {
+                                    "vendor_id":String(vendorsFromCtrl[vendor.currentIndex].id),
+                                    "material_id":String(materialsFromCtrl[materialId.currentIndex].id),
                                     "material_name": materialId.currentText,
-                                    "unit_of_measurement": unitOfMeasurementId.currentText,
+                                    "unit_of_measurement_id": String(uomFromCtrl[unitOfMeasurementId.currentIndex].id),
+                                    "unit_of_measurement_name": unitOfMeasurementId.currentText,
                                     "quantity": quantityTextBox.text,
                                     "amount": amountTextBox.text,
                                     "tax_amount": taxAmountTextBox.text,
@@ -390,7 +405,7 @@ Column {
                 }, {
                     "label": "UOM",
                     "width": 170,
-                    "key": "unitOfMeasurementId"
+                    "key": "unitOfMeasurementName"
                 }, {
                     "label": "Amount",
                     "width": 130,
@@ -414,41 +429,7 @@ Column {
         purchaseOrderRoot.purchaseOrderList = [];
 
         if (purchaseOrderRoot.visible) {
-            var arr = purchaseOrderController.getPurchaseOrderList(isApproved)
-
-            var flatList = []
-
-            for (var i = 0; i < arr.length; i++) {
-                var po = arr[i]
-
-                try {
-                    po.parsedPurchaseOrder = JSON.parse(po.purchaseOrderList)
-                } catch (e) {
-                    console.error("Failed to parse purchaseOrder JSON:", e,
-                                  po.purchaseOrderList)
-                    po.parsedPurchaseOrder = {
-                        "data": [],
-                        "rows": 0
-                    }
-                }
-
-                // For each in purchase order
-                for (var j = 0; j < po.parsedPurchaseOrder.data.length; j++) {
-                    var item = po.parsedPurchaseOrder.data[j]
-                    flatList.push({
-                                      "vendorName": po.vendorName,
-                                      "materialName": item.material_name,
-                                      "quantity": item.quantity,
-                                      "unitOfMeasurementId": item.unit_of_measurement,
-                                      "amount": item.amount,
-                                      "taxAmount": item.tax_amount,
-                                      "taxWithHolding": item.tax_with_holding
-                                  })
-                }
-            }
-
-            purchaseOrderRoot.purchaseOrderList = flatList
-          //  console.log("Table Data:", JSON.stringify(flatList))
+            purchaseOrderRoot.purchaseOrderList = purchaseOrderController.getPurchaseOrderList(isApproved)
         }
     }
 }
