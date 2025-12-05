@@ -69,10 +69,14 @@ std::vector<WorkOrderLine*> WorkOrderLineController::getWorkOrderLineList(bool i
     }
     else{
         std::vector<DraftEntity*>  draftEntitys  =  m_draftEntityRepository->findAllQML("WorkOrder");
-        TaskController* taskController = new TaskController();
-        VendorController* vendorController = new VendorController();
-        std::vector<Task*> vecTask = taskController->getTaskList(true);
-        std::vector<Vendor*> vecVendor =  vendorController->getVendorList(true);
+        //TaskController* taskController = new TaskController();
+        //VendorController* vendorController = new VendorController();
+
+        TaskController taskController;
+        VendorController  vendorController;
+
+        std::vector<Task*> vecTask = taskController.getTaskList(true);
+        std::vector<Vendor*> vecVendor =  vendorController.getVendorList(true);
 
         std::vector<WorkOrderLine*> workOrderLines;
         for(int i = 0; i < draftEntitys.size(); i++)
