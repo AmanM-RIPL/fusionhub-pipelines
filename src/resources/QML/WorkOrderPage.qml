@@ -9,6 +9,9 @@ Column {
     width: parent.width
     padding: 10
 
+    property var workOrdersFromCtrl: []
+    property var taskFromCtrl: []
+
     property var workOrderLineList: []
     property var workOrderLineData: []
     property bool isApproved: false
@@ -65,8 +68,14 @@ Column {
             // Load lists from controllers and populate root lists
             if (workOrderLineRoot.visible) {
                 vendorsFromCtrl = vendorController.getVendorList(true)
-                var workOrdersFromCtrl = workOrderController.getWorkOrderList(true)
-                var taskFromCtrl = taskController.getTaskList(true)
+                //var workOrdersFromCtrl = workOrderController.getWorkOrderList(true)
+                //var taskFromCtrl = taskController.getTaskList(true)
+                 workOrdersFromCtrl =[];
+                 taskFromCtrl =[];
+
+                 workOrdersFromCtrl = workOrderController.getWorkOrderList(true)
+                 taskFromCtrl = taskController.getTaskList(true)
+
 
                 // Clear current lists then populate
                 workOrderLineRoot.vendorList = []
@@ -84,9 +93,8 @@ Column {
                 }
                 for (var k = 0; k < taskFromCtrl.length; k++) {
                     workOrderLineRoot.taskList = workOrderLineRoot.taskList.concat(
-                                taskFromCtrl[k].description)
+                                taskFromCtrl[k].taskName)
                 }
-
 
             }
         }
@@ -126,6 +134,7 @@ Column {
                     CustomTextBox {
                         id: descriptionTextBox
                         placeholderText: "Work Order"
+                        color: "#323130"
                         width: 500
                         height: 30
                     }
@@ -174,7 +183,7 @@ Column {
                             },{
                                 "label": "Task",
                                 "width": 184,
-                                "key": "task_id"
+                                "key": "task_name"
                             },{
                                 "label": "Retention Amount",
                                 "width": 175,
@@ -267,7 +276,8 @@ Column {
                         btnSource: "qrc:/resources/images/add.svg"
                         btnName: ""
                         btnNameColor: "blue"
-                        anchors.verticalCenter: parent.verticalCenter
+                        //anchors.verticalCenter: parent.verticalCenter
+
 
                         MouseArea {
                             anchors.fill: parent
@@ -278,9 +288,11 @@ Column {
                             onExited: parent.color = "transparent"
 
                             onClicked: {
+
                                 var newElements = {
                                     "description": lineDescriptionTextBox.text,
-                                    "task_id": taskId.currentValue,
+                                    "task_id":String(taskFromCtrl[taskId.currentIndex].id),
+                                    "task_name":taskId.currentValue,
                                     "amount": amountTextBox.text,
                                     "tax_amount": taxAmountTextBox.text,
                                     "tax_with_holding": taxWithHoldingTextBox.text,
@@ -393,9 +405,9 @@ Column {
                     "width": 214,
                     "key": "description"
                 }, {
-                    "label": "task Id",
+                    "label": "task Name",
                     "width": 170,
-                    "key": "taskId"
+                    "key": "taskName"
                 }, {
                     "label": "Amount",
                     "width": 130,
@@ -420,44 +432,9 @@ Column {
     onVisibleChanged: showList()
 
     function showList() {
-
         workOrderLineRoot.workOrderLineList = [];
-        if (workOrderLineRoot.visible) {
-            var arr = workOrderLineController.getWorkOrderLineList(isApproved)
-
-            var flatList = []
-
-            for (var i = 0; i < arr.length; i++) {
-                var po = arr[i]
-                try {
-                    po.parsedWorkOrderLine = JSON.parse(po.workOrderLineData)
-                } catch (e) {
-                    console.error("Failed to parse workOrderLine JSON:", e,
-                                  po.workOrderLineData)
-                    po.parsedWorkOrderLine = {
-                        "data": [],
-                        "rows": 0
-                    }
-                }
-
-                // For each in purchase order
-                for (var j = 0; j < po.parsedWorkOrderLine.data.length; j++) {
-                    var item = po.parsedWorkOrderLine.data[j];
-                    flatList.push({
-                        "vendorName": po.vendorId,
-                        "description": item.description,
-                        "taskId": item.task_id ?? item.taskId,
-                        "amount": item.amount,
-                        "taxAmount": item.tax_amount ?? item.taxAmount,
-                        "taxWithHolding": item.tax_with_holding ?? item.taxWithHolding,
-                        "retentionAmount": item.retention_amount ?? item.retentionAmount,
-                    })
-
-                }
-            }
-
-            workOrderLineRoot.workOrderLineList = flatList
-          //    console.log("Table Data:", JSON.stringify(flatList))
+        if (workOrderLineRoot.visible) {            
+            workOrderLineRoot.workOrderLineList = workOrderLineController.getWorkOrderLineList(isApproved);
         }
     }
 }

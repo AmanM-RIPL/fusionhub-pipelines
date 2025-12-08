@@ -1,5 +1,7 @@
 #include "work_order_line_controller.h"
 #include "common/repository_locator.h"
+#include "task_controller.h"
+#include "vendor_controller.h"
 #include <QDir>
 
 extern std::shared_ptr<User> gUser;
@@ -66,33 +68,77 @@ std::vector<WorkOrderLine*> WorkOrderLineController::getWorkOrderLineList(bool i
         return m_workOrderLineRepository->findAllQML();
     }
     else{
-        std::vector<DraftEntity*>  draftEntitys  =  m_draftEntityRepository->findAllQML("WorkOrder");
+        std::vector<DraftEntity*>  draftEntitys  =  m_draftEntityRepository->findAllQML("WorkOrder");        
+        TaskController taskController;
+        VendorController  vendorController;
+
+        std::vector<Task*> vecTask = taskController.getTaskList(true);
+        std::vector<Vendor*> vecVendor =  vendorController.getVendorList(true);
+
         std::vector<WorkOrderLine*> workOrderLines;
         for(int i = 0; i < draftEntitys.size(); i++)
         {
             QString  jsonString = draftEntitys[i]->getEntitySchema();
-            QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
+            QByteArray jsonData = jsonString.toUtf8();
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
+
             if (!jsonDoc.isNull() && jsonDoc.isObject())
             {
-                auto workOrderLine = new WorkOrderLine();
-                QJsonObject jsonObj = jsonDoc.object();
-                workOrderLine->setId(i + 1);
-                workOrderLine->setGlobalId("123");
-                workOrderLine->setApprovalStatus(true);
-                workOrderLine->setTaskId(jsonObj["taskId"].toInt());
-                workOrderLine->setDescription(jsonObj["description"].toString());
-                workOrderLine->setAmount(jsonObj["amount"].toDouble());
-                workOrderLine->setRetentionAmount(jsonObj["retention_amount"].toDouble());
-                workOrderLine->setTaxAmount(jsonObj["tax_amount"].toDouble());
-                workOrderLine->setTaxWithHolding(jsonObj["tax_with_holding"].toDouble());
+                QJsonObject mainObject = jsonDoc.object();
+                QString description = mainObject["description"].toString();
+                int vendorId = mainObject["vendorId"].toInt();
+
+                qDebug() << "Description:" << description;
+                qDebug() << "Vendor ID:" << vendorId;
+
+                QJsonArray lineDataArray = mainObject["workOrderLineData"].toArray();
+                foreach (const QJsonValue & value, lineDataArray) {
+                    QJsonObject lineItem = value.toObject();
+
+                    QString amount = lineItem["amount"].toString();
+                    QString itemDescription = lineItem["description"].toString();
+                    QString retentionAmount = lineItem["retention_amount"].toString();
+                    QString taskId = lineItem["task_id"].toString();
+                    //QString taskName = lineItem["task_name"].toString();
+                    QString taxAmount = lineItem["tax_amount"].toString();
+                    QString taxWithHolding = lineItem["tax_with_holding"].toString();
+
+                    auto workOrderLine = new WorkOrderLine();
+                    workOrderLine->setAmount(amount.toDouble());
+                    workOrderLine->setDescription(itemDescription);
+                    workOrderLine->setRetentionAmount(retentionAmount.toDouble());
+
+                    foreach (const Task *task, vecTask)
+                    {
+                        if(task->getId() == taskId.toInt())
+                        {
+                            workOrderLine->setTaskName(task->getTaskName());
+                        }
+                    }
 
 
-                workOrderLines.push_back(workOrderLine);
+                    foreach (const Vendor *vendor, vecVendor)
+                    {
+                        if(vendor->getId() == vendorId)
+                        {
+                           QString str = vendor->getVendorName();
+                           workOrderLine->setVendorName(str);
+                        }
+                    }
+
+                    workOrderLine->setTaxAmount(taxAmount.toDouble());
+                    workOrderLine->setTaxWithHolding(taxWithHolding.toDouble());
+
+                    workOrderLines.push_back(workOrderLine);
+                }
             }
         }
         return workOrderLines;
     }
 }
+
+
+
 
 
 

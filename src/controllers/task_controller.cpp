@@ -90,7 +90,8 @@ std::vector<Task*> TaskController::getTaskList(bool isApproved) const
             {
                 auto task = new Task();
                 QJsonObject jsonObj = jsonDoc.object();
-                task->setId(i + 1);
+                //task->setId(i + 1);
+                task->setId(jsonObj["id"].toInt());
                 task->setGlobalId("123");
                 task->setApprovalStatus(true);
                 task->setTaskName(jsonObj["taskName"].toString());

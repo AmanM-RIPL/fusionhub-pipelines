@@ -24,6 +24,8 @@ class PurchaseOrder: public QObject
 
     Q_PROPERTY(int materialId READ getMaterialId WRITE setMaterialId NOTIFY materialIdChanged)
     Q_PROPERTY(int unitOfMeasurementId READ getUnitOfMeasurementId WRITE setUnitOfMeasurementId NOTIFY unitOfMeasurementIdChanged)
+    Q_PROPERTY(QString unitOfMeasurementName READ getUnitOfMeasurementName WRITE setUnitOfMeasurementName NOTIFY unitOfMeasurementNameChanged)
+
 
 public:
     explicit PurchaseOrder(QObject* parent = nullptr): QObject(parent) {}
@@ -41,10 +43,9 @@ public:
     int getQuantity() const { return quantity; }
     int getTaxAmount() const { return taxAmount; }
     int getTaxWithHolding() const { return taxWithHolding; }
-
-
     int getMaterialId() const { return materialId; }
     int getUnitOfMeasurementId() const { return unitOfMeasurementId; }
+    QString getUnitOfMeasurementName() const { return unitOfMeasurementName; }
 
     void setId(int id) { this->id = id; }
     void setGlobalId(const QString& globalId) { this->globalId = globalId; }
@@ -60,8 +61,7 @@ public:
 
     void setMaterialId(int materialId) { this->materialId = materialId; }
     void setUnitOfMeasurementId(int unitOfMeasurementId) { this->unitOfMeasurementId = unitOfMeasurementId; }
-
-
+    void setUnitOfMeasurementName(const QString& unitOfMeasurementName) { this->unitOfMeasurementName = unitOfMeasurementName; }
 
 signals:
     void globalIdChanged();
@@ -76,6 +76,7 @@ signals:
     void taxWithHoldingChanged();
     void materialIdChanged();
     void unitOfMeasurementIdChanged();
+    void unitOfMeasurementNameChanged();
 
 private:
     int id = 0;
@@ -92,6 +93,7 @@ private:
     int taxWithHolding = 0;
     int materialId = 0;
     int unitOfMeasurementId = 0;
+    QString unitOfMeasurementName;
 };
 
 Q_DECLARE_METATYPE(PurchaseOrder)
