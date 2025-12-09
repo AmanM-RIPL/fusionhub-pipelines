@@ -136,25 +136,25 @@ void DoorGeometryService::generateMesh3D(BIMElement* doorElement, Mesh* mesh, IF
     float scaleFactor = height/6; // height of IFC file is 6
     modelMatrix.scale(scaleFactor);
 
-    // // set translation
-    // float z = distance;
-    // float x = referenceLine[0][0] - 2; // 2 is the default x coordinate of left side
-    // float y = referenceLine[0][1] - 0.5; // 0.5 is the default y coordinate of left size
-    // modelMatrix.translate(x,y,z);
+    // set translation
+    float z = distance;
+    float x = referenceLine[0][0] + 0.1; // -0.1 is the default x coordinate of left side
+    float y = referenceLine[0][1] + 0.06; // -0.06 is the default y coordinate of left size
+    modelMatrix.translate(x,y,z);
 
-    // // set rotation
-    // QVector3D directionVector;
-    // directionVector.setX(referenceLine[1][0] - referenceLine[0][0]);
-    // directionVector.setY(referenceLine[1][1] - referenceLine[0][1]);
-    // directionVector.setZ(0);
-    // directionVector.normalize();
+    // set rotation
+    QVector3D directionVector;
+    directionVector.setX(referenceLine[1][0] - referenceLine[0][0]);
+    directionVector.setY(referenceLine[1][1] - referenceLine[0][1]);
+    directionVector.setZ(0);
+    directionVector.normalize();
 
-    // QVector3D xAxisVector(1,0,0);
-    // float dotProductResult = QVector3D::dotProduct(directionVector,xAxisVector);
-    // float angleInRadians = qAcos(dotProductResult);
-    // float degrees = qRadiansToDegrees(angleInRadians);
+    QVector3D xAxisVector(1,0,0);
+    float dotProductResult = QVector3D::dotProduct(directionVector,xAxisVector);
+    float angleInRadians = qAcos(dotProductResult);
+    float degrees = qRadiansToDegrees(angleInRadians);
 
-    // modelMatrix.rotate(degrees, 1, 0, 0);
+    modelMatrix.rotate(degrees, 0, 0, 1);
 
     mesh->setModelMatrix(modelMatrix);
 
@@ -212,5 +212,86 @@ void DoorGeometryService::generateMesh3D(BIMElement* doorElement, Mesh* mesh, IF
     // m_openglHelper.getMeshGeometry(body, verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
 
     // mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
+}
+
+FacetModeler::Body DoorGeometryService::generateVoidBody(BIMElement *doorElement, BIMElement* hostElement)
+{
+    // Door Element Parsing
+    std::vector<Point> referenceLineDoor = {};
+    float widthDoor = 0;
+    float heightDoor = 0;
+    float distanceDoor = 0;
+
+
+    m_openglHelper.extractBIMParameters(doorElement, referenceLineDoor, widthDoor, heightDoor, distanceDoor);
+
+    // if (referenceLineDoor.size() < 2)
+    // {
+    //     return;
+    // }
+
+    /*
+
+    x = (x2 - x1)/((x2 - x1)^2 + (y2 - y1)^2) * widthDoor + x1
+    y = (y2 - y1)/((x2 - x1)^2 + (y2 - y1)^2) * widthDoor + y1
+
+    */
+
+    float doorWidthPointX = (((referenceLineDoor[1][0] - referenceLineDoor[0][0])/(qPow(referenceLineDoor[1][0] - referenceLineDoor[0][0], 2) + qPow(referenceLineDoor[1][1] - referenceLineDoor[0][1], 2)))*widthDoor) + referenceLineDoor[0][0];
+    float doorWidthPointY = (((referenceLineDoor[1][1] - referenceLineDoor[0][1])/(qPow(referenceLineDoor[1][0] - referenceLineDoor[0][0], 2) + qPow(referenceLineDoor[1][1] - referenceLineDoor[0][1], 2)))*widthDoor) + referenceLineDoor[0][1];
+
+    referenceLineDoor[1][0] = doorWidthPointX;
+    referenceLineDoor[1][1] = doorWidthPointY;
+
+    // Host Element Parsing
+    std::vector<Point> referenceLineHost = {};
+    float widthHost = 0;
+    float heightHost = 0;
+    float distanceHost = 0;
+
+
+    m_openglHelper.extractBIMParameters(hostElement, referenceLineHost, widthHost, heightHost, distanceHost);
+
+    // if (referenceLineHost.size() < 2)
+    // {
+    //     return;
+    // }
+
+    // 3. Generate a parallel line
+    std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLineDoor, widthHost);
+
+    referenceLineDoor.insert(referenceLineDoor.end(), parallelLine.begin(), parallelLine.end());
+
+    //Create a contour2D
+    FacetModeler::Contour2D polygon;
+
+    OdGePoint2dArray points;
+    points.reserve(referenceLineDoor.size());
+
+    for (Point point: referenceLineDoor)
+    {
+        points.push_back(OdGePoint2d(point[0], point[1]));
+    }
+
+    polygon.appendVertices(points);
+
+    for (int i = 0; i < referenceLineDoor.size(); i++)
+    {
+        polygon.setOrientationAt(i, FacetModeler::efoFront);
+    }
+
+    polygon.setClosed();
+    polygon.makeCCW();
+
+    FacetModeler::Profile2D profile(polygon);
+    FacetModeler::Body body = FacetModeler::Body::extrusion(profile, OdGeVector3d(0.0, 0.0, 1.0) * heightDoor);
+
+    OdGeVector3d translationVector(0.0, 0.0, distanceDoor);
+    OdGeMatrix3d matrix;
+    matrix.translation(translationVector);
+
+    body.transform(matrix);
+
+    return body;
 }
 

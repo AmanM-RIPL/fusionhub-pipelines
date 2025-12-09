@@ -154,6 +154,18 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
     FacetModeler::Profile2D profile(polygon);
     FacetModeler::Body body = FacetModeler::Body::extrusion(profile, OdGeVector3d(0.0, 0.0, 1.0) * height);
 
+    QList<BIMElement*> hostedElementList = wallElement->getHostedElementList();
+    for (BIMElement* hostedElement: hostedElementList)
+    {
+        if (hostedElement->getType() == "Door")
+        {
+            DoorGeometryService service = DoorGeometryService();
+            FacetModeler::Body voidBody = service.generateVoidBody(hostedElement, wallElement);
+
+            body = FacetModeler::Body::boolOper(FacetModeler::eDifference, body, voidBody);
+        }
+    }
+
     // Mesh geometry generation
     std::vector<uint32_t> meshIndices = {};
     std::vector<uint32_t> borderIndices = {};

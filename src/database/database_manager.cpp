@@ -479,7 +479,8 @@ QString DatabaseManager::getCreateTableQuery(const QString& tableName)
                 approval_status BOOLEAN DEFAULT 1,
                 type TEXT NOT NULL,
                 name TEXT NOT NULL,
-                level INTEGER NOT NULL
+                level INTEGER NOT NULL,
+                host_id INTEGER NOT NULL
             )
         )";
     }

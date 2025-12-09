@@ -759,7 +759,7 @@ QOpenGLFramebufferObject* MyGLRenderer::createFramebufferObject(const QSize &siz
 MyGLItem::MyGLItem(QQuickItem *parent)
     : QQuickFramebufferObject(parent)
 {
-    BIMElement* bimElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
+    BIMElement* bimElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, 0, this);
     BIMParameter* widthParameter = new BIMParameter(1,"1",false,"Width","1",1,this);
     BIMParameter* heightParameter = new BIMParameter(37, "1", false, "Height", "4", 1, this);
     BIMParameter* rlParameter = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [0,4], [4,4]]",1,this);
@@ -769,7 +769,7 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 
     bimElementList.append(bimElement);
 
-    BIMElement* bimElementNew = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
+    BIMElement* bimElementNew = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, 0, this);
     BIMParameter* widthParameterNew = new BIMParameter(1,"1",false,"Width","1",1,this);
     BIMParameter* heightParameterNew = new BIMParameter(37, "1", false, "Height", "4", 1, this);
     BIMParameter* rlParameterNew = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0], [4,4]]",1,this);
@@ -779,15 +779,19 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 
     bimElementList.append(bimElementNew);
 
-    BIMElement* bimElementDoor = new BIMElement(1,"1",false,"Door", "Front Door", 0, this);
+    BIMElement* bimElementDoor = new BIMElement(1,"1",false,"Door", "Front Door", 0, 1, this);
     BIMParameter* distanceParameterDoor = new BIMParameter(1,"1",false,"Distance","1",1,this);
     BIMParameter* heightParameterDoor = new BIMParameter(37, "1", false, "Height", "4", 1, this);
+    BIMParameter* widthParameterDoor = new BIMParameter(1,"1",false,"Width","2",1,this);
     BIMParameter* rlParameterDoor = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0]]",1,this);
     bimElementDoor->addParameter(distanceParameterDoor);
     bimElementDoor->addParameter(heightParameterDoor);
     bimElementDoor->addParameter(rlParameterDoor);
+    bimElementDoor->addParameter(widthParameterDoor);
 
     bimElementList.append(bimElementDoor);
+
+    bimElementNew->addHostedElement(bimElementDoor);
 
     pIfcDetailController = new IFCDetailController(this);
     pIfcGeometryService = new IfcGeometryService(this);

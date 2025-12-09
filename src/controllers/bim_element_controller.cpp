@@ -6,9 +6,9 @@ BIMElementController::BIMElementController(QObject *parent)
     m_bimParameterRepository(RepositoryLocator::instance().bimParameterRepository())
 {}
 
-BIMElement* BIMElementController::create(const QString &type, const QString &name, int level)
+BIMElement* BIMElementController::create(const QString &type, const QString &name, int level, int host_id)
 {
-    BIMElement* bimElement = new BIMElement(0, "1", false, type, name, level, this);
+    BIMElement* bimElement = new BIMElement(0, "1", false, type, name, level, host_id, this);
     // bool result = m_bimElementRepository->saveQML(bimElement);
 
     // if (result)

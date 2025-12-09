@@ -16,6 +16,7 @@ public:
     explicit DoorGeometryService(QObject *parent = nullptr);
     void generateMesh2D(BIMElement* doorElement, Mesh* mesh);
     void generateMesh3D(BIMElement* doorElement, Mesh* mesh, IFCDetailController* pIfcDetailController, IfcGeometryService* pIfcGeometryService);
+    FacetModeler::Body generateVoidBody(BIMElement* doorElement, BIMElement* hostElement);
 
 signals:
 

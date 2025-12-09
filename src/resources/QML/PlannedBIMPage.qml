@@ -499,7 +499,7 @@ Row {
 
             onAcceptCallback: function () {                
                 //wallController.create("projectname", wallTotalHeightTextBox.text, wallWidthTextBox.text);
-                let bimElementPtr = bimElementController.create("Wall", "Front Wall", 0);
+                let bimElementPtr = bimElementController.create("Wall", "Front Wall", 0, 0);
                 bimElementController.addParameter(bimElementPtr, "Height", wallTotalHeightText);
                 bimElementController.addParameter(bimElementPtr, "Width", wallWidthText);
                 bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
@@ -621,7 +621,7 @@ Row {
 
             onAcceptCallback: function () {
                 //beamController.create("projectname", beamTotalHeightTextBox.text, beamWidthTextBox.text);
-                let bimElementPtr = bimElementController.create("Beam", "Front Beam", 0);
+                let bimElementPtr = bimElementController.create("Beam", "Front Beam", 0, 0);
                 bimElementController.addParameter(bimElementPtr, "Height", beamTotalHeightText);
                 bimElementController.addParameter(bimElementPtr, "Width", beamWidthText);
                 bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
@@ -745,7 +745,7 @@ Row {
 
             onAcceptCallback: function () {
                 //columnController.create("projectname", columnTotalHeightTextBox.text, columnWidthTextBox.text);
-                let bimElementPtr = bimElementController.create("Column", "Front Column", 0);
+                let bimElementPtr = bimElementController.create("Column", "Front Column", 0, 0);
                 bimElementController.addParameter(bimElementPtr, "Height", columnTotalHeightText);
                 bimElementController.addParameter(bimElementPtr, "Width", columnWidthText);
                 bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
@@ -868,7 +868,7 @@ Row {
 
             onAcceptCallback: function () {
                 //slabController.create("projectname", slabTotalHeightTextBox.text, slabWidthTextBox.text);
-                let bimElementPtr = bimElementController.create("Slab", "Front Slab", 0);
+                let bimElementPtr = bimElementController.create("Slab", "Front Slab", 0, 0);
                 bimElementController.addParameter(bimElementPtr, "Height", slabTotalHeightText);
                 bimElementController.addParameter(bimElementPtr, "Distance", slabDistanceText);
                 bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
