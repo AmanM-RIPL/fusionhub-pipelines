@@ -161,8 +161,7 @@ MyGLRenderer::~MyGLRenderer()
 
 void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 {
-    // qInfo() << "Syncronize Function";
-    MyGLItem* glItem = static_cast<MyGLItem*>(item);
+    glItem = static_cast<MyGLItem*>(item);
 
 
     // Orbit only works in 3D mode and not in 2D
@@ -225,13 +224,21 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         m_pickX = glItem->m_lastClickX;
         m_pickY = glItem->m_lastClickY;
         m_pickRequested = true;
+        m_pickedBimElementId = -1;
+
         // reset the stored GUI-side coords so we don't re-process
         glItem->m_lastClickX = -1;
         glItem->m_lastClickY = -1;
 
         m_view->SetSelectionCoordinates(m_pickX, m_pickY);
+    }
+
+    // by default m_pickedBimElementId will be a negative number
+    // zero means no clicked id found, and negative means click
+    // has been processed.
+    if (m_pickRequested == true && m_pickedBimElementId >= 0)
+    {
         QVector3D clickedPoint = m_view->GetPointInViewSpace();
-        m_view->Selection();
 
         // update glItem BIM Element
         if (glItem->editableBimElement != nullptr)
@@ -289,6 +296,9 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
             m_view->BindMeshWithOpenGL();
         }
+
+        m_pickRequested = false;
+        m_pickedBimElementId = -1;
     }
 
     if (!meshInitialized)
@@ -370,7 +380,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
 void MyGLRenderer::update() {
     // Continuous rendering
-    QQuickFramebufferObject::Renderer::update();
+    // QQuickFramebufferObject::Renderer::update();
 }
 
 void MyGLRenderer::initGL() {
@@ -626,16 +636,19 @@ void MyGLRenderer::render() {
         projectionMatrixInitialized = true;
     }
 
-
     if (m_pickRequested)
     {
         // m_view->SetSelectionCoordinates(m_pickX, m_pickY);
 
-        m_view->Selection();
+        m_pickedBimElementId = m_view->Selection();
         // m_view->UpdateGeometry();
-        m_pickRequested = false;
+        // m_pickRequested = false;
+        QMetaObject::invokeMethod(glItem, "update", Qt::QueuedConnection);
     }
-    m_view->Render();
+    else
+    {
+        m_view->Render();
+    }
 
     // // all variables are added here
     // // --- Model matrix (triangle local transform) ---

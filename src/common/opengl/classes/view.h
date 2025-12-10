@@ -25,7 +25,7 @@ public:
     void BindMeshWithOpenGL();
     void Render();
 
-    void Selection();
+    unsigned int Selection();
     QVector3D GetPointInModelSpace(int meshIndex);
     QVector3D GetPointInViewSpace();
 

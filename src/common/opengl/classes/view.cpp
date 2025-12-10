@@ -213,7 +213,7 @@ void View::Render()
     this->glBindVertexArray(0);
 }
 
-void View::Selection()
+unsigned int View::Selection()
 {
     // ensure pick FBO exists and matches size
     ensurePickFBO();
@@ -260,6 +260,7 @@ void View::Selection()
         this->glBindFramebuffer(GL_FRAMEBUFFER, defaultFBO);
 
         qInfo() << "Picked Id: " << pickedId;
+        return pickedId;
     }
 }
 
