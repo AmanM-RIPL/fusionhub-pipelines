@@ -2,10 +2,13 @@
 
 layout (location = 0) in vec3 position;
 layout (location = 5) in int modelMatrixIndex;
+layout (location = 6) in vec4 pickColorValue;
 
 uniform samplerBuffer modelMatrixBuffer;
 uniform mat4 view;
 uniform mat4 projection;
+
+out vec4 PickColorValue;
 
 void main() {
 
@@ -25,4 +28,6 @@ void main() {
 
    // Flip Y to match Qt Quick's coordinate system
    gl_Position.y = -gl_Position.y;
+
+   PickColorValue = pickColorValue;
 }

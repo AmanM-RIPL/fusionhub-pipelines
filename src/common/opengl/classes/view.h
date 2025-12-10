@@ -53,6 +53,7 @@ private:
     GLuint m_tbo = 0;
     GLuint m_matrixTexture = 0;
     GLuint m_model_matrix_vbo = 0;
+    GLuint m_pick_color_vbo = 0;
 
     // for color picking
     int m_pickX = -1;

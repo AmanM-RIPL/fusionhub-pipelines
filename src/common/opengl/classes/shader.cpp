@@ -89,6 +89,8 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
     m_projectionId = this->glGetUniformLocation(shaderID, "projection");
     m_viewId = this->glGetUniformLocation(shaderID, "view");
 
+    m_modelMatrixBufferId = this->glGetUniformLocation(shaderID, "modelMatrixBuffer");
+
     if (setPickColorId)
     {
         m_pickColorId = this->glGetUniformLocation(shaderID, "pickColor");
@@ -115,8 +117,6 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
         m_lightAmbientId = this->glGetUniformLocation(shaderID, "light.ambient");
         m_lightDiffuseId = this->glGetUniformLocation(shaderID, "light.diffuse");
         m_lightSpecularId = this->glGetUniformLocation(shaderID, "light.specular");
-
-        m_modelMatrixBufferId = this->glGetUniformLocation(shaderID, "modelMatrixBuffer");
     }
 }
 

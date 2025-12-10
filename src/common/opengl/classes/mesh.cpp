@@ -45,6 +45,7 @@ void Mesh::Combine(Mesh *combinedMesh, QList<Mesh *> meshList)
     std::vector<Vertex> verticies;
     std::vector<unsigned int> indices;
     std::vector<unsigned int> border_indices;
+    std::vector<std::array<float, 4>> pickColor_array;
 
     std::vector<int> model_matrix_indices;
     std::vector<QMatrix4x4> model_matrix = {};
@@ -58,6 +59,11 @@ void Mesh::Combine(Mesh *combinedMesh, QList<Mesh *> meshList)
 
     for (Mesh* mesh: meshList)
     {
+        // needed for color picking
+        unsigned char r,g,b;
+        encodeIdToColor(mesh->getBIMElementId(), r,g,b);
+        std::array<float, 4> pickColor = { r/255.0f, g/255.0f, b/255.0f, 1.0f };
+
         std::vector<Vertex> meshVerticies = mesh->getVerticies();
         verticies.insert(verticies.end(), meshVerticies.begin(),  meshVerticies.end());
 
@@ -79,6 +85,7 @@ void Mesh::Combine(Mesh *combinedMesh, QList<Mesh *> meshList)
         for (Vertex meshVertex: meshVerticies)
         {
             model_matrix_indices.push_back(modelIndex);
+            pickColor_array.push_back(pickColor);
         }
 
         std::vector<unsigned int> meshIndices = mesh->getIndices();
@@ -104,6 +111,7 @@ void Mesh::Combine(Mesh *combinedMesh, QList<Mesh *> meshList)
     combinedMesh->Initialize(verticies, indices, border_indices, numOfVertices, numOfIndices, numOfBorderIndices);
     combinedMesh->SetModelMatricies(model_matrix);
     combinedMesh->SetModelMatrixIndices(model_matrix_indices);
+    combinedMesh->SetPickColorArray(pickColor_array);
 }
 
 void Mesh::GenerateBaseSurface(Mesh *mesh)
@@ -187,6 +195,11 @@ int *Mesh::getModelMatrixIndicesData()
     return m_model_matrix_indices.data();
 }
 
+std::array<float, 4> *Mesh::getPickColorData()
+{
+    return m_pickColor_array.data();
+}
+
 unsigned int Mesh::getNumOfVertices()
 {
     return m_numOfVertices;
@@ -240,9 +253,31 @@ void Mesh::SetModelMatrixIndices(std::vector<int> &model_matrix_indices)
     m_model_matrix_indices = model_matrix_indices;
 }
 
+void Mesh::SetPickColorArray(std::vector<std::array<float, 4> > &pickColor_array)
+{
+    m_pickColor_array = pickColor_array;
+}
+
+unsigned int Mesh::getBIMElementId()
+{
+    return m_bimElementId;
+}
+
+void Mesh::setBIMElementId(unsigned int id)
+{
+    m_bimElementId = id;
+}
+
 void Mesh::UpdateGeometry(QVector3D hitPoint)
 {
     m_verticies[0].position[0] = hitPoint.x();
     m_verticies[0].position[1] = hitPoint.y();
     m_verticies[0].position[2] = hitPoint.z();
+}
+
+void Mesh::encodeIdToColor(unsigned int id, unsigned char &r, unsigned char &g, unsigned char &b)
+{
+    r = (id & 0x000000FF);
+    g = (id & 0x0000FF00) >> 8;
+    b = (id & 0x00FF0000) >> 16;
 }

@@ -91,6 +91,7 @@ void DoorGeometryService::generateMesh2D(BIMElement* doorElement, Mesh* mesh)
 
     // Mesh* mesh = new Mesh(this);
     mesh->Initialize(verticesVector, indices, borderIndices, referenceLine.size(), indices.size(), borderIndices.size());
+    mesh->setBIMElementId(doorElement->getId());
 
 
     // GLfloat* vertices1 = mesh->getVerticies();
@@ -138,7 +139,7 @@ void DoorGeometryService::generateMesh3D(BIMElement* doorElement, Mesh* mesh, IF
 
     // set translation
     float z = distance;
-    float x = referenceLine[0][0] + 0.1; // -0.1 is the default x coordinate of left side
+    float x = referenceLine[0][0] + 1.7; // -0.1 is the default x coordinate of left side
     float y = referenceLine[0][1] + 0.06; // -0.06 is the default y coordinate of left size
     modelMatrix.translate(x,y,z);
 
@@ -157,6 +158,7 @@ void DoorGeometryService::generateMesh3D(BIMElement* doorElement, Mesh* mesh, IF
     modelMatrix.rotate(degrees, 0, 0, 1);
 
     mesh->setModelMatrix(modelMatrix);
+    mesh->setBIMElementId(doorElement->getId());
 
 
 
@@ -232,16 +234,19 @@ FacetModeler::Body DoorGeometryService::generateVoidBody(BIMElement *doorElement
 
     /*
 
-    x = (x2 - x1)/((x2 - x1)^2 + (y2 - y1)^2) * widthDoor + x1
-    y = (y2 - y1)/((x2 - x1)^2 + (y2 - y1)^2) * widthDoor + y1
+    x = (x2 - x1)/sqrt((x2 - x1)^2 + (y2 - y1)^2) * widthDoor + x1
+    y = (y2 - y1)/sqrt((x2 - x1)^2 + (y2 - y1)^2) * widthDoor + y1
 
     */
 
-    float doorWidthPointX = (((referenceLineDoor[1][0] - referenceLineDoor[0][0])/(qPow(referenceLineDoor[1][0] - referenceLineDoor[0][0], 2) + qPow(referenceLineDoor[1][1] - referenceLineDoor[0][1], 2)))*widthDoor) + referenceLineDoor[0][0];
-    float doorWidthPointY = (((referenceLineDoor[1][1] - referenceLineDoor[0][1])/(qPow(referenceLineDoor[1][0] - referenceLineDoor[0][0], 2) + qPow(referenceLineDoor[1][1] - referenceLineDoor[0][1], 2)))*widthDoor) + referenceLineDoor[0][1];
+    float doorWidthPointX = (((referenceLineDoor[1][0] - referenceLineDoor[0][0])/(qSqrt(qPow(referenceLineDoor[1][0] - referenceLineDoor[0][0], 2) + qPow(referenceLineDoor[1][1] - referenceLineDoor[0][1], 2))))*widthDoor) + referenceLineDoor[0][0];
+    float doorWidthPointY = (((referenceLineDoor[1][1] - referenceLineDoor[0][1])/(qSqrt(qPow(referenceLineDoor[1][0] - referenceLineDoor[0][0], 2) + qPow(referenceLineDoor[1][1] - referenceLineDoor[0][1], 2))))*widthDoor) + referenceLineDoor[0][1];
 
     referenceLineDoor[1][0] = doorWidthPointX;
     referenceLineDoor[1][1] = doorWidthPointY;
+
+    qInfo() << "Width of door: " << widthDoor;
+    qInfo() << referenceLineDoor[1][0] << ", " << referenceLineDoor[1][1];
 
     // Host Element Parsing
     std::vector<Point> referenceLineHost = {};
@@ -288,7 +293,7 @@ FacetModeler::Body DoorGeometryService::generateVoidBody(BIMElement *doorElement
 
     OdGeVector3d translationVector(0.0, 0.0, distanceDoor);
     OdGeMatrix3d matrix;
-    matrix.translation(translationVector);
+    matrix.setToTranslation(translationVector);
 
     body.transform(matrix);
 

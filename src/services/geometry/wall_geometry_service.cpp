@@ -89,6 +89,7 @@ void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
 
     // Mesh* mesh = new Mesh(this);
     mesh->Initialize(verticesVector, indices, borderIndices, referenceLine.size(), indices.size(), borderIndices.size());
+    mesh->setBIMElementId(wallElement->getId());
 
 
     // GLfloat* vertices1 = mesh->getVerticies();
@@ -176,6 +177,7 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
     m_openglHelper.getMeshGeometry(body, verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
 
     mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
+    mesh->setBIMElementId(wallElement->getId());
 }
 
 void WallGeometryService::updateGeometry(BIMElement *wallElement, const QVector3D &point)

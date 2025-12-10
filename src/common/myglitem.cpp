@@ -231,6 +231,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
         m_view->SetSelectionCoordinates(m_pickX, m_pickY);
         QVector3D clickedPoint = m_view->GetPointInViewSpace();
+        m_view->Selection();
 
         // update glItem BIM Element
         if (glItem->editableBimElement != nullptr)
@@ -628,7 +629,7 @@ void MyGLRenderer::render() {
 
     if (m_pickRequested)
     {
-        m_view->SetSelectionCoordinates(m_pickX, m_pickY);
+        // m_view->SetSelectionCoordinates(m_pickX, m_pickY);
 
         m_view->Selection();
         // m_view->UpdateGeometry();
@@ -769,21 +770,21 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 
     bimElementList.append(bimElement);
 
-    BIMElement* bimElementNew = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, 0, this);
-    BIMParameter* widthParameterNew = new BIMParameter(1,"1",false,"Width","1",1,this);
-    BIMParameter* heightParameterNew = new BIMParameter(37, "1", false, "Height", "4", 1, this);
-    BIMParameter* rlParameterNew = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0], [4,4]]",1,this);
+    BIMElement* bimElementNew = new BIMElement(2,"1",false,"Wall", "Front Wall", 0, 0, this);
+    BIMParameter* widthParameterNew = new BIMParameter(1,"1",false,"Width","1",2,this);
+    BIMParameter* heightParameterNew = new BIMParameter(37, "1", false, "Height", "4", 2, this);
+    BIMParameter* rlParameterNew = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0], [4,4]]",2,this);
     bimElementNew->addParameter(widthParameterNew);
     bimElementNew->addParameter(heightParameterNew);
     bimElementNew->addParameter(rlParameterNew);
 
     bimElementList.append(bimElementNew);
 
-    BIMElement* bimElementDoor = new BIMElement(1,"1",false,"Door", "Front Door", 0, 1, this);
-    BIMParameter* distanceParameterDoor = new BIMParameter(1,"1",false,"Distance","1",1,this);
-    BIMParameter* heightParameterDoor = new BIMParameter(37, "1", false, "Height", "4", 1, this);
-    BIMParameter* widthParameterDoor = new BIMParameter(1,"1",false,"Width","2",1,this);
-    BIMParameter* rlParameterDoor = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0]]",1,this);
+    BIMElement* bimElementDoor = new BIMElement(3,"1",false,"Door", "Front Door", 0, 1, this);
+    BIMParameter* distanceParameterDoor = new BIMParameter(1,"1",false,"Distance","1",3,this);
+    BIMParameter* heightParameterDoor = new BIMParameter(37, "1", false, "Height", "4", 3, this);
+    BIMParameter* widthParameterDoor = new BIMParameter(1,"1",false,"Width","2",3,this);
+    BIMParameter* rlParameterDoor = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0]]",3,this);
     bimElementDoor->addParameter(distanceParameterDoor);
     bimElementDoor->addParameter(heightParameterDoor);
     bimElementDoor->addParameter(rlParameterDoor);

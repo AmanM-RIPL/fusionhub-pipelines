@@ -18,6 +18,7 @@ void View::Initialize()
     this->glGenBuffers(1, &m_tbo);
     this->glGenBuffers(1, &m_model_matrix_vbo);
     this->glGenTextures(1, &m_matrixTexture);
+    this->glGenBuffers(1, &m_pick_color_vbo);
 
     BindMeshWithOpenGL();
 }
@@ -33,6 +34,7 @@ void View::BindMeshWithOpenGL()
     unsigned int* indices = combinedMesh->getIndicesData();
     unsigned int* borderIndices = combinedMesh->getBorderIndicesData();
     int* modelMatrixIndices = combinedMesh->getModelMatrixIndicesData();
+    std::array<float, 4>* pickColors = combinedMesh->getPickColorData();
     unsigned int numOfVertices = combinedMesh->getNumOfVertices();
     unsigned int numOfIndices = combinedMesh->getNumOfIndices();
     unsigned int numOfBorderIndices = combinedMesh->getNumOfBorderIndices();
@@ -77,6 +79,13 @@ void View::BindMeshWithOpenGL()
 
             this->glVertexAttribIPointer(5, 1, GL_INT, sizeof(int), (void*)0);
             this->glEnableVertexAttribArray(5);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_pick_color_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(std::array<float, 4>) * numOfVertices, pickColors, GL_STATIC_DRAW);
+
+            // pickColor Values
+            this->glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(std::array<float, 4>), (void*)0);
+            this->glEnableVertexAttribArray(6);
 
 
         //TRIANGLE IBO
@@ -228,7 +237,7 @@ void View::Selection()
             // --- Upload to shader ---
             this->glActiveTexture(GL_TEXTURE0);
                 this->glBindTexture(GL_TEXTURE_BUFFER, m_matrixTexture);
-            this->glUniform1i(shader->getModelMatrixBufferId(), 0);
+            this->glUniform1i(pickingShader->getModelMatrixBufferId(), 0);
 
             this->glUniformMatrix4fv(pickingShader->getViewId(),  1, GL_FALSE, camera->calculateViewMatrix().constData());
             this->glUniformMatrix4fv(pickingShader->getProjectionId(),  1, GL_FALSE, m_projectionMatrix.constData());
@@ -449,6 +458,7 @@ View::~View()
     this->glDeleteBuffers(1, &m_tbo);
     this->glDeleteTextures(1, &m_matrixTexture);
     this->glDeleteBuffers(1, &m_model_matrix_vbo);
+    this->glDeleteBuffers(1, &m_pick_color_vbo);
     this->glDeleteVertexArrays(1, &m_vao);
 
     delete combinedMesh;
