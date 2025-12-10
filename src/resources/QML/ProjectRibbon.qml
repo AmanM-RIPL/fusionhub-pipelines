@@ -230,7 +230,7 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            // newProjectClicked()
+                            projectPageToRedirect("WorkBillingLine")
                         }
                     }
                 }

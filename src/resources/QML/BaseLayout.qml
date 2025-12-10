@@ -87,6 +87,10 @@ Rectangle {
             visible: pageName === "MaterialIndent"
         }
 
+        WorkBillingLinePage {
+            visible: pageName === "WorkBillingLine"
+        }
+
 
 
         /*
