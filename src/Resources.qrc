@@ -76,5 +76,6 @@
         <file>resources/QML/SchedulePage.qml</file>
         <file>resources/QML/GoodReceivedNotePage.qml</file>
         <file>resources/QML/MaterialIndentPage.qml</file>
+        <file>resources/QML/UnitOfMeasurementPage.qml</file>
     </qresource>
 </RCC>

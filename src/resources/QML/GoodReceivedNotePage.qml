@@ -168,7 +168,7 @@ Column {
     FHTable {
         height: 200
         leftPadding: 20
-        model: goodReceivedNoteRoot.goodReceivedNoteListForTable
+        model: goodReceivedNoteRoot.goodReceivedNoteList
         columns: [{
                 "label": "Id",
                 "width": 100,
@@ -176,7 +176,7 @@ Column {
             }, {
                 "label": "Purchase Order",
                 "width": 300,
-                "key": "purchaseOrder"
+                "key": "purchaseOrderLineId"
             }, {
                 "label": "Quantity",
                 "width": 300,
@@ -194,38 +194,10 @@ Column {
 
     function showList() {
         if (goodReceivedNoteRoot.visible) {
-            //goodReceivedNote data
-            goodReceivedNoteList = goodReceivedNoteController.getGoodReceivedNoteList(
-                        isApproved)
+            goodReceivedNoteRoot.goodReceivedNoteList =
+                    goodReceivedNoteController.getGoodReceivedNoteList(isApproved)
 
-            //poLine data
-            purchaseOrderLineList = purchaseOrderLineController.getPurchaseOrderLineList(
-                        isApproved)
-
-            //po data
-            purchaseOrderList = purchaseOrderController.getPurchaseOrderList(
-                        isApproved)
-
-            const poNames = purchaseOrderLineList.map(po => po.purchaseOrderId)
-            purchaseOrderLineText = poNames
-
-            //goodReceivedNote data for table
-            goodReceivedNoteListForTable = goodReceivedNoteList.map(
-                        (goodReceivedNote, goodReceivedNoteIndex) => {
-                            const po = purchaseOrderLineList.filter(
-                                x => x.id === goodReceivedNote.purchaseOrderLineId)
-
-                            let poText = "Unknown"
-                            if (po.length > 0) {
-                                poText = po[0].id
-                            }
-
-                            return {
-                                "id": goodReceivedNote.id,
-                                "quantity": goodReceivedNote.quantity,
-                                "purchaseOrder": poText
-                            }
-                        })
+            //console.log("List:", JSON.stringify(goodReceivedNoteRoot.goodReceivedNoteList))
         }
     }
 }

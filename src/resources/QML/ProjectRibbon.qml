@@ -554,6 +554,21 @@ Column {
                         }
                     }
                 }
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/budget_icon.png"
+                    btnName: "UOM"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            projectPageToRedirect("UnitOfMeasurement")
+                        }
+                    }
+                }
             }
 
 
