@@ -17,7 +17,7 @@ Column {
     property int headerFontPixelSize: 12
     //property string rowColor: "transparent"
     property bool isTextVisible: true
-    property bool isRectVisible: false    
+    property bool isRectVisible: false
 
     readonly property int totalColumnWidth: {
         var total = 0;
@@ -123,7 +123,7 @@ Column {
                     Repeater {
                         model: tableRoot.columns
 
-                        Rectangle {                            
+                        Rectangle {
                             width: modelData.width
                             height: 30
                             Text {
@@ -140,8 +140,8 @@ Column {
                     height: 1
                     color: "#EDF1F4"
                 }
-            }           
-        }        
+            }
+        }
     }
 }
 

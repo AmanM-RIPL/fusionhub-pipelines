@@ -135,7 +135,7 @@ Column {
 
 
                         onRemoveRowChanged: {
-                            console.log("onRemoveRowChanged:", removedIndex.toString())
+                          //  console.log("onRemoveRowChanged:", removedIndex.toString())
                             costParameterList.splice(removedIndex, 1)
                         }
                     }

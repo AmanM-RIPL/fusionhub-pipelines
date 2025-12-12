@@ -240,7 +240,7 @@ Column {
 
 
 
-    FHTable {
+    MainTable {
         height: 300
         leftPadding: 20
         model: unitOfMeasurementRoot.unitOfMeasurementList

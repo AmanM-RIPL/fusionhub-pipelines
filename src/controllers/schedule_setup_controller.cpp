@@ -135,7 +135,7 @@ std::vector<ScheduleSetup*> ScheduleSetupController::getSetupList(bool isApprove
                 int totalRow = jsonObj["rows"].toInt();
                 QString strRows = QString::number(totalRow);
                 scheduleSetups[i]->setCostParameter(strRows);
-                qDebug() << "jsonStringCostParam:" << strRows;
+              //  qDebug() << "jsonStringCostParam:" << strRows;
             }
         }
 
@@ -147,7 +147,7 @@ std::vector<ScheduleSetup*> ScheduleSetupController::getSetupList(bool isApprove
                 int totalRow = jsonObj["rows"].toInt();
                 QString strRows = QString::number(totalRow);
                 scheduleSetups[i]->setResourceParameter(strRows);
-                qDebug() << "jsonStringResourceParam:" << strRows;
+             //   qDebug() << "jsonStringResourceParam:" << strRows;
             }
         }
     }
