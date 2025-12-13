@@ -245,9 +245,6 @@ FacetModeler::Body DoorGeometryService::generateVoidBody(BIMElement *doorElement
     referenceLineDoor[1][0] = doorWidthPointX;
     referenceLineDoor[1][1] = doorWidthPointY;
 
-    qInfo() << "Width of door: " << widthDoor;
-    qInfo() << referenceLineDoor[1][0] << ", " << referenceLineDoor[1][1];
-
     // Host Element Parsing
     std::vector<Point> referenceLineHost = {};
     float widthHost = 0;
@@ -300,3 +297,101 @@ FacetModeler::Body DoorGeometryService::generateVoidBody(BIMElement *doorElement
     return body;
 }
 
+void DoorGeometryService::updateGeometry(BIMElement *doorElement, BIMElement* hostElement, const QVector3D &point)
+{
+    // Door Element Parsing
+    std::vector<Point> referenceLineDoor = {};
+    float widthDoor = 0;
+    float heightDoor = 0;
+    float distanceDoor = 0;
+
+
+    m_openglHelper.extractBIMParameters(doorElement, referenceLineDoor, widthDoor, heightDoor, distanceDoor);
+
+    // Host Element Parsing
+    std::vector<Point> referenceLineHost = {};
+    float widthHost = 0;
+    float heightHost = 0;
+    float distanceHost = 0;
+
+
+    m_openglHelper.extractBIMParameters(hostElement, referenceLineHost, widthHost, heightHost, distanceHost);
+
+    // door's host element can only be a wall
+    if (hostElement->getType() != "Wall")
+    {
+        return;
+    }
+
+    // We project the clicked point on the each reference line segment
+    // then we choose the segment with the smalled distance to that line
+    // segment. The second point of that segment is the line segment we need.
+    float distanceToSegment = 0;
+    Point projectionPointOnSegment = { 0.0f, 0.0f };
+    int referenceLineHostIndex = 0;
+
+    for (int i = 0; i < referenceLineHost.size() - 1; i++)
+    {
+        Point firstPoint = referenceLineHost[i];
+        Point secondPoint = referenceLineHost[i + 1];
+
+        // vector from firstPoint to secondPoint
+        QVector3D firstPointVector = QVector3D(firstPoint[0], firstPoint[1], 0.0f);
+        QVector3D secondPointVector = QVector3D(secondPoint[0], secondPoint[1], 0.0f);
+        QVector3D vectorReferenceLine = secondPointVector - firstPointVector;
+
+        // vector deom firstPoint to clicked point
+        QVector3D vectorToClickedPoint = point - firstPointVector;
+
+        // projection point
+        QVector3D projectionPoint = firstPointVector + (QVector3D::dotProduct(vectorToClickedPoint, vectorReferenceLine)/QVector3D::dotProduct(vectorReferenceLine, vectorReferenceLine)) * vectorReferenceLine;
+
+        // distance between projection point and clicked point
+        float distanceToProjection = projectionPoint.distanceToPoint(point);
+
+        if (distanceToProjection < distanceToSegment)
+        {
+            distanceToSegment = distanceToProjection;
+            projectionPointOnSegment[0] = projectionPoint.x();
+            projectionPointOnSegment[1] = projectionPoint.y();
+            referenceLineHostIndex = i;
+        }
+    }
+
+    // ideally should indicate some kind of bug, please check.
+    if (referenceLineHostIndex < 0)
+    {
+        return;
+    }
+
+    // update the new point in the reference line
+    referenceLineDoor.push_back({ projectionPointOnSegment[0], projectionPointOnSegment[1] });
+    referenceLineDoor.push_back({ referenceLineHost[referenceLineHostIndex + 1][0], referenceLineHost[referenceLineHostIndex + 1][1] });
+
+    // updating the BIMElement
+    QJsonArray referenceLineJsonArray;
+
+    for (const auto& pointArray : referenceLineDoor) {
+        QJsonArray jsonInnerArray;
+        for (float value : pointArray) {
+            jsonInnerArray.append(QJsonValue(value));
+        }
+        referenceLineJsonArray.append(jsonInnerArray);
+    }
+
+    QJsonDocument jsonDoc(referenceLineJsonArray);
+    QByteArray byteArray = jsonDoc.toJson(QJsonDocument::Compact);
+    QString referenceLineString = QString(byteArray);
+
+    QList<BIMParameter*> parameterList = doorElement->getParameterList();
+
+    for (BIMParameter* parameter: parameterList)
+    {
+        if (parameter->getKey() == "ReferenceLine")
+        {
+            parameter->setValue(referenceLineString);
+
+            break;
+        }
+    }
+}

@@ -222,6 +222,15 @@ unsigned int View::Selection()
     {
         // Bind picking framebuffer
         this->glBindFramebuffer(GL_FRAMEBUFFER, m_pickFBO);
+            this->glEnable(GL_DEPTH_TEST);
+            this->glDepthFunc(GL_LEQUAL);
+            this->glDepthMask(GL_TRUE);
+            this->glDisable(GL_BLEND);
+
+            this->glEnable(GL_CULL_FACE);
+            this->glCullFace(GL_BACK);
+            this->glFrontFace(GL_CW); // GL_CW or GL_CCW ??? GL_CW seems to work because we flipped Y in the vertex shader
+
             this->glViewport(0, 0, viewportWidth, viewportHeight);
             this->glClearColor(0,0,0,0);
             this->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
