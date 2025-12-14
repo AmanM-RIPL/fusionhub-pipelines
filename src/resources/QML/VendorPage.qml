@@ -2,7 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls
 import QtQuick.Layouts
 import com.fh.models 1.0
-import com.fh.controllers;
+import com.fh.controllers
 
 Column {
     // anchors.fill: parent

@@ -38,9 +38,10 @@ Task* TaskRepository::mapFromQueryQML(const QSqlQuery& query, QObject* parent) c
     task->setApprovalStatus(query.value("approval_status").toBool());
     task->setTaskName(query.value("task_name").toString());
     task->setDescription(query.value("description").toString());
-    task->setBimElement(query.value("bimElement").toString());
-    task->setStartDate(query.value("startDate").toString());
-    task->setEndDate(query.value("endDate").toString());
+    task->setBimElement(query.value("bim_element").toString());
+    task->setStartDate(query.value("start_date").toString());
+    task->setEndDate(query.value("end_date").toString());
+    task->setParentId(query.value("pid").toInt());
 
     return task;
 }
@@ -52,11 +53,12 @@ void TaskRepository::bindEntityToQuery(QSqlQuery& query, const Task& entity) con
     query.addBindValue(entity.getBimElement());
     query.addBindValue(entity.getStartDate());
     query.addBindValue(entity.getEndDate());
+    query.addBindValue(entity.getParentId());
 }
 QString TaskRepository::getInsertQuery() const {
-    return "INSERT INTO Task (global_id, approval_status, task_name, description, bim_element, start_date, end_element) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    return "INSERT INTO Task (global_id, approval_status, task_name, description, bim_element, start_date, end_date, pid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 }
 QString TaskRepository::getUpdateQuery() const {
     return "UPDATE Task SET global_id = ?, approval_status = ?, task_name = ?, "
-           "description = ?, bim_element = ? ,start_date = ? , end_date = ? ";
+           "description = ?, bim_element = ?, start_date = ?, end_date = ?, pid = ?";
 }

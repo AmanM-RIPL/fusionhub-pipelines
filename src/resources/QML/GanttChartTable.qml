@@ -16,6 +16,11 @@ Column {
     property int monthScale: 5
     property var rowDataForGantt: []
 
+     property int rowNumber: 0
+    property int colNumber:-1
+
+
+
 
     readonly property int totalColumnWidth: {
         var total = 0;
@@ -73,16 +78,25 @@ Column {
                 //padding: 10
                 property var rowData: modelData
 
+
+                Component.onCompleted:
+                {
+                  rowNumber++;
+                  //console.log("rowNumber:", rowNumber)
+                }
+
                 Row {
                     //spacing: 20
                     spacing: 2
+
                     Repeater {
                         model: tableRoot.columns
 
                         Rectangle {
                             id:idMainRect
                             width: modelData.width
-                            height: 30                            
+                            height: 30
+
                             RowLayout{
                                 width: modelData.width
                                 height: 30                                
@@ -90,7 +104,49 @@ Column {
                                     id:idRect
                                     width: rowData[modelData.days] !== undefined ? rowData[modelData.days]*monthScale : modelData.width //monthScale = 5
                                     Layout.leftMargin: rowData[modelData.startx] !== undefined ? rowData[modelData.startx]*monthScale : 0
-                                    height: 15                                   
+                                    height: 15
+
+                                    Component.onCompleted: {
+                                         //console.log("rowkey:", modelData.key, "value:", rowData[modelData.key], "id:", rowData[modelData.id], "pid:", rowData[modelData.pid], "x:",idRect.x, "y:",idRect.y ,"width:", idRect.width, "height:", idRect.height );
+                                         console.log("startday:", modelData.startx);
+                                        console.log("modelData.days:", modelData.days);
+                                        console.log("rowData[modelData.days]:", rowData[modelData.days]);
+                                        console.log("rowData[modelData.startx] :", rowData[modelData.startx]);
+                                        colNumber++;
+                                        if(colNumber > 11)
+                                        {
+                                            colNumber = 0;
+                                        }
+
+                                        var keyValue = String(rowData[modelData.key]).trim();
+
+                                        if(keyValue.length > 0 && keyValue !== "0"){
+                                            idRect.color = "red"
+
+                                            Qt.callLater(function() {
+                                                 // 1. Get the absolute position of idRect on the entire screen/window
+                                                var globalPoint = idRect.mapToGlobal(0, 0);
+
+                                                // 2. Map that global screen point *back* into the local coordinate system of the 'linesOverlay'
+                                                // We use linesOverlay.mapFromGlobal(globalX, globalY)
+                                                var canvasPoint = linesOverlay.mapFromGlobal(globalPoint.x, globalPoint.y);
+
+                                                var data = {x:0, y:0, id:0, pid:0, width:0, height:0, month:""};
+                                                data.x = canvasPoint.x
+                                                data.y = canvasPoint.y;
+
+                                                data.id = rowData[modelData.id];
+                                                data.pid = rowData[modelData.pid];
+                                                data.width = idRect.width;
+                                                data.height = idRect.height;
+                                                data.month = modelData.key;
+
+                                                rowDataForGantt.push(data);
+                                                linesOverlay.requestPaint();
+                                            });
+                                        }
+                                    }
+
                                     Text {
                                         id:idText
                                         text:rowData[modelData.key] !== undefined ? rowData[modelData.key] : ""
@@ -98,26 +154,6 @@ Column {
                                         anchors.centerIn: parent
                                         topPadding: 1
                                         bottomPadding: 3
-                                    }
-
-                                    Component.onCompleted: {
-                                         //console.log("rowkey:", modelData.key, "value:", rowData[modelData.key], "id:", rowData[modelData.id], "pid:", rowData[modelData.pid], "x:",idRect.x, "y:",idRect.y ,"width:", idRect.width, "height:", idRect.height );
-
-                                        if(rowData[modelData.key].trim() > 0 && rowData[modelData.key].trim() !== "0"){
-                                            idRect.color = "red"
-
-                                            var data = {x:0, y:0, id:0, pid:0, width:0, height:0, month:""};
-                                            data.x = idRect.x;
-                                            data.y = index*30+10;
-                                            console.log("index:", index);
-                                            data.id = rowData[modelData.id];
-                                            data.pid = rowData[modelData.pid];
-                                            data.width = idRect.width;
-                                            data.height = idRect.height;
-                                            data.month = modelData.key;
-                                            console.log("month:", data.month);
-                                            rowDataForGantt.push(data);
-                                        }
                                     }
                                 }
                             }
@@ -131,7 +167,15 @@ Column {
                     color: "#EDF1F4"
                 }
             }
-            //onContentYChanged: linesOverlay.requestPaint()
+           //onContentYChanged: linesOverlay.requestPaint()
+            Component.onCompleted: {
+                linesOverlay.requestPaint()
+            }
+
+            onVisibleChanged: {
+               linesOverlay.requestPaint()
+
+           }
         }
         Canvas
         {
@@ -142,6 +186,21 @@ Column {
             onPaint: {
                 var ctx = getContext("2d");
                 ctx.clearRect(0, 0, width, height); // Clear previous frame
+
+                function drawArrowhead(ctx, fromX, fromY, toX, toY, size) {
+                    const angle = Math.atan2(toY - fromY, toX - fromX); // Calculate the angle of the line
+                    const angle1 = angle - Math.PI / 6; // Wing 1 angle (30 degrees offset)
+                    const angle2 = angle + Math.PI / 6; // Wing 2 angle (30 degrees offset)
+
+                    // Move to the endpoint of the main line
+                    ctx.moveTo(toX, toY);
+                    // Draw the first wing of the arrow head
+                    ctx.lineTo(toX - size * Math.cos(angle1), toY - size * Math.sin(angle1));
+                    ctx.moveTo(toX, toY); // Move back to the tip
+                    // Draw the second wing of the arrow head
+                    ctx.lineTo(toX - size * Math.cos(angle2), toY - size * Math.sin(angle2));
+                }
+
                 ctx.lineWidth = 2;
                 ctx.strokeStyle = "red";
                 ctx.beginPath();
@@ -160,71 +219,37 @@ Column {
                         var idNew = modelDataNew.id;
                         var pidNew = modelDataNew.pid;
 
-                        if(id === pidNew && xNew !== x)
+                        console.log("id:", id, "pidNew:", pidNew, "xNew:", xNew, "x:", x );
+
+                        if(id === pidNew)// && xNew !== x)
                         {
                             const arrowHeadSize = 7; // Size of the arrowhead wings
-                            //console.log("id:", id, "pid:", pidNew);
-                            if(modelData.month ==="jan" && modelDataNew.month === "feb"){
-                                ctx.moveTo(modelData.x + modelData.width, modelData.y + 6);
-                                ctx.lineTo(modelData.x + modelData.width +3, modelData.y + 6 )
+                            ctx.moveTo(modelData.x + modelData.width, modelData.y + 6);
+                            ctx.lineTo(modelData.x + modelData.width + 3, modelData.y + 6 )
 
-                                ctx.moveTo(modelData.x + modelData.width + 3, modelData.y + 6);
-                                ctx.lineTo(modelData.x + modelData.width + 3, modelData.y + 37 )
+                            ctx.moveTo(modelData.x + modelData.width + 3, modelData.y + 6);
+                            ctx.lineTo(modelData.x + modelData.width + 3, modelData.y + 37 )
 
-                                ctx.moveTo(modelData.x + modelData.width + 3, modelData.y + 37);
-                                ctx.lineTo(xNew+(31+0.5)*5, modelDataNew.y+7);
+                            ctx.moveTo(modelData.x + modelData.width + 3, modelData.y + 37);
+                            //ctx.lineTo(xNew+(31+0.5)*5, modelDataNew.y+7);
+                            ctx.lineTo(xNew, modelDataNew.y+7);
 
-                                ctx.stroke();
+                            ctx.stroke();
 
-                                var fromX = modelData.x + modelData.width + 3;
-                                var fromY = modelData.y+37;
-                                var toX = xNew+(31+0.5)*5;
-                                var toY = modelDataNew.y+7;
+                            var fromX = modelData.x + modelData.width + 3;
+                            var fromY = modelData.y+37;
+                            //var toX = xNew+(31+0.5)*5;
+                            var toX = xNew;
+                            var toY = modelDataNew.y+7;
 
-                                drawArrowhead(ctx, fromX, fromY, toX, toY, arrowHeadSize);
-                                ctx.stroke();
-                            }
-                            if(modelData.month === "feb" && modelDataNew.month === "mar"){
-                                ctx.moveTo(modelData.x+(28+1)*5 + modelData.width, modelData.y + 6);
-                                ctx.lineTo(modelData.x+(28+3)*5 + modelData.width + 3, modelData.y + 6 )
-
-                                ctx.moveTo(modelData.x+(28+3)*5 + modelData.width + 3, modelData.y + 6);
-                                ctx.lineTo(modelData.x+(28+3)*5 + modelData.width + 3, modelData.y + 37 )
-
-                                ctx.moveTo(modelData.x+(28+3)*5 + modelData.width + 3, modelData.y + 37);
-                                ctx.lineTo(xNew+(59+1)*5, modelDataNew.y + 7);
-
-                                ctx.stroke();
-
-                                var startX = modelData.x+(28+3)*5 + modelData.width + 3;
-                                var startY = modelData.y+37;
-                                var endX = xNew+(59+1)*5;
-                                var endY = modelDataNew.y+7;
-
-                                drawArrowhead(ctx, startX, startY, endX, endY, arrowHeadSize);
-                                ctx.stroke();
-                            }
+                            drawArrowhead(ctx, fromX, fromY, toX, toY, arrowHeadSize);
+                            ctx.stroke();
                         }                       
                     }
                 }
             }
         }
-    }
-
-
-    function drawArrowhead(ctx, fromX, fromY, toX, toY, size) {
-        const angle = Math.atan2(toY - fromY, toX - fromX); // Calculate the angle of the line
-        const angle1 = angle - Math.PI / 6; // Wing 1 angle (30 degrees offset)
-        const angle2 = angle + Math.PI / 6; // Wing 2 angle (30 degrees offset)
-
-        // Move to the endpoint of the main line
-        ctx.moveTo(toX, toY);
-        // Draw the first wing of the arrow head
-        ctx.lineTo(toX - size * Math.cos(angle1), toY - size * Math.sin(angle1));
-        ctx.moveTo(toX, toY); // Move back to the tip
-        // Draw the second wing of the arrow head
-        ctx.lineTo(toX - size * Math.cos(angle2), toY - size * Math.sin(angle2));
-    }
+    }   
 }
 
 

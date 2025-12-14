@@ -222,7 +222,8 @@ QString DatabaseManager::getCreateTableQuery(const QString& tableName)
                 description TEXT,
                 bim_element TEXT,
                 start_date TEXT,
-                end_date TEXT
+                end_date TEXT,
+                pid INTEGER
             )
         )";
     }

@@ -374,7 +374,7 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            projectPageToRedirect("Gantt")
+                           // projectPageToRedirect("Gantt")
                         }
                     }
                 }
