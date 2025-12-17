@@ -65,7 +65,7 @@ void GeometryServiceFactory::generateMesh3D(BIMElement *bimElement, Mesh *mesh, 
     }
 }
 
-void GeometryServiceFactory::updateGeometry(BIMElement *bimElement, const QVector3D &point)
+void GeometryServiceFactory::updateGeometry(const QVector3D& point, BIMElement* bimElement, BIMElement* hostElement)
 {
     if (bimElement->getType() == "Wall")
     {
@@ -86,5 +86,10 @@ void GeometryServiceFactory::updateGeometry(BIMElement *bimElement, const QVecto
     {
         SlabGeometryService service = SlabGeometryService();
         service.updateGeometry(bimElement, point);
+    }
+    else if (bimElement->getType() == "Door" && hostElement != nullptr)
+    {
+        DoorGeometryService service = DoorGeometryService();
+        service.updateGeometry(bimElement, hostElement, point);
     }
 }

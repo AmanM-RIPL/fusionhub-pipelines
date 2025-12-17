@@ -14,6 +14,19 @@ void DoorGeometryService::generateMesh2D(BIMElement* doorElement, Mesh* mesh)
 
     m_openglHelper.extractBIMParameters(doorElement, referenceLine, width, height, distance);
 
+    /*
+
+    x = (x2 - x1)/sqrt((x2 - x1)^2 + (y2 - y1)^2) * widthDoor + x1
+    y = (y2 - y1)/sqrt((x2 - x1)^2 + (y2 - y1)^2) * widthDoor + y1
+
+    */
+
+    float doorWidthPointX = (((referenceLine[1][0] - referenceLine[0][0])/(qSqrt(qPow(referenceLine[1][0] - referenceLine[0][0], 2) + qPow(referenceLine[1][1] - referenceLine[0][1], 2))))*width) + referenceLine[0][0];
+    float doorWidthPointY = (((referenceLine[1][1] - referenceLine[0][1])/(qSqrt(qPow(referenceLine[1][0] - referenceLine[0][0], 2) + qPow(referenceLine[1][1] - referenceLine[0][1], 2))))*width) + referenceLine[0][1];
+
+    referenceLine[1][0] = doorWidthPointX;
+    referenceLine[1][1] = doorWidthPointY;
+
     // setting width to 0.5 for demo purposes
     width = 0.5;
 
@@ -349,7 +362,14 @@ void DoorGeometryService::updateGeometry(BIMElement *doorElement, BIMElement* ho
         // distance between projection point and clicked point
         float distanceToProjection = projectionPoint.distanceToPoint(point);
 
-        if (distanceToProjection < distanceToSegment)
+        if (i == 0)
+        {
+            distanceToSegment = distanceToProjection;
+            projectionPointOnSegment[0] = projectionPoint.x();
+            projectionPointOnSegment[1] = projectionPoint.y();
+            referenceLineHostIndex = i;
+        }
+        else if (distanceToProjection < distanceToSegment)
         {
             distanceToSegment = distanceToProjection;
             projectionPointOnSegment[0] = projectionPoint.x();
@@ -394,4 +414,7 @@ void DoorGeometryService::updateGeometry(BIMElement *doorElement, BIMElement* ho
             break;
         }
     }
+
+    // updatin host_id in BIMElement
+    doorElement->setHostId(hostElement->getId());
 }

@@ -993,11 +993,13 @@ Row {
 
             onAcceptCallback: function () {
                 //doorController.create("projectname", doorTotalHeightTextBox.text, doorWidthTextBox.text);
-                let bimElementPtr = bimElementController.create("Door", "Front Door", 0);
+                let bimElementPtr = bimElementController.create("Door", "Front Door", 0, 0);
                 bimElementController.addParameter(bimElementPtr, "Height", doorTotalHeightText);
                 bimElementController.addParameter(bimElementPtr, "Width", doorWidthText);
                 bimElementController.addParameter(bimElementPtr, "Distance", doorDistanceText);
                 bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
+
+                glscene.updateEditableBimElement(bimElementPtr);
 
                 doorTotalHeightText = "";
                 doorDistanceText = "";
