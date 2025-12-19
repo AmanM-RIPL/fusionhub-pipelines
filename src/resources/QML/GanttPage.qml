@@ -21,9 +21,15 @@ Rectangle {
 
     property bool isApproved: false
 
-    property date startDate: new Date(2025, 0, 15) // Jan 15, 2025 (months are 0-based)
-    property date endDate: new Date(2025, 0, 20)   // Jan 20, 2025
-    property date selectedDate: new Date() // Initialize with today's date
+    //property date startDate: new Date(2025, 0, 15) // Jan 15, 2025 (months are 0-based)
+   // property date endDate: new Date(2025, 0, 20)   // Jan 20, 2025
+
+    property int startYear: 2080
+    property int endYear: 2010
+
+    property date selectedDate: new Date()
+
+
 
    /* property var  task_month_paramList: [
         {"id":"1", "pid":"0", "task":"Cutting", "duration":"20 days", "days":"20", "startx":"3", "endx":"22", "start":"3/01/2025", "end":"22/01/2025",  "jan":"20", "feb":" ", "mar":" ", "apr":" ", "may":" ", "jun":" ",
@@ -39,6 +45,7 @@ Rectangle {
     property var monthModel: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     property var  task_month_paramList: []
     property var task_idList: []
+    property var valuesToRemove: []
 
     ListModel {
         id: yearModel
@@ -339,8 +346,6 @@ Rectangle {
             calendarPopup_endDate.visible = false;
             taskStartDateTextBox.focus = false;
             taskEndDateTextBox.focus = false;
-
-
         }
 
         onCancelCallback: function () {
@@ -350,12 +355,10 @@ Rectangle {
             taskEndDateTextBox.text = "";
             taskBIMObjectTextBox.text = "";
 
-
             calendarPopup_startDate.visible = false;
             calendarPopup_endDate.visible = false;
             taskStartDateTextBox.focus = false;
             taskEndDateTextBox.focus = false;
-
         }
 
         onOpened:
@@ -367,7 +370,6 @@ Rectangle {
             width: parent.width
             height: 300//parent.height //30 for each top bottom
 
-
             Text{
                 id: taskNameLabel
                 text: "Task Name"
@@ -376,7 +378,6 @@ Rectangle {
                 font.pixelSize: 14
                 font.family: "Segoe UI"
             }
-
 
             CustomTextBox{
                 id: taskNameTextBox
@@ -569,12 +570,10 @@ Rectangle {
 
             onCurrentTextChanged: {
                 if(approvalTypeComboBox.currentText === "Approved"){
-                    isApproved = true;
-                    //console.log("Vendor::Selected text1:", approvalTypeComboBox.currentText)
+                    isApproved = true;                   
                 }
                 else{
-                    isApproved = false;
-                    //console.log("Vendor::Selected text2:", approvalTypeComboBox.currentText)
+                    isApproved = false;                    
                 }
                 showList();
             }
@@ -599,18 +598,7 @@ Rectangle {
             color: "#FAF9F8"
             border.color: "#8A888629"
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.top
-
-            /*Text{
-                text:"New Task"
-                color: "#000000"
-                font.pixelSize: 20
-                font.weight: 700
-                anchors.left: parent.left
-                anchors.top: parent.top
-                anchors.topMargin: 21
-                anchors.leftMargin: 50
-            }*/
+            anchors.top: parent.top            
 
             CustomButton {
                 color: "#007AFF"
@@ -693,7 +681,7 @@ Rectangle {
                             color: "lightgray"//"gray"
 
                             Text{
-                                text:"Year"
+                                text:"Year: " + startYear.toString() + " - to - " + endYear.toString()
                                 color: "#000000"
                                 font.pixelSize: 20
                                 font.weight: 700
@@ -719,7 +707,7 @@ Rectangle {
                                 clip: true
 
                                 ColumnLayout{
-                                    width: 31 * monthScale * 12 + 10//TotalMonths
+                                    width: generatGanttWidth(startYear, endYear, monthScale)//31 * monthScale * totalMonths + 10//TotalMonths
                                     height: parent.height
                                     spacing: 2
 
@@ -737,7 +725,7 @@ Rectangle {
                                                 headerHeight:50
                                                 headerFontPixelSize:20
                                                 model: task_month_paramList //monthParamList
-                                                columns: [
+                                                /*columns: [
                                                     { label: "Jan", width: 31 * monthScale, key: "jan", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
                                                     { label: "Feb", width: febMonthWidth * monthScale, key: "feb", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
                                                     { label: "Mar", width: 31  * monthScale, key: "mar", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
@@ -750,7 +738,9 @@ Rectangle {
                                                     { label: "Oct", width: 31 * monthScale, key: "oct", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
                                                     { label: "Nov", width: 30 * monthScale, key: "nov", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
                                                     { label: "Dec", width: 31 * monthScale, key: "dec", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                ]
+                                                ]*/
+
+                                                 columns: generateGanttColumns(startYear, endYear, monthScale)
                                             }                                            
                                         }                                        
                                     }
@@ -780,8 +770,30 @@ Rectangle {
             task_month_paramList = taskController.getTaskList(isApproved);
 
             task_idList = [];
+
             //here added first element zero for there is no parent id
             task_idList = [0, ...task_month_paramList.map(element => element.id)];
+
+            var tempFilteredArray = task_idList.filter(function(element) {
+
+                        return valuesToRemove.indexOf(element) === -1;
+                    });
+
+            task_idList = tempFilteredArray;
+
+            for(var i = 0; i < task_month_paramList.length; i++)
+            {
+                var task =  task_month_paramList[i];
+
+                if(startYear > task.startYear )
+                {
+                    startYear = task.startYear;
+                }
+                if(endYear < task.endYear)
+                {
+                    endYear = task.endYear;
+                }
+            }            
         }
     }
 
@@ -791,5 +803,52 @@ Rectangle {
         for (var i = 2010; i < 2081; i++) {
              yearModel.append({"text" : i});
         }
-    }   
+    }
+
+
+    /**********************Start Dynamic month***********************/
+
+    // Helper to get days in a month
+    function getDaysInMonth(year, month) {
+        return new Date(year, month + 1, 0).getDate();
+    }
+
+    // Generate columns for a range of years
+    function generateGanttColumns(startYear, endYear, monthScale) {
+        const columns = [];
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+
+        for (let year = startYear; year <= endYear; year++)
+        {
+            for (let month = 0; month < 12; month++) {
+                const daysCount = getDaysInMonth(year, month);
+                const monthKey = monthNames[month].toLowerCase();
+
+                columns.push({
+                    label: `${monthNames[month]} ${year}`,
+                    width: daysCount * monthScale,
+                    //key: `${monthKey}_${year}`,
+                    key: `${monthKey}`,
+                    startx: "startDay",
+                    endx: "endDay",
+                    days: "days",
+                    id: "id",
+                    pid: "pid",
+                    startYear:"startYear",
+                    year:"year",
+                    startDate:"startDate"
+                });
+            }
+        }
+        return columns;
+    }
+
+    function generatGanttWidth(startYear, endYear, monthScale)
+    {
+       return  31 * monthScale * (endYear - startYear + 1) * 12  + 10;
+    }
+
+    /*************End of Dynamica month********************************/
 }

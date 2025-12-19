@@ -46,10 +46,8 @@ class Task: public QObject
     Q_PROPERTY(QString dec READ getDec WRITE setDec NOTIFY decChanged)
 
 
-
-
-
-    //"startx":"5", "endx":"30", "start":"5/03/2025", "end":"30/03/2025"
+    Q_PROPERTY(int startYear READ getStartYear WRITE setStartYear NOTIFY startYearChanged)
+    Q_PROPERTY(int endYear READ getEndYear WRITE setEndYear NOTIFY endYearChanged)
 
 
 public:
@@ -96,6 +94,9 @@ public:
     QString getNov() const { return nov; }
     QString getDec() const { return dec; }
 
+    int getStartYear() const { return startYear; }
+    int getEndYear() const { return endYear; }
+
 
     void setId(int id) { this->id = id; }
     void setGlobalId(const QString& globalId) { this->globalId = globalId; }
@@ -129,6 +130,9 @@ public:
 
     void setNov(const QString& nov) { this->nov = nov; }
     void setDec(const QString& dec) { this->dec = dec; }
+
+    void setStartYear(const int startYear) { this->startYear = startYear; }
+    void setEndYear(const int endYear) { this->endYear = endYear; }
 
 
 signals:
@@ -165,6 +169,9 @@ signals:
     void novChanged();
     void decChanged();
 
+    void startYearChanged();
+    void endYearChanged();
+
 private:
     int id = 0;
     QString globalId;
@@ -193,8 +200,10 @@ private:
     QString sep = "";
     QString oct = "";
     QString nov = "";
-    QString dec = "";
+    QString dec = "";    
 
+    int startYear = 0;
+    int endYear = 0;
 
 };
 

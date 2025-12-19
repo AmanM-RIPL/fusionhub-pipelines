@@ -2,8 +2,6 @@ import QtQuick 2.15
 import QtQuick.Controls
 import QtQuick.Layouts
 
-
-
 Column {
     width: totalColumnWidth
     spacing: 5//10
@@ -16,23 +14,18 @@ Column {
     property int monthScale: 5
     property var rowDataForGantt: []
 
-     property int rowNumber: 0
-    property int colNumber:-1
-
-
-
+    property int rowNumber: 0
+   // property int colNumber:-1
+    property var month_arr:{"jan":"01", "feb":"02", "mar":"03", "apr":"04", "may":"05", "jun":"06", "jul":"07", "aug":"08", "sep":"09", "oct":"10", "nov":"11", "dec":"12"}
 
     readonly property int totalColumnWidth: {
         var total = 0;
         for (var i = 0; i < columns.length; i++) {
             total += columns[i].width;
         }
-
         total = total + (headerRow.spacing * (tableRoot.columns.length - 1)); // last spacing needs to be ignored
-
         return total;
     }
-
 
     Row {
         id: headerRow
@@ -67,7 +60,6 @@ Column {
         border.color: "#7676801F"//"#8A888629"
         color: "white"
 
-
         ListView {
             id: listView
             anchors.fill: parent
@@ -78,15 +70,12 @@ Column {
                 //padding: 10
                 property var rowData: modelData
 
-
                 Component.onCompleted:
                 {
-                  rowNumber++;
-                  //console.log("rowNumber:", rowNumber)
+                  rowNumber++;                  
                 }
 
-                Row {
-                    //spacing: 20
+                Row {                    
                     spacing: 2
 
                     Repeater {
@@ -105,25 +94,41 @@ Column {
                                     width: rowData[modelData.days] !== undefined ? rowData[modelData.days]*monthScale : modelData.width //monthScale = 5
                                     Layout.leftMargin: rowData[modelData.startx] !== undefined ? rowData[modelData.startx]*monthScale : 0
                                     height: 15
+                                    color:"blue"
 
                                     Component.onCompleted: {
-                                         //console.log("rowkey:", modelData.key, "value:", rowData[modelData.key], "id:", rowData[modelData.id], "pid:", rowData[modelData.pid], "x:",idRect.x, "y:",idRect.y ,"width:", idRect.width, "height:", idRect.height );
-                                         console.log("startday:", modelData.startx);
-                                        console.log("modelData.days:", modelData.days);
-                                        console.log("rowData[modelData.days]:", rowData[modelData.days]);
-                                        console.log("rowData[modelData.startx] :", rowData[modelData.startx]);
-                                        colNumber++;
-                                        if(colNumber > 11)
-                                        {
-                                            colNumber = 0;
-                                        }
+
+                                        rowDataForGantt = [];
+                                        //console.log("rowkey:", modelData.key, "value:", rowData[modelData.key], "id:", rowData[modelData.id], "pid:", rowData[modelData.pid], "x:",idRect.x, "y:",idRect.y ,"width:", idRect.width, "height:", idRect.height );
 
                                         var keyValue = String(rowData[modelData.key]).trim();
+                                        //console.log("modelData.key: ", modelData.key, "keyvalue:", keyValue)
 
-                                        if(keyValue.length > 0 && keyValue !== "0"){
-                                            idRect.color = "red"
 
-                                            Qt.callLater(function() {
+                                        var startDate = String(rowData[modelData.startDate]);
+                                        //console.log("startDate:", startDate)
+
+                                        var YearValue = String(rowData[modelData.year]);
+                                        //console.log("YearValue:", YearValue)
+
+                                        var monthno =  month_arr[modelData.key]
+                                        //console.log("monthno:", monthno)
+
+                                        var startDay = String(rowData[modelData.startx]);
+                                        //console.log("startday:", startDay)
+
+
+                                        const pad = (num) => num.toString().padStart(2, '0');
+                                        const formattedDate = `${pad(startDay)}/${pad(monthno)}/${YearValue}`;
+
+                                       // console.log("formattedDate:", formattedDate);
+                                        //idRect.color ="blue"
+
+                                        if(keyValue.length > 0 && keyValue !== "0" && startDate.localeCompare(formattedDate) === 0 ){
+                                            //idRect.color = "red"
+                                             //console.log("startDate:", startDate, "formattedDate:", formattedDate);
+
+                                            /*Qt.callLater(function() {
                                                  // 1. Get the absolute position of idRect on the entire screen/window
                                                 var globalPoint = idRect.mapToGlobal(0, 0);
 
@@ -142,9 +147,9 @@ Column {
                                                 data.month = modelData.key;
 
                                                 rowDataForGantt.push(data);
-                                                linesOverlay.requestPaint();
-                                            });
-                                        }
+                                                //linesOverlay.requestPaint();
+                                            });*/
+                                        }                                        
                                     }
 
                                     Text {
@@ -211,6 +216,7 @@ Column {
                     var y = modelData.y;
                     var id = modelData.id;
                     var pid = modelData.pid;
+                    var month = modelData.month;
 
                     for(var j = 0; j < rowDataForGantt.length; j++){
                         var modelDataNew = rowDataForGantt[j] ;
@@ -219,10 +225,18 @@ Column {
                         var idNew = modelDataNew.id;
                         var pidNew = modelDataNew.pid;
 
-                        console.log("id:", id, "pidNew:", pidNew, "xNew:", xNew, "x:", x );
+                        //console.log("id:", id, "pidNew:", pidNew, "xNew:", xNew, "x:", x );
+
+                        /*var r = month.localeCompare("dec");
+                        if(r === 0 )
+                        {
+                             valuesToRemove.push(id);
+                        }*/
 
                         if(id === pidNew)// && xNew !== x)
                         {
+                            valuesToRemove.push(pidNew);
+
                             const arrowHeadSize = 7; // Size of the arrowhead wings
                             ctx.moveTo(modelData.x + modelData.width, modelData.y + 6);
                             ctx.lineTo(modelData.x + modelData.width + 3, modelData.y + 6 )
@@ -230,15 +244,13 @@ Column {
                             ctx.moveTo(modelData.x + modelData.width + 3, modelData.y + 6);
                             ctx.lineTo(modelData.x + modelData.width + 3, modelData.y + 37 )
 
-                            ctx.moveTo(modelData.x + modelData.width + 3, modelData.y + 37);
-                            //ctx.lineTo(xNew+(31+0.5)*5, modelDataNew.y+7);
+                            ctx.moveTo(modelData.x + modelData.width + 3, modelData.y + 37);                            
                             ctx.lineTo(xNew, modelDataNew.y+7);
 
                             ctx.stroke();
 
                             var fromX = modelData.x + modelData.width + 3;
-                            var fromY = modelData.y+37;
-                            //var toX = xNew+(31+0.5)*5;
+                            var fromY = modelData.y+37;                           
                             var toX = xNew;
                             var toY = modelDataNew.y+7;
 

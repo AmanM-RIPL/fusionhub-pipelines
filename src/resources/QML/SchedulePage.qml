@@ -370,18 +370,16 @@ Rectangle {
             let result = selectedYear.localeCompare(currentTask.year);
             if(result === 0  && currentTask.month - 1 === selectedMonth)
             {
-            for(let day = currentTask.startDay; day <= currentTask.endDay; day++)
-            {
-                highlightedDatesModel.append({
-                                "year": currentTask.year,
-                                "month": currentTask.month - 1,
-                                "day": day,
-                                "color": "red"
-                            });
-            }
+                for(let day = currentTask.startDay; day <= currentTask.endDay; day++)
+                {
+                    highlightedDatesModel.append({
+                        "year": currentTask.year,
+                        "month": currentTask.month - 1,
+                        "day": day,
+                        "color": "red"
+                    });
+                }
             }
         }
     }
-
-
 }

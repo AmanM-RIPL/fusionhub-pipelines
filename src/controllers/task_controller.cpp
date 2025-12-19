@@ -37,7 +37,7 @@ void TaskController::create(const QString &name, const QString &description, con
     jsonObject["bim_element"] = bimElement;
     jsonObject["start_date"] = startDate;
     jsonObject["end_date"] = endDate;
-    jsonObject["pid"] = pid;
+    jsonObject["pid"] = pid;    
 
     QJsonDocument jsonDoc(jsonObject);
     QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
@@ -86,10 +86,18 @@ std::vector<Task*> TaskController::getTaskList(bool isApproved) const
            //QString startData = tasks[i]->getStartDate();
            //QString endDate = tasks[i]->getEndDate();
 
-           QDate startDate = QDate::fromString(tasks[i]->getStartDate(), "dd/MM/yyyy");
-           QDate endDate = QDate::fromString(tasks[i]->getEndDate(), "dd/MM/yyyy");
+           QString dateFormat = "dd/MM/yyyy";
+           //QString dateFormat = "YYYY-MM-DD";
+
+           QDate startDate = QDate::fromString(tasks[i]->getStartDate(), dateFormat);
+           QDate endDate = QDate::fromString(tasks[i]->getEndDate(), dateFormat);
+
 
            if (startDate.isValid() && endDate.isValid()) {
+
+               tasks[i]->setStartYear(startDate.year());
+               tasks[i]->setEndYear(endDate.year());
+
                qint64 days = startDate.daysTo(endDate);
                tasks[i]->setDuration(days);
 
@@ -100,143 +108,7 @@ std::vector<Task*> TaskController::getTaskList(bool isApproved) const
 
                QString strDays = QString::number(days);
                int monthNo = startDate.month();
-              /* switch(monthNo)
-               {
-               case 1:
-                   tasks[i]->setJan(strDays);
-               case 2:
-                   tasks[i]->setFeb(strDays);
-               case 3:
-                   tasks[i]->setMar(strDays);
-               case 4:
-                   tasks[i]->setApr(strDays);
-               case 5:
-                   tasks[i]->setMay(strDays);
-               case 6:
-                   tasks[i]->setJun(strDays);
-               case 7:
-                   tasks[i]->setJul(strDays);
-               case 8:
-                   tasks[i]->setAug(strDays);
-               case 9:
-                   tasks[i]->setSep(strDays);
-               case 10:
-                   tasks[i]->setOct(strDays);
-               case 11:
-                   tasks[i]->setNov(strDays);
-               case 12:
-                   tasks[i]->setDec(strDays);
-               }*/
-
-               if(monthNo == 1)
-               {
-                 tasks[i]->setJan(strDays);
-               }
-               else
-               {
-                   tasks[i]->setJan(" ");
-               }
-
-               if(monthNo == 2)
-               {
-                   tasks[i]->setFeb(strDays);
-               }
-               else
-               {
-                   tasks[i]->setFeb(" ");
-               }
-
-               if(monthNo == 3)
-               {
-                   tasks[i]->setMar(strDays);
-               }
-               else
-               {
-                   tasks[i]->setMar(" ");
-               }
-
-               if(monthNo == 4)
-               {
-                   tasks[i]->setApr(strDays);
-               }
-               else
-               {
-                   tasks[i]->setApr(" ");
-               }
-
-               if(monthNo == 5)
-               {
-                   tasks[i]->setMay(strDays);
-               }
-               else
-               {
-                   tasks[i]->setMay(" ");
-               }
-
-               if(monthNo == 6)
-               {
-                   tasks[i]->setJun(strDays);
-               }
-               else
-               {
-                   tasks[i]->setJun(" ");
-               }
-
-               if(monthNo ==7)
-               {
-                   tasks[i]->setJul(strDays);
-               }
-               else
-               {
-                   tasks[i]->setJul(" ");
-               }
-
-               if(monthNo == 8)
-               {
-                   tasks[i]->setAug(strDays);
-               }
-               else
-               {
-                   tasks[i]->setAug(" ");
-               }
-
-               if(monthNo == 9)
-               {
-                   tasks[i]->setSep(strDays);
-               }
-               else
-               {
-                   tasks[i]->setSep(" ");
-               }
-
-               if(monthNo == 10)
-               {
-                   tasks[i]->setOct(strDays);
-               }
-               else
-               {
-                   tasks[i]->setOct(" ");
-               }
-
-               if(monthNo == 11)
-               {
-                   tasks[i]->setNov(strDays);
-               }
-               else
-               {
-                   tasks[i]->setNov(" ");
-               }
-
-               if(monthNo == 12)
-               {
-                   tasks[i]->setDec(strDays);
-               }
-               else
-               {
-                   tasks[i]->setDec(" ");
-               }
-
-
+               setDaysInMonth(tasks[i], strDays, monthNo);
            } else {
                 qDebug() << "One or both dates are invalid.";
                 tasks[i]->setDuration(0);
@@ -255,8 +127,8 @@ std::vector<Task*> TaskController::getTaskList(bool isApproved) const
             {
                 auto task = new Task();
                 QJsonObject jsonObj = jsonDoc.object();
-                //task->setId(i + 1);
-                task->setId(jsonObj["id"].toInt());
+                task->setId(i + 1);
+               // task->setId(jsonObj["id"].toInt());
                 task->setGlobalId("123");
                 task->setApprovalStatus(true);
                 task->setTaskName(jsonObj["task_name"].toString());
@@ -266,10 +138,18 @@ std::vector<Task*> TaskController::getTaskList(bool isApproved) const
                 task->setEndDate(jsonObj["end_date"].toString());
                 task->setParentId(jsonObj["pid"].toInt());
 
-                QDate startDate = QDate::fromString(task->getStartDate(), "dd/MM/yyyy");
-                QDate endDate = QDate::fromString(task->getEndDate(), "dd/MM/yyyy");
+                QString dateFormat = "dd/MM/yyyy";
+               // QString dateFormat = "YYYY-MM-DD";
+
+                QDate startDate = QDate::fromString(task->getStartDate(), dateFormat);
+                QDate endDate = QDate::fromString(task->getEndDate(), dateFormat);
+
 
                 if (startDate.isValid() && endDate.isValid()) {
+
+                    task->setStartYear(startDate.year());
+                    task->setEndYear(endDate.year());
+
                     qint64 days = startDate.daysTo(endDate);
                     task->setDuration(days);
 
@@ -278,117 +158,12 @@ std::vector<Task*> TaskController::getTaskList(bool isApproved) const
                     task->setStartDay(startDate.day());
                     task->setEndDay(endDate.day());
 
+
                     QString strDays = QString::number(days);
-                    int monthNo =startDate.month();
+                    int monthNo = startDate.month();
 
-                    if(monthNo == 1)
-                    {
-                        task->setJan(strDays);
-                    }
-                    else
-                    {
-                        task->setJan(" ");
-                    }
 
-                    if(monthNo == 2)
-                    {
-                        task->setFeb(strDays);
-                    }
-                    else
-                    {
-                        task->setFeb(" ");
-                    }
-
-                    if(monthNo == 3)
-                    {
-                        task->setMar(strDays);
-                    }
-                    else
-                    {
-                        task->setMar(" ");
-                    }
-
-                    if(monthNo == 4)
-                    {
-                        task->setApr(strDays);
-                    }
-                    else
-                    {
-                        task->setApr(" ");
-                    }
-
-                    if(monthNo == 5)
-                    {
-                        task->setMay(strDays);
-                    }
-                    else
-                    {
-                        task->setMay(" ");
-                    }
-
-                    if(monthNo == 6)
-                    {
-                        task->setJun(strDays);
-                    }
-                    else
-                    {
-                        task->setJun(" ");
-                    }
-
-                    if(monthNo ==7)
-                    {
-                        task->setJul(strDays);
-                    }
-                    else
-                    {
-                        task->setJul(" ");
-                    }
-
-                    if(monthNo == 8)
-                    {
-                        task->setAug(strDays);
-                    }
-                    else
-                    {
-                        task->setAug(" ");
-                    }
-
-                    if(monthNo == 9)
-                    {
-                        task->setSep(strDays);
-                    }
-                    else
-                    {
-                        task->setSep(" ");
-                    }
-
-                    if(monthNo == 10)
-                    {
-                        task->setOct(strDays);
-                    }
-                    else
-                    {
-                        task->setOct(" ");
-                    }
-
-                    if(monthNo == 11)
-                    {
-                        task->setNov(strDays);
-                    }
-                    else
-                    {
-                        task->setNov(" ");
-                    }
-
-                    if(monthNo == 12)
-                    {
-                        task->setDec(strDays);
-                    }
-                    else
-                    {
-                        task->setDec(" ");
-                    }
-
+                    setDaysInMonth(task, strDays, monthNo);
 
                 } else {
                     qDebug() << "One or both dates are invalid.";
@@ -399,5 +174,117 @@ std::vector<Task*> TaskController::getTaskList(bool isApproved) const
             }
         }
         return tasks;
+    }
+}
+
+void TaskController::setDaysInMonth(Task* task, const QString& strDays, const int monthNo) const
+{
+    if(monthNo == 1)
+    {
+        task->setJan(strDays);
+
+    }
+    else
+    {
+        task->setJan(" ");
+    }
+
+    if(monthNo == 2)
+    {
+        task->setFeb(strDays);
+    }
+    else
+    {
+        task->setFeb(" ");
+    }
+
+    if(monthNo == 3)
+    {
+        task->setMar(strDays);
+    }
+    else
+    {
+        task->setMar(" ");
+    }
+
+    if(monthNo == 4)
+    {
+        task->setApr(strDays);
+    }
+    else
+    {
+        task->setApr(" ");
+    }
+
+    if(monthNo == 5)
+    {
+        task->setMay(strDays);
+    }
+    else
+    {
+        task->setMay(" ");
+    }
+
+    if(monthNo == 6)
+    {
+        task->setJun(strDays);
+    }
+    else
+    {
+        task->setJun(" ");
+    }
+
+    if(monthNo == 7)
+    {
+        task->setJul(strDays);
+    }
+    else
+    {
+        task->setJul(" ");
+    }
+
+    if(monthNo == 8)
+    {
+        task->setAug(strDays);
+    }
+    else
+    {
+        task->setAug(" ");
+    }
+
+    if(monthNo == 9)
+    {
+        task->setSep(strDays);
+    }
+    else
+    {
+        task->setSep(" ");
+    }
+
+    if(monthNo == 10)
+    {
+        task->setOct(strDays);
+    }
+    else
+    {
+        task->setOct(" ");
+    }
+
+    if(monthNo == 11)
+    {
+        task->setNov(strDays);
+    }
+    else
+    {
+        task->setNov(" ");
+    }
+
+    if(monthNo == 12)
+    {
+        task->setDec(strDays);
+    }
+    else
+    {
+        task->setDec(" ");
     }
 }
