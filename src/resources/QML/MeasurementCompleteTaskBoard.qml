@@ -74,10 +74,12 @@ Rectangle {
     Rectangle{
         id: listViewRect
         width: 276.5
-        height: 480
+        height: parent.height-50 //480
         color: parent.color
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 8
+       // anchors.bottom: parent.bottom
+        //anchors.bottomMargin: 8
+        anchors.top: parent.top
+        anchors.topMargin: 50
         anchors.horizontalCenter: parent.horizontalCenter
 
 

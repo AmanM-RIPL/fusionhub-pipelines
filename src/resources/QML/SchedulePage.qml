@@ -5,10 +5,13 @@ import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
 //import Gantt 1.0
 import QtCharts
+import com.fh.controllers
+
 
 
 
 Rectangle {
+    id:schedule_root
     width: 1440
     //height: 1024 - (131 + 13)
     height: screen.height-100
@@ -21,6 +24,13 @@ Rectangle {
 
     property var monthModel: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
+    property var  task_month_paramList: []
+
+    TaskController{
+        id:taskController
+    }
+
+
     ListModel {
             id: yearModel
         }
@@ -29,66 +39,10 @@ Rectangle {
     ListModel {
             id: highlightedDatesModel            
             // Adjust these years/months to match your current view
+            /*
             ListElement { year: 2025; month: 0; day: 3; color: "red" }
-            ListElement { year: 2025; month: 0; day: 4; color: "red" }
-            ListElement { year: 2025; month: 0; day: 5; color: "red" }
-            ListElement { year: 2025; month: 0; day: 6; color: "red" }
-            ListElement { year: 2025; month: 0; day: 7; color: "red" }
-            ListElement { year: 2025; month: 0; day: 8; color: "red" }
-            ListElement { year: 2025; month: 0; day: 9; color: "red" }
-            ListElement { year: 2025; month: 0; day: 10; color: "red" }
-            ListElement { year: 2025; month: 0; day: 11; color: "red" }
-            ListElement { year: 2025; month: 0; day: 12; color: "red" }
-            ListElement { year: 2025; month: 0; day: 13; color: "red" }
-            ListElement { year: 2025; month: 0; day: 14; color: "red" }
-            ListElement { year: 2025; month: 0; day: 15; color: "red" }
-            ListElement { year: 2025; month: 0; day: 16; color: "red" }
-            ListElement { year: 2025; month: 0; day: 17; color: "red" }
-            ListElement { year: 2025; month: 0; day: 18; color: "red" }
-            ListElement { year: 2025; month: 0; day: 19; color: "red" }
-            ListElement { year: 2025; month: 0; day: 20; color: "red" }
-            ListElement { year: 2025; month: 0; day: 21; color: "red" }
-            ListElement { year: 2025; month: 0; day: 22; color: "red" }
+            */
 
-            ListElement { year: 2025; month: 1; day: 19; color: "red" }
-            ListElement { year: 2025; month: 1; day: 20; color: "red" }
-            ListElement { year: 2025; month: 1; day: 21; color: "red" }
-            ListElement { year: 2025; month: 1; day: 22; color: "red" }
-            ListElement { year: 2025; month: 1; day: 23; color: "red" }
-            ListElement { year: 2025; month: 1; day: 24; color: "red" }
-            ListElement { year: 2025; month: 1; day: 25; color: "red" }
-            ListElement { year: 2025; month: 1; day: 26; color: "red" }
-            ListElement { year: 2025; month: 1; day: 27; color: "red" }
-            ListElement { year: 2025; month: 1; day: 28; color: "red" }
-
-
-
-            ListElement { year: 2025; month: 2; day: 5; color: "red" }
-            ListElement { year: 2025; month: 2; day: 6; color: "red" }
-            ListElement { year: 2025; month: 2; day: 7; color: "red" }
-            ListElement { year: 2025; month: 2; day: 8; color: "red" }
-            ListElement { year: 2025; month: 2; day: 9; color: "red" }
-            ListElement { year: 2025; month: 2; day: 10; color: "red" }
-            ListElement { year: 2025; month: 2; day: 11; color: "red" }
-            ListElement { year: 2025; month: 2; day: 12; color: "red" }
-            ListElement { year: 2025; month: 2; day: 13; color: "red" }
-            ListElement { year: 2025; month: 2; day: 14; color: "red" }
-            ListElement { year: 2025; month: 2; day: 15; color: "red" }
-            ListElement { year: 2025; month: 2; day: 16; color: "red" }
-            ListElement { year: 2025; month: 2; day: 17; color: "red" }
-            ListElement { year: 2025; month: 2; day: 18; color: "red" }
-            ListElement { year: 2025; month: 2; day: 19; color: "red" }
-            ListElement { year: 2025; month: 2; day: 20; color: "red" }
-            ListElement { year: 2025; month: 2; day: 21; color: "red" }
-            ListElement { year: 2025; month: 2; day: 22; color: "red" }
-            ListElement { year: 2025; month: 2; day: 23; color: "red" }
-            ListElement { year: 2025; month: 2; day: 24; color: "red" }
-            ListElement { year: 2025; month: 2; day: 25; color: "red" }
-            ListElement { year: 2025; month: 2; day: 26; color: "red" }
-            ListElement { year: 2025; month: 2; day: 27; color: "red" }
-            ListElement { year: 2025; month: 2; day: 28; color: "red" }
-            ListElement { year: 2025; month: 2; day: 29; color: "red" }
-            ListElement { year: 2025; month: 2; day: 30; color: "red" }
         }
 
 
@@ -195,6 +149,8 @@ Rectangle {
                                         idPrevMonthButton.enabled = false;
                                     }
                                 }
+
+                                showColor(year.currentText, month.currentIndex);
                             }
                         }
                    /*
@@ -223,6 +179,7 @@ Rectangle {
                             model: monthModel
                             font.pixelSize: 20
                             font.weight: 700
+                            currentIndex: 0
                         }
 
                         ComboBox {
@@ -232,6 +189,8 @@ Rectangle {
                             model: yearModel
                             font.pixelSize: 20
                             font.weight: 700
+                            currentIndex: 0
+
                         }
 
                         Button {
@@ -258,6 +217,9 @@ Rectangle {
                                         idNextMonthButton.enabled = false;
                                     }
                                 }
+
+                                showColor(year.currentText, month.currentIndex)
+
                             }
                         }
                     }
@@ -327,7 +289,7 @@ Rectangle {
                             var now = new Date ();
                             let currentYear = now.getFullYear().toString();
 
-                            var currentIndex = -1;
+                            var currentIndex = 0;
                             for(var j = 0; j<yearModel.count; j++)
                             {
                                 let yearText = yearModel.get(j).text;
@@ -338,7 +300,8 @@ Rectangle {
                                 }
                             }
                             year.currentIndex = currentIndex;
-                            month.currentIndex = now.getMonth();                           
+                            month.currentIndex = now.getMonth();
+
                         }
                     }                    
                 }
@@ -346,12 +309,41 @@ Rectangle {
         }
 
         Component.onCompleted: {
-            loadSampleYears();
+             loadSampleYears();
+            if(schedule_root.visible)
+            {
+                //task_month_paramList = taskController.getTaskList(isApproved);
+                task_month_paramList = taskController.getTaskList(true);
+            }
+        }
+        onVisibleChanged: {
+            if(schedule_root.visible)
+            {
+                //task_month_paramList = taskController.getTaskList(isApproved);
+                 task_month_paramList = taskController.getTaskList(true);
+
+                /*for (var i = 0; i < task_month_paramList.length; i++)
+                {
+                    var currentTask = task_month_paramList[i];
+                    for(let day = currentTask.startDay; day <= currentTask.endDay; day++)
+                    {
+                        highlightedDatesModel.append({
+                                        "year": currentTask.year,
+                                        "month": currentTask.month - 1,
+                                        "day": day,
+                                        "color": "red"
+                                    });
+                    }
+                }*/
+
+                showColor(year.currentText, month.currentIndex)
+
+            }
         }
     }
 
     function loadSampleYears()
-    {
+    {        
         for (var i = 2010; i < 2081; i++) {
              yearModel.append({"text" : i});
         }
@@ -367,5 +359,27 @@ Rectangle {
             }
         }
         return "white";
+    }
+
+    function showColor(selectedYear, selectedMonth)
+    {
+        for (var i = 0; i < task_month_paramList.length; i++)
+        {
+            var currentTask = task_month_paramList[i];
+
+            let result = selectedYear.localeCompare(currentTask.year);
+            if(result === 0  && currentTask.month - 1 === selectedMonth)
+            {
+                for(let day = currentTask.startDay; day <= currentTask.endDay; day++)
+                {
+                    highlightedDatesModel.append({
+                        "year": currentTask.year,
+                        "month": currentTask.month - 1,
+                        "day": day,
+                        "color": "red"
+                    });
+                }
+            }
+        }
     }
 }
