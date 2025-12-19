@@ -87,6 +87,9 @@ Rectangle {
             visible: pageName === "MaterialIndent"
         }
 
+        UnitOfMeasurementPage {
+            visible: pageName === "UnitOfMeasurement"
+        }
         WorkBillingLinePage {
             visible: pageName === "WorkBillingLine"
         }

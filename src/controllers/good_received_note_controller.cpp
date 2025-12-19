@@ -1,4 +1,5 @@
 #include "good_received_note_controller.h"
+#include "purchase_order_line_controller.h"
 #include "common/repository_locator.h"
 #include <QDir>
 
@@ -9,8 +10,6 @@ extern int gProjectId;
 GoodReceivedNoteController::GoodReceivedNoteController(QObject *parent)
     : QObject{parent},
     m_goodReceivedNoteRepository(RepositoryLocator::instance().goodReceivedNoteRepository()),
-    //m_purchaseOrderLineRepository(RepositoryLocator::instance().purchaseOrderLineRepository()),
-    //m_purchaseOrderRepository(RepositoryLocator::instance().purchaseOrderRepository()),
     m_draftEntityRepository(RepositoryLocator::instance().draftEntityRepository())
 {}
 
@@ -72,43 +71,52 @@ void GoodReceivedNoteController::create(const int &quantity, const int &purchase
 
 std::vector<GoodReceivedNote*> GoodReceivedNoteController::getGoodReceivedNoteList(bool isApproved) const
 {
-    qDebug()<<"IsApproved: "<< isApproved;
+    qDebug() << "IsApproved: " << isApproved;
 
-    if(isApproved){
+    if (isApproved)
+    {
         return m_goodReceivedNoteRepository->findAllQML();
-    }
-    else{
-        std::vector<DraftEntity*>  draftEntitys  =  m_draftEntityRepository->findAllQML("GoodReceivedNote");
+    } else{
+
+        // Fetch draft GRN data
+        std::vector<DraftEntity*> draftEntities = m_draftEntityRepository->findAllQML("GoodReceivedNote");
+
+        // Reference data
+        PurchaseOrderLineController workOrderLineController;
+        std::vector<PurchaseOrderLine*> vecPurchaseOrderLine = workOrderLineController.getPurchaseOrderLineList(true);
+
         std::vector<GoodReceivedNote*> goodReceivedNotes;
-        for(int i = 0; i < draftEntitys.size(); i++)
+
+        for(int i = 0; i < draftEntities.size(); i++)
         {
-            QString  jsonString = draftEntitys[i]->getEntitySchema();
+            QString  jsonString = draftEntities[i]->getEntitySchema();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
+
             if (!jsonDoc.isNull() && jsonDoc.isObject())
             {
-                auto goodReceivedNote = new GoodReceivedNote();
                 QJsonObject jsonObj = jsonDoc.object();
-                goodReceivedNote->setId(i + 1);
+
+                int purchaseOrderLineId = jsonObj["purchaseOrderLineId"].toInt();
+                int quantity = jsonObj["quantity"].toInt();
+               // int id = jsonObj["id"].toInt();
+
+                // Create GRN object
+                GoodReceivedNote* goodReceivedNote = new GoodReceivedNote();
+                goodReceivedNote->setQuantity(quantity);
+                goodReceivedNote->setId(i + 1 );
                 goodReceivedNote->setGlobalId("123");
-                goodReceivedNote->setApprovalStatus(true);
 
-                goodReceivedNote->setQuantity(jsonObj["quantity"].toInt());
-                goodReceivedNote->setPurchaseOrderLineId(jsonObj["purchaseOrderLineId"].toInt());
-
+                foreach(const PurchaseOrderLine *po, vecPurchaseOrderLine)
+                {
+                    if (po->getId() == purchaseOrderLineId)
+                    {
+                        goodReceivedNote->setPurchaseOrderLineId(po->getId());
+                        break;
+                    }
+                }
                 goodReceivedNotes.push_back(goodReceivedNote);
             }
         }
-        return goodReceivedNotes;
-    }
+
+        return goodReceivedNotes;}
 }
-
-/*std::vector<PurchaseOrderLine*> GoodReceivedNoteController::getPurchaseOrderLineList() const
-{
-    return m_purchaseOrderLineRepository->findAllQML();
-}
-
-std::vector<PurchaseOrder*> GoodReceivedNoteController::getPurchaseOrderList() const
-{
-    return m_purchaseOrderRepository->findAllQML();
-}*/
-

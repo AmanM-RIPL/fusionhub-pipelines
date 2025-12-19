@@ -18,19 +18,19 @@ void UnitOfMeasurementController::create(const QString& uomName, const QString& 
                                         const double& conversionToMeter, const double& conversionToKilogram) const
 {
 
-    UnitOfMeasurement uom;
+    // UnitOfMeasurement uom;
+    // qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+    // uom.setId(id_in_milliseconds);
+    // uom.setGlobalId("123");
+    // uom.setApprovalStatus(true);
+    // uom.setConversionToCubicMeter(conversionToCubicMeter);
+    // uom.setConversionToKilogram(conversionToKilogram);
+    // uom.setConversionToMeter(conversionToMeter);
+    // uom.setConversionToSqm(conversionToSqm);
+    // uom.setUnitType(unitType);
+    // uom.setUomName(uomName);
 
-    uom.setId(0);
-    uom.setGlobalId("123");
-    uom.setApprovalStatus(true);
-    uom.setConversionToCubicMeter(conversionToCubicMeter);
-    uom.setConversionToKilogram(conversionToKilogram);
-    uom.setConversionToMeter(conversionToMeter);
-    uom.setConversionToSqm(conversionToSqm);
-    uom.setUnitType(unitType);
-    uom.setUomName(uomName);
-
-    m_unitOfMeasurementRepository->saveQML(&uom);
+    // m_unitOfMeasurementRepository->saveQML(&uom);
 
     /***********Start of DraftEntity******************/
 
@@ -69,7 +69,36 @@ void UnitOfMeasurementController::create(const QString& uomName, const QString& 
 
 std::vector<UnitOfMeasurement*> UnitOfMeasurementController::getUOMList(bool isApproved) const
 {
-    return m_unitOfMeasurementRepository->findAllQML();
+    qDebug()<<"IsApproved: "<< isApproved;
+
+    if(isApproved){
+        return m_unitOfMeasurementRepository->findAllQML();
+    }
+    else{
+        std::vector<DraftEntity*>  draftEntitys  =  m_draftEntityRepository->findAllQML("UnitOfMeasurement");
+        std::vector<UnitOfMeasurement*> unitOfMeasurements;
+        for(int i = 0; i < draftEntitys.size(); i++)
+        {
+            QString  jsonString = draftEntitys[i]->getEntitySchema();
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
+            if (!jsonDoc.isNull() && jsonDoc.isObject())
+            {
+                auto uom = new UnitOfMeasurement();
+                QJsonObject jsonObj = jsonDoc.object();
+                uom->setId(i + 1);
+                uom->setGlobalId("123");
+                uom->setApprovalStatus(true);
+                uom->setUomName(jsonObj["uomName"].toString());
+                uom->setUnitType(jsonObj["unitType"].toString());
+                uom->setConversionToSqm(jsonObj["conversionToSqm"].toDouble());
+                uom->setConversionToMeter(jsonObj["conversionToMeter"].toDouble());
+                uom->setConversionToKilogram(jsonObj["conversionToKilogram"].toDouble());
+                uom->setConversionToCubicMeter(jsonObj["conversionToCubicMeter"].toDouble());
+                unitOfMeasurements.push_back(uom);
+            }
+        }
+        return unitOfMeasurements;
+    }
 }
 
 
