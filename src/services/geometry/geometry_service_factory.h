@@ -22,7 +22,7 @@ public:
 
     static void generateMesh2D(BIMElement* bimElement, Mesh* mesh);
     static void generateMesh3D(BIMElement* bimElement, Mesh* mesh, IFCDetailController* pIfcDetailController, IfcGeometryService* pIfcGeometryService);
-    static void updateGeometry(BIMElement* bimElement, const QVector3D& point);
+    static void updateGeometry(const QVector3D& point, BIMElement* bimElement, BIMElement* hostElement = nullptr);
 
 signals:
 

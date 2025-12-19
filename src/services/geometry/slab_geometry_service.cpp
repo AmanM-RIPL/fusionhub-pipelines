@@ -88,6 +88,7 @@ void SlabGeometryService::generateMesh2D(BIMElement* slabElement, Mesh* mesh)
 
     // Mesh* mesh = new Mesh(this);
     mesh->Initialize(verticesVector, indices, borderIndices, referenceLine.size(), indices.size(), borderIndices.size());
+    mesh->setBIMElementId(slabElement->getId());
 
 
     // GLfloat* vertices1 = mesh->getVerticies();
@@ -168,6 +169,7 @@ void SlabGeometryService::generateMesh3D(BIMElement* slabElement, Mesh* mesh)
     m_openglHelper.getMeshGeometry(body, verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
 
     mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
+    mesh->setBIMElementId(slabElement->getId());
 }
 
 void SlabGeometryService::updateGeometry(BIMElement *slabElement, const QVector3D &point)

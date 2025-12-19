@@ -1,6 +1,6 @@
 #include "bim_element.h"
 
-BIMElement::BIMElement(int id, const QString &globalId, bool approvalStatus, const QString &type, const QString &name, int level, QObject *parent)
+BIMElement::BIMElement(int id, const QString &globalId, bool approvalStatus, const QString &type, const QString &name, int level, int hostId, QObject *parent)
     : QObject(parent)
 {
     this->id = id;
@@ -9,4 +9,5 @@ BIMElement::BIMElement(int id, const QString &globalId, bool approvalStatus, con
     this->type = type;
     this->name = name;
     this->level = level;
+    this->host_id = hostId;
 }

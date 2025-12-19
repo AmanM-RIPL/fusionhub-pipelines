@@ -161,8 +161,7 @@ MyGLRenderer::~MyGLRenderer()
 
 void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 {
-    // qInfo() << "Syncronize Function";
-    MyGLItem* glItem = static_cast<MyGLItem*>(item);
+    glItem = static_cast<MyGLItem*>(item);
 
 
     // Orbit only works in 3D mode and not in 2D
@@ -225,17 +224,36 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         m_pickX = glItem->m_lastClickX;
         m_pickY = glItem->m_lastClickY;
         m_pickRequested = true;
+        m_pickedBimElementId = -1;
+
         // reset the stored GUI-side coords so we don't re-process
         glItem->m_lastClickX = -1;
         glItem->m_lastClickY = -1;
 
         m_view->SetSelectionCoordinates(m_pickX, m_pickY);
+    }
+
+    // by default m_pickedBimElementId will be a negative number
+    // zero means no clicked id found, and negative means click
+    // has been processed.
+    if (m_pickRequested == true && m_pickedBimElementId >= 0)
+    {
         QVector3D clickedPoint = m_view->GetPointInViewSpace();
+        BIMElement* hostElement = nullptr;
+
+        for (BIMElement* element: glItem->bimElementList)
+        {
+            if (element->getId() == m_pickedBimElementId)
+            {
+                hostElement = element;
+                break;
+            }
+        }
 
         // update glItem BIM Element
         if (glItem->editableBimElement != nullptr)
         {
-            GeometryServiceFactory::updateGeometry(glItem->editableBimElement, clickedPoint);
+            GeometryServiceFactory::updateGeometry(clickedPoint, glItem->editableBimElement, hostElement);
 
             // removing old geometry
             for (Mesh* mesh: m_meshList)
@@ -288,6 +306,9 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
             m_view->BindMeshWithOpenGL();
         }
+
+        m_pickRequested = false;
+        m_pickedBimElementId = -1;
     }
 
     if (!meshInitialized)
@@ -369,7 +390,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
 void MyGLRenderer::update() {
     // Continuous rendering
-    QQuickFramebufferObject::Renderer::update();
+    // QQuickFramebufferObject::Renderer::update();
 }
 
 void MyGLRenderer::initGL() {
@@ -625,16 +646,19 @@ void MyGLRenderer::render() {
         projectionMatrixInitialized = true;
     }
 
-
     if (m_pickRequested)
     {
-        m_view->SetSelectionCoordinates(m_pickX, m_pickY);
+        // m_view->SetSelectionCoordinates(m_pickX, m_pickY);
 
-        m_view->Selection();
+        m_pickedBimElementId = m_view->Selection();
         // m_view->UpdateGeometry();
-        m_pickRequested = false;
+        // m_pickRequested = false;
+        QMetaObject::invokeMethod(glItem, "update", Qt::QueuedConnection);
     }
-    m_view->Render();
+    else
+    {
+        m_view->Render();
+    }
 
     // // all variables are added here
     // // --- Model matrix (triangle local transform) ---
@@ -759,7 +783,7 @@ QOpenGLFramebufferObject* MyGLRenderer::createFramebufferObject(const QSize &siz
 MyGLItem::MyGLItem(QQuickItem *parent)
     : QQuickFramebufferObject(parent)
 {
-    BIMElement* bimElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
+    BIMElement* bimElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, 0, this);
     BIMParameter* widthParameter = new BIMParameter(1,"1",false,"Width","1",1,this);
     BIMParameter* heightParameter = new BIMParameter(37, "1", false, "Height", "4", 1, this);
     BIMParameter* rlParameter = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [0,4], [4,4]]",1,this);
@@ -769,25 +793,29 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 
     bimElementList.append(bimElement);
 
-    BIMElement* bimElementNew = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, this);
-    BIMParameter* widthParameterNew = new BIMParameter(1,"1",false,"Width","1",1,this);
-    BIMParameter* heightParameterNew = new BIMParameter(37, "1", false, "Height", "4", 1, this);
-    BIMParameter* rlParameterNew = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0], [4,4]]",1,this);
+    BIMElement* bimElementNew = new BIMElement(2,"1",false,"Wall", "Front Wall", 0, 0, this);
+    BIMParameter* widthParameterNew = new BIMParameter(1,"1",false,"Width","1",2,this);
+    BIMParameter* heightParameterNew = new BIMParameter(37, "1", false, "Height", "4", 2, this);
+    BIMParameter* rlParameterNew = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0], [4,4]]",2,this);
     bimElementNew->addParameter(widthParameterNew);
     bimElementNew->addParameter(heightParameterNew);
     bimElementNew->addParameter(rlParameterNew);
 
     bimElementList.append(bimElementNew);
 
-    BIMElement* bimElementDoor = new BIMElement(1,"1",false,"Door", "Front Door", 0, this);
-    BIMParameter* distanceParameterDoor = new BIMParameter(1,"1",false,"Distance","1",1,this);
-    BIMParameter* heightParameterDoor = new BIMParameter(37, "1", false, "Height", "4", 1, this);
-    BIMParameter* rlParameterDoor = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0]]",1,this);
-    bimElementDoor->addParameter(distanceParameterDoor);
-    bimElementDoor->addParameter(heightParameterDoor);
-    bimElementDoor->addParameter(rlParameterDoor);
+    // BIMElement* bimElementDoor = new BIMElement(3,"1",false,"Door", "Front Door", 0, 1, this);
+    // BIMParameter* distanceParameterDoor = new BIMParameter(1,"1",false,"Distance","1",3,this);
+    // BIMParameter* heightParameterDoor = new BIMParameter(37, "1", false, "Height", "4", 3, this);
+    // BIMParameter* widthParameterDoor = new BIMParameter(1,"1",false,"Width","2",3,this);
+    // BIMParameter* rlParameterDoor = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0]]",3,this);
+    // bimElementDoor->addParameter(distanceParameterDoor);
+    // bimElementDoor->addParameter(heightParameterDoor);
+    // bimElementDoor->addParameter(rlParameterDoor);
+    // bimElementDoor->addParameter(widthParameterDoor);
 
-    bimElementList.append(bimElementDoor);
+    // bimElementList.append(bimElementDoor);
+
+    // bimElementNew->addHostedElement(bimElementDoor);
 
     pIfcDetailController = new IFCDetailController(this);
     pIfcGeometryService = new IfcGeometryService(this);
@@ -1025,6 +1053,19 @@ void MyGLItem::updateEditableBimElement(QVariant bimElement)
 void MyGLItem::saveEditableBimElement()
 {
     bimElementList.append(editableBimElement);
+
+    // add editableBimElement to as the child of host element
+    if (editableBimElement->getHostId() > 0)
+    {
+        for (BIMElement* element: bimElementList)
+        {
+            if (element->getId() == editableBimElement->getHostId())
+            {
+                element->addHostedElement(editableBimElement);
+                break;
+            }
+        }
+    }
 
     // bimElement is created in the controller and its lifecycle is handled by the controller
     editableBimElement = nullptr;

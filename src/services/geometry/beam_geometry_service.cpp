@@ -89,6 +89,7 @@ void BeamGeometryService::generateMesh2D(BIMElement* beamElement, Mesh* mesh)
 
     // Mesh* mesh = new Mesh(this);
     mesh->Initialize(verticesVector, indices, borderIndices, referenceLine.size(), indices.size(), borderIndices.size());
+    mesh->setBIMElementId(beamElement->getId());
 
 
     // GLfloat* vertices1 = mesh->getVerticies();
@@ -163,6 +164,7 @@ void BeamGeometryService::generateMesh3D(BIMElement* beamElement, Mesh* mesh)
     m_openglHelper.getMeshGeometry(body, verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
 
     mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
+    mesh->setBIMElementId(beamElement->getId());
 }
 
 void BeamGeometryService::updateGeometry(BIMElement *beamElement, const QVector3D &point)

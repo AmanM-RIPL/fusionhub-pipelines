@@ -39,6 +39,7 @@ public:
     unsigned int* getIndicesData();
     unsigned int* getBorderIndicesData();
     int* getModelMatrixIndicesData();
+    std::array<float, 4>* getPickColorData();
 
 
     unsigned int getNumOfVertices();
@@ -52,6 +53,10 @@ public:
 
     void SetModelMatricies(std::vector<QMatrix4x4>& model_matrix);
     void SetModelMatrixIndices(std::vector<int>& model_matrix_indices);
+    void SetPickColorArray(std::vector<std::array<float, 4>>& pickColor_array);
+
+    unsigned int getBIMElementId();
+    void setBIMElementId(unsigned int id);
 
     void UpdateGeometry(QVector3D hitPoint);
 
@@ -62,13 +67,20 @@ private:
     std::vector<unsigned int> m_indices;
     std::vector<unsigned int> m_border_indices;
     std::vector<int> m_model_matrix_indices;
+
     std::vector<float> m_model_matrix; // this is for the combined mesh
+    std::vector<std::array<float, 4>> m_pickColor_array; // this is for the combined mesh
+
     unsigned int m_numOfVertices;
     unsigned int m_numOfIndices;
     unsigned int m_numOfBorderIndices;
     unsigned int m_numOfModelMatrices;
 
+
+    unsigned int m_bimElementId = 1; // default value is 1
     QMatrix4x4 m_modelMatrix; // this is for the individual mesh
+
+    static void encodeIdToColor(unsigned int id, unsigned char &r, unsigned char &g, unsigned char &b);
 };
 
 #endif // MESH_H

@@ -89,6 +89,7 @@ void ColumnGeometryService::generateMesh2D(BIMElement* columnElement, Mesh* mesh
 
     // Mesh* mesh = new Mesh(this);
     mesh->Initialize(verticesVector, indices, borderIndices, referenceLine.size(), indices.size(), borderIndices.size());
+    mesh->setBIMElementId(columnElement->getId());
 
 
     // GLfloat* vertices1 = mesh->getVerticies();
@@ -165,6 +166,7 @@ void ColumnGeometryService::generateMesh3D(BIMElement* columnElement, Mesh* mesh
     m_openglHelper.getMeshGeometry(body, verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
 
     mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
+    mesh->setBIMElementId(columnElement->getId());
 }
 
 void ColumnGeometryService::updateGeometry(BIMElement *columnElement, const QVector3D &point)

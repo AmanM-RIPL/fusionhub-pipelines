@@ -89,6 +89,7 @@ void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
 
     // Mesh* mesh = new Mesh(this);
     mesh->Initialize(verticesVector, indices, borderIndices, referenceLine.size(), indices.size(), borderIndices.size());
+    mesh->setBIMElementId(wallElement->getId());
 
 
     // GLfloat* vertices1 = mesh->getVerticies();
@@ -154,6 +155,18 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
     FacetModeler::Profile2D profile(polygon);
     FacetModeler::Body body = FacetModeler::Body::extrusion(profile, OdGeVector3d(0.0, 0.0, 1.0) * height);
 
+    QList<BIMElement*> hostedElementList = wallElement->getHostedElementList();
+    for (BIMElement* hostedElement: hostedElementList)
+    {
+        if (hostedElement->getType() == "Door")
+        {
+            DoorGeometryService service = DoorGeometryService();
+            FacetModeler::Body voidBody = service.generateVoidBody(hostedElement, wallElement);
+
+            body = FacetModeler::Body::boolOper(FacetModeler::eDifference, body, voidBody);
+        }
+    }
+
     // Mesh geometry generation
     std::vector<uint32_t> meshIndices = {};
     std::vector<uint32_t> borderIndices = {};
@@ -164,6 +177,7 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
     m_openglHelper.getMeshGeometry(body, verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
 
     mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
+    mesh->setBIMElementId(wallElement->getId());
 }
 
 void WallGeometryService::updateGeometry(BIMElement *wallElement, const QVector3D &point)

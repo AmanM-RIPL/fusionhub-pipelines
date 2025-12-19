@@ -182,6 +182,7 @@ private:
     QList<Texture*> m_textureList;
 
     bool m_pickRequested = false;
+    int m_pickedBimElementId = -1;
     int m_pickX = -1;
     int m_pickY = -1;
     QString m_viewType = "ModelView";
@@ -194,6 +195,8 @@ private:
     GLuint m_pickFBO = 0;
     GLuint m_pickColorTex = 0;
     GLuint m_pickDepthBuf = 0;
+
+    MyGLItem* glItem = nullptr;
 
     void initGL();
     void initShaders();

@@ -51,6 +51,7 @@ BIMElement* BIMElementRepository::mapFromQueryQML(const QSqlQuery& query, QObjec
     BimElement->setName(query.value("name").toString());
     BimElement->setType(query.value("type").toString());
     BimElement->setLevel(query.value("level").toInt());
+    BimElement->setHostId(query.value("host_id").toInt());
 
     return BimElement;
 }
@@ -60,14 +61,15 @@ void BIMElementRepository::bindEntityToQuery(QSqlQuery& query, const BIMElement&
     query.addBindValue(entity.getName());
     query.addBindValue(entity.getType());
     query.addBindValue(entity.getLevel());
+    query.addBindValue(entity.getHostId());
 }
 QString BIMElementRepository::getInsertQuery() const {
 
      return "INSERT INTO BIMElement (global_id, approval_status, name, type, "
-           "level) "
-           "VALUES (?, ?, ?, ?, ?) RETURNING id";    
+           "level, host_id) "
+           "VALUES (?, ?, ?, ?, ?, ?) RETURNING id";
 }
 QString BIMElementRepository::getUpdateQuery() const {
     return "UPDATE BIMElement SET global_id = ?, approval_status = ?, name = ?, "
-           "type = ?, level = ? WHERE id = ?";
+           "type = ?, level = ?, host_id = ? WHERE id = ?";
 }
