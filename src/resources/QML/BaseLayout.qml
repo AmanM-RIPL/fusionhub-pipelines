@@ -90,6 +90,10 @@ Rectangle {
         UnitOfMeasurementPage {
             visible: pageName === "UnitOfMeasurement"
         }
+        WorkBillingLinePage {
+            visible: pageName === "WorkBillingLine"
+        }
+
 
 
         /*

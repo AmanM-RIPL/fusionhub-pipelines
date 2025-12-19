@@ -50,6 +50,7 @@ WorkOrderLine* WorkOrderLineRepository::mapFromQueryQML(const QSqlQuery& query, 
     po->setApprovalStatus(query.value("approval_status").toBool());
     po->setWorkOrderId(query.value("work_order_id").toInt());
     po->setTaskId(query.value("task_id").toInt());
+    po->setDescription(query.value("description").toString());
 
 
     return po;
@@ -60,6 +61,7 @@ void WorkOrderLineRepository::bindEntityToQuery(QSqlQuery& query, const WorkOrde
     query.addBindValue(entity.getApprovalStatus());
     query.addBindValue(entity.getWorkOrderId());
     query.addBindValue(entity.getTaskId());
+    query.addBindValue(entity.getDescription());
 
 }
 

@@ -24,6 +24,7 @@ RepositoryLocator::RepositoryLocator() {
     m_purchaseOrderLineRepository = std::make_unique<PurchaseOrderLineRepository>();
     m_goodReceivedNoteRepository = std::make_unique<GoodReceivedNoteRepository>();
     m_materialIndentRepository = std::make_unique<MaterialIndentRepository>();
+    m_workBillingLineRepository = std::make_unique<WorkBillingLineRepository>();
 }
 
 RepositoryLocator &RepositoryLocator::instance()
@@ -150,5 +151,10 @@ GoodReceivedNoteRepository *RepositoryLocator::goodReceivedNoteRepository()
 MaterialIndentRepository *RepositoryLocator::materialIndentRepository()
 {
     return m_materialIndentRepository.get();
+}
+
+WorkBillingLineRepository *RepositoryLocator::workBillingLineRepository()
+{
+    return m_workBillingLineRepository.get();
 }
 
