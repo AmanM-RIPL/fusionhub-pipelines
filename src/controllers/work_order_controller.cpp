@@ -90,7 +90,8 @@ std::vector<WorkOrder*> WorkOrderController::getWorkOrderList(bool isApproved) c
                 workOrder->setGlobalId("123");
                 workOrder->setApprovalStatus(true);
 
-                workOrder->setWorkOrderName(jsonObj["workOrderName"].toString());
+                //workOrder->setWorkOrderName(jsonObj["workOrderName"].toString());
+                workOrder->setWorkOrderName(jsonObj["description"].toString());
                 workOrder->setVendorId(jsonObj["vendorId"].toInt());
 
                 workOrders.push_back(workOrder);

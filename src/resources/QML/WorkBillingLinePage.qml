@@ -55,18 +55,23 @@ Column {
         onOpened: {
             // Load lists from controllers and populate root lists
             if (workBillingLineRoot.visible) {
-                workOrdersFromCtrl = workOrderController.getWorkOrderList(true)
+                //workOrdersFromCtrl = workOrderController.getWorkOrderList(true)
+               // workOrderLineFromCtrl = workOrderLineController.getWorkOrderLineList(true)
 
-                workOrderLineFromCtrl = workOrderLineController.getWorkOrderLineList(true)
+                workOrdersFromCtrl = workOrderController.getWorkOrderList(false)
+                workOrderLineFromCtrl = workOrderLineController.getWorkOrderLineList(false)
 
                 // Clear current lists then populate
                 workOrderList = []
                 workOrderLineList = []
 
+                //console.log("workOrdersFromCtrl.length:", workOrdersFromCtrl.length)
+
 
                 for (var j = 0; j < workOrdersFromCtrl.length; j++) {
                     workOrderList = workOrderList.concat(
-                                workOrdersFromCtrl[j].workOrderName)
+                                 workOrdersFromCtrl[j].workOrderName)
+
                 }
 
                 // Build display list for combo box with description
@@ -387,7 +392,7 @@ Column {
         workBillingLineRoot.workBillingLineList = [];
         if (workBillingLineRoot.visible) {
             workBillingLineRoot.workBillingLineList = workBillingLineController.getWorkBillingLineList(isApproved);
-         //   console.log("dd", JSON.stringify(workBillingLineList));
+            //console.log("dd_WorkBiling_data", JSON.stringify(workBillingLineList));
         }
     }
 

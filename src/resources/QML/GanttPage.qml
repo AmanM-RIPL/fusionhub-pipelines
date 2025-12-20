@@ -836,9 +836,11 @@ Rectangle {
                     days: "days",
                     id: "id",
                     pid: "pid",
-                    startYear:"startYear",
-                    year:"year",
-                    startDate:"startDate"
+                    startYear: "startYear",
+                    year: "year",
+                    startDate: "startDate",
+                    month_year: `${monthKey}_${year}`
+
                 });
             }
         }

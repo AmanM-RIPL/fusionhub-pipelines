@@ -26,6 +26,10 @@ Rectangle {
 
     property var  task_month_paramList: []
 
+    property var taskModel:[];
+    property var taskNameModel:[];
+
+
     TaskController{
         id:taskController
     }
@@ -33,23 +37,25 @@ Rectangle {
 
     ListModel {
             id: yearModel
-        }
+        }    
 
 
     ListModel {
-            id: highlightedDatesModel            
-            // Adjust these years/months to match your current view
+            id: highlightedDatesModel
             /*
             ListElement { year: 2025; month: 0; day: 3; color: "red" }
             */
-
         }
 
+    /**********New Task Popup Start*****************/
+
+    /************end New Task Popup****************/
 
     Item {
-        width: 100
+        width: 200
         height: 100
         id:itemId
+
 
         Image{
             source: "qrc:/resources/images/backArrow.svg"
@@ -69,8 +75,11 @@ Rectangle {
             }
         }
 
+
         Text{
+            id:idText
             text: txtProjectName
+
             color: "#000000"
             font.pixelSize: 44
             font.weight: 700
@@ -79,6 +88,30 @@ Rectangle {
             anchors.top: parent.top
             anchors.topMargin: 21
         }
+
+        CustomButton {
+            color: "#007AFF"
+            width: 110
+            height: 38
+            radius: 4
+            btnSource: "qrc:/resources/images/addWhite_icon.png"
+            btnName: "New Task"
+            btnNameColor: "white"
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: parent.left
+            anchors.leftMargin: 340
+            visible: false
+
+
+            MouseArea{
+                anchors.fill: parent
+
+                onClicked: {
+                   // newVendorPopup.open();
+                }
+            }
+        }
+
     }//End of Item
 
 
@@ -90,7 +123,6 @@ Rectangle {
         radius: 8
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: itemId.bottom
-
 
 
         ScrollView {
@@ -119,8 +151,33 @@ Rectangle {
 
                     RowLayout {
                         spacing: 5
+
+                        Label {
+                            text: "Select Task"
+                            //font.bold: true
+                            color: "#000000"
+                            font.pixelSize: 15
+                            font.weight: 700
+                        }
+
+                        ComboBox {
+                            id: comboTaskId
+                            height: 40
+                            width: 150
+                            model: taskNameModel
+                            font.pixelSize: 15
+                            font.weight: 700
+                            currentIndex: 0
+
+                            onCurrentIndexChanged:
+                            {
+                                showColor(year.currentText, month.currentIndex)
+                            }
+                        }
+
                         Rectangle {
-                            width: idMainRect.width - 320
+                            //width: idMainRect.width - 320
+                            width: idMainRect.width - 450
                             height: 40
                             color:  "transparent"
                         }
@@ -180,6 +237,11 @@ Rectangle {
                             font.pixelSize: 20
                             font.weight: 700
                             currentIndex: 0
+
+                            onCurrentIndexChanged:
+                            {
+                                 showColor(year.currentText, month.currentIndex)
+                            }
                         }
 
                         ComboBox {
@@ -190,6 +252,11 @@ Rectangle {
                             font.pixelSize: 20
                             font.weight: 700
                             currentIndex: 0
+
+                            onCurrentIndexChanged:
+                            {
+                                 showColor(year.currentText, month.currentIndex)
+                            }
 
                         }
 
@@ -270,9 +337,9 @@ Rectangle {
                                 width: parent.width + 8
                                 height: parent.height/2
 
-                                property bool isSelected: (model.year === selectedDate.getFullYear() &&
-                                                            model.month === selectedDate.getMonth() &&
-                                                            model.day === selectedDate.getDate())
+                                // property bool isSelected: (model.year === selectedDate.getFullYear() &&
+                                //                             model.month === selectedDate.getMonth() &&
+                                //                             model.day === selectedDate.getDate())
 
                                 border.color: getDateColor(model.date)
                                 color: getDateColor(model.date)
@@ -298,9 +365,13 @@ Rectangle {
                                 {
                                     currentIndex = j;
                                 }
-                            }
+                            }                            
+
                             year.currentIndex = currentIndex;
                             month.currentIndex = now.getMonth();
+
+
+                            showColor(year.currentText, month.currentIndex);
 
                         }
                     }                    
@@ -310,35 +381,34 @@ Rectangle {
 
         Component.onCompleted: {
              loadSampleYears();
+
+
             if(schedule_root.visible)
             {
-                //task_month_paramList = taskController.getTaskList(isApproved);
-                task_month_paramList = taskController.getTaskList(true);
+              loadAllTasks();
+                showColor(year.currentText, month.currentIndex)
             }
         }
         onVisibleChanged: {
             if(schedule_root.visible)
             {
-                //task_month_paramList = taskController.getTaskList(isApproved);
-                 task_month_paramList = taskController.getTaskList(true);
-
-                /*for (var i = 0; i < task_month_paramList.length; i++)
-                {
-                    var currentTask = task_month_paramList[i];
-                    for(let day = currentTask.startDay; day <= currentTask.endDay; day++)
-                    {
-                        highlightedDatesModel.append({
-                                        "year": currentTask.year,
-                                        "month": currentTask.month - 1,
-                                        "day": day,
-                                        "color": "red"
-                                    });
-                    }
-                }*/
-
+                loadAllTasks();
                 showColor(year.currentText, month.currentIndex)
-
             }
+        }
+    }
+
+    function loadAllTasks()
+    {
+        taskModel = [];
+        taskNameModel = [];
+        var paramList = taskController.getTaskList(true);
+
+        for (var i = 0; i < paramList.length; i++)
+        {
+            var currentTask = paramList[i];
+           taskModel = taskModel.concat(currentTask.id);
+           taskNameModel = taskNameModel.concat(currentTask.taskName);
         }
     }
 
@@ -357,18 +427,22 @@ Rectangle {
                 eventData.day === dateToCheck.getDate()) {
                 return eventData.color;
             }
+
         }
         return "white";
     }
 
-    function showColor(selectedYear, selectedMonth)
+    /*function showColor1(selectedYear, selectedMonth)
     {
+        highlightedDatesModel.clear();
+        task_month_paramList = taskController.getTaskList(true);
+
         for (var i = 0; i < task_month_paramList.length; i++)
         {
             var currentTask = task_month_paramList[i];
 
             let result = selectedYear.localeCompare(currentTask.year);
-            if(result === 0  && currentTask.month - 1 === selectedMonth)
+            if(result === 0  && currentTask.month - 1 === selectedMonth && currentTask.id === taskModel[comboTaskId.currentIndex])
             {
                 for(let day = currentTask.startDay; day <= currentTask.endDay; day++)
                 {
@@ -378,6 +452,50 @@ Rectangle {
                         "day": day,
                         "color": "red"
                     });
+                }
+            }
+
+        }
+    }*/
+
+    function showColor(selectedYear, selectedMonth) {
+        highlightedDatesModel.clear();
+        task_month_paramList = taskController.getTaskList(true);
+
+        for (var i = 0; i < task_month_paramList.length; i++) {
+            var currentTask = task_month_paramList[i];
+
+            // Created Date objects for the start, end, and current view
+            // Note: selectedMonth is 0-indexed, currentTask.month is 1-indexed
+            let startDate = new Date(currentTask.startYear, currentTask.startMonth - 1, currentTask.startDay);
+            let endDate = new Date(currentTask.endYear, currentTask.endMonth - 1, currentTask.endDay);
+
+            // Checked if the task ID matches the selected combo box item
+            if (currentTask.id === taskModel[comboTaskId.currentIndex])
+            {
+                //Determined the first and last day of the currently displayed month
+                let viewMonthStart = new Date(selectedYear, selectedMonth, 1);
+                let viewMonthEnd = new Date(selectedYear, selectedMonth + 1, 0); // Day 0 is last day of prev month
+
+                //Checked if the task overlaps with the selected month
+                if (startDate <= viewMonthEnd && endDate >= viewMonthStart) {
+
+                    // Calculated the visual start and end for the current month view
+                    let startPrint = (startDate < viewMonthStart) ? 1 : currentTask.startDay;
+                    let endPrint = (endDate > viewMonthEnd) ? viewMonthEnd.getDate() : currentTask.endDay;
+
+                    for (let day = startPrint; day <= endPrint; day++) {
+
+                        currentTask.year = selectedYear;
+                        currentTask.month = selectedMonth;
+
+                        highlightedDatesModel.append({
+                            "year": currentTask.year,
+                            "month": currentTask.month,
+                            "day": day,
+                            "color": "red"
+                        });
+                    }
                 }
             }
         }

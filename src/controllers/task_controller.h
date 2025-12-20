@@ -18,7 +18,7 @@ public:
 private:
     TaskRepository* m_taskRepository;
     DraftEntityRepository* m_draftEntityRepository;
-    void setDaysInMonth(Task* task, const QString& strDays, const int monthNo) const;
+    void setDaysInMonth(Task* task, const QString& strDays, const int monthNo, const QString& startDate) const;
 };
 
 #endif // TASK_CONTROLLER_H

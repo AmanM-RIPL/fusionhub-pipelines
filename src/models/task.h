@@ -26,6 +26,9 @@ class Task: public QObject
     Q_PROPERTY(int startDay READ getStartDay WRITE setStartDay NOTIFY startDayChanged)
     Q_PROPERTY(int endDay READ getEndDay WRITE setEndDay NOTIFY endDayChanged)
 
+    Q_PROPERTY(int startMonth READ getStartMonth WRITE setStartMonth NOTIFY startMonthChanged)
+    Q_PROPERTY(int endMonth READ getEndMonth WRITE setEndMonth NOTIFY endMonthChanged)
+
 
     Q_PROPERTY(QString jan READ getJan WRITE setJan NOTIFY janChanged)
     Q_PROPERTY(QString feb READ getFeb WRITE setFeb NOTIFY febChanged)
@@ -48,6 +51,8 @@ class Task: public QObject
 
     Q_PROPERTY(int startYear READ getStartYear WRITE setStartYear NOTIFY startYearChanged)
     Q_PROPERTY(int endYear READ getEndYear WRITE setEndYear NOTIFY endYearChanged)
+
+    Q_PROPERTY(QString month_year READ getMonth_Year WRITE setMonth_Year NOTIFY month_yearChanged)
 
 
 public:
@@ -75,6 +80,8 @@ public:
     int getMonth() const { return month; }
     int getStartDay() const { return startDay; }
     int getEndDay() const { return endDay; }
+    int getStartMonth() const { return startMonth; }
+    int getEndMonth() const { return endMonth; }
 
     QString getJan() const { return jan; }
     QString getFeb() const { return feb; }
@@ -97,6 +104,8 @@ public:
     int getStartYear() const { return startYear; }
     int getEndYear() const { return endYear; }
 
+    QString getMonth_Year() const { return month_year; }
+
 
     void setId(int id) { this->id = id; }
     void setGlobalId(const QString& globalId) { this->globalId = globalId; }
@@ -112,6 +121,9 @@ public:
     void setMonth(const int month) { this->month = month; }
     void setStartDay(const int startDay) { this->startDay = startDay; }
     void setEndDay(const int endDay) { this->endDay = endDay; }
+
+    void setStartMonth(const int startMonth) { this->startMonth = startMonth; }
+    void setEndMonth(const int endMonth) { this->endMonth = endMonth; }
 
     void setJan(const QString& jan) { this->jan = jan; }
     void setFeb(const QString& feb) { this->feb = feb; }
@@ -134,6 +146,8 @@ public:
     void setStartYear(const int startYear) { this->startYear = startYear; }
     void setEndYear(const int endYear) { this->endYear = endYear; }
 
+    void setMonth_Year(const QString& month_year) { this->month_year = month_year; }
+
 
 signals:
     void globalIdChanged();
@@ -150,6 +164,9 @@ signals:
     void monthChanged();
     void startDayChanged();
     void endDayChanged();
+
+    void startMonthChanged();
+    void endMonthChanged();
 
     void janChanged();
     void febChanged();
@@ -171,6 +188,7 @@ signals:
 
     void startYearChanged();
     void endYearChanged();
+    void month_yearChanged();
 
 private:
     int id = 0;
@@ -189,6 +207,9 @@ private:
     int startDay = 0;
     int endDay = 0;
 
+    int startMonth = 0;
+    int endMonth = 0;
+
     QString jan = "";
     QString feb = "";
     QString mar = "";
@@ -204,6 +225,7 @@ private:
 
     int startYear = 0;
     int endYear = 0;
+    QString month_year = "";
 
 };
 
