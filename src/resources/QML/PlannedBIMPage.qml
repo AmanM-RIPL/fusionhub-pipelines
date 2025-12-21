@@ -1121,10 +1121,13 @@ Row {
 
             onAcceptCallback: function () {
                 //windowController.create("projectname", windowTotalHeightTextBox.text, windowWidthTextBox.text);
-                let bimElementPtr = bimElementController.create("Window", "Front Window", 0);
+                let bimElementPtr = bimElementController.create("Window", "Front Window", 0, 0);
                 bimElementController.addParameter(bimElementPtr, "Height", windowTotalHeightText);
+                bimElementController.addParameter(bimElementPtr, "Width", windowWidthText);
                 bimElementController.addParameter(bimElementPtr, "Distance", windowDistanceText);
                 bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
+
+                glscene.updateEditableBimElement(bimElementPtr);
 
                 windowTotalHeightText = "";
                 windowDistanceText = "";

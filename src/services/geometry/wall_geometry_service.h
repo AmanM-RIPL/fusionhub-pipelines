@@ -3,6 +3,7 @@
 
 #include "common/opengl/classes/opengl_helper.h"
 #include "door_geometry_service.h"
+#include "window_geometry_service.h"
 
 class WallGeometryService : public QObject
 {

@@ -10,6 +10,7 @@
 #include "column_geometry_service.h"
 #include "slab_geometry_service.h"
 #include "door_geometry_service.h"
+#include "window_geometry_service.h"
 #include "ifc_geometry_service.h"
 
 #include "controllers/ifc_detail_controller.h"

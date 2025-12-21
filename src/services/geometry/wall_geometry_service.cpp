@@ -165,6 +165,13 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
 
             body = FacetModeler::Body::boolOper(FacetModeler::eDifference, body, voidBody);
         }
+        else if (hostedElement->getType() == "Window")
+        {
+            WindowGeometryService service = WindowGeometryService();
+            FacetModeler::Body voidBody = service.generateVoidBody(hostedElement, wallElement);
+
+            body = FacetModeler::Body::boolOper(FacetModeler::eDifference, body, voidBody);
+        }
     }
 
     // Mesh geometry generation
