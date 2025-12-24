@@ -79,7 +79,7 @@ MyGLRenderer::MyGLRenderer()
 
     // initialize Camera
     m_camera = new Camera();
-    m_camera->Initialize(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 1.0f, 0.0f), QVector3D(0.0f, 0.0f, 20.0f), 5.0f, 0.5f);
+    m_camera->Initialize(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 0.0f, 1.0f), QVector3D(0.0f, -10.0f, 10.0f), 5.0f, 0.5f);
 
     // initialize Shader
     m_shader = new Shader();
@@ -384,7 +384,14 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
         m_viewType = glItem->m_viewType;
 
-        m_camera->SetCameraParameters(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 1.0f, 0.0f), QVector3D(0.0f, 0.0f, 20.0f), 5.0f, 0.5f);
+        if (glItem->m_viewType == "ModelView")
+        {
+            m_camera->SetCameraParameters(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 0.0f, 1.0f), QVector3D(0.0f, -10.0f, 10.0f), 5.0f, 0.5f);
+        }
+        else
+        {
+            m_camera->SetCameraParameters(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 1.0f, 0.0f), QVector3D(0.0f, 0.0f, 20.0f), 5.0f, 0.5f);
+        }
     }
 }
 
@@ -775,6 +782,7 @@ void MyGLRenderer::render() {
 QOpenGLFramebufferObject* MyGLRenderer::createFramebufferObject(const QSize &size) {
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::Depth);  //Request depth buffer
+    format.setSamples(4); //Anti-Aliasing via MSAA
 
     return new QOpenGLFramebufferObject(size, format);
 }

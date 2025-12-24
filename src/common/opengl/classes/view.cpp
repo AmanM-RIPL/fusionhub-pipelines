@@ -111,6 +111,7 @@ void View::BindMeshWithOpenGL()
 void View::Render()
 {
     this->glEnable(GL_DEPTH_TEST);
+    this->glEnable(GL_MULTISAMPLE);
     this->glDepthFunc(GL_LEQUAL);
     this->glDepthMask(GL_TRUE);
     this->glDisable(GL_BLEND);

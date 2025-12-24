@@ -25,8 +25,9 @@ void Camera::SetCameraParameters(QVector3D startTarget, QVector3D startUp, QVect
     distance = offset.length();
 
     yaw = qRadiansToDegrees(qAtan2(offset.z(), offset.x()));
-    float horizontalDist = QVector2D(offset.x(), offset.z()).length();
-    pitch = qRadiansToDegrees(qAtan2(offset.y(), horizontalDist));
+    float horizontalDist = QVector2D(offset.x(), offset.y()).length();
+    pitch = qRadiansToDegrees(qAtan2(offset.z(), horizontalDist));
+    azimuthZ = qRadiansToDegrees(qAtan2(offset.y(), offset.x()));
 
     update();
 }
@@ -78,11 +79,11 @@ void Camera::OrbitHorizontal(bool rightDirection)
 {
     if (rightDirection)
     {
-        yaw += turnSpeed;
+        azimuthZ += turnSpeed;
     }
     else
     {
-        yaw -= turnSpeed;
+        azimuthZ -= turnSpeed;
     }
 
     update();
@@ -138,17 +139,29 @@ void Camera::update()
     // front.setZ(qSin(qDegreesToRadians(yaw)) * qCos(qDegreesToRadians(pitch)));
     // front = front.normalized();
 
-    position.setX(target.x() + distance * qCos(qDegreesToRadians(yaw)) * qCos(qDegreesToRadians(pitch)));
-    position.setY(target.y() + distance * qSin(qDegreesToRadians(pitch)));
-    position.setZ(target.z() + distance * qSin(qDegreesToRadians(yaw)) * qCos(qDegreesToRadians(pitch)));
+    // For the case of yaw and pitch
+    // position.setX(target.x() + distance * qCos(qDegreesToRadians(yaw)) * qCos(qDegreesToRadians(pitch)));
+    // position.setY(target.y() + distance * qSin(qDegreesToRadians(pitch)));
+    // position.setZ(target.z() + distance * qSin(qDegreesToRadians(yaw)) * qCos(qDegreesToRadians(pitch)));
+
+    float az = qDegreesToRadians(azimuthZ);
+    float el = qDegreesToRadians(pitch);
+
+    // Distance projected onto XY plane
+    float planarDist = distance * qCos(el);
+
+    position.setX(target.x() + planarDist * qCos(az));
+    position.setY(target.y() + planarDist * qSin(az));
+    position.setZ(target.z() + distance * qSin(el));
 
     front = (target - position).normalized();
+    cameraDirection = -front;
 
-    right = QVector3D::crossProduct(front, worldUp);
+    right = QVector3D::crossProduct(worldUp, cameraDirection);
     right = right.normalized();
 
 
-    up = QVector3D::crossProduct(right, front);
+    up = QVector3D::crossProduct(cameraDirection, right);
     up = up.normalized();
 }
 
