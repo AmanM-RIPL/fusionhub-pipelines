@@ -15,6 +15,8 @@ class WorkOrder: public QObject
     Q_PROPERTY(QString workOrderName READ getWorkOrderName WRITE setWorkOrderName NOTIFY workOrderNameChanged)
     Q_PROPERTY(int vendorId READ getVendorId WRITE setVendorId NOTIFY vendorIdChanged)
 
+     Q_PROPERTY(QString workOrderLineData READ getWorkOrderLineData WRITE setWorkOrderLineData NOTIFY workOrderLineDataChanged)
+
 
 public:
     explicit WorkOrder(QObject* parent = nullptr): QObject(parent) {}
@@ -26,25 +28,29 @@ public:
     bool getApprovalStatus() const { return approvalStatus; }
     QString getWorkOrderName() const { return workOrderName; }
     int getVendorId() const { return vendorId; }
+    QString getWorkOrderLineData() const { return workOrderLineData; }
 
     void setId(int id) { this->id = id; }
     void setGlobalId(const QString& globalId) { this->globalId = globalId; }
     void setApprovalStatus(bool status) { this->approvalStatus = status; }
     void setWorkOrderName(const QString& workOrderName) { this->workOrderName = workOrderName; }
     void setVendorId(int vendorId) { this->vendorId = vendorId; }
+    void setWorkOrderLineData(const QString& workOrderLineData) { this->workOrderLineData = workOrderLineData; }
 
 signals:
     void globalIdChanged();
     void approvalStatusChanged();
     void workOrderNameChanged();
-    void vendorIdChanged();
+    void vendorIdChanged();    
+    void workOrderLineDataChanged();
 
 private:
     int id = 0;
     QString globalId;
     bool approvalStatus = true;
     QString workOrderName;
-    int vendorId = 0;
+    int vendorId = 0;    
+    QString workOrderLineData;
 };
 
 Q_DECLARE_METATYPE(WorkOrder)

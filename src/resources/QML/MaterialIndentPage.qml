@@ -225,8 +225,8 @@ Column {
 
             // get data
             materialIndentList = materialIndentController.getMaterialIndentList(isApproved);
-            materialList = materialController.getMaterialList(true);
-            taskList = taskController.getTaskList(true);
+            materialList = materialController.getMaterialList(isApproved);
+            taskList = taskController.getTaskList(isApproved);
 
             // Material list for dropdown
             materialText = materialList.map(m => m.materialName);

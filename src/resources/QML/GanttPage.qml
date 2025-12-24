@@ -7,8 +7,6 @@ import QtCharts
 import com.fh.models 1.0
 import com.fh.controllers
 
-
-
 Rectangle {
     id:gantt_root
     width: 1440
@@ -19,7 +17,8 @@ Rectangle {
     property int febMonthWidth: 28
     property int monthScale: 5
 
-    property bool isApproved: false
+    //property bool isApproved: false
+    property int approvedNo: 0
 
     //property date startDate: new Date(2025, 0, 15) // Jan 15, 2025 (months are 0-based)
    // property date endDate: new Date(2025, 0, 20)   // Jan 20, 2025
@@ -570,10 +569,14 @@ Rectangle {
 
             onCurrentTextChanged: {
                 if(approvalTypeComboBox.currentText === "Approved"){
-                    isApproved = true;                   
+                    approvedNo = 0;
                 }
-                else{
-                    isApproved = false;                    
+                else if(approvalTypeComboBox.currentText === "Draft"){
+                    approvedNo = 1;
+                }
+                else
+                {
+                    approvedNo = 2;
                 }
                 showList();
             }
@@ -725,22 +728,8 @@ Rectangle {
                                                 headerHeight:50
                                                 headerFontPixelSize:20
                                                 model: task_month_paramList //monthParamList
-                                                /*columns: [
-                                                    { label: "Jan", width: 31 * monthScale, key: "jan", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "Feb", width: febMonthWidth * monthScale, key: "feb", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "Mar", width: 31  * monthScale, key: "mar", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "Apr", width: 30 * monthScale, key: "apr", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "May", width: 31 * monthScale, key: "may", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "June", width: 30 * monthScale, key: "jun", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "July", width: 31 * monthScale, key: "jul", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "Aug", width: 31 * monthScale, key: "aug", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "Sep", width: 30 * monthScale, key: "sep", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "Oct", width: 31 * monthScale, key: "oct", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "Nov", width: 30 * monthScale, key: "nov", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "Dec", width: 31 * monthScale, key: "dec", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                ]*/
 
-                                                 columns: generateGanttColumns(startYear, endYear, monthScale)
+                                                columns: generateGanttColumns(startYear, endYear, monthScale)
                                             }                                            
                                         }                                        
                                     }
@@ -767,7 +756,21 @@ Rectangle {
     function showList(){
         if(gantt_root.visible){            
 
-            task_month_paramList = taskController.getTaskList(isApproved);
+            if(approvedNo == 0)
+            {
+              task_month_paramList = taskController.getTaskList(true);
+            }
+            else if(approvedNo == 1)
+            {
+                task_month_paramList = taskController.getTaskList(false);
+            }
+            else
+            {
+               task_month_paramList = taskController.getTaskList(true);
+               var draftTasklist = taskController.getTaskList(false);
+
+               task_month_paramList = task_month_paramList.concat(draftTasklist);
+            }
 
             task_idList = [];
 

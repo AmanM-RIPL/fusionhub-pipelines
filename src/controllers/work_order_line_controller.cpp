@@ -15,9 +15,13 @@ WorkOrderLineController::WorkOrderLineController(QObject *parent)
 {}
 void WorkOrderLineController::create(const int &vendorId, const QString &description, const QVariantList &workOrderLineData) const
 {
+    qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+
     QJsonObject jsonObject;
     jsonObject["vendorId"] = vendorId;
     jsonObject["description"] = description;
+
+    jsonObject["id"] = id_in_milliseconds;//This need to be chnaged for
     QJsonArray lineArray;
     for (const QVariant &item : workOrderLineData) {
         lineArray.append(QJsonObject::fromVariantMap(item.toMap()));
@@ -72,8 +76,8 @@ std::vector<WorkOrderLine*> WorkOrderLineController::getWorkOrderLineList(bool i
         TaskController taskController;
         VendorController  vendorController;
 
-        std::vector<Task*> vecTask = taskController.getTaskList(true);
-        std::vector<Vendor*> vecVendor =  vendorController.getVendorList(true);
+        std::vector<Task*> vecTask = taskController.getTaskList(isApproved);
+        std::vector<Vendor*> vecVendor =  vendorController.getVendorList(isApproved);
 
         std::vector<WorkOrderLine*> workOrderLines;
         for(int i = 0; i < draftEntitys.size(); i++)
@@ -98,7 +102,8 @@ std::vector<WorkOrderLine*> WorkOrderLineController::getWorkOrderLineList(bool i
                     QString amount = lineItem["amount"].toString();
                     QString itemDescription = lineItem["description"].toString();
                     QString retentionAmount = lineItem["retention_amount"].toString();
-                    QString taskId = lineItem["task_id"].toString();
+                    //QString taskId = lineItem["task_id"].toString();
+                    long long taskId = lineItem["task_id"].toVariant().toLongLong();
                     //QString taskName = lineItem["task_name"].toString();
                     QString taxAmount = lineItem["tax_amount"].toString();
                     QString taxWithHolding = lineItem["tax_with_holding"].toString();
@@ -110,7 +115,8 @@ std::vector<WorkOrderLine*> WorkOrderLineController::getWorkOrderLineList(bool i
 
                     foreach (const Task *task, vecTask)
                     {
-                        if(task->getId() == taskId.toInt())
+                        //if(task->getId() == taskId.toInt())
+                        if(task->getId() == taskId)
                         {
                             workOrderLine->setTaskName(task->getTaskName());
                         }

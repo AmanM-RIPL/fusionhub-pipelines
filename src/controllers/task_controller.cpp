@@ -33,6 +33,10 @@ void TaskController::create(const QString &name, const QString &description, con
     /***********Start of DraftEntity******************/
 
     QJsonObject jsonObject;
+
+    qint64 task_id = QDateTime::currentMSecsSinceEpoch();
+
+    jsonObject["id"] = task_id;
     jsonObject["task_name"] = name;
     jsonObject["description"] = description;
     jsonObject["bim_element"] = bimElement;
@@ -135,13 +139,15 @@ std::vector<Task*> TaskController::getTaskList(bool isApproved) const
         for(int i = 0; i < draftEntitys.size(); i++)
         {
             QString  jsonString = draftEntitys[i]->getEntitySchema();
+            qDebug()<<"jsonString:"<< jsonString;
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
             if (!jsonDoc.isNull() && jsonDoc.isObject())
             {
                 auto task = new Task();
                 QJsonObject jsonObj = jsonDoc.object();
-                task->setId(i + 1);
-               // task->setId(jsonObj["id"].toInt());
+                //task->setId(i + 1);
+                task->setId(jsonObj["id"].toVariant().toLongLong());
+                qDebug()<<"TaskId:"<< jsonObj["id"].toVariant().toLongLong();
                 task->setGlobalId("123");
                 task->setApprovalStatus(true);
                 task->setTaskName(jsonObj["task_name"].toString());

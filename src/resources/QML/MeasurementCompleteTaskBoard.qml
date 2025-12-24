@@ -48,6 +48,7 @@ Rectangle {
         anchors.rightMargin: 59
         anchors.top: parent.top
         anchors.topMargin: 17
+        visible: false
 
         Image{
             source: "qrc:/resources/images/addBlack.svg"
@@ -63,6 +64,7 @@ Rectangle {
         anchors.rightMargin: 17
         anchors.top: parent.top
         anchors.topMargin: 17
+        visible:false
 
         Image{
             source: "qrc:/resources/images/close.svg"

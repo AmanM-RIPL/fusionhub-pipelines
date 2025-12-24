@@ -18,6 +18,7 @@ Column {
    // property int colNumber:-1
     property var month_arr:{"jan":"01", "feb":"02", "mar":"03", "apr":"04", "may":"05", "jun":"06", "jul":"07", "aug":"08", "sep":"09", "oct":"10", "nov":"11", "dec":"12"}
 
+
     readonly property int totalColumnWidth: {
         var total = 0;
         for (var i = 0; i < columns.length; i++) {
@@ -108,13 +109,6 @@ Column {
                                         //var startDay = String(rowData[modelData.startx]);
                                         var month_year = modelData.month_year;
 
-                                        //console.log("month_year:", month_year);
-                                        //console.log("keyvalue:", keyValue);
-                                        //const pad = (num) => num.toString().padStart(2, '0');
-                                        //const formattedDate = `${pad(startDay)}/${pad(monthno)}/${YearValue}`;
-
-
-
                                         if(keyValue.length > 0 && keyValue !== "0" && month_year.localeCompare(keyValue) === 0 ){
                                             //idRect.color = "red"
 
@@ -150,7 +144,6 @@ Column {
                                         anchors.centerIn: parent
                                         topPadding: 1
                                         bottomPadding: 3
-
                                     }
                                 }
                             }
@@ -171,7 +164,6 @@ Column {
 
             onVisibleChanged: {
                linesOverlay.requestPaint()
-
            }
         }
         Canvas
@@ -181,7 +173,6 @@ Column {
             // This ensures the canvas is transparent and above the ListView visually
             z: 1
             onPaint: {
-
                 var ctxRect = getContext("2d");
                 ctxRect.clearRect(0, 0, width, height); // Clear previous frame
 
@@ -200,9 +191,6 @@ Column {
 
                     ctxRect.stroke();
                 }
-
-
-
 
                 var ctx = getContext("2d");
                // ctx.clearRect(0, 0, width, height); // Clear previous frame
@@ -226,8 +214,6 @@ Column {
                 ctx.strokeStyle = "red";
                 ctx.beginPath();
 
-
-
                 for(var i = 0; i < rowDataForGantt.length; i++){
                     var modelData = rowDataForGantt[i];
                     var x = modelData.x;
@@ -236,20 +222,12 @@ Column {
                     var pid = modelData.pid;
                     var month = modelData.month;
 
-                    for(var j = 0; j < rowDataForGantt.length; j++){
-                        var modelDataNew = rowDataForGantt[j] ;
+                    for(var z = 0; z < rowDataForGantt.length; z++){
+                        var modelDataNew = rowDataForGantt[z] ;
                         var xNew = modelDataNew.x;
                         var yNew = modelDataNew.y;
                         var idNew = modelDataNew.id;
                         var pidNew = modelDataNew.pid;
-
-                        //console.log("id:", id, "pidNew:", pidNew, "xNew:", xNew, "x:", x );
-
-                        /*var r = month.localeCompare("dec");
-                        if(r === 0 )
-                        {
-                             valuesToRemove.push(id);
-                        }*/
 
                         if(id === pidNew)// && xNew !== x)
                         {
@@ -262,19 +240,19 @@ Column {
                             ctx.moveTo(modelData.x + modelData.width + 3, modelData.y + 6);
                             ctx.lineTo(modelData.x + modelData.width + 3, modelData.y + 37 )
 
-                            ctx.moveTo(modelData.x + modelData.width + 3, modelData.y + 37);                            
+                            ctx.moveTo(modelData.x + modelData.width + 3, modelData.y + 37);
                             ctx.lineTo(xNew, modelDataNew.y+7);
 
                             ctx.stroke();
 
                             var fromX = modelData.x + modelData.width + 3;
-                            var fromY = modelData.y+37;                           
+                            var fromY = modelData.y+37;
                             var toX = xNew;
                             var toY = modelDataNew.y+7;
 
                             drawArrowhead(ctx, fromX, fromY, toX, toY, arrowHeadSize);
                             ctx.stroke();
-                        }                       
+                        }
                     }
                 }
             }

@@ -5,6 +5,7 @@
 #include <QList>
 #include "repositories/work_billing_line_repository.h"
 #include "repositories/draft_entity_repository.h"
+#include "repositories/task_repository.h"
 
 
 class WorkBillingLineController : public QObject
@@ -15,6 +16,7 @@ public:
 
     Q_INVOKABLE void create(const int &workOrderId, const QVariantList &workBillingLine) const;
     Q_INVOKABLE std::vector<WorkBillingLine*> getWorkBillingLineList(bool isApproved = false) const;
+    Q_INVOKABLE  std::vector<Task*> getBilledTaskList(bool isApproved) const;
 
 signals:
 

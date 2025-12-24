@@ -64,7 +64,6 @@ Column {
         border.color: "#7676801F"//"#8A888629"
         color: "white"
 
-
         ListView {
             id: listView
             anchors.fill: parent
@@ -100,8 +99,6 @@ Column {
                           font.pixelSize: 15
                           color: "blue"
                         }
-
-
 
                     MouseArea {
                         anchors.fill: parent

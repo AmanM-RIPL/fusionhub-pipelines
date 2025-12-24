@@ -17,11 +17,13 @@ Rectangle {
     property var task_idList: []
     property var valuesToRemove: []
 
-    property bool isApproved: false
+    property bool isApproved: true
     property int startYear: 2080
     property int endYear: 2010
 
     property date selectedDate: new Date()
+
+    property string txtTotalUpcomingTask: "0"
 
     ListModel {
         id: yearModel
@@ -31,6 +33,10 @@ Rectangle {
 
     TaskController{
         id:taskController
+    }
+
+    WorkBillingLineController{
+      id:workBillingLineController
     }
 
     /************Start of Calendar******************/
@@ -509,7 +515,7 @@ Rectangle {
         anchors.leftMargin: 8
 
         Text{
-            text: "4"
+            text: txtTotalUpcomingTask
             color: "#FFFFFF"
             font.pixelSize: 10
             font.weight: 400
@@ -537,7 +543,8 @@ Rectangle {
         anchors.right: parent.right
         anchors.rightMargin: 59
         anchors.top: parent.top
-        anchors.topMargin: 17
+        anchors.topMargin: 17        
+        visible: false
 
         Image{
             source: "qrc:/resources/images/addBlack.svg"
@@ -564,8 +571,13 @@ Rectangle {
         anchors.top: parent.top
         anchors.topMargin: 17
 
-        Image{
+        /*Image{
             source: "qrc:/resources/images/close.svg"
+            anchors.centerIn: parent            
+        }*/
+
+        Image{
+            source: "qrc:/resources/images/addBlack.svg"
             anchors.centerIn: parent
 
             MouseArea{
@@ -574,7 +586,7 @@ Rectangle {
                 hoverEnabled: true
 
                 onClicked: {
-                    //newTaskPopup.open();
+                    newTaskPopup.open();
                 }
             }
         }
@@ -597,9 +609,6 @@ Rectangle {
             id: listModel            
         }
 
-
-
-
         ListView{
             anchors.fill: parent
             spacing: 8
@@ -607,9 +616,6 @@ Rectangle {
             model: listModel
             delegate: listDelegate
         }
-
-
-
 
         Component{
             id: listDelegate
@@ -645,7 +651,6 @@ Rectangle {
                     }
                 }
 
-
                 Text{
                     text: desc
                     width: 252.5
@@ -674,19 +679,41 @@ Rectangle {
 
     function showList(){
         if(upcomingTaskBoard_root.visible){
-
-            task_month_paramList = taskController.getTaskList(isApproved);
-
             task_idList = [];
             listModel.clear();
+
+
+            task_month_paramList = taskController.getTaskList(isApproved);
+            /*var allTaskList = taskController.getTaskList(isApproved);
+            var billedTaskList = workBillingLineController.getBilledTaskList(isApproved);
+
+            for(var f =0; f<allTaskList.length; f++)
+            {
+                console.log("f:-", f, "id:", allTaskList[f].id);
+            }
+
+            for(var g =0; g<billedTaskList.length; g++)
+            {
+                console.log("g:-", g, "id:", billedTaskList[g].id);
+            }
+
+
+            task_month_paramList = allTaskList.filter(task => {
+                return !billedTaskList.some(billedTask =>
+                    parseInt(billedTask.id) === parseInt(task.id)
+                );
+            });
+             txtTotalUpcomingTask = String(task_month_paramList.length - billedTaskList.length);
+           */
+
+            txtTotalUpcomingTask = task_month_paramList.length;
 
             //here added first element zero for there is no parent id
             task_idList = [0, ...task_month_paramList.map(element => element.id)];
 
             var tempFilteredArray = task_idList.filter(function(element) {
-
                         return valuesToRemove.indexOf(element) === -1;
-                    });
+            });
 
             task_idList = tempFilteredArray;
 
@@ -716,5 +743,11 @@ Rectangle {
         for (var i = 2010; i < 2081; i++) {
              yearModel.append({"text" : i});
         }
+    }
+
+    function refreshData() {
+
+       // upcomingTaskBoard_root.showList();
+         //Component.statusChanged()
     }
 }

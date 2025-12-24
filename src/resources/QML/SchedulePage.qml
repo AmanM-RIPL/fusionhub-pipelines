@@ -26,8 +26,10 @@ Rectangle {
 
     property var  task_month_paramList: []
 
-    property var taskModel:[];
-    property var taskNameModel:[];
+    property var taskModel:[]
+    property var taskNameModel:[]
+
+    property int approvedNo:0
 
 
     TaskController{
@@ -114,6 +116,51 @@ Rectangle {
 
     }//End of Item
 
+    Rectangle{
+        id:idApprovalRect
+        width: 500
+        height: 50
+        color: "transparent"
+        //anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: itemId.bottom
+
+    Row {
+        spacing: 20
+        Text{
+            id: approvalTypeLabel
+            text: "Choose Approval Type"
+            color: "#323130"
+            font.weight: 700
+            font.pixelSize: 14
+            font.family: "Segoe UI"
+            topPadding: 10
+            leftPadding: 35
+        }
+
+        CustomComboBox {
+            id: approvalTypeComboBox
+            model: ["Approved", "Draft", "All"]
+            width:200
+
+            onCurrentTextChanged: {
+                if(approvalTypeComboBox.currentText === "Approved"){
+                    approvedNo = 0;
+                }
+                else if(approvalTypeComboBox.currentText === "Draft"){
+                    approvedNo = 1;
+                }
+                else
+                {
+                    approvedNo = 2;
+                }
+
+                loadAllTasks();
+                showColor(year.currentText, month.currentIndex)
+            }
+        }
+    }
+    }
+
 
     Rectangle{
         id:idMainRect
@@ -122,7 +169,7 @@ Rectangle {
         height: 400
         radius: 8
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: itemId.bottom
+        anchors.top: idApprovalRect.bottom
 
 
         ScrollView {
@@ -143,6 +190,7 @@ Rectangle {
                     width: parent.width
                     height: 80
                     color:  "#7676801F"
+                    radius: 8
 
                     ColumnLayout{
                         width:parent.width
@@ -385,15 +433,15 @@ Rectangle {
 
             if(schedule_root.visible)
             {
-              loadAllTasks();
+                loadAllTasks();
                 showColor(year.currentText, month.currentIndex)
             }
         }
         onVisibleChanged: {
             if(schedule_root.visible)
             {
-                loadAllTasks();
-                showColor(year.currentText, month.currentIndex)
+                loadAllTasks();               
+                showColor(year.currentText, month.currentIndex);
             }
         }
     }
@@ -402,13 +450,28 @@ Rectangle {
     {
         taskModel = [];
         taskNameModel = [];
-        var paramList = taskController.getTaskList(true);
+        //var paramList = taskController.getTaskList(true);
+        var paramList =[];
+        if(approvedNo === 0)
+        {
+            paramList = taskController.getTaskList(true);
+        }
+        else if(approvedNo === 1)
+        {
+            paramList = taskController.getTaskList(false);
+        }
+        else
+        {
+            paramList = taskController.getTaskList(true);
+            var paramListDraft = taskController.getTaskList(false);
+            paramList = paramList.concat(paramListDraft);
+        }
 
         for (var i = 0; i < paramList.length; i++)
-        {
+        {            
             var currentTask = paramList[i];
-           taskModel = taskModel.concat(currentTask.id);
-           taskNameModel = taskNameModel.concat(currentTask.taskName);
+            taskModel = taskModel.concat(currentTask.id);
+            taskNameModel = taskNameModel.concat(currentTask.taskName);
         }
     }
 
@@ -458,9 +521,24 @@ Rectangle {
         }
     }*/
 
-    function showColor(selectedYear, selectedMonth) {
+    function showColor(selectedYear, selectedMonth) {        
+
         highlightedDatesModel.clear();
-        task_month_paramList = taskController.getTaskList(true);
+        if(approvedNo === 0)
+        {
+            task_month_paramList = taskController.getTaskList(true);
+        }
+        else if(approvedNo === 1)
+        {
+             task_month_paramList = taskController.getTaskList(false);
+            console.log("approvedNo:", approvedNo)
+        }
+        else
+        {
+            task_month_paramList = taskController.getTaskList(true);
+            var draftTasklist = taskController.getTaskList(false);
+            task_month_paramList = task_month_paramList.concat(draftTasklist);
+        }
 
         for (var i = 0; i < task_month_paramList.length; i++) {
             var currentTask = task_month_paramList[i];
