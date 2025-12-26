@@ -5,7 +5,7 @@ import QtQuick.Layouts 1.15
 Column {
     id: root
     width: parent.width
-    spacing: 10
+    spacing: 2
 
     property var model: []
     property var columns: []
@@ -13,6 +13,10 @@ Column {
     property string searchText: ""
     property int rowsPerPage: 10
     property int currentPage: 1
+
+    signal viewRequested(var row)
+    signal editRequested(var row)
+    property int activeRowIndex: -1
 
     // Filtered list according to search
     property var filteredModel: {
@@ -58,9 +62,8 @@ Column {
             delegate: Rectangle {
                 width: modelData.width
                 height: 35
-                color: "#e5e5e5"
-                radius: 4
-
+                color: "#fff"
+                // radius: 4
                 Text {
                     anchors.centerIn: parent
                     text: modelData.label
@@ -78,34 +81,126 @@ Column {
         width: parent.width
         height: 260
         clip: true
-        spacing: 0
-
         model: pageData
+        spacing: 1
 
         delegate: Row {
             height: 38
-            property var row: modelData ? modelData : ({})
+            spacing: 1
+            property var row: modelData
+            property int rowIndex: index
 
             Repeater {
                 model: columns
+
                 delegate: Rectangle {
                     width: modelData.width
                     height: 38
                     color: "#ffffff"
-                    border.width: 0
+                    property bool isIdColumn: modelData.key === "id"
 
                     Rectangle {
                         anchors.left: parent.left
                         anchors.right: parent.right
+                        anchors.bottom: parent.bottom
                         height: 0.5
                         color: "#dddddd"
-                        anchors.bottom: parent.bottom
                     }
 
                     Text {
+                        visible: !isIdColumn
                         anchors.centerIn: parent
-                        text: row[modelData.key] !== undefined ? row[modelData.key] : ""
+                        text: row[modelData.key] ?? ""
                     }
+
+                    Item {
+                        anchors.fill: parent
+                        visible: isIdColumn
+                        Image {
+                            id: dots
+                            source: "qrc:/resources/images/dotMenu.svg"
+                            width: 16
+                            height: 16
+                            fillMode: Image.PreserveAspectFit
+
+                            anchors.left: parent.left
+                            anchors.leftMargin: 8
+                            anchors.verticalCenter: parent.verticalCenter
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    activeRowIndex =
+                                            activeRowIndex === rowIndex ? -1 : rowIndex
+                                }
+                            }
+                        }
+
+                        // --- Action buttons ---
+                        Row {
+                            spacing: 6
+                            anchors.left: dots.right
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.leftMargin: 6
+                            visible: activeRowIndex === rowIndex
+
+                            Button {
+                                text: "View"
+                                height: 24
+
+                                contentItem: Text {
+                                    text: parent.text
+                                    color: "white"
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    font.pixelSize: 12
+
+                                }
+
+                                background: Rectangle {
+                                    radius: 4
+                                    color: "#007AFF"
+                                }
+
+                                onClicked: {
+                                    viewRequested(row)
+                                    activeRowIndex = -1
+                                }
+                            }
+
+                            Button {
+                                text: "Edit"
+                                height: 24
+
+                                contentItem: Text {
+                                    text: parent.text
+                                    color: "white"
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    font.pixelSize: 12
+                                }
+
+                                background: Rectangle {
+                                    radius: 4
+                                    color: "#007AFF"
+                                }
+
+                                onClicked: {
+                                    editRequested(row)
+                                    activeRowIndex = -1
+                                }
+                            }
+
+                        }
+                        Text {
+                            anchors.left: dots.right
+                            anchors.leftMargin: activeRowIndex === rowIndex ? 80 : 10
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: row.id
+                        }
+                    }
+
                 }
             }
         }
@@ -224,12 +319,7 @@ Column {
             }
         }
 
-        // Spacer to push right elements to the right
-        Item {
-            Layout.fillWidth: true
-        }
-
-        // RIGHT SIDE - ROWS PER PAGE DROPDOWN
+        // ROWS PER PAGE DROPDOWN
         Row {
             spacing: 8
             Layout.alignment: Qt.AlignVCenter
@@ -253,7 +343,9 @@ Column {
                 font.pixelSize: 13
             }
         }
-
+        Item {
+            Layout.fillWidth: true
+        }
         // Items count info
         Text {
             Layout.alignment: Qt.AlignVCenter

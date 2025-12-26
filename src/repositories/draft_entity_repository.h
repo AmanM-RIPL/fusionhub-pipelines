@@ -17,6 +17,7 @@ public:
     Q_INVOKABLE std::vector<DraftEntity*> findAllQML(const QString& entity);
     bool save(const DraftEntity& entity) override;
     Q_INVOKABLE bool saveQML(DraftEntity* entity);
+    Q_INVOKABLE bool updateQML(DraftEntity* entity);
     bool update(const DraftEntity& entity) override;
     bool deleteById(int id) override;
     std::vector<std::unique_ptr<DraftEntity>> findByApprovalStatus(bool status) override;

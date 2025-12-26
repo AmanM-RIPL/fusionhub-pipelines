@@ -21,6 +21,9 @@ Popup {
     property int popupHeight: 200
     property var onAcceptCallback: null
     property var onCancelCallback: null
+
+    property bool showAcceptButton: true
+
     default property alias content: contentItem.children
 
     property string buttonName: "Add"
@@ -105,6 +108,7 @@ Popup {
                 layoutDirection: Qt.RightToLeft
 
                 CustomButton {
+                    visible: popupRoot.showAcceptButton
                     color: "#007AFF"
                     width: 84
                     height: 30

@@ -78,6 +78,7 @@ std::vector<WorkOrderLine*> WorkOrderLineController::getWorkOrderLineList(bool i
         std::vector<WorkOrderLine*> workOrderLines;
         for(int i = 0; i < draftEntitys.size(); i++)
         {
+            int draftId = draftEntitys[i]->getId();
             QString  jsonString = draftEntitys[i]->getEntitySchema();
             QByteArray jsonData = jsonString.toUtf8();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
@@ -87,9 +88,6 @@ std::vector<WorkOrderLine*> WorkOrderLineController::getWorkOrderLineList(bool i
                 QJsonObject mainObject = jsonDoc.object();
                 QString description = mainObject["description"].toString();
                 int vendorId = mainObject["vendorId"].toInt();
-
-                qDebug() << "Description:" << description;
-                qDebug() << "Vendor ID:" << vendorId;
 
                 QJsonArray lineDataArray = mainObject["workOrderLineData"].toArray();
                 foreach (const QJsonValue & value, lineDataArray) {
@@ -104,8 +102,10 @@ std::vector<WorkOrderLine*> WorkOrderLineController::getWorkOrderLineList(bool i
                     QString taxWithHolding = lineItem["tax_with_holding"].toString();
 
                     auto workOrderLine = new WorkOrderLine();
+                    workOrderLine->setId(draftId);
+                    workOrderLine->setDescription(description);
                     workOrderLine->setAmount(amount.toDouble());
-                    workOrderLine->setDescription(itemDescription);
+                   // workOrderLine->setDescription(itemDescription);
                     workOrderLine->setRetentionAmount(retentionAmount.toDouble());
 
                     foreach (const Task *task, vecTask)
