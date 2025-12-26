@@ -51,7 +51,9 @@ private:
     GLuint m_editor_ibo = 0;
     GLuint m_static_border_ibo = 0;
     GLuint m_tbo = 0;
+    GLuint m_material_tbo = 0;
     GLuint m_matrixTexture = 0;
+    GLuint m_materialTexture = 0;
     GLuint m_model_matrix_vbo = 0;
     GLuint m_pick_color_vbo = 0;
 

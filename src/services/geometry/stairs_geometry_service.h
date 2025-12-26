@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "common/opengl/classes/opengl_helper.h"
+#include "common/opengl/classes/opengl_material.h"
 
 class StairsGeometryService : public QObject
 {

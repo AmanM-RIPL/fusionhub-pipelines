@@ -52,7 +52,7 @@ void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
             {point[0], point[1], 0.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f},
-            0,
+            OpenGLMaterial::IVORY,
             -1
         };
 

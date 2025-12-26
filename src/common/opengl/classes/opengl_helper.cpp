@@ -399,7 +399,7 @@ void OpenglHelper::getMeshGeometry(const FacetModeler::Body& body, std::vector<V
             {point.x, point.y, point.z},
             {normal.x, normal.y, normal.z},
             {textureUV[0], textureUV[1]},
-            0,
+            OpenGLMaterial::IVORY,
             textureIndex
         };
 

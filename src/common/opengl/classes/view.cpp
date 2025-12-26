@@ -16,8 +16,10 @@ void View::Initialize()
     this->glGenBuffers(1, &m_static_vbo);
     this->glGenBuffers(1, &m_static_border_ibo);
     this->glGenBuffers(1, &m_tbo);
+    this->glGenBuffers(1, &m_material_tbo);
     this->glGenBuffers(1, &m_model_matrix_vbo);
     this->glGenTextures(1, &m_matrixTexture);
+    this->glGenTextures(1, &m_materialTexture);
     this->glGenBuffers(1, &m_pick_color_vbo);
 
     BindMeshWithOpenGL();
@@ -35,6 +37,8 @@ void View::BindMeshWithOpenGL()
     unsigned int* borderIndices = combinedMesh->getBorderIndicesData();
     int* modelMatrixIndices = combinedMesh->getModelMatrixIndicesData();
     std::array<float, 4>* pickColors = combinedMesh->getPickColorData();
+    std::vector<float> materials = OpenGLMaterial::GenerateMaterialData(materialList);
+
     unsigned int numOfVertices = combinedMesh->getNumOfVertices();
     unsigned int numOfIndices = combinedMesh->getNumOfIndices();
     unsigned int numOfBorderIndices = combinedMesh->getNumOfBorderIndices();
@@ -105,6 +109,15 @@ void View::BindMeshWithOpenGL()
             this->glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, m_tbo);
         this->glBindTexture(GL_TEXTURE_BUFFER, 0);
 
+        // TBO for Materials
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_material_tbo);
+        this->glBufferData(GL_TEXTURE_BUFFER, materials.size() * sizeof(float), materials.data(), GL_STATIC_DRAW);
+        this->glBindBuffer(GL_TEXTURE_BUFFER, 0);
+
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_materialTexture);
+        this->glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, m_material_tbo);
+        this->glBindTexture(GL_TEXTURE_BUFFER, 0);
+
     this->glBindVertexArray(0);
 }
 
@@ -131,21 +144,21 @@ void View::Render()
     this->glUniform3f(shader->getViewPositionId(), cameraPosition.x(), cameraPosition.y(), cameraPosition.z());
 
     // For 3D
-    for (int i = 0; i < materialList.size(); i++)
-    {
-        OpenGLMaterial* material = materialList[i];
+    // for (int i = 0; i < materialList.size(); i++)
+    // {
+    //     OpenGLMaterial* material = materialList[i];
 
-        auto ambient = material->ambient();
-        this->glUniform3f(shader->getMaterialAmbientId(i), ambient[0], ambient[1], ambient[2]); // 0.96, 0.47f, 0.02f
+    //     auto ambient = material->ambient();
+    //     this->glUniform3f(shader->getMaterialAmbientId(i), ambient[0], ambient[1], ambient[2]); // 0.96, 0.47f, 0.02f
 
-        auto diffuse = material->diffuse();
-        this->glUniform3f(shader->getMaterialDiffuseId(i), diffuse[0], diffuse[1], diffuse[2]); // 0.0f, 0.5f, 0.31f
+    //     auto diffuse = material->diffuse();
+    //     this->glUniform3f(shader->getMaterialDiffuseId(i), diffuse[0], diffuse[1], diffuse[2]); // 0.0f, 0.5f, 0.31f
 
-        auto specular = material->specular();
-        this->glUniform3f(shader->getMaterialSpecularId(i), specular[0], specular[1], specular[2]); //0.5f, 0.5f, 0.5f
+    //     auto specular = material->specular();
+    //     this->glUniform3f(shader->getMaterialSpecularId(i), specular[0], specular[1], specular[2]); //0.5f, 0.5f, 0.5f
 
-        this->glUniform1f(shader->getMaterialShininessId(i), material->shininess());
-    }
+    //     this->glUniform1f(shader->getMaterialShininessId(i), material->shininess());
+    // }
 
     for (int i = 0; i < 1; ++i) {
         this->glActiveTexture(GL_TEXTURE0 + i);
@@ -157,6 +170,10 @@ void View::Render()
     this->glActiveTexture(GL_TEXTURE1);
         this->glBindTexture(GL_TEXTURE_BUFFER, m_matrixTexture);
     this->glUniform1i(shader->getModelMatrixBufferId(), 1);
+
+    this->glActiveTexture(GL_TEXTURE2);
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_materialTexture);
+    this->glUniform1i(shader->getMaterialBufferId(), 2);
 
     this->glUniform3f(shader->getLightPositionId(), 20.0f, 0.0f, 0.0f);
     this->glUniform3f(shader->getLightAmbientId(), 1.0f, 1.0f, 1.0f); // 0.2f, 0.2f, 0.2f
@@ -207,7 +224,7 @@ void View::Render()
             this->glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
         // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        this->glUniform3f(shader->getMaterialAmbientId(0), 0.0f, 0.0f, 0.0f);
+        this->glUniform3f(shader->getLightAmbientId(), 0.0f, 0.0f, 0.0f);
 
         this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_border_ibo);
             this->glDrawElements(GL_LINES, m_borderIndexCount, GL_UNSIGNED_INT, 0);
@@ -467,7 +484,9 @@ View::~View()
     this->glDeleteBuffers(1, &m_static_vbo);
     this->glDeleteBuffers(1, &m_static_ibo);
     this->glDeleteBuffers(1, &m_tbo);
+    this->glDeleteBuffers(1, &m_material_tbo);
     this->glDeleteTextures(1, &m_matrixTexture);
+    this->glDeleteTextures(1, &m_materialTexture);
     this->glDeleteBuffers(1, &m_model_matrix_vbo);
     this->glDeleteBuffers(1, &m_pick_color_vbo);
     this->glDeleteVertexArrays(1, &m_vao);

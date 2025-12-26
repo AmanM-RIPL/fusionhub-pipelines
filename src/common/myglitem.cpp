@@ -90,21 +90,6 @@ MyGLRenderer::MyGLRenderer()
     m_picking_shader->SetPickColor(true);
     m_picking_shader->CreateFromFiles("://resources/shaders/color-picking.vert", "://resources/shaders/color-picking.frag");
 
-    // initialize Materials
-    OpenGLMaterial* whiteMaterial = new OpenGLMaterial();
-    whiteMaterial->setAmbient({1.0f, 1.0f, 1.0f}); // 0.96, 0.47f, 0.02f
-    whiteMaterial->setDiffuse({1.0f, 1.0f, 1.0f}); // 0.0f, 0.5f, 0.31f
-    whiteMaterial->setSpecular({1.0f, 1.0f, 1.0f}); // 0.5f, 0.5f, 0.5f
-    whiteMaterial->setShininess(32.0f);
-    m_materialList.append(whiteMaterial);
-
-    OpenGLMaterial* blueMaterial = new OpenGLMaterial();
-    blueMaterial->setAmbient({0.68f, 0.85f, 0.90f}); // 0.96, 0.47f, 0.02f
-    blueMaterial->setDiffuse({1.0f, 1.0f, 1.0f}); // 0.0f, 0.5f, 0.31f
-    blueMaterial->setSpecular({1.0f, 1.0f, 1.0f}); // 0.5f, 0.5f, 0.5f
-    blueMaterial->setShininess(32.0f);
-    m_materialList.append(blueMaterial);
-
     // initialize Textures
     Texture* texture = new Texture();
     texture->LoadTexture("://resources/images/brick.jpg");
@@ -113,13 +98,18 @@ MyGLRenderer::MyGLRenderer()
     // initialize View
     m_view = new View();
     // m_view->AddMesh(m_mesh);
-    m_view->AddMaterial(whiteMaterial);
-    m_view->AddMaterial(blueMaterial);
     m_view->AddTexture(texture);
     m_view->AddCamera(m_camera);
     m_view->AddShader(m_shader);
     m_view->AddPickingShader(m_picking_shader);
     // m_view->Initialize();
+
+    // initialize Materials
+    OpenGLMaterial::GenerateMaterialList(m_materialList);
+    for (OpenGLMaterial* material: m_materialList)
+    {
+        m_view->AddMaterial(material);
+    }
 }
 
 MyGLRenderer::~MyGLRenderer()

@@ -2,6 +2,7 @@
 #define WALL_GEOMETRY_SERVICE_H
 
 #include "common/opengl/classes/opengl_helper.h"
+#include "common/opengl/classes/opengl_material.h"
 #include "door_geometry_service.h"
 #include "window_geometry_service.h"
 
