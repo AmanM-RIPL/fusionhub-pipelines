@@ -13,11 +13,11 @@ TaskController::TaskController(QObject *parent)
     m_draftEntityRepository(RepositoryLocator::instance().draftEntityRepository())
 {}
 
-void TaskController::create(const QString &name, const QString &description, const QString &bimElement, const QString &startDate , const QString &endDate, const int pid) const
+void TaskController::create(const QString &name, const QString &description, const QString &bimElement, const QString &startDate , const QString &endDate, const long long pid) const
 {
     Task task;
 
-    qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+    /*qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
     task.setId(id_in_milliseconds);
     task.setGlobalId("123");
     task.setApprovalStatus(true);
@@ -29,6 +29,7 @@ void TaskController::create(const QString &name, const QString &description, con
     task.setParentId(pid);
 
     m_taskRepository->saveQML(&task);
+*/
 
     /***********Start of DraftEntity******************/
 
@@ -85,8 +86,8 @@ std::vector<Task*> TaskController::getTaskList(bool isApproved) const
 
     QMap<int,QString> monthMap ={{1, "jan"}, {2, "feb"}, {3, "mar"},
                                  {4, "apr"}, {5, "may"}, {6,"jun"},
-                                 {4, "jul"}, {5, "aug"}, {6,"sep"},
-                                 {4, "oct"}, {5, "nov"}, {6,"dec"},
+                                 {7, "jul"}, {8, "aug"}, {9,"sep"},
+                                 {10, "oct"}, {11, "nov"}, {12,"dec"},
                                 };
 
     if(isApproved){
@@ -139,15 +140,14 @@ std::vector<Task*> TaskController::getTaskList(bool isApproved) const
         for(int i = 0; i < draftEntitys.size(); i++)
         {
             QString  jsonString = draftEntitys[i]->getEntitySchema();
-            qDebug()<<"jsonString:"<< jsonString;
+
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
             if (!jsonDoc.isNull() && jsonDoc.isObject())
             {
                 auto task = new Task();
                 QJsonObject jsonObj = jsonDoc.object();
                 //task->setId(i + 1);
-                task->setId(jsonObj["id"].toVariant().toLongLong());
-                qDebug()<<"TaskId:"<< jsonObj["id"].toVariant().toLongLong();
+                task->setId(jsonObj["id"].toVariant().toLongLong());               
                 task->setGlobalId("123");
                 task->setApprovalStatus(true);
                 task->setTaskName(jsonObj["task_name"].toString());
@@ -155,7 +155,8 @@ std::vector<Task*> TaskController::getTaskList(bool isApproved) const
                 task->setBimElement(jsonObj["bim_element"].toString());
                 task->setStartDate(jsonObj["start_date"].toString());
                 task->setEndDate(jsonObj["end_date"].toString());
-                task->setParentId(jsonObj["pid"].toInt());
+                //task->setParentId(jsonObj["pid"].toInt());
+                task->setParentId(jsonObj["pid"].toVariant().toLongLong());
 
                 QString dateFormat = "dd/MM/yyyy";
                // QString dateFormat = "YYYY-MM-DD";
@@ -184,6 +185,9 @@ std::vector<Task*> TaskController::getTaskList(bool isApproved) const
                     int monthNo = startDate.month();
 
                     task->setMonth_Year(monthMap[monthNo] + "_" + QString::number(startDate.year()));
+
+                    //qDebug()<<"monthNo:"<<monthNo;
+                    //qDebug()<<"monthMap[monthNo]:"<<monthMap[monthNo];
 
                     setDaysInMonth(task, strDays, monthNo, task->getMonth_Year());
 

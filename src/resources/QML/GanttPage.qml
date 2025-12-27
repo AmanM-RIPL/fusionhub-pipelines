@@ -684,7 +684,7 @@ Rectangle {
                             color: "lightgray"//"gray"
 
                             Text{
-                                text:"Year: " + startYear.toString() + " - to - " + endYear.toString()
+                                text: startYear_endYearText(startYear, endYear)//"Year: " + startYear.toString() + " - to - " + endYear.toString()
                                 color: "#000000"
                                 font.pixelSize: 20
                                 font.weight: 700
@@ -713,6 +713,10 @@ Rectangle {
                                     width: generatGanttWidth(startYear, endYear, monthScale)//31 * monthScale * totalMonths + 10//TotalMonths
                                     height: parent.height
                                     spacing: 2
+
+                                    onWidthChanged: {
+                                            horizontalScrollView.contentWidth = generatGanttWidth(startYear, endYear, monthScale);
+                                        }
 
                                     Rectangle{
                                         width: parent.width
@@ -754,7 +758,8 @@ Rectangle {
     }
 
     function showList(){
-        if(gantt_root.visible){            
+        if(gantt_root.visible)
+        {
 
             if(approvedNo == 0)
             {
@@ -762,7 +767,7 @@ Rectangle {
             }
             else if(approvedNo == 1)
             {
-                task_month_paramList = taskController.getTaskList(false);
+                task_month_paramList = taskController.getTaskList(false);                
             }
             else
             {
@@ -784,19 +789,19 @@ Rectangle {
 
             task_idList = tempFilteredArray;
 
-            for(var i = 0; i < task_month_paramList.length; i++)
+            for(var f = 0; f < task_month_paramList.length; f++)
             {
-                var task =  task_month_paramList[i];
+                var task1 =  task_month_paramList[f];
 
-                if(startYear > task.startYear )
+                if(startYear > task1.startYear )
                 {
-                    startYear = task.startYear;
+                    startYear = task1.startYear;
                 }
-                if(endYear < task.endYear)
+                if(endYear < task1.endYear)
                 {
-                    endYear = task.endYear;
+                    endYear = task1.endYear;
                 }
-            }            
+            }
         }
     }
 
@@ -829,6 +834,7 @@ Rectangle {
                 const daysCount = getDaysInMonth(year, month);
                 const monthKey = monthNames[month].toLowerCase();
 
+
                 columns.push({
                     label: `${monthNames[month]} ${year}`,
                     width: daysCount * monthScale,
@@ -852,7 +858,34 @@ Rectangle {
 
     function generatGanttWidth(startYear, endYear, monthScale)
     {
-       return  31 * monthScale * (endYear - startYear + 1) * 12  + 10;
+         if(gantt_root.visible)
+         {
+             if(startYear > endYear)
+             {
+                var temp = endYear;
+                 endYear = startYear;
+                 startYear = temp;
+             }
+
+            var def = endYear - startYear;
+            return  31 * monthScale * (def + 1) * 12  + 10;
+         }
+
+        return  0;
+
+
+    }
+
+    function startYear_endYearText(startYear, endYear)
+    {
+        if(startYear > endYear)
+        {
+           var temp = endYear;
+            endYear = startYear;
+            startYear = temp;
+        }
+
+        return "Year: " + startYear.toString() + " - to - " + endYear.toString();
     }
 
     /*************End of Dynamica month********************************/

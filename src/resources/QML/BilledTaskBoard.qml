@@ -186,7 +186,7 @@ Rectangle {
     function showList()
     {
         listModel.clear();
-        console.log("Billed_task_isApproved:", isApproved)
+        //console.log("Billed_task_isApproved:", isApproved)
        var billedTaskList = workBillingLineController.getBilledTaskList(isApproved);
 
         txtTotalBilledTask = String(billedTaskList.length);

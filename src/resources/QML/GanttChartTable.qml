@@ -102,12 +102,14 @@ Column {
                                         rowDataForGantt = [];
                                         //console.log("rowkey:", modelData.key, "value:", rowData[modelData.key], "id:", rowData[modelData.id], "pid:", rowData[modelData.pid], "x:",idRect.x, "y:",idRect.y ,"width:", idRect.width, "height:", idRect.height );
 
-                                        var keyValue = String(rowData[modelData.key]).trim();
+                                        var keyValue = String(rowData[modelData.key]);
                                         //var startDate = String(rowData[modelData.startDate]);
                                         //var YearValue = String(rowData[modelData.year]);
                                         //var monthno =  month_arr[modelData.key];
                                         //var startDay = String(rowData[modelData.startx]);
                                         var month_year = modelData.month_year;
+
+                                        //console.log("keyValue:",keyValue, "modelData.key:", modelData.key);
 
                                         if(keyValue.length > 0 && keyValue !== "0" && month_year.localeCompare(keyValue) === 0 ){
                                             //idRect.color = "red"
@@ -129,6 +131,8 @@ Column {
                                                 data.width = idRect.width;
                                                 data.height = idRect.height;
                                                 data.month = modelData.key;
+
+                                                //console.log("data.id:", data.id, "data.pid:", data.pid," data.month:",data.month)
 
                                                 rowDataForGantt.push(data);
                                                 linesOverlay.requestPaint();
@@ -177,7 +181,7 @@ Column {
                 ctxRect.clearRect(0, 0, width, height); // Clear previous frame
 
                 ctxRect.lineWidth = 12;
-                ctxRect.strokeStyle = "red";
+                ctxRect.strokeStyle = "#8B0000";
                 ctxRect.beginPath();
 
                 for(var j = 0; j < rowDataForGantt.length; j++){
@@ -186,8 +190,10 @@ Column {
                     var y1 = modelData1.y;
                     var w =  modelData1.width
 
-                    ctxRect.moveTo(x1, y1+6);
-                    ctxRect.lineTo(x1 + w, y1+6);
+                    // console.log("x1:", x1,"y1:", y1, "w:", w, "modelData1.id:", modelData1.id, "modelData1.pid:", modelData1.pid);
+
+                    ctxRect.moveTo(x1, y1 + 6);
+                    ctxRect.lineTo(x1 + w, y1 + 6);
 
                     ctxRect.stroke();
                 }
@@ -222,12 +228,16 @@ Column {
                     var pid = modelData.pid;
                     var month = modelData.month;
 
+                    //console.log("idfirst:", id);
+
                     for(var z = 0; z < rowDataForGantt.length; z++){
                         var modelDataNew = rowDataForGantt[z] ;
                         var xNew = modelDataNew.x;
                         var yNew = modelDataNew.y;
                         var idNew = modelDataNew.id;
                         var pidNew = modelDataNew.pid;
+
+                        //console.log("id1:", id, "pidNew1:", pidNew);
 
                         if(id === pidNew)// && xNew !== x)
                         {
