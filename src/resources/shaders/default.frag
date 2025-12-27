@@ -25,7 +25,7 @@ struct Light {
 
 uniform vec3 viewPosition;
 uniform samplerBuffer materialBuffer;
-uniform sampler2D textures[1];
+uniform sampler2DArray textureArray;
 uniform Light light;
 
 
@@ -69,7 +69,7 @@ void main() {
    vec4 baseColor = vec4(1.0);
 
    if (TextureIndex >= 0) {
-      baseColor = texture(textures[TextureIndex], TexCoord);
+      baseColor = texture(textureArray, vec3(TexCoord, TextureIndex));
    }
 
    // final phong calculation

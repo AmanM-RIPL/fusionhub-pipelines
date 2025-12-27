@@ -53,7 +53,7 @@ void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f},
             OpenGLMaterial::IVORY,
-            -1
+            Texture::NONE
         };
 
         verticesVector.push_back(v);
@@ -178,7 +178,7 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
     std::vector<uint32_t> meshIndices = {};
     std::vector<uint32_t> borderIndices = {};
     std::vector<Vertex> verticesVector = {};
-    int textureIndex = 0; // if less than zero then we don't need to worry about textures
+    int textureIndex = Texture::BRICK; // if less than zero then we don't need to worry about textures
     int scalingFactor = 5;
 
     m_openglHelper.getMeshGeometry(body, verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);

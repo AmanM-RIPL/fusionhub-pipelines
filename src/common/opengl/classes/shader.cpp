@@ -113,7 +113,7 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 
         m_materialBufferId = this->glGetUniformLocation(shaderID, "materialBuffer");
 
-        m_textureArrayId = this->glGetUniformLocation(shaderID, "textures");
+        m_textureArrayId = this->glGetUniformLocation(shaderID, "textureArray");
 
         m_lightPositionId = this->glGetUniformLocation(shaderID, "light.position");
         m_lightAmbientId = this->glGetUniformLocation(shaderID, "light.ambient");

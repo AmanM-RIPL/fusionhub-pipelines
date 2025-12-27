@@ -160,17 +160,22 @@ void View::Render()
     //     this->glUniform1f(shader->getMaterialShininessId(i), material->shininess());
     // }
 
-    for (int i = 0; i < 1; ++i) {
-        this->glActiveTexture(GL_TEXTURE0 + i);
-        this->glBindTexture(GL_TEXTURE_2D, textureList[i]->getTextureId());
-    }
+    // for (int i = 0; i < 1; ++i) {
+    //     this->glActiveTexture(GL_TEXTURE0 + i);
+    //     this->glBindTexture(GL_TEXTURE_2D, textureList[i]->getTextureId());
+    // }
 
-    this->glUniform1iv(shader->getTextureArrayId(), 1, shader->getTextureUnitArray());
+    // For texture arrays
+    this->glActiveTexture(GL_TEXTURE0);
+        this->glBindTexture(GL_TEXTURE_2D_ARRAY, textureList[0]->getTextureId());
+    this->glUniform1i(shader->getTextureArrayId(), 0);
 
+    // For Model Matrices
     this->glActiveTexture(GL_TEXTURE1);
         this->glBindTexture(GL_TEXTURE_BUFFER, m_matrixTexture);
     this->glUniform1i(shader->getModelMatrixBufferId(), 1);
 
+    // For Material List
     this->glActiveTexture(GL_TEXTURE2);
         this->glBindTexture(GL_TEXTURE_BUFFER, m_materialTexture);
     this->glUniform1i(shader->getMaterialBufferId(), 2);

@@ -92,7 +92,7 @@ MyGLRenderer::MyGLRenderer()
 
     // initialize Textures
     Texture* texture = new Texture();
-    texture->LoadTexture("://resources/images/brick.jpg");
+    texture->LoadTextures();
     m_textureList.append(texture);
 
     // initialize View

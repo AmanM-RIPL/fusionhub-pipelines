@@ -67,7 +67,7 @@ void WindowGeometryService::generateMesh2D(BIMElement* windowElement, Mesh* mesh
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f},
             OpenGLMaterial::IVORY,
-            -1
+            Texture::NONE
         };
 
         verticesVector.push_back(v);

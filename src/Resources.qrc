@@ -80,5 +80,6 @@
         <file>resources/QML/FusionHubTable.qml</file>
         <file>resources/QML/MainTable.qml</file>
         <file>resources/QML/WorkBillingLinePage.qml</file>
+        <file>resources/images/wood.jpg</file>
     </qresource>
 </RCC>

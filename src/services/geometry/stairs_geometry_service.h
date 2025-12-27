@@ -4,6 +4,7 @@
 #include <QObject>
 #include "common/opengl/classes/opengl_helper.h"
 #include "common/opengl/classes/opengl_material.h"
+#include "common/opengl/classes/texture.h"
 
 class StairsGeometryService : public QObject
 {

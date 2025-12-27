@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "common/opengl/classes/opengl_helper.h"
+#include "common/opengl/classes/texture.h"
 
 #include "common/oda_static_definations.h"
 

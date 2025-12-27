@@ -41,6 +41,7 @@
 #include "common/opengl/classes/mesh.h"
 #include "common/opengl/classes/earcut_algorithm.h"
 #include "common/opengl/classes/opengl_material.h"
+#include "common/opengl/classes/texture.h"
 
 
 using Point = std::array<float, 2>; // (x,y)

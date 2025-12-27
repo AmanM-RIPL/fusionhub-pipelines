@@ -246,7 +246,7 @@ void IfcGeometryService::generateFinalMesh3D(OdDAI::OdBodyVariant bodyContainer,
     std::vector<uint32_t> meshIndices = {};
     std::vector<uint32_t> borderIndices = {};
     std::vector<Vertex> verticesVector = {};
-    int textureIndex = 0; // if less than zero then we don't need to worry about textures
+    int textureIndex = Texture::WOOD; // if less than zero then we don't need to worry about textures
     int scalingFactor = 5;
 
     switch (bodyContainer.kind())
