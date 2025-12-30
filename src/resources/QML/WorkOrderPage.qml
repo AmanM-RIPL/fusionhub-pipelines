@@ -770,13 +770,13 @@ Column {
         let list = workOrderLineController.getWorkOrderLineList(isApproved)
         workOrderLineRoot.workOrderLineList = list
 
-        let seenIds = {}
+        let draftIds = {}
         let uniqueList = []
 
         for (let i = 0; i < list.length; i++) {
             let item = list[i]
-            if (!seenIds[item.id]) {
-                seenIds[item.id] = true
+            if (!draftIds[item.id]) {
+                draftIds[item.id] = true
                 uniqueList.push(item)
             }
         }
