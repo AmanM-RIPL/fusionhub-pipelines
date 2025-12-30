@@ -13,7 +13,10 @@ Column {
     property var taskFromCtrl: []
 
     property var workOrderLineList: []
+    property var workOrderLineFilterList: []
+
     property var workOrderLineData: []
+
     property var workOrderLineDataEdit: []
     property bool isApproved: false
 
@@ -66,13 +69,11 @@ Column {
         }
 
         onOpened: {
-            // Load lists from controllers and populate root lists
+            // Load lists
             workOrderLineData = []
             descriptionTextBox.text = ""
             if (workOrderLineRoot.visible) {
                 vendorsFromCtrl = vendorController.getVendorList(true)
-                //var workOrdersFromCtrl = workOrderController.getWorkOrderList(true)
-                //var taskFromCtrl = taskController.getTaskList(true)
                 workOrdersFromCtrl =[];
                 taskFromCtrl =[];
 
@@ -157,7 +158,7 @@ Column {
 
             Rectangle {
                 width: parent.width - 6
-                height: 420  // Changed from 140 to fit the table
+                height: 420
                 color: "#EDF1F4"
 
                 Column {
@@ -290,8 +291,6 @@ Column {
                         btnSource: "qrc:/resources/images/add.svg"
                         btnName: ""
                         btnNameColor: "blue"
-                        //anchors.verticalCenter: parent.verticalCenter
-
 
                         MouseArea {
                             anchors.fill: parent
@@ -358,6 +357,7 @@ Column {
                     // reset
                     workOrderLineDataEdit = []
                     descriptionTextBoxEdit.text = ""
+                    vendorEdit.currentIndex = -1
                 }
                 showList()
             }
@@ -366,6 +366,7 @@ Column {
         onCancelCallback: function () {
             workOrderLineDataEdit = []
             descriptionTextBoxEdit.text = ""
+            vendor.currentIndex = 0
         }
 
         onOpened: {
@@ -516,7 +517,6 @@ Column {
                 }
             }
 
-            // Only show input row in edit mode
             Rectangle {
                 width: parent.width - 8
                 height: 28
@@ -713,47 +713,47 @@ Column {
                 }
             }
         }
-        Rectangle {
-            width: 100
-            height: 5
-            color: "#EDF1F4"
-        }
+    }
+    Rectangle {
+        width: 100
+        height: 5
+        color: "#EDF1F4"
+    }
 
 
-        /*--------------------------------------
+    /*--------------------------------------
                 Main Table
     --------------------------------------*/
-        FHTable {
-            height: 200
-            leftPadding: 20
-            model: workOrderLineRoot.workOrderLineList
-            columns: [{
-                    "label": "Id",
-                    "width": 300,
-                    "key": "id"
-                },{
-                    "label": "Vendor",
-                    "width": 500,
-                    "key": "vendorName"
-                }, {
-                    "label": "Work Order",
-                    "width": 500,
-                    "key": "description"
-                }]
+    FHTable {
+        height: 200
+        leftPadding: 20
+        model: workOrderLineRoot.workOrderLineFilterList
+        columns: [{
+                "label": "Id",
+                "width": 300,
+                "key": "id"
+            },{
+                "label": "Vendor",
+                "width": 500,
+                "key": "vendorName"
+            }, {
+                "label": "Work Order",
+                "width": 500,
+                "key": "description"
+            }]
 
-            onViewRequested: function(row) {
-                popupMode = "view"
-                selectedData = row
-                fillPopup()
-                viewEditPopup.open()
-            }
+        onViewRequested: function(row) {
+            popupMode = "view"
+            selectedData = row
+            fillPopup()
+            viewEditPopup.open()
+        }
 
-            onEditRequested: function(row) {
-                popupMode = "edit"
-                selectedData = row
-                fillPopup()
-                viewEditPopup.open()
-            }
+        onEditRequested: function(row) {
+            popupMode = "edit"
+            selectedData = row
+            fillPopup()
+            viewEditPopup.open()
         }
     }
 
@@ -761,11 +761,29 @@ Column {
     onVisibleChanged: showList()
 
     function showList() {
-        workOrderLineRoot.workOrderLineList = [];
-        if (workOrderLineRoot.visible) {
-            workOrderLineRoot.workOrderLineList = workOrderLineController.getWorkOrderLineList(isApproved);
+        workOrderLineRoot.workOrderLineList = []
+        workOrderLineRoot.workOrderLineFilterList = []
+
+        if (!workOrderLineRoot.visible)
+            return
+
+        let list = workOrderLineController.getWorkOrderLineList(isApproved)
+        workOrderLineRoot.workOrderLineList = list
+
+        let seenIds = {}
+        let uniqueList = []
+
+        for (let i = 0; i < list.length; i++) {
+            let item = list[i]
+            if (!seenIds[item.id]) {
+                seenIds[item.id] = true
+                uniqueList.push(item)
+            }
         }
+
+        workOrderLineRoot.workOrderLineFilterList = uniqueList
     }
+
 
     function fillPopup() {
         if (!selectedData) return
@@ -776,32 +794,28 @@ Column {
                 break
             }
         }
-
         descriptionTextBoxEdit.text = selectedData.description || ""
 
         // Load line items
         var tempLines = []
-
         var allLines = workOrderLineController.getWorkOrderLineList(isApproved)
-
-        // Filter to get only lines for this work order
         for (var j = 0; j < allLines.length; j++) {
             if (allLines[j].id === selectedData.id) {
+
                 var lineItem = {
-                    "description": allLines[j].description || "",
+                    "description": allLines[j].descriptionLine || "",
                     "task_id": String(allLines[j].taskId || ""),
                     "task_name": allLines[j].taskName || "",
-                    "amount": String(allLines[j].amount || ""),
-                    "tax_amount": String(allLines[j].taxAmount || ""),
-                    "tax_with_holding": String(allLines[j].taxWithHolding || ""),
-                    "retention_amount": String(allLines[j].retentionAmount || "")
+                    "amount": String(allLines[j].amount || "0"),
+                    "tax_amount": String(allLines[j].taxAmount || "0"),
+                    "tax_with_holding": String(allLines[j].taxWithHolding || "0"),
+                    "retention_amount": String(allLines[j].retentionAmount || "0")
                 }
                 tempLines.push(lineItem)
             }
         }
 
         workOrderLineDataEdit = tempLines
-
-       // console.log("Loaded lines for edit:", JSON.stringify(workOrderLineDataEdit))
     }
+
 }

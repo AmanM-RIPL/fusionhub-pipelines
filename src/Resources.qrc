@@ -78,7 +78,6 @@
         <file>resources/QML/MaterialIndentPage.qml</file>
         <file>resources/QML/UnitOfMeasurementPage.qml</file>
         <file>resources/QML/FusionHubTable.qml</file>
-        <file>resources/QML/MainTable.qml</file>
         <file>resources/QML/WorkBillingLinePage.qml</file>
     </qresource>
 </RCC>

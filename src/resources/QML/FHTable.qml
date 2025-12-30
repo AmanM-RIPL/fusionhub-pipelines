@@ -280,9 +280,8 @@ Column {
                                     anchors.left: dots.right
                                     anchors.leftMargin: activeRowIndex === rowIndex ? 80 : 10
                                     anchors.verticalCenter: parent.verticalCenter
-                                    //text: rowData.id
                                     text: rowData && rowData.id !== undefined ? String(rowData.id) : ""
-
+                                    visible: activeRowIndex !== rowIndex
                                 }
                             }
                         }
@@ -342,90 +341,90 @@ Column {
                 }
             }
 
-                Repeater {
-                    model: Math.min(pageCount, 5)
-                    delegate: Rectangle {
-                        width: 32
-                        height: 32
-                        radius: 2
-
-                        property int pageNumber: {
-                            if (pageCount <= 5) {
-                                return index + 1
-                            }
-                            let start = Math.max(1, currentPage - 2)
-                            let end = Math.min(pageCount, start + 4)
-                            start = Math.max(1, end - 4)
-                            return start + index
-                        }
-
-                        color: currentPage === pageNumber ? "#4a90e2" : "white"
-                        border.color: currentPage === pageNumber ? "#4a90e2" : "#ddd"
-                        border.width: 1
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: pageNumber
-                            color: currentPage === pageNumber ? "white" : "black"
-                            font.pixelSize: 13
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: currentPage = pageNumber
-                        }
-                    }
-                }
-
-                Rectangle {
+            Repeater {
+                model: Math.min(pageCount, 5)
+                delegate: Rectangle {
                     width: 32
                     height: 32
                     radius: 2
-                    color: nextPageMouseArea.pressed ? "#e0e0e0" : "white"
-                    border.color: "#ddd"
+
+                    property int pageNumber: {
+                        if (pageCount <= 5) {
+                            return index + 1
+                        }
+                        let start = Math.max(1, currentPage - 2)
+                        let end = Math.min(pageCount, start + 4)
+                        start = Math.max(1, end - 4)
+                        return start + index
+                    }
+
+                    color: currentPage === pageNumber ? "#4a90e2" : "white"
+                    border.color: currentPage === pageNumber ? "#4a90e2" : "#ddd"
                     border.width: 1
-                    opacity: currentPage < pageCount ? 1.0 : 0.5
 
                     Text {
                         anchors.centerIn: parent
-                        text: "▶"
-                        color: currentPage < pageCount ? "black" : "#999"
+                        text: pageNumber
+                        color: currentPage === pageNumber ? "white" : "black"
+                        font.pixelSize: 13
                     }
 
                     MouseArea {
-                        id: nextPageMouseArea
                         anchors.fill: parent
-                        enabled: currentPage < pageCount
-                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                        onClicked: currentPage++
-                    }
-                }
-
-                Rectangle {
-                    width: 32
-                    height: 32
-                    radius: 2
-                    color: lastPageMouseArea.pressed ? "#e0e0e0" : "white"
-                    border.color: "#ddd"
-                    border.width: 1
-                    opacity: currentPage < pageCount ? 1.0 : 0.5
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: "⏭"
-                        color: currentPage < pageCount ? "black" : "#999"
-                    }
-
-                    MouseArea {
-                        id: lastPageMouseArea
-                        anchors.fill: parent
-                        enabled: currentPage < pageCount
-                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                        onClicked: currentPage = pageCount
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: currentPage = pageNumber
                     }
                 }
             }
+
+            Rectangle {
+                width: 32
+                height: 32
+                radius: 2
+                color: nextPageMouseArea.pressed ? "#e0e0e0" : "white"
+                border.color: "#ddd"
+                border.width: 1
+                opacity: currentPage < pageCount ? 1.0 : 0.5
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "▶"
+                    color: currentPage < pageCount ? "black" : "#999"
+                }
+
+                MouseArea {
+                    id: nextPageMouseArea
+                    anchors.fill: parent
+                    enabled: currentPage < pageCount
+                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onClicked: currentPage++
+                }
+            }
+
+            Rectangle {
+                width: 32
+                height: 32
+                radius: 2
+                color: lastPageMouseArea.pressed ? "#e0e0e0" : "white"
+                border.color: "#ddd"
+                border.width: 1
+                opacity: currentPage < pageCount ? 1.0 : 0.5
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "⏭"
+                    color: currentPage < pageCount ? "black" : "#999"
+                }
+
+                MouseArea {
+                    id: lastPageMouseArea
+                    anchors.fill: parent
+                    enabled: currentPage < pageCount
+                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onClicked: currentPage = pageCount
+                }
+            }
+        }
 
         // Rows per page dropdown
         Row {
@@ -467,6 +466,11 @@ Column {
             }
             color: "#666"
             font.pixelSize: 13
+        }
+        Rectangle {
+            width: 50
+            height: 5
+            color: "#EDF1F4"
         }
     }
 }

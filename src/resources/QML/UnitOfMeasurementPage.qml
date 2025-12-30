@@ -37,7 +37,7 @@ Column {
         showAcceptButton: popupMode === "edit"
         buttonName: popupMode === "edit" ? "Update" : "Add"
         buttonSource: popupMode === "edit" ? "qrc:/resources/images/editWhite_icon.png"
-                          : "qrc:/resources/images/addWhite_icon.png"
+                                           : "qrc:/resources/images/addWhite_icon.png"
 
         onAcceptCallback: function () {
 
@@ -52,7 +52,7 @@ Column {
                             kgField.text
                             )
                 showList()
-               // uomPopup.close()
+                // uomPopup.close()
             }
         }
 
@@ -394,20 +394,18 @@ Column {
         color: "#EDF1F4"
     }
 
-
-
-    MainTable {
+    FHTable {
         height: 300
         leftPadding: 20
         model: unitOfMeasurementRoot.unitOfMeasurementList
         columns: [
-            { label: "Id", width: 100, key: "id" },
-            { label: "Unit Name", width: 200, key: "uomName" },
+            { label: "Id", width: 150, key: "id" },
+            { label: "Unit Name", width: 180, key: "uomName" },
             { label: "Unit Type", width: 200, key: "unitType" },
             { label: "Conversion to sqm", width: 200, key: "conversionToSqm" },
             { label: "Conversion to cubic meter", width: 200, key: "conversionToCubicMeter" },
             { label: "Conversion to meter", width: 200, key: "conversionToMeter" },
-            { label: "Conversion to kilogram", width: 200, key: "conversionToKilogram" }
+            { label: "Conversion to kilogram", width: 180, key: "conversionToKilogram" }
         ]
 
         onViewRequested: function(row) {
@@ -445,16 +443,14 @@ Column {
         if (!selectedUom) return
         nameField.text = selectedUom.uomName
         typeCombo.currentIndex = unitTypeText.indexOf(selectedUom.unitType)
-       // sqmField.text = selectedUom.conversionToSqm
+        // sqmField.text = selectedUom.conversionToSqm
         sqmField.text = selectedUom.conversionToSqm !== null
-                             ? String(selectedUom.conversionToSqm)
-                             : ""
+                ? String(selectedUom.conversionToSqm)
+                : ""
         cubicField.text = selectedUom.conversionToCubicMeter
         meterField.text = selectedUom.conversionToMeter
         kgField.text = selectedUom.conversionToKilogram
     }
 }
-
-
 
 
