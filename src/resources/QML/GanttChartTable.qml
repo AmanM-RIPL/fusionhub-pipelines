@@ -99,20 +99,16 @@ Column {
 
                                     Component.onCompleted: {
 
-                                        rowDataForGantt = [];
-                                        //console.log("rowkey:", modelData.key, "value:", rowData[modelData.key], "id:", rowData[modelData.id], "pid:", rowData[modelData.pid], "x:",idRect.x, "y:",idRect.y ,"width:", idRect.width, "height:", idRect.height );
-
-                                        var keyValue = String(rowData[modelData.key]);
-                                        //var startDate = String(rowData[modelData.startDate]);
-                                        //var YearValue = String(rowData[modelData.year]);
-                                        //var monthno =  month_arr[modelData.key];
-                                        //var startDay = String(rowData[modelData.startx]);
+                                        tableRoot.rowDataForGantt = [];
+                                        var keyValue = String(rowData[modelData.key]);                                        
                                         var month_year = modelData.month_year;
-
-                                        //console.log("keyValue:",keyValue, "modelData.key:", modelData.key);
-
                                         if(keyValue.length > 0 && keyValue !== "0" && month_year.localeCompare(keyValue) === 0 ){
                                             //idRect.color = "red"
+                                            var root = tableRoot;
+                                            var overlay = linesOverlay;
+                                            var rowDataTemp = rowData;
+                                            var modelDataTemp = modelData;
+                                            var trmpArray = [];
 
                                             Qt.callLater(function() {
                                                  // 1. Get the absolute position of idRect on the entire screen/window
@@ -120,23 +116,25 @@ Column {
 
                                                 // 2. Map that global screen point *back* into the local coordinate system of the 'linesOverlay'
                                                 // We use linesOverlay.mapFromGlobal(globalX, globalY)
-                                                var canvasPoint = linesOverlay.mapFromGlobal(globalPoint.x, globalPoint.y);
+                                                var canvasPoint = overlay.mapFromGlobal(globalPoint.x, globalPoint.y);
 
                                                 var data = {x:0, y:0, id:0, pid:0, width:0, height:0, month:""};
                                                 data.x = canvasPoint.x
                                                 data.y = canvasPoint.y;
 
-                                                data.id = rowData[modelData.id];
-                                                data.pid = rowData[modelData.pid];
+                                                data.id = rowDataTemp[modelDataTemp.id];
+                                                data.pid = rowDataTemp[modelDataTemp.pid];
                                                 data.width = idRect.width;
                                                 data.height = idRect.height;
-                                                data.month = modelData.key;
+                                                data.month = modelDataTemp.key;
 
-                                                //console.log("data.id:", data.id, "data.pid:", data.pid," data.month:",data.month)
-
-                                                rowDataForGantt.push(data);
-                                                linesOverlay.requestPaint();
+                                                if(data.y > 0)
+                                                {
+                                                    root.rowDataForGantt.push(data);
+                                                }
+                                                overlay.requestPaint();
                                             });
+
                                         }                                        
                                     }
 
@@ -175,7 +173,8 @@ Column {
             id: linesOverlay
             anchors.fill: parent
             // This ensures the canvas is transparent and above the ListView visually
-            z: 1
+            z: 1            
+
             onPaint: {
                 var ctxRect = getContext("2d");
                 ctxRect.clearRect(0, 0, width, height); // Clear previous frame
@@ -184,8 +183,8 @@ Column {
                 ctxRect.strokeStyle = "#8B0000";
                 ctxRect.beginPath();
 
-                for(var j = 0; j < rowDataForGantt.length; j++){
-                    var modelData1 = rowDataForGantt[j];
+                for(var j = 0; j < tableRoot.rowDataForGantt.length; j++){
+                    var modelData1 = tableRoot.rowDataForGantt[j];
                     var x1 = modelData1.x;
                     var y1 = modelData1.y;
                     var w =  modelData1.width
@@ -220,8 +219,8 @@ Column {
                 ctx.strokeStyle = "red";
                 ctx.beginPath();
 
-                for(var i = 0; i < rowDataForGantt.length; i++){
-                    var modelData = rowDataForGantt[i];
+                for(var i = 0; i < tableRoot.rowDataForGantt.length; i++){
+                    var modelData = tableRoot.rowDataForGantt[i];
                     var x = modelData.x;
                     var y = modelData.y;
                     var id = modelData.id;
@@ -230,8 +229,8 @@ Column {
 
                     //console.log("idfirst:", id);
 
-                    for(var z = 0; z < rowDataForGantt.length; z++){
-                        var modelDataNew = rowDataForGantt[z] ;
+                    for(var z = 0; z < tableRoot.rowDataForGantt.length; z++){
+                        var modelDataNew = tableRoot.rowDataForGantt[z] ;
                         var xNew = modelDataNew.x;
                         var yNew = modelDataNew.y;
                         var idNew = modelDataNew.id;
