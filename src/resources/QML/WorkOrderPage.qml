@@ -9,24 +9,25 @@ Column {
     width: parent.width
     padding: 10
 
+    // Properties - Data from controllers
     property var workOrdersFromCtrl: []
     property var taskFromCtrl: []
+    property var vendorsFromCtrl: []
 
+    // Properties - Lists for UI
     property var workOrderLineList: []
-    property var workOrderLineFilterList: []
-
-    property var workOrderLineData: []
-
-    property var workOrderLineDataEdit: []
-    property bool isApproved: false
-
     property var vendorList: []
     property var taskList: []
     property var workOrderList: []
-    property var vendorsFromCtrl:[]
 
+    // Properties - Work order line data
+    property var workOrderLineData: []
+    property var workOrderLineDataEdit: []
+
+    // Properties - State management
     property var selectedData: null
     property string popupMode: "view"
+    property bool isApproved: false
 
     // Controllers
     VendorController {
@@ -45,7 +46,7 @@ Column {
         id: taskController
     }
 
-    /* ----------Create Popup ---------- */
+    /* ---------- Create Popup ---------- */
     FHPopup {
         id: newWorkOrderLinePopup
         popupWidth: 900
@@ -55,37 +56,45 @@ Column {
 
         onAcceptCallback: function () {
             if (workOrderLineData.length > 0) {
-                workOrderLineController.create(vendorsFromCtrl[vendor.currentIndex].id, descriptionTextBox.text, workOrderLineData)
-                // reset
+                workOrderLineController.create(
+                            vendorsFromCtrl[vendor.currentIndex].id,
+                            descriptionTextBox.text,
+                            workOrderLineData
+                            )
+                // Reset
                 workOrderLineData = []
                 descriptionTextBox.text = ""
             }
-            showList()
+            close()
         }
 
         onCancelCallback: function () {
             workOrderLineData = []
             descriptionTextBox.text = ""
+            close()
+        }
+
+        onClosed: {
+            showWorkOrderList()
         }
 
         onOpened: {
             // Load lists
             workOrderLineData = []
             descriptionTextBox.text = ""
+
             if (workOrderLineRoot.visible) {
                 vendorsFromCtrl = vendorController.getVendorList(true)
-                workOrdersFromCtrl =[];
-                taskFromCtrl =[];
+                workOrdersFromCtrl = []
+                taskFromCtrl = []
 
                 workOrdersFromCtrl = workOrderController.getWorkOrderList(true)
                 taskFromCtrl = taskController.getTaskList(true)
-
 
                 // Clear current lists then populate
                 workOrderLineRoot.vendorList = []
                 workOrderLineRoot.workOrderList = []
                 workOrderLineRoot.taskList = []
-
 
                 for (var i = 0; i < vendorsFromCtrl.length; i++) {
                     workOrderLineRoot.vendorList = workOrderLineRoot.vendorList.concat(
@@ -99,7 +108,6 @@ Column {
                     workOrderLineRoot.taskList = workOrderLineRoot.taskList.concat(
                                 taskFromCtrl[k].taskName)
                 }
-
             }
         }
 
@@ -111,6 +119,7 @@ Column {
             Row {
                 width: parent.width
                 spacing: 40
+
                 Column {
                     spacing: 4
                     Text {
@@ -145,7 +154,7 @@ Column {
                 }
             }
 
-            // -------- WorkOrderLine Row --------
+            // -------- Work Order Line Item --------
             Text {
                 id: workOrderLineLabel
                 text: "Work Order Item:"
@@ -171,31 +180,38 @@ Column {
                         leftPadding: 2
                         removeRow: true
                         model: workOrderLineData
-                        columns: [{
+                        columns: [
+                            {
                                 "label": "QTY",
                                 "width": 120,
                                 "key": "amount"
-                            }, {
+                            },
+                            {
                                 "label": "Description",
                                 "width": 120,
                                 "key": "description"
-                            }, {
+                            },
+                            {
                                 "label": "Tax Amount",
                                 "width": 120,
                                 "key": "tax_amount"
-                            }, {
+                            },
+                            {
                                 "label": "Tax With Holding",
                                 "width": 120,
                                 "key": "tax_with_holding"
-                            }, {
+                            },
+                            {
                                 "label": "Task",
                                 "width": 184,
                                 "key": "task_name"
-                            }, {
+                            },
+                            {
                                 "label": "Retention Amount",
                                 "width": 175,
                                 "key": "retention_amount"
-                            }]
+                            }
+                        ]
                         onRemovedIndexChanged: {
                             if (removedIndex >= 0 && removedIndex < workOrderLineData.length) {
                                 var temp = []
@@ -221,7 +237,6 @@ Column {
                     height: 28
                     leftPadding: 2
                     spacing: 6
-
 
                     CustomTextBox {
                         id: amountTextBox
@@ -268,7 +283,6 @@ Column {
                         width: 184
                         height: 24
                         model: workOrderLineRoot.taskList
-
                         currentIndex: 0
                     }
 
@@ -281,7 +295,6 @@ Column {
                         height: 24
                         topPadding: 1
                     }
-
 
                     CustomButton {
                         color: "transparent"
@@ -301,21 +314,20 @@ Column {
                             onExited: parent.color = "transparent"
 
                             onClicked: {
-
                                 var newElements = {
                                     "description": lineDescriptionTextBox.text,
-                                    "task_id":String(taskFromCtrl[taskId.currentIndex].id),
-                                    "task_name":taskId.currentValue,
+                                    "task_id": String(taskFromCtrl[taskId.currentIndex].id),
+                                    "task_name": taskId.currentValue,
                                     "amount": amountTextBox.text,
                                     "tax_amount": taxAmountTextBox.text,
                                     "tax_with_holding": taxWithHoldingTextBox.text,
-                                    "retention_amount": retentionAmountTextBox.text,
+                                    "retention_amount": retentionAmountTextBox.text
                                 }
 
-                                // append to workOrderLineData
+                                // Append to workOrderLineData
                                 workOrderLineData = workOrderLineData.concat(newElements)
 
-                                // Clear the correct inputs
+                                // Clear the inputs
                                 lineDescriptionTextBox.text = ""
                                 amountTextBox.text = ""
                                 taxAmountTextBox.text = ""
@@ -326,13 +338,13 @@ Column {
                     }
                 }
             }
+
             Item {
                 width: 1
                 height: 20
             }
         }
     }
-
 
     /* ---------- View / Edit Popup ---------- */
     FHPopup {
@@ -354,19 +366,18 @@ Column {
                                 descriptionTextBoxEdit.text,
                                 workOrderLineDataEdit
                                 )
-                    // reset
+                    // Reset
                     workOrderLineDataEdit = []
                     descriptionTextBoxEdit.text = ""
                     vendorEdit.currentIndex = -1
                 }
-                showList()
+                showWorkOrderList()
             }
         }
 
         onCancelCallback: function () {
             workOrderLineDataEdit = []
             descriptionTextBoxEdit.text = ""
-            vendor.currentIndex = 0
         }
 
         onOpened: {
@@ -374,36 +385,31 @@ Column {
             workOrderLineDataEdit = []
             descriptionTextBoxEdit.text = ""
 
-            if (workOrderLineRoot.visible) {
-                vendorsFromCtrl = vendorController.getVendorList(true)
-                workOrdersFromCtrl = []
-                taskFromCtrl = []
+            vendorsFromCtrl = vendorController.getVendorList(true)
+            workOrdersFromCtrl = []
+            taskFromCtrl = []
 
-                workOrdersFromCtrl = workOrderController.getWorkOrderList(true)
-                taskFromCtrl = taskController.getTaskList(true)
+            workOrdersFromCtrl = workOrderController.getWorkOrderList(true)
+            taskFromCtrl = taskController.getTaskList(true)
 
-                // Clear and populate lists
-                workOrderLineRoot.vendorList = []
-                workOrderLineRoot.workOrderList = []
-                workOrderLineRoot.taskList = []
+            // Clear and populate vendor and task lists
+            var tempVendorList = []
+            var tempTaskList = []
 
-                for (var i = 0; i < vendorsFromCtrl.length; i++) {
-                    workOrderLineRoot.vendorList = workOrderLineRoot.vendorList.concat(
-                                vendorsFromCtrl[i].vendorName)
-                }
-                for (var j = 0; j < workOrdersFromCtrl.length; j++) {
-                    workOrderLineRoot.workOrderList = workOrderLineRoot.workOrderList.concat(
-                                workOrdersFromCtrl[j].description)
-                }
-                for (var k = 0; k < taskFromCtrl.length; k++) {
-                    workOrderLineRoot.taskList = workOrderLineRoot.taskList.concat(
-                                taskFromCtrl[k].taskName)
-                }
+            for (var i = 0; i < vendorsFromCtrl.length; i++) {
+                tempVendorList = tempVendorList.concat(vendorsFromCtrl[i].vendorName)
+            }
 
-                // Fill popup with selected data
-                if (selectedData) {
-                    fillPopup()
-                }
+            for (var k = 0; k < taskFromCtrl.length; k++) {
+                tempTaskList = tempTaskList.concat(taskFromCtrl[k].taskName)
+            }
+
+            workOrderLineRoot.vendorList = tempVendorList
+            workOrderLineRoot.taskList = tempTaskList
+
+            // Fill popup with selected data
+            if (selectedData) {
+                fillPopup()
             }
         }
 
@@ -415,6 +421,7 @@ Column {
             Row {
                 width: parent.width
                 spacing: 40
+
                 Column {
                     spacing: 4
                     Text {
@@ -477,31 +484,38 @@ Column {
                         leftPadding: 2
                         removeRow: popupMode === "edit"
                         model: workOrderLineDataEdit
-                        columns: [{
+                        columns: [
+                            {
                                 "label": "QTY",
                                 "width": 120,
                                 "key": "amount"
-                            }, {
+                            },
+                            {
                                 "label": "Description",
                                 "width": 120,
                                 "key": "description"
-                            }, {
+                            },
+                            {
                                 "label": "Tax Amount",
                                 "width": 120,
                                 "key": "tax_amount"
-                            }, {
+                            },
+                            {
                                 "label": "Tax With Holding",
                                 "width": 120,
                                 "key": "tax_with_holding"
-                            }, {
+                            },
+                            {
                                 "label": "Task",
                                 "width": 184,
                                 "key": "task_name"
-                            }, {
+                            },
+                            {
                                 "label": "Retention Amount",
                                 "width": 175,
                                 "key": "retention_amount"
-                            }]
+                            }
+                        ]
                         onRemovedIndexChanged: {
                             if (removedIndex >= 0 && removedIndex < workOrderLineDataEdit.length) {
                                 var temp = []
@@ -615,7 +629,7 @@ Column {
                                     "retention_amount": retentionAmountTextBoxEdit.text
                                 }
 
-                                // append to workOrderLineDataEdit
+                                // Append to workOrderLineDataEdit
                                 workOrderLineDataEdit = workOrderLineDataEdit.concat(newElements)
 
                                 // Clear inputs
@@ -636,7 +650,8 @@ Column {
             }
         }
     }
-    // Header row
+
+    // -------- Header Row --------
     Row {
         spacing: 20
         Text {
@@ -660,28 +675,25 @@ Column {
 
             MouseArea {
                 anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
                 onClicked: newWorkOrderLinePopup.open()
             }
         }
     }
+
     Rectangle {
         width: 100
         height: 40
         color: "#EDF1F4"
     }
 
-
-    /*--------------------------------------
-            Approval Type
-    --------------------------------------*/
+    // -------- Approval Type Selection --------
     Column {
         spacing: 20
         Row {
             spacing: 20
             anchors.left: parent.left
-            // anchors.leftMargin: 20
 
-            // ------- APPROVAL TYPE --------
             Text {
                 id: approvalTypeLabel
                 text: "Choose Approval Type"
@@ -709,38 +721,41 @@ Column {
 
                 onCurrentTextChanged: {
                     isApproved = (approvalTypeComboBox.currentText === "Approved")
-                    showList()
+                    showWorkOrderList()
                 }
             }
         }
     }
+
     Rectangle {
         width: 100
         height: 5
         color: "#EDF1F4"
     }
 
-
-    /*--------------------------------------
-                Main Table
-    --------------------------------------*/
+    // -------- Main Table --------
     FHTable {
         height: 200
         leftPadding: 20
-        model: workOrderLineRoot.workOrderLineFilterList
-        columns: [{
+        model: workOrderLineRoot.workOrderList
+
+        columns: [
+            {
                 "label": "Id",
                 "width": 300,
                 "key": "id"
-            },{
+            },
+            {
                 "label": "Vendor",
                 "width": 500,
                 "key": "vendorName"
-            }, {
+            },
+            {
                 "label": "Work Order",
                 "width": 500,
-                "key": "description"
-            }]
+                "key": "workOrderName"
+            }
+        ]
 
         onViewRequested: function(row) {
             popupMode = "view"
@@ -757,51 +772,39 @@ Column {
         }
     }
 
-    Component.onCompleted: showList()
-    onVisibleChanged: showList()
+    // -------- Component Initialization --------
+    Component.onCompleted: showWorkOrderList()
+    onVisibleChanged: showWorkOrderList()
 
-    function showList() {
-        workOrderLineRoot.workOrderLineList = []
-        workOrderLineRoot.workOrderLineFilterList = []
+    // -------- Functions --------
+    function showWorkOrderList() {
+        workOrderLineRoot.workOrderList = []
 
         if (!workOrderLineRoot.visible)
             return
 
-        let list = workOrderLineController.getWorkOrderLineList(isApproved)
-        workOrderLineRoot.workOrderLineList = list
-
-        let draftIds = {}
-        let uniqueList = []
-
-        for (let i = 0; i < list.length; i++) {
-            let item = list[i]
-            if (!draftIds[item.id]) {
-                draftIds[item.id] = true
-                uniqueList.push(item)
-            }
-        }
-
-        workOrderLineRoot.workOrderLineFilterList = uniqueList
+        workOrderLineRoot.workOrderList = workOrderController.getWorkOrderList(isApproved)
+        //  console.log("workOrderList", JSON.stringify(workOrderLineRoot.workOrderList))
     }
 
-
     function fillPopup() {
-        if (!selectedData) return
+        if (!selectedData)
+            return
 
+        // Find and set vendor
         for (var i = 0; i < vendorsFromCtrl.length; i++) {
             if (vendorsFromCtrl[i].id === selectedData.vendorId) {
                 vendorEdit.currentIndex = i
                 break
             }
         }
-        descriptionTextBoxEdit.text = selectedData.description || ""
+        descriptionTextBoxEdit.text = selectedData.workOrderName || ""
 
         // Load line items
         var tempLines = []
         var allLines = workOrderLineController.getWorkOrderLineList(isApproved)
         for (var j = 0; j < allLines.length; j++) {
             if (allLines[j].id === selectedData.id) {
-
                 var lineItem = {
                     "description": allLines[j].descriptionLine || "",
                     "task_id": String(allLines[j].taskId || ""),
@@ -817,5 +820,4 @@ Column {
 
         workOrderLineDataEdit = tempLines
     }
-
 }
