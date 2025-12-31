@@ -158,7 +158,8 @@ std::vector<WorkOrderLine*> WorkOrderLineController::getWorkOrderLineList(bool i
                 QString amount = lineItem["amount"].toString();
                 QString descriptionLine = lineItem["description"].toString();
                 QString retentionAmount = lineItem["retention_amount"].toString();
-                QString taskId = lineItem["task_id"].toString();
+                //QString taskId = lineItem["task_id"].toString();
+                long long taskId = lineItem["task_id"].toVariant().toLongLong();
                 QString taxAmount = lineItem["tax_amount"].toString();
                 QString taxWithHolding = lineItem["tax_with_holding"].toString();
 
@@ -179,13 +180,17 @@ std::vector<WorkOrderLine*> WorkOrderLineController::getWorkOrderLineList(bool i
 
                 foreach (const Task *task, vecTask)
                 {
-                    if(task->getId() == taskId.toInt())
+                    //if(task->getId() == taskId.toInt())
+                    if(task->getId() == taskId)
                     {
                         workOrderLine->setTaskName(task->getTaskName());
                         workOrderLine->setTaskId(task->getId());
                         break;
                     }
                 }
+
+                workOrderLine->setVendorName(vendorName);
+
 
                 workOrderLines.push_back(workOrderLine);
                 lineIndex++;

@@ -647,13 +647,14 @@ Rectangle {
                     height: parent.height
                     color: "#EDF1F4"//"green"
                     Column{
-                        FHTable {
+                        //FHTable {
+                          GanttTaskListTable{
                             height: 250//300
-                            leftPadding: 2
-                            removeRow: false
+                            leftPadding: 2                            
                             headerHeight:102
                             headerFontPixelSize:20
                             model:task_month_paramList
+
                             columns: [
                                 { label: "ID", width: 50, key: "id"},
                                 { label: "Task", width: 256, key: "taskName" },
@@ -763,7 +764,7 @@ Rectangle {
 
             if(approvedNo == 0)
             {
-              task_month_paramList = taskController.getTaskList(true);
+              task_month_paramList = taskController.getTaskList(true);                
             }
             else if(approvedNo == 1)
             {
