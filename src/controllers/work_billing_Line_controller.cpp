@@ -6,6 +6,8 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include "task_controller.h"
+#include "work_order_controller.h"
 
 extern std::shared_ptr<User> gUser;
 extern int gTenantId;
@@ -78,8 +80,8 @@ std::vector<WorkBillingLine*> WorkBillingLineController::getWorkBillingLineList(
     WorkOrderController workOrderController;
     WorkOrderLineController workOrderLineController;
 
-    std::vector<WorkOrder*> vecWorkOrder = workOrderController.getWorkOrderList(true);
-    std::vector<WorkOrderLine*> vecWorkOrderLine = workOrderLineController.getWorkOrderLineList(true);
+    std::vector<WorkOrder*> vecWorkOrder = workOrderController.getWorkOrderList(isApproved);
+    std::vector<WorkOrderLine*> vecWorkOrderLine = workOrderLineController.getWorkOrderLineList(isApproved);
 
     std::vector<WorkBillingLine*> workBillingLines;
 
@@ -190,3 +192,86 @@ QString WorkBillingLineController::CreateJson(const QVariant &param) const
 
     return QString();
 }
+
+std::vector<Task*> WorkBillingLineController::getBilledTaskList(bool isApproved) const
+{
+    std::vector<Task*> tasklist;
+    WorkOrderController workOrderController;
+    WorkOrderLineController workOrderLineController;
+    TaskController taskController;
+
+    std::vector<WorkBillingLine*> workBillingLines = getWorkBillingLineList(isApproved);
+    std::vector<WorkOrder*> workOrderList = workOrderController.getWorkOrderList(isApproved);
+    std::vector<Task*> taskList = taskController.getTaskList(isApproved);
+
+
+    if(isApproved)
+    {
+        std::vector<WorkOrderLine*> workOrderLine = workOrderLineController.getWorkOrderLineList(isApproved);
+
+        foreach (const WorkBillingLine *workbill, workBillingLines)
+        {
+            int workOrderLineId = workbill->getWorkOrderLineId();
+            foreach (const WorkOrderLine *workorderline, workOrderLine)
+            {
+                int workOrderLineIdNew = workorderline->getId();
+                if(workOrderLineId == workOrderLineIdNew)
+                {
+                    int taskId = workorderline->getTaskId();
+                    foreach (Task *task, taskList)
+                    {
+                        int taskIdNew = task->getId();
+                        if(taskId == taskIdNew)
+                        {
+                            tasklist.push_back(task);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        foreach (const WorkBillingLine *workbill, workBillingLines)
+        {
+            int workOrderId = workbill->getWorkOrderId();
+            foreach (const WorkOrder *workorder, workOrderList)
+            {
+                int workOrderIdNew = workorder->getId();
+                if(workOrderId == workOrderIdNew)
+                {
+                    QString workOrderLineData =  workorder->getWorkOrderLineData();
+                    QJsonParseError parseError;
+                    QJsonDocument doc = QJsonDocument::fromJson(workOrderLineData.toUtf8(), &parseError);
+                    if (!doc.isNull() && doc.isArray()) {
+                        QJsonArray lineArray = doc.array();
+                        for (const QJsonValue &value : lineArray) {
+                            auto task = new Task();
+                            if (value.isObject()) {
+                                QJsonObject obj = value.toObject();
+                                task->setTaskName(obj["task_name"].toString());
+                                task->setDescription(obj["description"].toString());
+                                //task->setId(obj["task_id"].toInt());
+                                 task->setId(obj["task_id"].toVariant().toLongLong());
+                                /*foreach (Task *tsk, taskList)
+                                {
+                                    if(tsk->getId() == obj["task_id"].toInt())
+                                    {
+                                        tasklist.push_back(tsk);
+                                    }
+                                }*/
+                                 tasklist.push_back(task);
+                            }
+                        }
+                    } else {
+                        qDebug() << "Failed to parse JSON string or data is not an array.";
+                    }
+                }
+            }
+        }
+    }
+    return tasklist;
+}
+
+
+

@@ -9,7 +9,7 @@ class Task: public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(int id READ getId CONSTANT)
+    Q_PROPERTY(long long id READ getId CONSTANT)
     Q_PROPERTY(bool approvalStatus READ getApprovalStatus WRITE setApprovalStatus NOTIFY approvalStatusChanged)
     Q_PROPERTY(QString globalId READ getGlobalId WRITE setGlobalId NOTIFY globalIdChanged)
     Q_PROPERTY(QString taskName READ getTaskName WRITE setTaskName NOTIFY taskNameChanged)
@@ -17,7 +17,7 @@ class Task: public QObject
     Q_PROPERTY(QString bimElement READ getBimElement WRITE setBimElement NOTIFY bimElementChanged)
     Q_PROPERTY(QString startDate READ getStartDate WRITE setStartDate NOTIFY startDateChanged)
     Q_PROPERTY(QString endDate READ getEndDate WRITE setEndDate NOTIFY endDateChanged)
-    Q_PROPERTY(int pid READ getParentId WRITE setParentId NOTIFY parentIdChanged)
+    Q_PROPERTY(long long pid READ getParentId WRITE setParentId NOTIFY parentIdChanged)
 
     Q_PROPERTY(int days READ getDuration WRITE setDuration NOTIFY durationChanged)
 
@@ -25,6 +25,9 @@ class Task: public QObject
     Q_PROPERTY(int month READ getMonth WRITE setMonth NOTIFY monthChanged)
     Q_PROPERTY(int startDay READ getStartDay WRITE setStartDay NOTIFY startDayChanged)
     Q_PROPERTY(int endDay READ getEndDay WRITE setEndDay NOTIFY endDayChanged)
+
+    Q_PROPERTY(int startMonth READ getStartMonth WRITE setStartMonth NOTIFY startMonthChanged)
+    Q_PROPERTY(int endMonth READ getEndMonth WRITE setEndMonth NOTIFY endMonthChanged)
 
 
     Q_PROPERTY(QString jan READ getJan WRITE setJan NOTIFY janChanged)
@@ -49,19 +52,21 @@ class Task: public QObject
     Q_PROPERTY(int startYear READ getStartYear WRITE setStartYear NOTIFY startYearChanged)
     Q_PROPERTY(int endYear READ getEndYear WRITE setEndYear NOTIFY endYearChanged)
 
+    Q_PROPERTY(QString month_year READ getMonth_Year WRITE setMonth_Year NOTIFY month_yearChanged)
+
 
 public:
     explicit Task(QObject* parent = nullptr): QObject(parent) {}
-    Task(int id, const QString& globalId, bool approvalStatus,
+    Task(long long id, const QString& globalId, bool approvalStatus,
              const QString& taskName,
              const QString& description,
              const QString& bimElement,
              const QString& startDate,
              const QString& endDate,
-             int pid,
+             long long pid,
             QObject* parent = nullptr);
 
-    int getId() const { return id; }
+    long long getId() const { return id; }
     QString getGlobalId() const { return globalId; }
     bool getApprovalStatus() const { return approvalStatus; }
     QString getTaskName() const { return taskName; }
@@ -69,12 +74,14 @@ public:
     QString getBimElement() const { return bimElement; }
     QString getStartDate() const { return startDate; }
     QString getEndDate() const { return endDate; }
-    int getParentId() const { return pid; }
+    long long getParentId() const { return pid; }
     int getDuration() const { return days; }
     int getYear() const { return year; }
     int getMonth() const { return month; }
     int getStartDay() const { return startDay; }
     int getEndDay() const { return endDay; }
+    int getStartMonth() const { return startMonth; }
+    int getEndMonth() const { return endMonth; }
 
     QString getJan() const { return jan; }
     QString getFeb() const { return feb; }
@@ -97,8 +104,10 @@ public:
     int getStartYear() const { return startYear; }
     int getEndYear() const { return endYear; }
 
+    QString getMonth_Year() const { return month_year; }
 
-    void setId(int id) { this->id = id; }
+
+    void setId(long long id) { this->id = id; }
     void setGlobalId(const QString& globalId) { this->globalId = globalId; }
     void setApprovalStatus(bool status) { this->approvalStatus = status; }
     void setTaskName(const QString& taskName) { this->taskName = taskName; }
@@ -106,12 +115,15 @@ public:
     void setBimElement(const QString& bimElement) { this->bimElement = bimElement; }
     void setStartDate(const QString& startDate) { this->startDate = startDate; }
     void setEndDate(const QString& endDate) { this->endDate = endDate; }
-    void setParentId(int pid) { this->pid = pid; }
+    void setParentId(long long pid) { this->pid = pid; }
     void setDuration(const int days) { this->days = days; }
     void setYear(const int year) { this->year = year; }
     void setMonth(const int month) { this->month = month; }
     void setStartDay(const int startDay) { this->startDay = startDay; }
     void setEndDay(const int endDay) { this->endDay = endDay; }
+
+    void setStartMonth(const int startMonth) { this->startMonth = startMonth; }
+    void setEndMonth(const int endMonth) { this->endMonth = endMonth; }
 
     void setJan(const QString& jan) { this->jan = jan; }
     void setFeb(const QString& feb) { this->feb = feb; }
@@ -134,6 +146,8 @@ public:
     void setStartYear(const int startYear) { this->startYear = startYear; }
     void setEndYear(const int endYear) { this->endYear = endYear; }
 
+    void setMonth_Year(const QString& month_year) { this->month_year = month_year; }
+
 
 signals:
     void globalIdChanged();
@@ -150,6 +164,9 @@ signals:
     void monthChanged();
     void startDayChanged();
     void endDayChanged();
+
+    void startMonthChanged();
+    void endMonthChanged();
 
     void janChanged();
     void febChanged();
@@ -171,9 +188,10 @@ signals:
 
     void startYearChanged();
     void endYearChanged();
+    void month_yearChanged();
 
 private:
-    int id = 0;
+    long long id = 0;
     QString globalId;
     bool approvalStatus = true;
     QString taskName;
@@ -182,12 +200,15 @@ private:
     QString startDate;
     QString endDate;
     int days = 0;
-    int pid = 0;
+    long long pid = 0;
 
     int year = 0;
     int month = 0;
     int startDay = 0;
     int endDay = 0;
+
+    int startMonth = 0;
+    int endMonth = 0;
 
     QString jan = "";
     QString feb = "";
@@ -204,6 +225,7 @@ private:
 
     int startYear = 0;
     int endYear = 0;
+    QString month_year = "";
 
 };
 

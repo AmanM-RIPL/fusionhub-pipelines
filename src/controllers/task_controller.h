@@ -10,7 +10,7 @@ class TaskController: public QObject
     Q_OBJECT
 public:
     explicit TaskController(QObject *parent = nullptr);
-    Q_INVOKABLE void create(const QString &taskName ,const QString &description, const QString &bimElement ,const QString &startDate ,const QString &endDate, const int pid) const;
+    Q_INVOKABLE void create(const QString &taskName ,const QString &description, const QString &bimElement ,const QString &startDate ,const QString &endDate, const long long pid) const;
     Q_INVOKABLE std::vector<Task*> getTaskList(bool isApproved = false) const;
 
 
@@ -18,7 +18,7 @@ public:
 private:
     TaskRepository* m_taskRepository;
     DraftEntityRepository* m_draftEntityRepository;
-    void setDaysInMonth(Task* task, const QString& strDays, const int monthNo) const;
+    void setDaysInMonth(Task* task, const QString& strDays, const int monthNo, const QString& startDate) const;
 };
 
 #endif // TASK_CONTROLLER_H

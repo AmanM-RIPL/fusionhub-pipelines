@@ -31,7 +31,6 @@ Column {
     }
 
 
-
     FHPopup {
         id: newWorkBillingLinePopup
         popupWidth: 900
@@ -55,18 +54,20 @@ Column {
         onOpened: {
             // Load lists from controllers and populate root lists
             if (workBillingLineRoot.visible) {
-                workOrdersFromCtrl = workOrderController.getWorkOrderList(true)
 
-                workOrderLineFromCtrl = workOrderLineController.getWorkOrderLineList(true)
+                workOrdersFromCtrl = workOrderController.getWorkOrderList(isApproved)
+                workOrderLineFromCtrl = workOrderLineController.getWorkOrderLineList(isApproved)
 
-                // Clear current lists then populate
+                //Clear current lists then populate
                 workOrderList = []
                 workOrderLineList = []
 
+                //console.log("workOrdersFromCtrl.length:", workOrdersFromCtrl.length)
 
                 for (var j = 0; j < workOrdersFromCtrl.length; j++) {
                     workOrderList = workOrderList.concat(
-                                workOrdersFromCtrl[j].workOrderName)
+                                 workOrdersFromCtrl[j].workOrderName)
+
                 }
 
                 // Build display list for combo box with description
@@ -249,10 +250,10 @@ Column {
                                     "retention_amount": retentionAmountTextBox.text,
                                 }
 
-                                // append to listData
+                                //append to listData
                                 listData = listData.concat(newElements)
 
-                                // Clear the correct inputs
+                                //Clear the correct inputs
                                 amountTextBox.text = ""
                                 taxAmountTextBox.text = ""
                                 taxWithHoldingTextBox.text = ""
@@ -387,7 +388,7 @@ Column {
         workBillingLineRoot.workBillingLineList = [];
         if (workBillingLineRoot.visible) {
             workBillingLineRoot.workBillingLineList = workBillingLineController.getWorkBillingLineList(isApproved);
-         //   console.log("dd", JSON.stringify(workBillingLineList));
+            //console.log("dd_WorkBiling_data", JSON.stringify(workBillingLineList));
         }
     }
 

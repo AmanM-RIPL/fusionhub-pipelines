@@ -3,11 +3,13 @@ import QtQuick.Controls
 import QtQuick.Layouts 1.15
 
 Rectangle {
+    id:root
     width: 1440
    // height: 1024 - (131 + 13)
      height: screen.height-100
     color: "#EDF1F4"
     property string txtProjectName: "NA"
+    property bool isApproved: true
 
     Item {
         id:itemId
@@ -33,7 +35,6 @@ Rectangle {
         }
     }
 
-
     Text{
         //text: "PROJ-0001: Sample House"
         text: txtProjectName
@@ -48,16 +49,73 @@ Rectangle {
    }
 
 
+    Rectangle{
+        id:idApprovalRect
+        width: 500
+        height: 50
+        color: "transparent"
+        //anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: itemId.bottom
+        anchors.left: mainRectId.left
+
+    Row {
+        spacing: 20
+        Text{
+            id: approvalTypeLabel
+            text: "Choose Approval Type"
+            color: "#323130"
+            font.weight: 700
+            font.pixelSize: 14
+            font.family: "Segoe UI"
+            topPadding: 10
+            //leftPadding: 20
+        }
+
+
+        CustomComboBox {
+            id: approvalTypeComboBox
+            model: ["Approved", "Draft"]
+            width:200
+
+            onCurrentTextChanged: {                
+                isApproved = (approvalTypeComboBox.currentText === "Approved");
+                // Force reset the loader
+                upcomingtaskBoardLoader.sourceComponent = undefined;
+                upcomingtaskBoardLoader.sourceComponent = upcomingTaskComponent;
+
+                billedtaskBoardLoader.sourceComponent = undefined;
+                billedtaskBoardLoader.sourceComponent = billedTaskComponent;
+            }
+        }       
+    }
+    }
+
+    Component {
+        id: upcomingTaskComponent
+        UpcomingTaskBoard {
+            // Use the ID of the parent/root variable so it's always accessible
+            isApproved: root.isApproved
+        }
+    }
+
+    Component {
+        id: billedTaskComponent
+        BilledTaskBoard {
+            // Use the ID of the parent/root variable so it's always accessible
+            isApproved: root.isApproved
+        }
+    }
 
     Rectangle{
         id:mainRectId
         width: 1236
-        height: 450//599
+        //height: 450//599
+        height: 400//599
         radius: 8
         anchors.horizontalCenter: parent.horizontalCenter
         //anchors.bottom: parent.bottom
         //anchors.bottomMargin: 138
-         anchors.top: itemId.bottom
+         anchors.top: idApprovalRect.bottom
 
 
         Rectangle{
@@ -92,6 +150,7 @@ Rectangle {
                 anchors.centerIn: parent
 
 
+
                Rectangle{
                     width: 296.5
                     height: parent.height
@@ -99,9 +158,17 @@ Rectangle {
                     color: "#FAF9F8"
                     clip: true
 
-                    UpcomingTaskBoard{
+                    /*UpcomingTaskBoard{
+                        id:upcomingTaskboard
+                        isApproved: isApproved
                         anchors.fill: parent
 
+                    }*/
+
+                    Loader {
+                        id: upcomingtaskBoardLoader
+                        anchors.fill: parent
+                        sourceComponent: upcomingTaskComponent
                     }
                 }
 
@@ -135,13 +202,19 @@ Rectangle {
 
                     bottomRightRadius: 8
 
-                    BilledTaskBoard{
+                    /*BilledTaskBoard{
+                        id:billedTaskBoard
+                        isApproved: isApproved
                         anchors.fill: parent
+                    }*/
+
+                    Loader {
+                        id: billedtaskBoardLoader
+                        anchors.fill: parent
+                        sourceComponent: billedTaskComponent
                     }
                 }
             }
-
         }
-
     }
 }

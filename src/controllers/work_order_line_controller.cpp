@@ -16,9 +16,13 @@ WorkOrderLineController::WorkOrderLineController(QObject *parent)
 {}
 void WorkOrderLineController::create(const int &vendorId, const QString &description, const QVariantList &workOrderLineData) const
 {
+    qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+
     QJsonObject jsonObject;
     jsonObject["vendorId"] = vendorId;
     jsonObject["description"] = description;
+
+    jsonObject["id"] = id_in_milliseconds;//This need to be chnaged for
     QJsonArray lineArray;
     for (const QVariant &item : workOrderLineData) {
         lineArray.append(QJsonObject::fromVariantMap(item.toMap()));

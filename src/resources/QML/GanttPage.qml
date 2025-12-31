@@ -7,8 +7,6 @@ import QtCharts
 import com.fh.models 1.0
 import com.fh.controllers
 
-
-
 Rectangle {
     id:gantt_root
     width: 1440
@@ -19,7 +17,8 @@ Rectangle {
     property int febMonthWidth: 28
     property int monthScale: 5
 
-    property bool isApproved: false
+    //property bool isApproved: false
+    property int approvedNo: 0
 
     //property date startDate: new Date(2025, 0, 15) // Jan 15, 2025 (months are 0-based)
    // property date endDate: new Date(2025, 0, 20)   // Jan 20, 2025
@@ -570,10 +569,14 @@ Rectangle {
 
             onCurrentTextChanged: {
                 if(approvalTypeComboBox.currentText === "Approved"){
-                    isApproved = true;                   
+                    approvedNo = 0;
                 }
-                else{
-                    isApproved = false;                    
+                else if(approvalTypeComboBox.currentText === "Draft"){
+                    approvedNo = 1;
+                }
+                else
+                {
+                    approvedNo = 2;
                 }
                 showList();
             }
@@ -681,7 +684,7 @@ Rectangle {
                             color: "lightgray"//"gray"
 
                             Text{
-                                text:"Year: " + startYear.toString() + " - to - " + endYear.toString()
+                                text: startYear_endYearText(startYear, endYear)//"Year: " + startYear.toString() + " - to - " + endYear.toString()
                                 color: "#000000"
                                 font.pixelSize: 20
                                 font.weight: 700
@@ -711,6 +714,10 @@ Rectangle {
                                     height: parent.height
                                     spacing: 2
 
+                                    onWidthChanged: {
+                                            horizontalScrollView.contentWidth = generatGanttWidth(startYear, endYear, monthScale);
+                                        }
+
                                     Rectangle{
                                         width: parent.width
                                         height: parent.height// - 50
@@ -725,22 +732,8 @@ Rectangle {
                                                 headerHeight:50
                                                 headerFontPixelSize:20
                                                 model: task_month_paramList //monthParamList
-                                                /*columns: [
-                                                    { label: "Jan", width: 31 * monthScale, key: "jan", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "Feb", width: febMonthWidth * monthScale, key: "feb", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "Mar", width: 31  * monthScale, key: "mar", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "Apr", width: 30 * monthScale, key: "apr", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "May", width: 31 * monthScale, key: "may", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "June", width: 30 * monthScale, key: "jun", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "July", width: 31 * monthScale, key: "jul", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "Aug", width: 31 * monthScale, key: "aug", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "Sep", width: 30 * monthScale, key: "sep", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "Oct", width: 31 * monthScale, key: "oct", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "Nov", width: 30 * monthScale, key: "nov", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                    { label: "Dec", width: 31 * monthScale, key: "dec", startx: "startDay", endx: "endDay", days: "days", id: "id", pid: "pid" },
-                                                ]*/
 
-                                                 columns: generateGanttColumns(startYear, endYear, monthScale)
+                                                columns: generateGanttColumns(startYear, endYear, monthScale)
                                             }                                            
                                         }                                        
                                     }
@@ -765,9 +758,24 @@ Rectangle {
     }
 
     function showList(){
-        if(gantt_root.visible){            
+        if(gantt_root.visible)
+        {
 
-            task_month_paramList = taskController.getTaskList(isApproved);
+            if(approvedNo == 0)
+            {
+              task_month_paramList = taskController.getTaskList(true);
+            }
+            else if(approvedNo == 1)
+            {
+                task_month_paramList = taskController.getTaskList(false);                
+            }
+            else
+            {
+               task_month_paramList = taskController.getTaskList(true);
+               var draftTasklist = taskController.getTaskList(false);
+
+               task_month_paramList = task_month_paramList.concat(draftTasklist);
+            }
 
             task_idList = [];
 
@@ -781,19 +789,19 @@ Rectangle {
 
             task_idList = tempFilteredArray;
 
-            for(var i = 0; i < task_month_paramList.length; i++)
+            for(var f = 0; f < task_month_paramList.length; f++)
             {
-                var task =  task_month_paramList[i];
+                var task1 =  task_month_paramList[f];
 
-                if(startYear > task.startYear )
+                if(startYear > task1.startYear )
                 {
-                    startYear = task.startYear;
+                    startYear = task1.startYear;
                 }
-                if(endYear < task.endYear)
+                if(endYear < task1.endYear)
                 {
-                    endYear = task.endYear;
+                    endYear = task1.endYear;
                 }
-            }            
+            }
         }
     }
 
@@ -826,6 +834,7 @@ Rectangle {
                 const daysCount = getDaysInMonth(year, month);
                 const monthKey = monthNames[month].toLowerCase();
 
+
                 columns.push({
                     label: `${monthNames[month]} ${year}`,
                     width: daysCount * monthScale,
@@ -836,9 +845,11 @@ Rectangle {
                     days: "days",
                     id: "id",
                     pid: "pid",
-                    startYear:"startYear",
-                    year:"year",
-                    startDate:"startDate"
+                    startYear: "startYear",
+                    year: "year",
+                    startDate: "startDate",
+                    month_year: `${monthKey}_${year}`
+
                 });
             }
         }
@@ -847,7 +858,34 @@ Rectangle {
 
     function generatGanttWidth(startYear, endYear, monthScale)
     {
-       return  31 * monthScale * (endYear - startYear + 1) * 12  + 10;
+         if(gantt_root.visible)
+         {
+             if(startYear > endYear)
+             {
+                var temp = endYear;
+                 endYear = startYear;
+                 startYear = temp;
+             }
+
+            var def = endYear - startYear;
+            return  31 * monthScale * (def + 1) * 12  + 10;
+         }
+
+        return  0;
+
+
+    }
+
+    function startYear_endYearText(startYear, endYear)
+    {
+        if(startYear > endYear)
+        {
+           var temp = endYear;
+            endYear = startYear;
+            startYear = temp;
+        }
+
+        return "Year: " + startYear.toString() + " - to - " + endYear.toString();
     }
 
     /*************End of Dynamica month********************************/

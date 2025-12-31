@@ -1,10 +1,22 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts 1.15
+import com.fh.models 1.0
+import com.fh.controllers
+
 
 Rectangle {
+    id: billedTaskBoardRoot
     width: 296.5
     height: 544
     color: "#FAF9F8"
+
+    WorkBillingLineController{
+      id:workBillingLineController
+    }
+
+    property string txtTotalBilledTask: "0"
+    property bool isApproved: true
 
 
     Rectangle{
@@ -19,7 +31,7 @@ Rectangle {
         anchors.leftMargin: 8
 
         Text{
-            text: "1"
+            text: txtTotalBilledTask
             color: "#FFFFFF"
             font.pixelSize: 10
             font.weight: 400
@@ -48,6 +60,7 @@ Rectangle {
         anchors.rightMargin: 59
         anchors.top: parent.top
         anchors.topMargin: 17
+        visible: false
 
         Image{
             source: "qrc:/resources/images/addBlack.svg"
@@ -63,6 +76,7 @@ Rectangle {
         anchors.rightMargin: 17
         anchors.top: parent.top
         anchors.topMargin: 17
+        visible: false
 
         Image{
             source: "qrc:/resources/images/close.svg"
@@ -86,10 +100,10 @@ Rectangle {
         ListModel{
             id: listModel
 
-            ListElement{
+            /*ListElement{
                 title: "Project Initiation"
                 desc: "Project Initiation documents submitted to respective clients"
-            }
+            }*/
         }
 
 
@@ -151,9 +165,39 @@ Rectangle {
                     anchors.leftMargin: 12
                 }
             }
+        }        
+    }
+
+    Component.onCompleted: {
+        if(billedTaskBoardRoot.visible)
+        {
+            showList();
         }
 
     }
 
+    onVisibleChanged: {
+        if(billedTaskBoardRoot.visible)
+        {
+            showList();
+        }
+    }
 
+    function showList()
+    {
+        listModel.clear();
+        //console.log("Billed_task_isApproved:", isApproved)
+       var billedTaskList = workBillingLineController.getBilledTaskList(isApproved);
+
+        txtTotalBilledTask = String(billedTaskList.length);
+
+        for(var i = 0; i < billedTaskList.length; i++ )
+        {
+            console.log("Billed_task_billedTaskList[i].id:", billedTaskList[i].id)
+            listModel.append({
+                             "title": String(billedTaskList[i].id) + "_" + billedTaskList[i].taskName,
+                             "desc": billedTaskList[i].description
+                        });
+        }
+    }
 }

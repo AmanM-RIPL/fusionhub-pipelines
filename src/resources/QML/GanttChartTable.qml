@@ -18,6 +18,7 @@ Column {
    // property int colNumber:-1
     property var month_arr:{"jan":"01", "feb":"02", "mar":"03", "apr":"04", "may":"05", "jun":"06", "jul":"07", "aug":"08", "sep":"09", "oct":"10", "nov":"11", "dec":"12"}
 
+
     readonly property int totalColumnWidth: {
         var total = 0;
         for (var i = 0; i < columns.length; i++) {
@@ -94,67 +95,53 @@ Column {
                                     width: rowData[modelData.days] !== undefined ? rowData[modelData.days]*monthScale : modelData.width //monthScale = 5
                                     Layout.leftMargin: rowData[modelData.startx] !== undefined ? rowData[modelData.startx]*monthScale : 0
                                     height: 15
-                                    color:"blue"
+                                    //color:"blue"
 
                                     Component.onCompleted: {
 
-                                        rowDataForGantt = [];
-                                        //console.log("rowkey:", modelData.key, "value:", rowData[modelData.key], "id:", rowData[modelData.id], "pid:", rowData[modelData.pid], "x:",idRect.x, "y:",idRect.y ,"width:", idRect.width, "height:", idRect.height );
-
-                                        var keyValue = String(rowData[modelData.key]).trim();
-                                        //console.log("modelData.key: ", modelData.key, "keyvalue:", keyValue)
-
-
-                                        var startDate = String(rowData[modelData.startDate]);
-                                        //console.log("startDate:", startDate)
-
-                                        var YearValue = String(rowData[modelData.year]);
-                                        //console.log("YearValue:", YearValue)
-
-                                        var monthno =  month_arr[modelData.key]
-                                        //console.log("monthno:", monthno)
-
-                                        var startDay = String(rowData[modelData.startx]);
-                                        //console.log("startday:", startDay)
-
-
-                                        const pad = (num) => num.toString().padStart(2, '0');
-                                        const formattedDate = `${pad(startDay)}/${pad(monthno)}/${YearValue}`;
-
-                                       // console.log("formattedDate:", formattedDate);
-                                        //idRect.color ="blue"
-
-                                        if(keyValue.length > 0 && keyValue !== "0" && startDate.localeCompare(formattedDate) === 0 ){
+                                        tableRoot.rowDataForGantt = [];
+                                        var keyValue = String(rowData[modelData.key]);                                        
+                                        var month_year = modelData.month_year;
+                                        if(keyValue.length > 0 && keyValue !== "0" && month_year.localeCompare(keyValue) === 0 ){
                                             //idRect.color = "red"
-                                             //console.log("startDate:", startDate, "formattedDate:", formattedDate);
+                                            var root = tableRoot;
+                                            var overlay = linesOverlay;
+                                            var rowDataTemp = rowData;
+                                            var modelDataTemp = modelData;
+                                            var trmpArray = [];
 
-                                            /*Qt.callLater(function() {
+                                            Qt.callLater(function() {
                                                  // 1. Get the absolute position of idRect on the entire screen/window
                                                 var globalPoint = idRect.mapToGlobal(0, 0);
 
                                                 // 2. Map that global screen point *back* into the local coordinate system of the 'linesOverlay'
                                                 // We use linesOverlay.mapFromGlobal(globalX, globalY)
-                                                var canvasPoint = linesOverlay.mapFromGlobal(globalPoint.x, globalPoint.y);
+                                                var canvasPoint = overlay.mapFromGlobal(globalPoint.x, globalPoint.y);
 
                                                 var data = {x:0, y:0, id:0, pid:0, width:0, height:0, month:""};
                                                 data.x = canvasPoint.x
                                                 data.y = canvasPoint.y;
 
-                                                data.id = rowData[modelData.id];
-                                                data.pid = rowData[modelData.pid];
+                                                data.id = rowDataTemp[modelDataTemp.id];
+                                                data.pid = rowDataTemp[modelDataTemp.pid];
                                                 data.width = idRect.width;
                                                 data.height = idRect.height;
-                                                data.month = modelData.key;
+                                                data.month = modelDataTemp.key;
 
-                                                rowDataForGantt.push(data);
-                                                //linesOverlay.requestPaint();
-                                            });*/
+                                                if(data.y > 0)
+                                                {
+                                                    root.rowDataForGantt.push(data);
+                                                }
+                                                overlay.requestPaint();
+                                            });
+
                                         }                                        
                                     }
 
                                     Text {
                                         id:idText
-                                        text:rowData[modelData.key] !== undefined ? rowData[modelData.key] : ""
+                                        //text:rowData[modelData.key] !== undefined ? rowData[modelData.key] : ""
+                                        text:rowData[modelData.key] === modelData.month_year ? rowData[modelData.days] : ""
                                         font.pixelSize: 13
                                         anchors.centerIn: parent
                                         topPadding: 1
@@ -179,7 +166,6 @@ Column {
 
             onVisibleChanged: {
                linesOverlay.requestPaint()
-
            }
         }
         Canvas
@@ -187,10 +173,33 @@ Column {
             id: linesOverlay
             anchors.fill: parent
             // This ensures the canvas is transparent and above the ListView visually
-            z: 1
+            z: 1            
+
             onPaint: {
+                var ctxRect = getContext("2d");
+                ctxRect.clearRect(0, 0, width, height); // Clear previous frame
+
+                ctxRect.lineWidth = 12;
+                ctxRect.strokeStyle = "#8B0000";
+                ctxRect.beginPath();
+
+                for(var j = 0; j < tableRoot.rowDataForGantt.length; j++){
+                    var modelData1 = tableRoot.rowDataForGantt[j];
+                    var x1 = modelData1.x;
+                    var y1 = modelData1.y;
+                    var w =  modelData1.width
+
+                    // console.log("x1:", x1,"y1:", y1, "w:", w, "modelData1.id:", modelData1.id, "modelData1.pid:", modelData1.pid);
+
+                    ctxRect.moveTo(x1, y1 + 6);
+                    ctxRect.lineTo(x1 + w, y1 + 6);
+
+                    ctxRect.stroke();
+                }
+
                 var ctx = getContext("2d");
-                ctx.clearRect(0, 0, width, height); // Clear previous frame
+               // ctx.clearRect(0, 0, width, height); // Clear previous frame
+
 
                 function drawArrowhead(ctx, fromX, fromY, toX, toY, size) {
                     const angle = Math.atan2(toY - fromY, toX - fromX); // Calculate the angle of the line
@@ -206,32 +215,28 @@ Column {
                     ctx.lineTo(toX - size * Math.cos(angle2), toY - size * Math.sin(angle2));
                 }
 
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 1;
                 ctx.strokeStyle = "red";
                 ctx.beginPath();
 
-                for(var i = 0; i < rowDataForGantt.length; i++){
-                    var modelData = rowDataForGantt[i];
+                for(var i = 0; i < tableRoot.rowDataForGantt.length; i++){
+                    var modelData = tableRoot.rowDataForGantt[i];
                     var x = modelData.x;
                     var y = modelData.y;
                     var id = modelData.id;
                     var pid = modelData.pid;
                     var month = modelData.month;
 
-                    for(var j = 0; j < rowDataForGantt.length; j++){
-                        var modelDataNew = rowDataForGantt[j] ;
+                    //console.log("idfirst:", id);
+
+                    for(var z = 0; z < tableRoot.rowDataForGantt.length; z++){
+                        var modelDataNew = tableRoot.rowDataForGantt[z] ;
                         var xNew = modelDataNew.x;
                         var yNew = modelDataNew.y;
                         var idNew = modelDataNew.id;
                         var pidNew = modelDataNew.pid;
 
-                        //console.log("id:", id, "pidNew:", pidNew, "xNew:", xNew, "x:", x );
-
-                        /*var r = month.localeCompare("dec");
-                        if(r === 0 )
-                        {
-                             valuesToRemove.push(id);
-                        }*/
+                        //console.log("id1:", id, "pidNew1:", pidNew);
 
                         if(id === pidNew)// && xNew !== x)
                         {
@@ -244,19 +249,19 @@ Column {
                             ctx.moveTo(modelData.x + modelData.width + 3, modelData.y + 6);
                             ctx.lineTo(modelData.x + modelData.width + 3, modelData.y + 37 )
 
-                            ctx.moveTo(modelData.x + modelData.width + 3, modelData.y + 37);                            
+                            ctx.moveTo(modelData.x + modelData.width + 3, modelData.y + 37);
                             ctx.lineTo(xNew, modelDataNew.y+7);
 
                             ctx.stroke();
 
                             var fromX = modelData.x + modelData.width + 3;
-                            var fromY = modelData.y+37;                           
+                            var fromY = modelData.y+37;
                             var toX = xNew;
                             var toY = modelDataNew.y+7;
 
                             drawArrowhead(ctx, fromX, fromY, toX, toY, arrowHeadSize);
                             ctx.stroke();
-                        }                       
+                        }
                     }
                 }
             }

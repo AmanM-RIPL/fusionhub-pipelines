@@ -17,6 +17,8 @@ class WorkOrder: public QObject
 
     Q_PROPERTY(int vendorId READ getVendorId WRITE setVendorId NOTIFY vendorIdChanged)
 
+     Q_PROPERTY(QString workOrderLineData READ getWorkOrderLineData WRITE setWorkOrderLineData NOTIFY workOrderLineDataChanged)
+
 
 public:
     explicit WorkOrder(QObject* parent = nullptr): QObject(parent) {}
@@ -29,6 +31,7 @@ public:
     QString getWorkOrderName() const { return workOrderName; }
     QString getVendorName() const { return vendorName; }
     int getVendorId() const { return vendorId; }
+    QString getWorkOrderLineData() const { return workOrderLineData; }
 
     void setId(int id) { this->id = id; }
     void setGlobalId(const QString& globalId) { this->globalId = globalId; }
@@ -36,6 +39,7 @@ public:
     void setWorkOrderName(const QString& workOrderName) { this->workOrderName = workOrderName; }
     void setVendorName(const QString& vendorName) { this->vendorName = vendorName; }
     void setVendorId(int vendorId) { this->vendorId = vendorId; }
+    void setWorkOrderLineData(const QString& workOrderLineData) { this->workOrderLineData = workOrderLineData; }
 
 signals:
     void globalIdChanged();
