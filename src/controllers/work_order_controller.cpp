@@ -144,6 +144,10 @@ std::vector<WorkOrder*> WorkOrderController::getWorkOrderList(bool isApproved) c
                 workOrder->setVendorName(vendorName);
                 workOrder->setVendorId(jsonObj["vendorId"].toInt());
 
+                QJsonDocument tempDoc(jsonObj["workOrderLineData"].toArray());
+                QString rawJsonString = tempDoc.toJson(QJsonDocument::Compact);
+
+                workOrder->setWorkOrderLineData(rawJsonString);
 
                 workOrders.push_back(workOrder);
             }

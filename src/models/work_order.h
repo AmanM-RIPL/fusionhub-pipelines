@@ -47,6 +47,7 @@ signals:
     void workOrderNameChanged();
     void vendorNameChanged();
     void vendorIdChanged();
+    void workOrderLineDataChanged();
 
 private:
     int id = 0;
@@ -55,6 +56,7 @@ private:
     QString workOrderName;
     QString vendorName;
     int vendorId = 0;
+    QString workOrderLineData;
 };
 
 Q_DECLARE_METATYPE(WorkOrder)
