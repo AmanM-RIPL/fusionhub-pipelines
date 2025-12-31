@@ -67,6 +67,46 @@ void UnitOfMeasurementController::create(const QString& uomName, const QString& 
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+void UnitOfMeasurementController::update( int id, const QString& uomName, const QString& unitType,
+                                         const double& conversionToSqm, const double& conversionToCubicMeter,
+                                         const double& conversionToMeter, const double& conversionToKilogram) const
+{
+
+    /***********Start of Update DraftEntity  ******************/
+
+    QJsonObject jsonObject;
+    jsonObject["id"] = id;
+    //jsonObject["globalId"] = "123";
+    //jsonObject["approvalStatus"] = true;
+    jsonObject["conversionToCubicMeter"] = conversionToCubicMeter;
+    jsonObject["conversionToKilogram"] = conversionToKilogram;
+    jsonObject["conversionToMeter"] = conversionToMeter;
+    jsonObject["conversionToSqm"] = conversionToSqm;
+    jsonObject["unitType"] = unitType;
+    jsonObject["uomName"] = uomName;
+
+    QJsonDocument jsonDoc(jsonObject);
+    QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
+    qDebug() << entitySchema;
+
+    QDate updatedOn = QDate::currentDate();
+
+    DraftEntity draftEntity;
+    draftEntity.setId(id);
+    draftEntity.setTenant(gTenantId);
+    draftEntity.setCreatedOn(updatedOn);
+    draftEntity.setProject(gProjectId);
+    draftEntity.setEntity("UnitOfMeasurement");
+    //draftEntity.setCreatedByUser(gUser->getUserId());
+    draftEntity.setCreatedByUser(gUser->getId());
+    draftEntity.setNextApprovingUser(0);
+    draftEntity.setEntitySchema(entitySchema);
+    draftEntity.setAssociatedApprovedEntity(0);
+    draftEntity.setChangeHistory("changeHistory");
+
+    m_draftEntityRepository->updateQML(&draftEntity);
+}
+
 std::vector<UnitOfMeasurement*> UnitOfMeasurementController::getUOMList(bool isApproved) const
 {
     qDebug()<<"IsApproved: "<< isApproved;
@@ -79,13 +119,17 @@ std::vector<UnitOfMeasurement*> UnitOfMeasurementController::getUOMList(bool isA
         std::vector<UnitOfMeasurement*> unitOfMeasurements;
         for(int i = 0; i < draftEntitys.size(); i++)
         {
+           // QString idStr = QString::number(draftEntitys[i]->getId());
+            int idValue = draftEntitys[i]->getId();
+
             QString  jsonString = draftEntitys[i]->getEntitySchema();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
             if (!jsonDoc.isNull() && jsonDoc.isObject())
             {
                 auto uom = new UnitOfMeasurement();
                 QJsonObject jsonObj = jsonDoc.object();
-                uom->setId(i + 1);
+               // uom->setId(i + 1);
+                uom->setId(idValue);
                 uom->setGlobalId("123");
                 uom->setApprovalStatus(true);
                 uom->setUomName(jsonObj["uomName"].toString());

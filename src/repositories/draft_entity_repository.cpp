@@ -49,7 +49,27 @@ bool DraftEntityRepository::saveQML(DraftEntity* entity) {
     return 1;
 }
 
+bool DraftEntityRepository::updateQML(DraftEntity* entity) {
+
+    QSqlQuery query(dbManager->getDatabase());
+    query.prepare(getUpdateQuery());
+    query.addBindValue(entity->getEntitySchema());
+    query.addBindValue(entity->getId());
+
+    if (!query.exec()) {
+        qDebug() << "Error Updated Data:" << query.lastError().text();
+        return 0;
+    } else {
+        qDebug() << "Data Updated successfully!";
+        return 1;
+    }
+
+    return 1;
+}
+
+
 bool DraftEntityRepository::update(const DraftEntity& entity) { return false; }
+
 bool DraftEntityRepository::deleteById(int id) { return false; }
 std::vector<std::unique_ptr<DraftEntity>> DraftEntityRepository::findByApprovalStatus(bool status) { return {}; }
 QString DraftEntityRepository::getTableName() const { return "DraftEntity"; }
@@ -88,6 +108,6 @@ QString DraftEntityRepository::getInsertQuery() const {
     return "INSERT INTO DraftEntity (tenant, project, entity, createdOn, createdByUser, entitySchema, associatedApprovedEntity, nextApprovingUser, changeHistory) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 }
 QString DraftEntityRepository::getUpdateQuery() const {
-    return "UPDATE DraftEntity SET global_id = ?, approval_status = ?, vendor_name = ?, vendor_address = ?, vendor_contact_person = ?, vendor_email = ?, vendor_mobile = ? WHERE id = ?";
+    return "UPDATE DraftEntity SET  entitySchema = ? WHERE id = ?";
 }
 

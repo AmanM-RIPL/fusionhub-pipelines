@@ -71,37 +71,84 @@ void WorkOrderController::create(const QString &workOrderName, const int vendorI
 std::vector<WorkOrder*> WorkOrderController::getWorkOrderList(bool isApproved) const
 {
     qDebug()<<"IsApproved: "<< isApproved;
+    if (isApproved)
+    {
+        VendorController vendorController;
+        std::vector<Vendor*> vecVendor = vendorController.getVendorList(true);
+        std::vector<WorkOrder*> workOrders;
 
-    if(isApproved){
-        return m_workOrderRepository->findAllQML();
+        auto approvedList = m_workOrderRepository->findAllQML();
+
+        foreach (const WorkOrder *order, approvedList)
+        {
+            int vendorId = order->getVendorId();
+            QString description = order->getWorkOrderName();
+
+            QString vendorName = "N/A";
+            foreach (const Vendor *vendor, vecVendor)
+            {
+                if (vendor->getId() == vendorId)
+                {
+                    vendorName = vendor->getVendorName();
+                    break;
+                }
+            }
+
+            WorkOrder *workOrder = new WorkOrder();
+
+            workOrder->setId(order->getId());
+            workOrder->setWorkOrderName(description);
+            workOrder->setVendorId(vendorId);
+            workOrder->setVendorName(vendorName);
+
+            workOrders.push_back(workOrder);
+        }
+
+        return workOrders;
     }
     else{
         std::vector<DraftEntity*>  draftEntitys  =  m_draftEntityRepository->findAllQML("WorkOrder");
         std::vector<WorkOrder*> workOrders;
+        VendorController vendorController;
+
+        std::vector<Vendor*> vecVendor = vendorController.getVendorList(true);
+
         for(int i = 0; i < draftEntitys.size(); i++)
         {
             QString  jsonString = draftEntitys[i]->getEntitySchema();
+            int draftId = draftEntitys[i]->getId();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
             if (!jsonDoc.isNull() && jsonDoc.isObject())
             {
                 auto workOrder = new WorkOrder();
                 QJsonObject jsonObj = jsonDoc.object();
-                workOrder->setId(i + 1);
+                workOrder->setId(draftId);
                 workOrder->setGlobalId("123");
                 workOrder->setApprovalStatus(true);
-
-                workOrder->setWorkOrderName(jsonObj["workOrderName"].toString());
                 workOrder->setVendorId(jsonObj["vendorId"].toInt());
+
+                int vendorId = workOrder->getVendorId();
+
+                QString vendorName = "N/A";
+                foreach (const Vendor *vendor, vecVendor)
+                {
+                  //  qDebug()<<"vid:" <<vendor->getId();
+                    if (vendor->getId() == vendorId)
+                    {
+                        vendorName = vendor->getVendorName();
+                        break;
+                    }
+                }
+
+                workOrder->setWorkOrderName(jsonObj["description"].toString());
+                workOrder->setVendorName(vendorName);
+                workOrder->setVendorId(jsonObj["vendorId"].toInt());
+
 
                 workOrders.push_back(workOrder);
             }
         }
         return workOrders;
     }
-}
-
-std::vector<Vendor*> WorkOrderController::getVendorList() const
-{
-    return m_vendorRepository->findAllQML();
 }
 

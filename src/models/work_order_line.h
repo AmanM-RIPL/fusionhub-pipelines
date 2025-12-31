@@ -14,6 +14,7 @@ class WorkOrderLine: public QObject
     Q_PROPERTY(QString globalId READ getGlobalId WRITE setGlobalId NOTIFY globalIdChanged)
     Q_PROPERTY(int workOrderId READ getWorkOrderId WRITE setWorkOrderId NOTIFY workOrderIdChanged)
     Q_PROPERTY(QString description READ getDescription WRITE setDescription NOTIFY descriptionChanged)
+    Q_PROPERTY(QString descriptionLine READ getDescriptionLine WRITE setDescriptionLine NOTIFY descriptionLineChanged)
     Q_PROPERTY(int taskId READ getTaskId WRITE setTaskId NOTIFY taskIdChanged)
     Q_PROPERTY(double amount READ getAmount WRITE setAmount NOTIFY amountChanged)
     Q_PROPERTY(double taxAmount READ getTaxAmount WRITE setTaxAmount NOTIFY taxAmountChanged)
@@ -27,7 +28,7 @@ class WorkOrderLine: public QObject
 
 public:
     explicit WorkOrderLine(QObject* parent = nullptr): QObject(parent) {}
-    WorkOrderLine(int id, const QString& globalId, bool approvalStatus,int workOrderId, const QString& description, int taskId,
+    WorkOrderLine(int id, const QString& globalId, bool approvalStatus,int workOrderId, const QString& description,const QString& descriptionLine, int taskId,
                      double amount , double taxAmount, double taxWithHolding, double retentionAmount,  QObject* parent = nullptr);
 
     // --- Getters ---
@@ -37,6 +38,7 @@ public:
     int getWorkOrderId() const { return workOrderId; }
     int getTaskId() const { return taskId; }
     QString getDescription() const { return description; }
+    QString getDescriptionLine() const { return descriptionLine; }
     double getAmount() const { return amount; }
     double getTaxAmount() const { return taxAmount; }
     double getTaxWithHolding() const { return taxWithHolding; }
@@ -52,6 +54,7 @@ public:
     void setApprovalStatus(bool status) { this->approvalStatus = status; }
     void setWorkOrderId(int workOrderId) { this->workOrderId = workOrderId; }
     void setDescription(const QString& description) { this->description = description; }
+    void setDescriptionLine(const QString& descriptionLine) { this->descriptionLine = descriptionLine; }
     void setTaskId(int taskId) { this->taskId = taskId; }
     void setAmount(double amount) { this->amount = amount; }
     void setTaxAmount(double taxAmount) { this->taxAmount = taxAmount; }
@@ -67,6 +70,7 @@ signals:
     void approvalStatusChanged();
     void workOrderIdChanged();
     void descriptionChanged();
+    void descriptionLineChanged();
     void taskIdChanged();
     void amountChanged();
     void taxAmountChanged();
@@ -83,6 +87,7 @@ private:
     bool approvalStatus = true;
     int workOrderId = 0;
     QString description;
+    QString descriptionLine;
     int taskId = 0;
     double amount = 0;
     double taxAmount = 0;
