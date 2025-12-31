@@ -34,6 +34,11 @@ void GeometryServiceFactory::generateMesh2D(BIMElement *bimElement, Mesh *mesh)
         DoorGeometryService service = DoorGeometryService();
         service.generateMesh2D(bimElement, mesh);
     }
+    else if (bimElement->getType() == "Window")
+    {
+        WindowGeometryService service = WindowGeometryService();
+        service.generateMesh2D(bimElement, mesh);
+    }
 }
 
 void GeometryServiceFactory::generateMesh3D(BIMElement *bimElement, Mesh *mesh, IFCDetailController* pIfcDetailController, IfcGeometryService* pIfcGeometryService)
@@ -63,6 +68,11 @@ void GeometryServiceFactory::generateMesh3D(BIMElement *bimElement, Mesh *mesh, 
         DoorGeometryService service = DoorGeometryService();
         service.generateMesh3D(bimElement, mesh, pIfcDetailController, pIfcGeometryService);
     }
+    else if (bimElement->getType() == "Window")
+    {
+        WindowGeometryService service = WindowGeometryService();
+        service.generateMesh3D(bimElement, mesh, pIfcDetailController, pIfcGeometryService);
+    }
 }
 
 void GeometryServiceFactory::updateGeometry(const QVector3D& point, BIMElement* bimElement, BIMElement* hostElement)
@@ -90,6 +100,11 @@ void GeometryServiceFactory::updateGeometry(const QVector3D& point, BIMElement* 
     else if (bimElement->getType() == "Door" && hostElement != nullptr)
     {
         DoorGeometryService service = DoorGeometryService();
+        service.updateGeometry(bimElement, hostElement, point);
+    }
+    else if (bimElement->getType() == "Window" && hostElement != nullptr)
+    {
+        WindowGeometryService service = WindowGeometryService();
         service.updateGeometry(bimElement, hostElement, point);
     }
 }

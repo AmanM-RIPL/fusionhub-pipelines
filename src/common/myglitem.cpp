@@ -79,7 +79,7 @@ MyGLRenderer::MyGLRenderer()
 
     // initialize Camera
     m_camera = new Camera();
-    m_camera->Initialize(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 1.0f, 0.0f), QVector3D(0.0f, 0.0f, 20.0f), 5.0f, 0.5f);
+    m_camera->Initialize(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 0.0f, 1.0f), QVector3D(0.0f, -10.0f, 10.0f), 5.0f, 0.5f);
 
     // initialize Shader
     m_shader = new Shader();
@@ -90,36 +90,26 @@ MyGLRenderer::MyGLRenderer()
     m_picking_shader->SetPickColor(true);
     m_picking_shader->CreateFromFiles("://resources/shaders/color-picking.vert", "://resources/shaders/color-picking.frag");
 
-    // initialize Materials
-    OpenGLMaterial* whiteMaterial = new OpenGLMaterial();
-    whiteMaterial->setAmbient({1.0f, 1.0f, 1.0f}); // 0.96, 0.47f, 0.02f
-    whiteMaterial->setDiffuse({1.0f, 1.0f, 1.0f}); // 0.0f, 0.5f, 0.31f
-    whiteMaterial->setSpecular({1.0f, 1.0f, 1.0f}); // 0.5f, 0.5f, 0.5f
-    whiteMaterial->setShininess(32.0f);
-    m_materialList.append(whiteMaterial);
-
-    OpenGLMaterial* blueMaterial = new OpenGLMaterial();
-    blueMaterial->setAmbient({0.68f, 0.85f, 0.90f}); // 0.96, 0.47f, 0.02f
-    blueMaterial->setDiffuse({1.0f, 1.0f, 1.0f}); // 0.0f, 0.5f, 0.31f
-    blueMaterial->setSpecular({1.0f, 1.0f, 1.0f}); // 0.5f, 0.5f, 0.5f
-    blueMaterial->setShininess(32.0f);
-    m_materialList.append(blueMaterial);
-
     // initialize Textures
     Texture* texture = new Texture();
-    texture->LoadTexture("://resources/images/brick.jpg");
+    texture->LoadTextures();
     m_textureList.append(texture);
 
     // initialize View
     m_view = new View();
     // m_view->AddMesh(m_mesh);
-    m_view->AddMaterial(whiteMaterial);
-    m_view->AddMaterial(blueMaterial);
     m_view->AddTexture(texture);
     m_view->AddCamera(m_camera);
     m_view->AddShader(m_shader);
     m_view->AddPickingShader(m_picking_shader);
     // m_view->Initialize();
+
+    // initialize Materials
+    OpenGLMaterial::GenerateMaterialList(m_materialList);
+    for (OpenGLMaterial* material: m_materialList)
+    {
+        m_view->AddMaterial(material);
+    }
 }
 
 MyGLRenderer::~MyGLRenderer()
@@ -384,7 +374,14 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
         m_viewType = glItem->m_viewType;
 
-        m_camera->SetCameraParameters(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 1.0f, 0.0f), QVector3D(0.0f, 0.0f, 20.0f), 5.0f, 0.5f);
+        if (glItem->m_viewType == "ModelView")
+        {
+            m_camera->SetCameraParameters(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 0.0f, 1.0f), QVector3D(0.0f, -10.0f, 10.0f), 5.0f, 0.5f);
+        }
+        else
+        {
+            m_camera->SetCameraParameters(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 1.0f, 0.0f), QVector3D(0.0f, 0.0f, 20.0f), 5.0f, 0.5f);
+        }
     }
 }
 
@@ -775,6 +772,7 @@ void MyGLRenderer::render() {
 QOpenGLFramebufferObject* MyGLRenderer::createFramebufferObject(const QSize &size) {
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::Depth);  //Request depth buffer
+    format.setSamples(4); //Anti-Aliasing via MSAA
 
     return new QOpenGLFramebufferObject(size, format);
 }
@@ -803,19 +801,19 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 
     bimElementList.append(bimElementNew);
 
-    // BIMElement* bimElementDoor = new BIMElement(3,"1",false,"Door", "Front Door", 0, 1, this);
-    // BIMParameter* distanceParameterDoor = new BIMParameter(1,"1",false,"Distance","1",3,this);
-    // BIMParameter* heightParameterDoor = new BIMParameter(37, "1", false, "Height", "4", 3, this);
-    // BIMParameter* widthParameterDoor = new BIMParameter(1,"1",false,"Width","2",3,this);
-    // BIMParameter* rlParameterDoor = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0]]",3,this);
-    // bimElementDoor->addParameter(distanceParameterDoor);
-    // bimElementDoor->addParameter(heightParameterDoor);
-    // bimElementDoor->addParameter(rlParameterDoor);
-    // bimElementDoor->addParameter(widthParameterDoor);
+    BIMElement* bimElementDoor = new BIMElement(3,"1",false,"Window", "Front Window", 0, 2, this);
+    BIMParameter* distanceParameterDoor = new BIMParameter(1,"1",false,"Distance","1",3,this);
+    BIMParameter* heightParameterDoor = new BIMParameter(37, "1", false, "Height", "2", 3, this);
+    BIMParameter* widthParameterDoor = new BIMParameter(1,"1",false,"Width","1.5",3,this);
+    BIMParameter* rlParameterDoor = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0]]",3,this);
+    bimElementDoor->addParameter(distanceParameterDoor);
+    bimElementDoor->addParameter(heightParameterDoor);
+    bimElementDoor->addParameter(rlParameterDoor);
+    bimElementDoor->addParameter(widthParameterDoor);
 
-    // bimElementList.append(bimElementDoor);
+    bimElementList.append(bimElementDoor);
 
-    // bimElementNew->addHostedElement(bimElementDoor);
+    bimElementNew->addHostedElement(bimElementDoor);
 
     pIfcDetailController = new IFCDetailController(this);
     pIfcGeometryService = new IfcGeometryService(this);

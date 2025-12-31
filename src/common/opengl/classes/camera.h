@@ -30,6 +30,9 @@ signals:
 private:
     QVector3D position;
     QVector3D front;
+    // this is the camera direction in the -ve direction
+    // check opengl documentation for camera-direction vector
+    QVector3D cameraDirection;
     QVector3D target;
     QVector3D up;
     QVector3D right;
@@ -37,6 +40,7 @@ private:
 
     GLfloat yaw;
     GLfloat pitch;
+    GLfloat azimuthZ; // for horizontal orbit
 
     GLfloat moveSpeed;
     GLfloat turnSpeed;

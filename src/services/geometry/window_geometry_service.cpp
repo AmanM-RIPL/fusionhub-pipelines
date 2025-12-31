@@ -4,7 +4,6 @@ WindowGeometryService::WindowGeometryService(QObject *parent)
     : QObject{parent}
 {}
 
-
 void WindowGeometryService::generateMesh2D(BIMElement* windowElement, Mesh* mesh)
 {
     std::vector<std::vector<Point>> polygon;
@@ -14,6 +13,28 @@ void WindowGeometryService::generateMesh2D(BIMElement* windowElement, Mesh* mesh
     float distance = 0;
 
     m_openglHelper.extractBIMParameters(windowElement, referenceLine, width, height, distance);
+
+    /*
+
+    x = (x2 - x1)/sqrt((x2 - x1)^2 + (y2 - y1)^2) * widthDoor + x1
+    y = (y2 - y1)/sqrt((x2 - x1)^2 + (y2 - y1)^2) * widthDoor + y1
+
+    */
+
+    float windowWidthPointX = (((referenceLine[1][0] - referenceLine[0][0])/(qSqrt(qPow(referenceLine[1][0] - referenceLine[0][0], 2) + qPow(referenceLine[1][1] - referenceLine[0][1], 2))))*width) + referenceLine[0][0];
+    float windowWidthPointY = (((referenceLine[1][1] - referenceLine[0][1])/(qSqrt(qPow(referenceLine[1][0] - referenceLine[0][0], 2) + qPow(referenceLine[1][1] - referenceLine[0][1], 2))))*width) + referenceLine[0][1];
+
+    referenceLine[1][0] = windowWidthPointX;
+    referenceLine[1][1] = windowWidthPointY;
+
+    // setting width to 0.5 for demo purposes
+    width = 0.5;
+
+    if (referenceLine.size() < 2)
+    {
+        mesh->Initialize({}, {}, {}, 0, 0, 0);
+        return;
+    }
 
     // 3. Generate a parallel line
     std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
@@ -45,8 +66,8 @@ void WindowGeometryService::generateMesh2D(BIMElement* windowElement, Mesh* mesh
             {point[0], point[1], 0.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f},
-            0,
-            -1
+            OpenGLMaterial::IVORY,
+            Texture::NONE
         };
 
         verticesVector.push_back(v);
@@ -82,7 +103,8 @@ void WindowGeometryService::generateMesh2D(BIMElement* windowElement, Mesh* mesh
     // std::copy(indices.begin(), indices.end(), indices_raw.get());
 
     // Mesh* mesh = new Mesh(this);
-    mesh->Initialize(verticesVector, indices, borderIndices, referenceLine.size() * 6, indices.size(), borderIndices.size());
+    mesh->Initialize(verticesVector, indices, borderIndices, referenceLine.size(), indices.size(), borderIndices.size());
+    mesh->setBIMElementId(windowElement->getId());
 
 
     // GLfloat* vertices1 = mesh->getVerticies();
@@ -102,34 +124,173 @@ void WindowGeometryService::generateMesh2D(BIMElement* windowElement, Mesh* mesh
     // return mesh;
 }
 
-void WindowGeometryService::generateMesh3D(BIMElement* windowElement, Mesh* mesh)
+void WindowGeometryService::generateMesh3D(BIMElement* windowElement, Mesh* mesh, IFCDetailController* pIfcDetailController, IfcGeometryService* pIfcGeometryService)
 {
     std::vector<Point> referenceLine = {};
     float width = 0;
     float height = 0;
     float distance = 0;
 
+
     m_openglHelper.extractBIMParameters(windowElement, referenceLine, width, height, distance);
 
+    if (referenceLine.size() < 2)
+    {
+        mesh->Initialize({}, {}, {}, 0, 0, 0);
+        return;
+    }
+
+    // Initialize the mesh
+    mesh->Initialize({}, {}, {}, 0, 0, 0);
+
+    QMatrix4x4 modelMatrix;
+    modelMatrix.setToIdentity();
+
+    // set scale
+    float scaleFactor = height/4; // height of IFC file is 0.45
+    modelMatrix.scale(scaleFactor);
+
+    // set translation
+    float z = distance + 1;
+    float x = referenceLine[0][0] + 1.5; // 0.0 is the default x coordinate of left side
+    float y = referenceLine[0][1] - 0; // 0.17 is the default y coordinate of left size
+    modelMatrix.translate(x,y,z);
+
+    // set rotation
+    QVector3D directionVector;
+    directionVector.setX(referenceLine[1][0] - referenceLine[0][0]);
+    directionVector.setY(referenceLine[1][1] - referenceLine[0][1]);
+    directionVector.setZ(0);
+    directionVector.normalize();
+
+    QVector3D xAxisVector(1,0,0);
+    float dotProductResult = QVector3D::dotProduct(directionVector,xAxisVector);
+    float angleInRadians = qAcos(dotProductResult);
+    float degrees = qRadiansToDegrees(angleInRadians);
+
+    modelMatrix.rotate(degrees, 0, 0, 1);
+
+    mesh->setModelMatrix(modelMatrix);
+    mesh->setBIMElementId(windowElement->getId());
+
+
+
+
+    // Extract IFC Geometry
+    QString strFilePath = "C:\\Users\\RIPL\\Downloads\\sample_window.ifc";
+
+    OdIfcFilePtr pDatabase = pIfcDetailController->getIfcFilePtrFromLoadedIFC(strFilePath);
+    if(pDatabase)
+    {
+        pIfcGeometryService->generateMesh3D(pDatabase, mesh);
+        qInfo() << "File has been loaded";
+        pDatabase.release();
+        pDatabase = NULL;
+    }
+
+    // // 3. Generate a parallel line
+    // std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
+
+    // referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
+
+    // // Create a contour2D
+    // FacetModeler::Contour2D polygon;
+
+    // OdGePoint2dArray points;
+    // points.reserve(referenceLine.size());
+
+    // for (Point point: referenceLine)
+    // {
+    //     points.push_back(OdGePoint2d(point[0], point[1]));
+    // }
+
+    // polygon.appendVertices(points);
+
+    // for (int i = 0; i < referenceLine.size(); i++)
+    // {
+    //     polygon.setOrientationAt(i, FacetModeler::efoFront);
+    // }
+
+    // polygon.setClosed();
+    // polygon.makeCCW();
+
+    // FacetModeler::Profile2D profile(polygon);
+    // FacetModeler::Body body = FacetModeler::Body::extrusion(profile, OdGeVector3d(0.0, 0.0, 1.0) * height);
+
+    // // Mesh geometry generation
+    // std::vector<uint32_t> meshIndices = {};
+    // std::vector<uint32_t> borderIndices = {};
+    // std::vector<Vertex> verticesVector = {};
+    // int textureIndex = 0; // if less than zero then we don't need to worry about textures
+    // int scalingFactor = 5;
+
+    // m_openglHelper.getMeshGeometry(body, verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
+
+    // mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
+}
+
+FacetModeler::Body WindowGeometryService::generateVoidBody(BIMElement *windowElement, BIMElement* hostElement)
+{
+    // Window Element Parsing
+    std::vector<Point> referenceLineWindow = {};
+    float widthWindow = 0;
+    float heightWindow = 0;
+    float distanceWindow = 0;
+
+
+    m_openglHelper.extractBIMParameters(windowElement, referenceLineWindow, widthWindow, heightWindow, distanceWindow);
+
+    // if (referenceLineWindow.size() < 2)
+    // {
+    //     return;
+    // }
+
+    /*
+
+    x = (x2 - x1)/sqrt((x2 - x1)^2 + (y2 - y1)^2) * widthWindow + x1
+    y = (y2 - y1)/sqrt((x2 - x1)^2 + (y2 - y1)^2) * widthWindow + y1
+
+    */
+
+    float windowWidthPointX = (((referenceLineWindow[1][0] - referenceLineWindow[0][0])/(qSqrt(qPow(referenceLineWindow[1][0] - referenceLineWindow[0][0], 2) + qPow(referenceLineWindow[1][1] - referenceLineWindow[0][1], 2))))*widthWindow) + referenceLineWindow[0][0];
+    float windowWidthPointY = (((referenceLineWindow[1][1] - referenceLineWindow[0][1])/(qSqrt(qPow(referenceLineWindow[1][0] - referenceLineWindow[0][0], 2) + qPow(referenceLineWindow[1][1] - referenceLineWindow[0][1], 2))))*widthWindow) + referenceLineWindow[0][1];
+
+    referenceLineWindow[1][0] = windowWidthPointX;
+    referenceLineWindow[1][1] = windowWidthPointY;
+
+    // Host Element Parsing
+    std::vector<Point> referenceLineHost = {};
+    float widthHost = 0;
+    float heightHost = 0;
+    float distanceHost = 0;
+
+
+    m_openglHelper.extractBIMParameters(hostElement, referenceLineHost, widthHost, heightHost, distanceHost);
+
+    // if (referenceLineHost.size() < 2)
+    // {
+    //     return;
+    // }
+
     // 3. Generate a parallel line
-    std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
+    std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLineWindow, widthHost);
 
-    referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
+    referenceLineWindow.insert(referenceLineWindow.end(), parallelLine.begin(), parallelLine.end());
 
-    // Create a contour2D
+    //Create a contour2D
     FacetModeler::Contour2D polygon;
 
     OdGePoint2dArray points;
-    points.reserve(referenceLine.size());
+    points.reserve(referenceLineWindow.size());
 
-    for (Point point: referenceLine)
+    for (Point point: referenceLineWindow)
     {
         points.push_back(OdGePoint2d(point[0], point[1]));
     }
 
     polygon.appendVertices(points);
 
-    for (int i = 0; i < referenceLine.size(); i++)
+    for (int i = 0; i < referenceLineWindow.size(); i++)
     {
         polygon.setOrientationAt(i, FacetModeler::efoFront);
     }
@@ -138,16 +299,122 @@ void WindowGeometryService::generateMesh3D(BIMElement* windowElement, Mesh* mesh
     polygon.makeCCW();
 
     FacetModeler::Profile2D profile(polygon);
-    FacetModeler::Body body = FacetModeler::Body::extrusion(profile, OdGeVector3d(0.0, 0.0, 1.0) * height);
+    FacetModeler::Body body = FacetModeler::Body::extrusion(profile, OdGeVector3d(0.0, 0.0, 1.0) * heightWindow);
 
-    // Mesh geometry generation
-    std::vector<uint32_t> meshIndices = {};
-    std::vector<uint32_t> borderIndices = {};
-    std::vector<Vertex> verticesVector = {};
-    int textureIndex = 0; // if less than zero then we don't need to worry about textures
-    int scalingFactor = 5;
+    OdGeVector3d translationVector(0.0, 0.0, distanceWindow);
+    OdGeMatrix3d matrix;
+    matrix.setToTranslation(translationVector);
 
-    m_openglHelper.getMeshGeometry(body, verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
+    body.transform(matrix);
 
-    mesh->Initialize(verticesVector, meshIndices, borderIndices, verticesVector.size(), meshIndices.size(), borderIndices.size());
+    return body;
+}
+
+void WindowGeometryService::updateGeometry(BIMElement *windowElement, BIMElement* hostElement, const QVector3D &point)
+{
+    // Window Element Parsing
+    std::vector<Point> referenceLineWindow = {};
+    float widthWindow = 0;
+    float heightWindow = 0;
+    float distanceWindow = 0;
+
+
+    m_openglHelper.extractBIMParameters(windowElement, referenceLineWindow, widthWindow, heightWindow, distanceWindow);
+
+    // Host Element Parsing
+    std::vector<Point> referenceLineHost = {};
+    float widthHost = 0;
+    float heightHost = 0;
+    float distanceHost = 0;
+
+
+    m_openglHelper.extractBIMParameters(hostElement, referenceLineHost, widthHost, heightHost, distanceHost);
+
+    // window's host element can only be a wall
+    if (hostElement->getType() != "Wall")
+    {
+        return;
+    }
+
+    // We project the clicked point on the each reference line segment
+    // then we choose the segment with the smalled distance to that line
+    // segment. The second point of that segment is the line segment we need.
+    float distanceToSegment = 0;
+    Point projectionPointOnSegment = { 0.0f, 0.0f };
+    int referenceLineHostIndex = 0;
+
+    for (int i = 0; i < referenceLineHost.size() - 1; i++)
+    {
+        Point firstPoint = referenceLineHost[i];
+        Point secondPoint = referenceLineHost[i + 1];
+
+        // vector from firstPoint to secondPoint
+        QVector3D firstPointVector = QVector3D(firstPoint[0], firstPoint[1], 0.0f);
+        QVector3D secondPointVector = QVector3D(secondPoint[0], secondPoint[1], 0.0f);
+        QVector3D vectorReferenceLine = secondPointVector - firstPointVector;
+
+        // vector deom firstPoint to clicked point
+        QVector3D vectorToClickedPoint = point - firstPointVector;
+
+        // projection point
+        QVector3D projectionPoint = firstPointVector + (QVector3D::dotProduct(vectorToClickedPoint, vectorReferenceLine)/QVector3D::dotProduct(vectorReferenceLine, vectorReferenceLine)) * vectorReferenceLine;
+
+        // distance between projection point and clicked point
+        float distanceToProjection = projectionPoint.distanceToPoint(point);
+
+        if (i == 0)
+        {
+            distanceToSegment = distanceToProjection;
+            projectionPointOnSegment[0] = projectionPoint.x();
+            projectionPointOnSegment[1] = projectionPoint.y();
+            referenceLineHostIndex = i;
+        }
+        else if (distanceToProjection < distanceToSegment)
+        {
+            distanceToSegment = distanceToProjection;
+            projectionPointOnSegment[0] = projectionPoint.x();
+            projectionPointOnSegment[1] = projectionPoint.y();
+            referenceLineHostIndex = i;
+        }
+    }
+
+    // ideally should indicate some kind of bug, please check.
+    if (referenceLineHostIndex < 0)
+    {
+        return;
+    }
+
+    // update the new point in the reference line
+    referenceLineWindow.push_back({ projectionPointOnSegment[0], projectionPointOnSegment[1] });
+    referenceLineWindow.push_back({ referenceLineHost[referenceLineHostIndex + 1][0], referenceLineHost[referenceLineHostIndex + 1][1] });
+
+    // updating the BIMElement
+    QJsonArray referenceLineJsonArray;
+
+    for (const auto& pointArray : referenceLineWindow) {
+        QJsonArray jsonInnerArray;
+        for (float value : pointArray) {
+            jsonInnerArray.append(QJsonValue(value));
+        }
+        referenceLineJsonArray.append(jsonInnerArray);
+    }
+
+    QJsonDocument jsonDoc(referenceLineJsonArray);
+    QByteArray byteArray = jsonDoc.toJson(QJsonDocument::Compact);
+    QString referenceLineString = QString(byteArray);
+
+    QList<BIMParameter*> parameterList = windowElement->getParameterList();
+
+    for (BIMParameter* parameter: parameterList)
+    {
+        if (parameter->getKey() == "ReferenceLine")
+        {
+            parameter->setValue(referenceLineString);
+
+            break;
+        }
+    }
+
+    // updatin host_id in BIMElement
+    windowElement->setHostId(hostElement->getId());
 }

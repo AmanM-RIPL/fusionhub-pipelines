@@ -52,8 +52,8 @@ void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
             {point[0], point[1], 0.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f},
-            0,
-            -1
+            OpenGLMaterial::IVORY,
+            Texture::NONE
         };
 
         verticesVector.push_back(v);
@@ -165,13 +165,20 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
 
             body = FacetModeler::Body::boolOper(FacetModeler::eDifference, body, voidBody);
         }
+        else if (hostedElement->getType() == "Window")
+        {
+            WindowGeometryService service = WindowGeometryService();
+            FacetModeler::Body voidBody = service.generateVoidBody(hostedElement, wallElement);
+
+            body = FacetModeler::Body::boolOper(FacetModeler::eDifference, body, voidBody);
+        }
     }
 
     // Mesh geometry generation
     std::vector<uint32_t> meshIndices = {};
     std::vector<uint32_t> borderIndices = {};
     std::vector<Vertex> verticesVector = {};
-    int textureIndex = 0; // if less than zero then we don't need to worry about textures
+    int textureIndex = Texture::BRICK; // if less than zero then we don't need to worry about textures
     int scalingFactor = 5;
 
     m_openglHelper.getMeshGeometry(body, verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);

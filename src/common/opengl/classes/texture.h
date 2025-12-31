@@ -12,12 +12,24 @@ class Texture : public QObject, protected QOpenGLFunctions_3_3_Core
 public:
     explicit Texture(QObject *parent = nullptr);
 
-    void LoadTexture(const QString& path);
+    enum TextureName
+    {
+        NONE = -1,
+        BRICK = 0,
+        WOOD = 1
+    };
+
+    void LoadTextures();
     GLuint getTextureId();
 
 private:
     GLuint m_textureId;
     QString m_resourcePath;
+
+    QList<QString> texturePathList = {
+        "://resources/images/brick.jpg",
+        "://resources/images/wood.jpg"
+    };
 
 signals:
 };

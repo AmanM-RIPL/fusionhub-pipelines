@@ -2,6 +2,8 @@
 #define SLAB_GEOMETRY_SERVICE_H
 
 #include "common/opengl/classes/opengl_helper.h"
+#include "common/opengl/classes/opengl_material.h"
+#include "common/opengl/classes/texture.h"
 
 class SlabGeometryService : public QObject
 {

@@ -24,12 +24,29 @@ struct Light {
 };
 
 uniform vec3 viewPosition;
-uniform Material materials[2];
-uniform sampler2D textures[1];
+uniform samplerBuffer materialBuffer;
+uniform sampler2DArray textureArray;
 uniform Light light;
 
+
+Material getMaterial(int id) {
+   int base = id * 3; // 3 texels per material
+   vec4 t0 = texelFetch(materialBuffer, base);
+   vec4 t1 = texelFetch(materialBuffer, base + 1);
+   vec4 t2 = texelFetch(materialBuffer, base + 2);
+
+   Material m;
+   m.ambient   = t0.xyz;
+   m.diffuse   = vec3(t0.w, t1.xy);
+   m.specular  = vec3(t1.zw, t2.x);
+   m.shininess = t2.y;
+
+   return m;
+}
+
+
 void main() {
-   Material material = materials[MaterialIndex];
+   Material material = getMaterial(MaterialIndex);
 
    // ambient
    vec3 ambient  = light.ambient * material.ambient;
@@ -52,7 +69,7 @@ void main() {
    vec4 baseColor = vec4(1.0);
 
    if (TextureIndex >= 0) {
-      baseColor = texture(textures[TextureIndex], TexCoord);
+      baseColor = texture(textureArray, vec3(TexCoord, TextureIndex));
    }
 
    // final phong calculation

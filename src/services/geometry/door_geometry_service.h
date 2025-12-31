@@ -5,6 +5,8 @@
 #include <QtMath>
 
 #include "common/opengl/classes/opengl_helper.h"
+#include "common/opengl/classes/opengl_material.h"
+#include "common/opengl/classes/texture.h"
 #include "ifc_geometry_service.h"
 
 #include "controllers/ifc_detail_controller.h"

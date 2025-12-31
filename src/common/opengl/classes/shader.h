@@ -38,6 +38,7 @@ public:
     GLuint getLightSpecularId();
 
     GLuint getModelMatrixBufferId();
+    GLuint getMaterialBufferId();
 
     void SetPickColor(bool value);
 
@@ -46,7 +47,7 @@ private:
         m_projectionId, m_viewId,
         m_pickColorId, m_viewPositionId,
         m_lightPositionId, m_lightAmbientId, m_lightDiffuseId, m_lightSpecularId,
-        m_modelMatrixBufferId;
+        m_modelMatrixBufferId, m_materialBufferId;
 
     GLuint m_textureArrayId;
     int m_textureCount = 1;

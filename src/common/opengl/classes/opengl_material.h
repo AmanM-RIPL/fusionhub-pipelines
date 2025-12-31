@@ -2,13 +2,20 @@
 #define OPENGL_MATERIAL_H
 
 #include <QObject>
+#include <QList>
 #include <array>
+
 
 class OpenGLMaterial : public QObject
 {
     Q_OBJECT
 public:
     explicit OpenGLMaterial(QObject *parent = nullptr);
+
+    enum MaterialName { IVORY, BLUE }; // before changing order make sure to update GenerateMaterialList
+
+    static void GenerateMaterialList(QList<OpenGLMaterial*>& material_list);
+    static std::vector<float> GenerateMaterialData(QList<OpenGLMaterial*>& material_list); // for sending to OpenGL
 
     std::array<float, 3> ambient() const;
     void setAmbient(const std::array<float, 3> &newAmbient);

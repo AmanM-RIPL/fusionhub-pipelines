@@ -2,6 +2,8 @@
 #define BEAM_GEOMETRY_SERVICE_H
 
 #include "common/opengl/classes/opengl_helper.h"
+#include "common/opengl/classes/opengl_material.h"
+#include "common/opengl/classes/texture.h"
 
 class BeamGeometryService : public QObject
 {

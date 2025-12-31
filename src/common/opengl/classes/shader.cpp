@@ -99,19 +99,21 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
     {
         m_viewPositionId = this->glGetUniformLocation(shaderID, "viewPosition");
 
-        for (int i = 0; i < m_materialCount; i++)
-        {
-            QString index = QString("materials[%1]").arg(i);
+        // for (int i = 0; i < m_materialCount; i++)
+        // {
+        //     QString index = QString("materials[%1]").arg(i);
 
-            m_materialId[i] = {
-                this->glGetUniformLocation(shaderID, (index + ".ambient").toUtf8().constData()),
-                this->glGetUniformLocation(shaderID, (index + ".diffuse").toUtf8().constData()),
-                this->glGetUniformLocation(shaderID, (index + ".specular").toUtf8().constData()),
-                this->glGetUniformLocation(shaderID, (index + ".shininess").toUtf8().constData())
-            };
-        }
+        //     m_materialId[i] = {
+        //         this->glGetUniformLocation(shaderID, (index + ".ambient").toUtf8().constData()),
+        //         this->glGetUniformLocation(shaderID, (index + ".diffuse").toUtf8().constData()),
+        //         this->glGetUniformLocation(shaderID, (index + ".specular").toUtf8().constData()),
+        //         this->glGetUniformLocation(shaderID, (index + ".shininess").toUtf8().constData())
+        //     };
+        // }
 
-        m_textureArrayId = this->glGetUniformLocation(shaderID, "textures");
+        m_materialBufferId = this->glGetUniformLocation(shaderID, "materialBuffer");
+
+        m_textureArrayId = this->glGetUniformLocation(shaderID, "textureArray");
 
         m_lightPositionId = this->glGetUniformLocation(shaderID, "light.position");
         m_lightAmbientId = this->glGetUniformLocation(shaderID, "light.ambient");
@@ -198,6 +200,11 @@ GLuint Shader::getLightSpecularId()
 GLuint Shader::getModelMatrixBufferId()
 {
     return m_modelMatrixBufferId;
+}
+
+GLuint Shader::getMaterialBufferId()
+{
+    return m_materialBufferId;
 }
 
 void Shader::SetPickColor(bool value)

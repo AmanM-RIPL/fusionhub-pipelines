@@ -45,8 +45,8 @@ void StairsGeometryService::generateMesh2D(BIMElement* stairsElement, Mesh* mesh
             {point[0], point[1], 0.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f},
-            0,
-            -1
+            OpenGLMaterial::IVORY,
+            Texture::NONE
         };
 
         verticesVector.push_back(v);
