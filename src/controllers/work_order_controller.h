@@ -14,7 +14,7 @@ public:
     Q_INVOKABLE void create(const QString &name, const int VendorId) const;
     Q_INVOKABLE std::vector<WorkOrder*> getWorkOrderList(bool isApproved = false) const;
 
-    Q_INVOKABLE std::vector<Vendor*> getVendorList() const;
+ //   Q_INVOKABLE std::vector<Vendor*> getVendorList() const;
 
 private:
     WorkOrderRepository* m_workOrderRepository;

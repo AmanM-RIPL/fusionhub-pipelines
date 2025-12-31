@@ -30,7 +30,15 @@ bool WorkOrderLineRepository::saveQML(WorkOrderLine* entity) {
     return query.exec();
 }
 
-bool WorkOrderLineRepository::update(const WorkOrderLine& entity) { return false; }
+bool WorkOrderLineRepository::update(const WorkOrderLine& entity) {
+
+    QSqlQuery query(dbManager->getDatabase());
+    query.prepare(getUpdateQuery());
+    bindEntityToQuery(query, entity);
+    query.addBindValue(entity.getId());
+
+    return query.exec();
+}
 
 bool WorkOrderLineRepository::deleteById(int id) { return false; }
 
@@ -51,6 +59,7 @@ WorkOrderLine* WorkOrderLineRepository::mapFromQueryQML(const QSqlQuery& query, 
     po->setWorkOrderId(query.value("work_order_id").toInt());
     po->setTaskId(query.value("task_id").toInt());
     po->setDescription(query.value("description").toString());
+    po->setDescriptionLine(query.value("description").toString());
 
 
     return po;

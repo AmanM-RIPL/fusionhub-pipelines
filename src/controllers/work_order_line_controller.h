@@ -16,6 +16,8 @@ public:
 
     Q_INVOKABLE void create(const int &vendorId,const QString &description,const QVariantList &workOrderLineData) const;
 
+    Q_INVOKABLE void update(int id, const int &vendorId,const QString &description,const QVariantList &workOrderLineData) const;
+
     Q_INVOKABLE std::vector<WorkOrderLine*> getWorkOrderLineList(bool isApproved) const;
 
 private:
