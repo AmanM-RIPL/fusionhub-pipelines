@@ -26,10 +26,12 @@ Rectangle {
 
     property var  task_month_paramList: []
 
-    property var taskModel:[]
-    property var taskNameModel:[]
+    property var taskModel: []
+    property var taskNameModel: []
 
-    property int approvedNo:0
+    property int approvedNo: 0
+
+    property var colorMap: ({})
 
 
     TaskController{
@@ -482,7 +484,7 @@ Rectangle {
         }
     }
 
-    function getDateColor(dateToCheck) {
+    /*function getDateColor(dateToCheck) {
         for (var i = 0; i < highlightedDatesModel.count; i++) {
             var eventData = highlightedDatesModel.get(i);
             if (eventData.year === dateToCheck.getFullYear() &&
@@ -493,33 +495,27 @@ Rectangle {
 
         }
         return "white";
+    }*/
+
+    function updateColorMap() {
+        var newMap = {};
+        for (var i = 0; i < highlightedDatesModel.count; i++) {
+            var event = highlightedDatesModel.get(i);
+            //Create a unique key for the date
+            var key = event.year + "-" + event.month + "-" + event.day;
+            newMap[key] = event.color;
+        }
+        colorMap = newMap;
     }
 
-    /*function showColor1(selectedYear, selectedMonth)
-    {
-        highlightedDatesModel.clear();
-        task_month_paramList = taskController.getTaskList(true);
+    function getDateColor(dateToCheck) {
+        var key = dateToCheck.getFullYear() + "-" +
+                  dateToCheck.getMonth() + "-" +
+                  dateToCheck.getDate();
 
-        for (var i = 0; i < task_month_paramList.length; i++)
-        {
-            var currentTask = task_month_paramList[i];
+        return colorMap[key] || "white";
+    }
 
-            let result = selectedYear.localeCompare(currentTask.year);
-            if(result === 0  && currentTask.month - 1 === selectedMonth && currentTask.id === taskModel[comboTaskId.currentIndex])
-            {
-                for(let day = currentTask.startDay; day <= currentTask.endDay; day++)
-                {
-                    highlightedDatesModel.append({
-                        "year": currentTask.year,
-                        "month": currentTask.month - 1,
-                        "day": day,
-                        "color": "red"
-                    });
-                }
-            }
-
-        }
-    }*/
 
     function showColor(selectedYear, selectedMonth) {        
 
@@ -577,5 +573,7 @@ Rectangle {
                 }
             }
         }
+
+        updateColorMap();
     }
 }
