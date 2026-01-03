@@ -45,22 +45,29 @@ void IfcGeometryService::generateMesh2D(BIMElement* ifcElement, Mesh* mesh)
     // }
 
     // 5. Create and export mesh
-    std::vector<Vertex> verticesVector = {};
+    std::vector<Position> vertices_position = {};
+    std::vector<Normal> vertices_normal = {};
+    std::vector<TextureUV> vertices_textureuv = {};
+    std::vector<int> vertices_materialIndex = {};
+    std::vector<int> vertices_textureIndex = {};
     for (int i = 0; i < referenceLine.size(); i++)
     {
         Point point = referenceLine[i];
 
-        Vertex v = {
-            {point[0], point[1], 0.0f},
-            {0.0f, 0.0f, 1.0f},
-            {0.0f, 0.0f},
-            0,
-            -1
-        };
+        // Vertex v = {
+        //     {point[0], point[1], 0.0f},
+        //     {0.0f, 0.0f, 1.0f},
+        //     {0.0f, 0.0f},
+        //     OpenGLMaterial::IVORY,
+        //     Texture::NONE
+        // };
 
-        verticesVector.push_back(v);
+        vertices_position.push_back({point[0], point[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
 
-        // Point point = referenceLine[i];
         // verticesVector.push_back(point[0]); // x
         // verticesVector.push_back(point[1]); // y
         // verticesVector.push_back(0.0f); // z
@@ -69,18 +76,21 @@ void IfcGeometryService::generateMesh2D(BIMElement* ifcElement, Mesh* mesh)
         // verticesVector.push_back(1.0f); // n.z
     }
 
-    std::vector<uint32_t> borderIndices = {};
+    std::vector<EdgeIndex> edge_indices = {};
+    std::vector<float> edge_width = {};
+    std::vector<int> edge_materialIndex = {};
     for (int i = 0; i < referenceLine.size(); i++)
     {
-        borderIndices.push_back(i);
+        edge_width.push_back(1);
+        edge_materialIndex.push_back(OpenGLMaterial::BLACK);
 
         if (i == referenceLine.size() - 1)
         {
-            borderIndices.push_back(0);
+            edge_indices.push_back({i, 0});
         }
         else
         {
-            borderIndices.push_back(i + 1);
+            edge_indices.push_back({i, i + 1});
         }
     }
 
@@ -91,7 +101,18 @@ void IfcGeometryService::generateMesh2D(BIMElement* ifcElement, Mesh* mesh)
     // std::copy(indices.begin(), indices.end(), indices_raw.get());
 
     // Mesh* mesh = new Mesh(this);
-    mesh->Initialize(verticesVector, indices, borderIndices, referenceLine.size(), indices.size(), borderIndices.size());
+    mesh->Initialize(
+        vertices_position,
+        vertices_normal,
+        vertices_textureuv,
+        vertices_materialIndex,
+        vertices_textureIndex,
+        edge_indices,
+        edge_width,
+        edge_materialIndex,
+        indices
+        );
+    mesh->setBIMElementId(ifcElement->getId());
 
 
     // GLfloat* vertices1 = mesh->getVerticies();
@@ -244,9 +265,18 @@ void IfcGeometryService::generateMesh3D(OdIfcFilePtr ifcFilePtr, Mesh* mesh)
 void IfcGeometryService::generateFinalMesh3D(OdDAI::OdBodyVariant bodyContainer, Mesh* mesh, const OdGeMatrix3d &transformationMatrix)
 {
     std::vector<uint32_t> meshIndices = {};
-    std::vector<uint32_t> borderIndices = {};
-    std::vector<Vertex> verticesVector = {};
+    std::vector<Position> vertices_position = {};
+    std::vector<Normal> vertices_normal = {};
+    std::vector<TextureUV> vertices_textureuv = {};
+    std::vector<int> vertices_materialIndex = {};
+    std::vector<int> vertices_textureIndex = {};
+    std::vector<EdgeIndex> edge_indices = {};
+    std::vector<float> edge_width = {};
+    std::vector<int> edge_materialIndex = {};
     int textureIndex = Texture::WOOD; // if less than zero then we don't need to worry about textures
+    int materialIndex = OpenGLMaterial::IVORY;
+    float edgeWidth = 1;
+    int edgeMaterialIndex = OpenGLMaterial::BLACK;
     int scalingFactor = 5;
 
     switch (bodyContainer.kind())
@@ -258,28 +288,95 @@ void IfcGeometryService::generateFinalMesh3D(OdDAI::OdBodyVariant bodyContainer,
             FacetModeler::Body clonedBody = fBody->clone();
             clonedBody.transform(transformationMatrix);
 
-            m_openglHelper.getMeshGeometry(clonedBody, verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
+            m_openglHelper.getMeshGeometry(
+                clonedBody,
+                vertices_position,
+                vertices_normal,
+                vertices_textureuv,
+                vertices_materialIndex,
+                vertices_textureIndex,
+                meshIndices,
+                edge_indices,
+                edge_width,
+                edge_materialIndex,
+                textureIndex,
+                materialIndex,
+                scalingFactor,
+                edgeWidth,
+                edgeMaterialIndex
+            );
             break;
         }
 
         case OdDAI::OdBodyVariant::kMdBody:
         {
             qDebug() << "Md Body";
-            m_openglHelper.getMeshGeometry(*bodyContainer.mdBody(), verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
+
+            m_openglHelper.getMeshGeometry(
+                *bodyContainer.mdBody(),
+                vertices_position,
+                vertices_normal,
+                vertices_textureuv,
+                vertices_materialIndex,
+                vertices_textureIndex,
+                meshIndices,
+                edge_indices,
+                edge_width,
+                edge_materialIndex,
+                textureIndex,
+                materialIndex,
+                scalingFactor,
+                edgeWidth,
+                edgeMaterialIndex
+            );
             break;
         }
 
         case OdDAI::OdBodyVariant::kAcisBody:
         {
             qDebug() << "Acis Body";
-            m_openglHelper.getMeshGeometry(*bodyContainer.acisBody(), verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
+
+            m_openglHelper.getMeshGeometry(
+                *bodyContainer.acisBody(),
+                vertices_position,
+                vertices_normal,
+                vertices_textureuv,
+                vertices_materialIndex,
+                vertices_textureIndex,
+                meshIndices,
+                edge_indices,
+                edge_width,
+                edge_materialIndex,
+                textureIndex,
+                materialIndex,
+                scalingFactor,
+                edgeWidth,
+                edgeMaterialIndex
+            );
             break;
         }
 
         case OdDAI::OdBodyVariant::kBrep:
         {
             qDebug() << "IFC Brep Body";
-            m_openglHelper.getMeshGeometry(bodyContainer.brBrep(), verticesVector, meshIndices, borderIndices, textureIndex, scalingFactor);
+
+            m_openglHelper.getMeshGeometry(
+                bodyContainer.brBrep(),
+                vertices_position,
+                vertices_normal,
+                vertices_textureuv,
+                vertices_materialIndex,
+                vertices_textureIndex,
+                meshIndices,
+                edge_indices,
+                edge_width,
+                edge_materialIndex,
+                textureIndex,
+                materialIndex,
+                scalingFactor,
+                edgeWidth,
+                edgeMaterialIndex
+            );
             break;
         }
 
@@ -290,8 +387,18 @@ void IfcGeometryService::generateFinalMesh3D(OdDAI::OdBodyVariant bodyContainer,
         }
     }
 
-    if (verticesVector.size() > 0 && meshIndices.size() > 0 && borderIndices.size() > 0) {
-        mesh->AppendGeometry(verticesVector, meshIndices, borderIndices);
+    if (vertices_position.size() > 0 && meshIndices.size() > 0 && edge_indices.size() > 0) {
+        mesh->AppendGeometry(
+            vertices_position,
+            vertices_normal,
+            vertices_textureuv,
+            vertices_materialIndex,
+            vertices_textureIndex,
+            edge_indices,
+            edge_width,
+            edge_materialIndex,
+            meshIndices
+        );
 
         // qInfo() << "Vertices size: " << verticesVector.size() << " Mesh Index: " << meshIndices.size() << " Border Index: " << borderIndices.size();
     }

@@ -12,7 +12,7 @@ class OpenGLMaterial : public QObject
 public:
     explicit OpenGLMaterial(QObject *parent = nullptr);
 
-    enum MaterialName { IVORY, BLUE }; // before changing order make sure to update GenerateMaterialList
+    enum MaterialName { IVORY, BLUE, BLACK }; // before changing order make sure to update GenerateMaterialList
 
     static void GenerateMaterialList(QList<OpenGLMaterial*>& material_list);
     static std::vector<float> GenerateMaterialData(QList<OpenGLMaterial*>& material_list); // for sending to OpenGL

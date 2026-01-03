@@ -215,7 +215,23 @@ Point OpenglHelper::getParallelProjectionPoint(Point point1, Point point2, float
     return result;
 }
 
-void OpenglHelper::getMeshGeometry(const FacetModeler::Body& body, std::vector<Vertex>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, int textureIndex, int scalingFactor)
+void OpenglHelper::getMeshGeometry(
+    const FacetModeler::Body& body,
+    std::vector<Position>& vertices_position,
+    std::vector<Normal>& vertices_normal,
+    std::vector<TextureUV>& vertices_textureuv,
+    std::vector<int>& vertices_materialIndex,
+    std::vector<int>& vertices_textureIndex,
+    std::vector<uint32_t>& meshIndices,
+    std::vector<EdgeIndex>& edge_indices,
+    std::vector<float>& edge_width,
+    std::vector<int>& edge_materialIndex,
+    int textureIndex,
+    int materialIndex,
+    int scalingFactor,
+    float edgeWidth, // inputs to put in the std::vector<>
+    int edgeMaterialIndex // inputs to put in the std::vector<>
+)
 {
     OdGePoint3dArray pointArray = {};
     OdGeVector3dArray normalArray = {};
@@ -271,8 +287,12 @@ void OpenglHelper::getMeshGeometry(const FacetModeler::Body& body, std::vector<V
                         endPointIndex = pointArray.size() - 1;
                     }
 
-                    borderIndices.push_back(startPointIndex);
-                    borderIndices.push_back(endPointIndex);
+                    edge_indices.push_back({
+                        static_cast<int>(startPointIndex),
+                        static_cast<int>(endPointIndex)
+                    });
+                    edge_width.push_back(edgeWidth);
+                    edge_materialIndex.push_back(edgeMaterialIndex);
 
                     // get two dimensional point on the Face Plane
                     OdGeVector3d vecOnPlane = edge->startPoint() - origin;
@@ -312,7 +332,7 @@ void OpenglHelper::getMeshGeometry(const FacetModeler::Body& body, std::vector<V
         {
             OdGePoint3dArray facePointArray = {};
             std::vector<std::array<float, 2>> faceTextureArray = {};
-            std::vector<uint32_t> faceBorderIndices = {};
+            std::vector<EdgeIndex> faceBorderIndices = {};
             std::vector<std::vector<Point>> earcutPolygon = {};
 
             // Face Plane Coordinate System
@@ -328,19 +348,24 @@ void OpenglHelper::getMeshGeometry(const FacetModeler::Body& body, std::vector<V
                 std::vector<Point> loopPolygon = {};
 
                 FacetModeler::Edge* edge = face->edge(loopIndex);
-                int startingFacePointIndex = facePointArray.size();
+                unsigned int startingFacePointIndex = facePointArray.size();
                 for (int edgeIndex = 0; edgeIndex < face->loopEdgeCount(loopIndex); edgeIndex++)
                 {
                     facePointArray.append(edge->startPoint());
-                    faceBorderIndices.push_back(facePointArray.size() - 1); // for first point
 
                     if (edgeIndex < face->loopEdgeCount(loopIndex) - 1)
                     {
-                        faceBorderIndices.push_back(facePointArray.size()); // for second point
+                        faceBorderIndices.push_back({
+                            static_cast<int>(facePointArray.size() - 1),
+                            static_cast<int>(facePointArray.size())
+                        }); // for second point
                     }
                     else
                     {
-                        faceBorderIndices.push_back(startingFacePointIndex); // for last point the end point is first point
+                        faceBorderIndices.push_back({
+                            static_cast<int>(facePointArray.size() - 1),
+                            static_cast<int>(startingFacePointIndex)
+                        }); // for last point the end point is first point
                     }
 
                     // get two dimensional point on the Face Plane
@@ -366,9 +391,15 @@ void OpenglHelper::getMeshGeometry(const FacetModeler::Body& body, std::vector<V
                 meshIndices.push_back(startingPointArrayIndex + index);
             }
 
-            for (int faceBorderIndex: faceBorderIndices)
+            for (EdgeIndex faceBorderIndex: faceBorderIndices)
             {
-                borderIndices.push_back(startingPointArrayIndex + faceBorderIndex);
+                edge_indices.push_back({
+                    startingPointArrayIndex + faceBorderIndex[0],
+                    startingPointArrayIndex + faceBorderIndex[1]
+                });
+
+                edge_width.push_back(edgeWidth);
+                edge_materialIndex.push_back(edgeMaterialIndex);
             }
 
             // add face points to pointArray
@@ -395,15 +426,28 @@ void OpenglHelper::getMeshGeometry(const FacetModeler::Body& body, std::vector<V
         OdGeVector3d normal = normalArray[i];
         std::array<float, 2> textureUV = textureArray[i];
 
-        Vertex v = {
-            {point.x, point.y, point.z},
-            {normal.x, normal.y, normal.z},
-            {textureUV[0], textureUV[1]},
-            OpenGLMaterial::IVORY,
-            textureIndex
-        };
+        // Vertex v = {
+        //     {point.x, point.y, point.z},
+        //     {normal.x, normal.y, normal.z},
+        //     {textureUV[0], textureUV[1]},
+        //     OpenGLMaterial::IVORY,
+        //     textureIndex
+        // };
 
-        verticesVector.push_back(v);
+        vertices_position.push_back({
+            static_cast<float>(point.x),
+            static_cast<float>(point.y),
+            static_cast<float>(point.z),
+            0.0f
+        });
+        vertices_normal.push_back({
+            static_cast<float>(normal.x),
+            static_cast<float>(normal.y),
+            static_cast<float>(normal.z)
+        });
+        vertices_textureuv.push_back({textureUV[0], textureUV[1]});
+        vertices_materialIndex.push_back(materialIndex);
+        vertices_textureIndex.push_back(textureIndex);
 
         // verticesVector.push_back(point.x); // x
         // verticesVector.push_back(point.y); // y
@@ -441,7 +485,23 @@ void OpenglHelper::getMeshGeometry(const FacetModeler::Body& body, std::vector<V
     //End of file writting
 }
 
-void OpenglHelper::getMeshGeometry(const OdMdBody& body, std::vector<Vertex>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, int textureIndex, int scalingFactor)
+void OpenglHelper::getMeshGeometry(
+    const OdMdBody& body,
+    std::vector<Position>& vertices_position,
+    std::vector<Normal>& vertices_normal,
+    std::vector<TextureUV>& vertices_textureuv,
+    std::vector<int>& vertices_materialIndex,
+    std::vector<int>& vertices_textureIndex,
+    std::vector<uint32_t>& meshIndices,
+    std::vector<EdgeIndex>& edge_indices,
+    std::vector<float>& edge_width,
+    std::vector<int>& edge_materialIndex,
+    int textureIndex,
+    int materialIndex,
+    int scalingFactor,
+    float edgeWidth, // inputs to put in the std::vector<>
+    int edgeMaterialIndex // inputs to put in the std::vector<>
+)
 {
     OdGePoint3dArray pointArray = {};
     OdGeVector3dArray normalArray = {};
@@ -531,34 +591,50 @@ void OpenglHelper::getMeshGeometry(const OdMdBody& body, std::vector<Vertex>& ve
     }
    */
 
-    for (int i = 0; i < pointArray.size(); i++)
-    {
-        OdGePoint3d point = pointArray[i];
-        OdGeVector3d normal = normalArray[i];
-        std::array<float, 2> textureUV = textureArray[i];
+    // for (int i = 0; i < pointArray.size(); i++)
+    // {
+    //     OdGePoint3d point = pointArray[i];
+    //     OdGeVector3d normal = normalArray[i];
+    //     std::array<float, 2> textureUV = textureArray[i];
 
-        Vertex v = {
-            {point.x, point.y, point.z},
-            {normal.x, normal.y, normal.z},
-            {textureUV[0], textureUV[1]},
-            0,
-            textureIndex
-        };
+    //     Vertex v = {
+    //         {point.x, point.y, point.z},
+    //         {normal.x, normal.y, normal.z},
+    //         {textureUV[0], textureUV[1]},
+    //         0,
+    //         textureIndex
+    //     };
 
-        verticesVector.push_back(v);
-        // OdGePoint3d point = pointArray[i];
-        // verticesVector.push_back(point.x); // x
-        // verticesVector.push_back(point.y); // y
-        // verticesVector.push_back(point.z); // z
+    //     verticesVector.push_back(v);
+    //     // OdGePoint3d point = pointArray[i];
+    //     // verticesVector.push_back(point.x); // x
+    //     // verticesVector.push_back(point.y); // y
+    //     // verticesVector.push_back(point.z); // z
 
-        // OdGeVector3d normal = normalArray[i];
-        // verticesVector.push_back(normal.x); // n.x
-        // verticesVector.push_back(normal.y); // n.y
-        // verticesVector.push_back(normal.z); // n.z
-    }
+    //     // OdGeVector3d normal = normalArray[i];
+    //     // verticesVector.push_back(normal.x); // n.x
+    //     // verticesVector.push_back(normal.y); // n.y
+    //     // verticesVector.push_back(normal.z); // n.z
+    // }
 }
 
-void OpenglHelper::getMeshGeometry(const BODY& body, std::vector<Vertex>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, int textureIndex, int scalingFactor)
+void OpenglHelper::getMeshGeometry(
+    const BODY& body,
+    std::vector<Position>& vertices_position,
+    std::vector<Normal>& vertices_normal,
+    std::vector<TextureUV>& vertices_textureuv,
+    std::vector<int>& vertices_materialIndex,
+    std::vector<int>& vertices_textureIndex,
+    std::vector<uint32_t>& meshIndices,
+    std::vector<EdgeIndex>& edge_indices,
+    std::vector<float>& edge_width,
+    std::vector<int>& edge_materialIndex,
+    int textureIndex,
+    int materialIndex,
+    int scalingFactor,
+    float edgeWidth, // inputs to put in the std::vector<>
+    int edgeMaterialIndex // inputs to put in the std::vector<>
+)
 {
     OdGePoint3dArray pointArray = {};
     OdGeVector3dArray normalArray = {};
@@ -649,34 +725,50 @@ void OpenglHelper::getMeshGeometry(const BODY& body, std::vector<Vertex>& vertic
     }
     */
 
-    for (int i = 0; i < pointArray.size(); i++)
-    {
-        OdGePoint3d point = pointArray[i];
-        OdGeVector3d normal = normalArray[i];
-        std::array<float, 2> textureUV = textureArray[i];
+    // for (int i = 0; i < pointArray.size(); i++)
+    // {
+    //     OdGePoint3d point = pointArray[i];
+    //     OdGeVector3d normal = normalArray[i];
+    //     std::array<float, 2> textureUV = textureArray[i];
 
-        Vertex v = {
-            {point.x, point.y, point.z},
-            {normal.x, normal.y, normal.z},
-            {textureUV[0], textureUV[1]},
-            0,
-            textureIndex
-        };
+    //     Vertex v = {
+    //         {point.x, point.y, point.z},
+    //         {normal.x, normal.y, normal.z},
+    //         {textureUV[0], textureUV[1]},
+    //         0,
+    //         textureIndex
+    //     };
 
-        verticesVector.push_back(v);
-        // OdGePoint3d point = pointArray[i];
-        // verticesVector.push_back(point.x); // x
-        // verticesVector.push_back(point.y); // y
-        // verticesVector.push_back(point.z); // z
+    //     verticesVector.push_back(v);
+    //     // OdGePoint3d point = pointArray[i];
+    //     // verticesVector.push_back(point.x); // x
+    //     // verticesVector.push_back(point.y); // y
+    //     // verticesVector.push_back(point.z); // z
 
-        // OdGeVector3d normal = normalArray[i];
-        // verticesVector.push_back(normal.x); // n.x
-        // verticesVector.push_back(normal.y); // n.y
-        // verticesVector.push_back(normal.z); // n.z
-    }
+    //     // OdGeVector3d normal = normalArray[i];
+    //     // verticesVector.push_back(normal.x); // n.x
+    //     // verticesVector.push_back(normal.y); // n.y
+    //     // verticesVector.push_back(normal.z); // n.z
+    // }
 }
 
-void OpenglHelper::getMeshGeometry(const OdBrBrep& brep, std::vector<Vertex>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, int textureIndex, int scalingFactor)
+void OpenglHelper::getMeshGeometry(
+    const OdBrBrep& brep,
+    std::vector<Position>& vertices_position,
+    std::vector<Normal>& vertices_normal,
+    std::vector<TextureUV>& vertices_textureuv,
+    std::vector<int>& vertices_materialIndex,
+    std::vector<int>& vertices_textureIndex,
+    std::vector<uint32_t>& meshIndices,
+    std::vector<EdgeIndex>& edge_indices,
+    std::vector<float>& edge_width,
+    std::vector<int>& edge_materialIndex,
+    int textureIndex,
+    int materialIndex,
+    int scalingFactor,
+    float edgeWidth, // inputs to put in the std::vector<>
+    int edgeMaterialIndex // inputs to put in the std::vector<>
+)
 {
     OdGePoint3dArray pointArray = {};
     OdGeVector3dArray normalArray = {};
@@ -765,30 +857,30 @@ void OpenglHelper::getMeshGeometry(const OdBrBrep& brep, std::vector<Vertex>& ve
     }
 */
 
-    for (int i = 0; i < pointArray.size(); i++)
-    {
-        OdGePoint3d point = pointArray[i];
-        OdGeVector3d normal = normalArray[i];
-        std::array<float, 2> textureUV = textureArray[i];
+    // for (int i = 0; i < pointArray.size(); i++)
+    // {
+    //     OdGePoint3d point = pointArray[i];
+    //     OdGeVector3d normal = normalArray[i];
+    //     std::array<float, 2> textureUV = textureArray[i];
 
-        Vertex v = {
-            {point.x, point.y, point.z},
-            {normal.x, normal.y, normal.z},
-            {textureUV[0], textureUV[1]},
-            0,
-            textureIndex
-        };
+    //     Vertex v = {
+    //         {point.x, point.y, point.z},
+    //         {normal.x, normal.y, normal.z},
+    //         {textureUV[0], textureUV[1]},
+    //         0,
+    //         textureIndex
+    //     };
 
-        verticesVector.push_back(v);
-        // OdGePoint3d point = pointArray[i];
-        // verticesVector.push_back(point.x); // x
-        // verticesVector.push_back(point.y); // y
-        // verticesVector.push_back(point.z); // z
+    //     verticesVector.push_back(v);
+    //     // OdGePoint3d point = pointArray[i];
+    //     // verticesVector.push_back(point.x); // x
+    //     // verticesVector.push_back(point.y); // y
+    //     // verticesVector.push_back(point.z); // z
 
-        // OdGeVector3d normal = normalArray[i];
-        // verticesVector.push_back(normal.x); // n.x
-        // verticesVector.push_back(normal.y); // n.y
-        // verticesVector.push_back(normal.z); // n.z
-    }
+    //     // OdGeVector3d normal = normalArray[i];
+    //     // verticesVector.push_back(normal.x); // n.x
+    //     // verticesVector.push_back(normal.y); // n.y
+    //     // verticesVector.push_back(normal.z); // n.z
+    // }
 }
 

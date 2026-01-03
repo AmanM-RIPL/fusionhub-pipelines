@@ -45,7 +45,14 @@ public:
 
 private:
     GLuint m_vao = 0;
-    GLuint m_static_vbo = 0;
+
+    GLuint m_static_position_vbo = 0;
+    GLuint m_static_normal_vbo = 0;
+    GLuint m_static_textureuv_vbo = 0;
+    GLuint m_static_materialIndex_vbo = 0;
+    GLuint m_static_textureIndex_vbo = 0;
+
+
     GLuint m_editor_vbo = 0;
     GLuint m_static_ibo = 0;
     GLuint m_editor_ibo = 0;

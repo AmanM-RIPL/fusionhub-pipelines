@@ -79,14 +79,74 @@ public:
     */
 
     // std::vector<GLfloat> verticesVector
-    void getMeshGeometry(const FacetModeler::Body& body, std::vector<Vertex>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, int textureIndex, int scalingFactor);
+    void getMeshGeometry(
+        const FacetModeler::Body& body,
+        std::vector<Position>& vertices_position,
+        std::vector<Normal>& vertices_normal,
+        std::vector<TextureUV>& vertices_textureuv,
+        std::vector<int>& vertices_materialIndex,
+        std::vector<int>& vertices_textureIndex,
+        std::vector<uint32_t>& meshIndices,
+        std::vector<EdgeIndex>& edge_indices,
+        std::vector<float>& edge_width,
+        std::vector<int>& edge_materialIndex,
+        int textureIndex,
+        int materialIndex,
+        int scalingFactor,
+        float edgeWidth, // inputs to put in the std::vector<>
+        int edgeMaterialIndex // inputs to put in the std::vector<>
+    );
 
-    void getMeshGeometry(const OdMdBody& body, std::vector<Vertex>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, int textureIndex, int scalingFactor);
+    void getMeshGeometry(const OdMdBody& body,
+        std::vector<Position>& vertices_position,
+        std::vector<Normal>& vertices_normal,
+        std::vector<TextureUV>& vertices_textureuv,
+        std::vector<int>& vertices_materialIndex,
+        std::vector<int>& vertices_textureIndex,
+        std::vector<uint32_t>& meshIndices,
+        std::vector<EdgeIndex>& edge_indices,
+        std::vector<float>& edge_width,
+        std::vector<int>& edge_materialIndex,
+        int textureIndex,
+        int materialIndex,
+        int scalingFactor,
+        float edgeWidth, // inputs to put in the std::vector<>
+        int edgeMaterialIndex // inputs to put in the std::vector<>
+    );
 
-    void getMeshGeometry(const BODY& body, std::vector<Vertex>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, int textureIndex, int scalingFactor);
+    void getMeshGeometry(const BODY& body,
+        std::vector<Position>& vertices_position,
+        std::vector<Normal>& vertices_normal,
+        std::vector<TextureUV>& vertices_textureuv,
+        std::vector<int>& vertices_materialIndex,
+        std::vector<int>& vertices_textureIndex,
+        std::vector<uint32_t>& meshIndices,
+        std::vector<EdgeIndex>& edge_indices,
+        std::vector<float>& edge_width,
+        std::vector<int>& edge_materialIndex,
+        int textureIndex,
+        int materialIndex,
+        int scalingFactor,
+        float edgeWidth, // inputs to put in the std::vector<>
+        int edgeMaterialIndex // inputs to put in the std::vector<>
+    );
 
-    void getMeshGeometry(const OdBrBrep& brep, std::vector<Vertex>& verticesVector, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, int textureIndex, int scalingFactor);
-
+    void getMeshGeometry(const OdBrBrep& brep,
+        std::vector<Position>& vertices_position,
+        std::vector<Normal>& vertices_normal,
+        std::vector<TextureUV>& vertices_textureuv,
+        std::vector<int>& vertices_materialIndex,
+        std::vector<int>& vertices_textureIndex,
+        std::vector<uint32_t>& meshIndices,
+        std::vector<EdgeIndex>& edge_indices,
+        std::vector<float>& edge_width,
+        std::vector<int>& edge_materialIndex,
+        int textureIndex,
+        int materialIndex,
+        int scalingFactor,
+        float edgeWidth, // inputs to put in the std::vector<>
+        int edgeMaterialIndex // inputs to put in the std::vector<>
+    );
 };
 
 #endif // OPENGL_HELPER_H

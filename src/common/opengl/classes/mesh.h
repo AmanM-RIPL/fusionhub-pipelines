@@ -8,14 +8,19 @@
 
 #include <vector>
 
-struct Vertex
-{
-    float position[3];
-    float normal[3];
-    float uv[2];
-    int materialIndex;
-    int textureIndex;
-};
+// struct Vertex
+// {
+//     float position[3];
+//     float normal[3];
+//     float uv[2];
+//     int materialIndex;
+//     int textureIndex;
+// };
+
+using Position = std::array<float, 4>;
+using Normal = std::array<float, 3>;
+using TextureUV = std::array<float, 2>;
+using EdgeIndex = std::array<int, 2>; // EdgeIndex is of the format {0, 1} which means edge b/w 0th Position and 1st Position
 
 class Mesh : public QObject
 {
@@ -23,28 +28,71 @@ class Mesh : public QObject
 public:
     explicit Mesh(QObject *parent = nullptr);
 
-    void Initialize(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<unsigned int>& borderIndices, unsigned int numOfVertices, unsigned int numOfIndices, unsigned int numOfBorderIndices);
-    void AppendGeometry(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<unsigned int>& borderIndices);
+    void Initialize(
+        const std::vector<Position>& vertices_position,
+        const std::vector<Normal>& vertices_normal,
+        const std::vector<TextureUV>& vertices_textureuv,
+        const std::vector<int>& vertices_materialIndex,
+        const std::vector<int>& vertices_textureIndex,
+
+        const std::vector<EdgeIndex>& edge_indices,
+        const std::vector<float>& edge_width,
+        const std::vector<int>& edge_materialIndex,
+
+        const std::vector<unsigned int>& indices
+    );
+
+    void AppendGeometry(
+        const std::vector<Position>& vertices_position,
+        const std::vector<Normal>& vertices_normal,
+        const std::vector<TextureUV>& vertices_textureuv,
+        const std::vector<int>& vertices_materialIndex,
+        const std::vector<int>& vertices_textureIndex,
+
+        const std::vector<EdgeIndex>& edge_indices,
+        const std::vector<float>& edge_width,
+        const std::vector<int>& edge_materialIndex,
+
+        const std::vector<unsigned int>& indices
+    );
+
     void Copy(Mesh* mesh);
 
     static void Combine(Mesh* combinedMesh, QList<Mesh*> meshList);
     static void GenerateBaseSurface(Mesh* mesh);
 
-    std::vector<Vertex> getVerticies();
-    std::vector<unsigned int> getIndices();
-    std::vector<unsigned int> getBorderIndices();
+    std::vector<Position> getVerticiesPosition();
+    std::vector<Normal> getVerticiesNormal();
+    std::vector<TextureUV> getVerticiesTextureUV();
+    std::vector<int> getVerticiesMaterialIndex();
+    std::vector<int> getVerticiesTextureIndex();
 
-    Vertex* getVerticiesData();
+    std::vector<EdgeIndex> getEdgeIndices();
+    std::vector<float> getEdgeWidth();
+    std::vector<int> getEdgeMaterialIndex();
+
+    std::vector<unsigned int> getIndices();
+
+
+    Position* getVerticiesPositionData();
+    Normal* getVerticiesNormalData();
+    TextureUV* getVerticiesTextureUVData();
+    int* getVerticiesMaterialIndexData();
+    int* getVerticiesTextureIndexData();
+
+    EdgeIndex* getEdgeIndicesData();
+    float* getEdgeWidthData();
+    int* getEdgeMaterialIndexData();
+
     float* getModelMatriciesData();
     unsigned int* getIndicesData();
-    unsigned int* getBorderIndicesData();
     int* getModelMatrixIndicesData();
     std::array<float, 4>* getPickColorData();
 
 
     unsigned int getNumOfVertices();
     unsigned int getNumOfIndices();
-    unsigned int getNumOfBorderIndices();
+    unsigned int getNumOfEdges();
     unsigned int getNumOfModelMatricies();
     unsigned int getNumOfModelMatrixIndices();
 
@@ -63,17 +111,29 @@ public:
 signals:
 
 private:
-    std::vector<Vertex> m_verticies;
+
+    // Vertex Attributes
+    std::vector<Position> m_verticies_position;
+    std::vector<Normal> m_verticies_normal;
+    std::vector<TextureUV> m_verticies_textureuv;
+    std::vector<int> m_verticies_materialIndex;
+    std::vector<int> m_verticies_textureIndex;
+
+    // Edge Attributes
+    std::vector<EdgeIndex> m_edge_indices;
+    std::vector<float> m_edge_width;
+    std::vector<int> m_edge_materialIndex;
+
+    // Indices for IBO
     std::vector<unsigned int> m_indices;
-    std::vector<unsigned int> m_border_indices;
     std::vector<int> m_model_matrix_indices;
 
     std::vector<float> m_model_matrix; // this is for the combined mesh
     std::vector<std::array<float, 4>> m_pickColor_array; // this is for the combined mesh
 
     unsigned int m_numOfVertices;
+    unsigned int m_numOfEdges;
     unsigned int m_numOfIndices;
-    unsigned int m_numOfBorderIndices;
     unsigned int m_numOfModelMatrices;
 
 

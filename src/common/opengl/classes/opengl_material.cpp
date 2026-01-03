@@ -24,6 +24,14 @@ void OpenGLMaterial::GenerateMaterialList(QList<OpenGLMaterial *> &material_list
     blueMaterial->setSpecular({1.0f, 1.0f, 1.0f}); // 0.5f, 0.5f, 0.5f
     blueMaterial->setShininess(32.0f);
     material_list.append(blueMaterial);
+
+    // For BLACK
+    OpenGLMaterial* blackMaterial = new OpenGLMaterial();
+    blackMaterial->setAmbient({0.0f, 0.0f, 0.0f});
+    blackMaterial->setDiffuse({0.0f, 0.0f, 0.0f});
+    blackMaterial->setSpecular({0.0f, 0.0f, 0.0f});
+    blackMaterial->setShininess(32.0f);
+    material_list.append(blackMaterial);
 }
 
 std::vector<float> OpenGLMaterial::GenerateMaterialData(QList<OpenGLMaterial *> &material_list)
