@@ -36,6 +36,7 @@ public:
     void AddCamera(Camera* cam);
     void AddShader(Shader* shad);
     void AddPickingShader(Shader* shad);
+    void AddEdgeShader(Shader* shad);
 
     void SetProjection(QMatrix4x4& projection);
     void SetWidth(int width);
@@ -89,6 +90,7 @@ private:
     Camera* camera;
     Shader* shader;
     Shader* pickingShader;
+    Shader* edgeShader;
 
     // For Color Picking
     void encodeIdToColor(unsigned int id, unsigned char &r, unsigned char &g, unsigned char &b);

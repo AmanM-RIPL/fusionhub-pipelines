@@ -81,5 +81,7 @@
         <file>resources/QML/WorkBillingLinePage.qml</file>
         <file>resources/images/wood.jpg</file>
         <file>resources/QML/GanttTaskListTable.qml</file>
+        <file>resources/shaders/edge.frag</file>
+        <file>resources/shaders/edge.vert</file>
     </qresource>
 </RCC>

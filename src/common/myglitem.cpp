@@ -87,8 +87,13 @@ MyGLRenderer::MyGLRenderer()
 
     // initialize Picking Shader
     m_picking_shader = new Shader();
-    m_picking_shader->SetPickColor(true);
+    m_picking_shader->SetShaderType(Shader::MESH_COLOR_PICKING);
     m_picking_shader->CreateFromFiles("://resources/shaders/color-picking.vert", "://resources/shaders/color-picking.frag");
+
+    // initialize Edge Shader
+    m_edge_shader = new Shader();
+    m_edge_shader->SetShaderType(Shader::EDGE);
+    m_edge_shader->CreateFromFiles("://resources/shaders/edge.vert", "://resources/shaders/edge.frag");
 
     // initialize Textures
     Texture* texture = new Texture();
@@ -102,6 +107,7 @@ MyGLRenderer::MyGLRenderer()
     m_view->AddCamera(m_camera);
     m_view->AddShader(m_shader);
     m_view->AddPickingShader(m_picking_shader);
+    m_view->AddEdgeShader(m_edge_shader);
     // m_view->Initialize();
 
     // initialize Materials
@@ -128,6 +134,7 @@ MyGLRenderer::~MyGLRenderer()
     delete m_camera;
     delete m_shader;
     delete m_picking_shader;
+    delete m_edge_shader;
     delete m_view;
 
     for (OpenGLMaterial* material : m_materialList)

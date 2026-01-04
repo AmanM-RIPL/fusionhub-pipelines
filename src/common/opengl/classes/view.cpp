@@ -435,6 +435,11 @@ void View::AddPickingShader(Shader *shad)
     pickingShader = shad;
 }
 
+void View::AddEdgeShader(Shader *shad)
+{
+    edgeShader = shad;
+}
+
 void View::SetProjection(QMatrix4x4 &projection)
 {
     m_projectionMatrix = projection;
