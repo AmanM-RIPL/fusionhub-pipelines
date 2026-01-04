@@ -42,6 +42,10 @@ public:
     GLuint getModelMatrixBufferId();
     GLuint getMaterialBufferId();
 
+    GLuint getViewPortId();
+    GLuint getVerticesId();
+    GLuint getModelMatrixIndexBufferId();
+
     void SetShaderType(ShaderType value);
 
 private:

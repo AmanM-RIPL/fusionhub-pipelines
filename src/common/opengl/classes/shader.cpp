@@ -222,6 +222,21 @@ GLuint Shader::getMaterialBufferId()
     return m_materialBufferId;
 }
 
+GLuint Shader::getViewPortId()
+{
+    return m_viewportId;
+}
+
+GLuint Shader::getVerticesId()
+{
+    return m_verticesId;
+}
+
+GLuint Shader::getModelMatrixIndexBufferId()
+{
+    return m_modelMatrixIndexBufferId;
+}
+
 void Shader::SetShaderType(ShaderType value)
 {
     m_shaderType = value;
