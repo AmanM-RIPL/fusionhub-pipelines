@@ -32,7 +32,7 @@ void DoorGeometryService::generateMesh2D(BIMElement* doorElement, Mesh* mesh)
 
     if (referenceLine.size() < 2)
     {
-        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {});
+        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
         return;
     }
 
@@ -90,10 +90,16 @@ void DoorGeometryService::generateMesh2D(BIMElement* doorElement, Mesh* mesh)
 
     std::vector<EdgeIndex> edge_indices = {};
     std::vector<float> edge_width = {};
+    std::vector<float> edge_dashLength = {};
+    std::vector<float> edge_gapLength = {};
+    std::vector<int> edge_dash = {};
     std::vector<int> edge_materialIndex = {};
     for (int i = 0; i < referenceLine.size(); i++)
     {
-        edge_width.push_back(1);
+        edge_width.push_back(1.0f);
+        edge_dashLength.push_back(1.0f);
+        edge_gapLength.push_back(1.0f);
+        edge_dash.push_back(0);
         edge_materialIndex.push_back(OpenGLMaterial::BLACK);
 
         if (i == referenceLine.size() - 1)
@@ -121,6 +127,9 @@ void DoorGeometryService::generateMesh2D(BIMElement* doorElement, Mesh* mesh)
         vertices_textureIndex,
         edge_indices,
         edge_width,
+        edge_dashLength,
+        edge_gapLength,
+        edge_dash,
         edge_materialIndex,
         indices
         );
@@ -156,12 +165,12 @@ void DoorGeometryService::generateMesh3D(BIMElement* doorElement, Mesh* mesh, IF
 
     if (referenceLine.size() < 2)
     {
-        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {});
+        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
         return;
     }
 
     // Initialize the mesh
-    mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {});
+    mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
 
     QMatrix4x4 modelMatrix;
     modelMatrix.setToIdentity();

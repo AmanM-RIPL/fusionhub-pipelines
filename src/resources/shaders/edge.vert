@@ -5,7 +5,7 @@ layout (location = 2) in float edgeWidth;
 layout (location = 3) in int materialIndex;
 layout (location = 4) in float edgeDashLength;
 layout (location = 5) in float edgeGapLength;
-layout (location = 6) in bool edgeDash;
+layout (location = 6) in int edgeDash;
 
 uniform samplerBuffer vertices; //vertex positions only
 uniform samplerBuffer modelMatrixBuffer;
@@ -18,7 +18,7 @@ uniform mat4 projection;
 out float vDist;
 out float uDash;
 out float uGap;
-flat out bool uDashRequired;
+flat out int uDashRequired;
 flat out int MaterialIndex;
 
 void main()
@@ -52,6 +52,10 @@ void main()
     // 5. project to screen space
     vec2 screenPosition0 = (ndcPosition0 * 0.5 + 0.5) * viewport;
     vec2 screenPosition1 = (ndcPosition1 * 0.5 + 0.5) * viewport;
+
+    // 5.1 Qt Quick FBO Y-flip
+    screenPosition0.y = viewport.y - screenPosition0.y;
+    screenPosition1.y = viewport.y - screenPosition1.y;
 
     // 6. get edge direction and normal
     vec2 dir = normalize(screenPosition1 - screenPosition0);

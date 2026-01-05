@@ -24,6 +24,9 @@ void View::Initialize()
     this->glGenBuffers(1, &m_static_corner_vbo);
     this->glGenBuffers(1, &m_static_edge_indices_vbo);
     this->glGenBuffers(1, &m_static_edge_width_vbo);
+    this->glGenBuffers(1, &m_static_edge_dashLength_vbo);
+    this->glGenBuffers(1, &m_static_edge_gapLength_vbo);
+    this->glGenBuffers(1, &m_static_edge_dash_vbo);
     this->glGenBuffers(1, &m_static_edge_materialIndex_vbo);
 
     this->glGenBuffers(1, &m_static_border_ibo);
@@ -54,6 +57,9 @@ void View::BindMeshWithOpenGL()
     std::array<float, 4> corners = {-1.0f, 1.0f, -1.0f, 1.0f};
     EdgeIndex* edge_indices = combinedMesh->getEdgeIndicesData();
     float* edge_width = combinedMesh->getEdgeWidthData();
+    float* edge_dashLength = combinedMesh->getEdgeDashLengthData();
+    float* edge_gapLength = combinedMesh->getEdgeGapLengthData();
+    int* edge_dash = combinedMesh->getEdgeDashData();
     int* edge_materialIndex = combinedMesh->getEdgeMaterialIndexData();
 
     float* modelMatrices = combinedMesh->getModelMatriciesData();
@@ -72,6 +78,18 @@ void View::BindMeshWithOpenGL()
     // Initializing the vao, vbo, and ibo
     m_indexCount = numOfIndices;
     m_borderIndexCount = numOfEdges;
+
+    // for (int i = 0; i < numOfVertices; i++)
+    // {
+    //     Position pos = vertices_position[i];
+    //     qInfo() << "Position: (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")";
+    // }
+
+    // for (int i = 0; i < numOfEdges; i++)
+    // {
+    //     EdgeIndex edge = edge_indices[i];
+    //     qInfo() << "Edge: (" << edge[0] << ", " << edge[1] << ")";
+    // }
 
     // VAO for Mesh + Mesh Color Picking
     this->glBindVertexArray(m_vao);
@@ -156,7 +174,7 @@ void View::BindMeshWithOpenGL()
     this->glBindVertexArray(m_edge_vao);
         //VBO
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_corner_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 4, corners, GL_STATIC_DRAW);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 4, corners.data(), GL_STATIC_DRAW);
             // corners
             this->glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
             this->glEnableVertexAttribArray(0);
@@ -164,7 +182,7 @@ void View::BindMeshWithOpenGL()
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_indices_vbo);
             this->glBufferData(GL_ARRAY_BUFFER, sizeof(EdgeIndex) * numOfEdges, edge_indices, GL_STATIC_DRAW);
             // edges
-            this->glVertexAttribIPointer(1, 2, GL_INT, sizeof(int), (void*)0);
+            this->glVertexAttribIPointer(1, 2, GL_INT, sizeof(EdgeIndex), (void*)0);
             this->glEnableVertexAttribArray(1);
             this->glVertexAttribDivisor(1, 1);
 
@@ -181,6 +199,27 @@ void View::BindMeshWithOpenGL()
             this->glVertexAttribIPointer(3, 1, GL_INT, sizeof(int), (void*)0);
             this->glEnableVertexAttribArray(3);
             this->glVertexAttribDivisor(3, 1);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_dashLength_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdges, edge_dashLength, GL_STATIC_DRAW);
+            // edge dash length
+            this->glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+            this->glEnableVertexAttribArray(4);
+            this->glVertexAttribDivisor(4, 1);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_gapLength_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdges, edge_gapLength, GL_STATIC_DRAW);
+            // edge gap length
+            this->glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+            this->glEnableVertexAttribArray(5);
+            this->glVertexAttribDivisor(5, 1);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_dash_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdges, edge_dash, GL_STATIC_DRAW);
+            // edge dash
+            this->glVertexAttribIPointer(6, 1, GL_INT, sizeof(int), (void*)0);
+            this->glEnableVertexAttribArray(6);
+            this->glVertexAttribDivisor(6, 1);
 
 
         // TBO for Vertices
@@ -313,6 +352,8 @@ void View::Render()
 
 
     // Edge Shader Program
+    this->glDisable(GL_CULL_FACE);
+
     this->glUseProgram(edgeShader->getShaderId());
 
     this->glUniformMatrix4fv(edgeShader->getViewId(),  1, GL_FALSE, camera->calculateViewMatrix().constData());
@@ -616,6 +657,9 @@ View::~View()
     this->glDeleteBuffers(1, &m_static_corner_vbo);
     this->glDeleteBuffers(1, &m_static_edge_indices_vbo);
     this->glDeleteBuffers(1, &m_static_edge_width_vbo);
+    this->glDeleteBuffers(1, &m_static_edge_dashLength_vbo);
+    this->glDeleteBuffers(1, &m_static_edge_gapLength_vbo);
+    this->glDeleteBuffers(1, &m_static_edge_dash_vbo);
     this->glDeleteBuffers(1, &m_static_edge_materialIndex_vbo);
 
     this->glDeleteBuffers(1, &m_static_ibo);

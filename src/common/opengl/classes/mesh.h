@@ -37,6 +37,9 @@ public:
 
         const std::vector<EdgeIndex>& edge_indices,
         const std::vector<float>& edge_width,
+        const std::vector<float>& edge_dashLength,
+        const std::vector<float>& edge_gapLength,
+        const std::vector<int>& edge_dash,
         const std::vector<int>& edge_materialIndex,
 
         const std::vector<unsigned int>& indices
@@ -51,6 +54,9 @@ public:
 
         const std::vector<EdgeIndex>& edge_indices,
         const std::vector<float>& edge_width,
+        const std::vector<float>& edge_dashLength,
+        const std::vector<float>& edge_gapLength,
+        const std::vector<int>& edge_dash,
         const std::vector<int>& edge_materialIndex,
 
         const std::vector<unsigned int>& indices
@@ -69,6 +75,9 @@ public:
 
     std::vector<EdgeIndex> getEdgeIndices();
     std::vector<float> getEdgeWidth();
+    std::vector<float> getEdgeDashLength();
+    std::vector<float> getEdgeGapLength();
+    std::vector<int> getEdgeDash();
     std::vector<int> getEdgeMaterialIndex();
 
     std::vector<unsigned int> getIndices();
@@ -82,6 +91,9 @@ public:
 
     EdgeIndex* getEdgeIndicesData();
     float* getEdgeWidthData();
+    float* getEdgeDashLengthData();
+    float* getEdgeGapLengthData();
+    int* getEdgeDashData();
     int* getEdgeMaterialIndexData();
 
     float* getModelMatriciesData();
@@ -122,6 +134,9 @@ private:
     // Edge Attributes
     std::vector<EdgeIndex> m_edge_indices;
     std::vector<float> m_edge_width;
+    std::vector<float> m_edge_dashLength;
+    std::vector<float> m_edge_gapLength;
+    std::vector<int> m_edge_dash; // to show dashes or not
     std::vector<int> m_edge_materialIndex;
 
     // Indices for IBO

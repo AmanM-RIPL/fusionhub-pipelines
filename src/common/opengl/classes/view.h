@@ -57,6 +57,9 @@ private:
     GLuint m_static_corner_vbo = 0;
     GLuint m_static_edge_indices_vbo = 0;
     GLuint m_static_edge_width_vbo = 0;
+    GLuint m_static_edge_dashLength_vbo = 0;
+    GLuint m_static_edge_gapLength_vbo = 0;
+    GLuint m_static_edge_dash_vbo = 0;
     GLuint m_static_edge_materialIndex_vbo = 0;
 
 

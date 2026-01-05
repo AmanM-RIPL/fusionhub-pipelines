@@ -16,7 +16,7 @@ void SlabGeometryService::generateMesh2D(BIMElement* slabElement, Mesh* mesh)
 
     if (referenceLine.size() < 3)
     {
-        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {});
+        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
         return;
     }
 
@@ -74,10 +74,16 @@ void SlabGeometryService::generateMesh2D(BIMElement* slabElement, Mesh* mesh)
 
     std::vector<EdgeIndex> edge_indices = {};
     std::vector<float> edge_width = {};
+    std::vector<float> edge_dashLength = {};
+    std::vector<float> edge_gapLength = {};
+    std::vector<int> edge_dash = {};
     std::vector<int> edge_materialIndex = {};
     for (int i = 0; i < referenceLine.size(); i++)
     {
-        edge_width.push_back(1);
+        edge_width.push_back(1.0f);
+        edge_dashLength.push_back(1.0f);
+        edge_gapLength.push_back(1.0f);
+        edge_dash.push_back(0);
         edge_materialIndex.push_back(OpenGLMaterial::BLACK);
 
         if (i == referenceLine.size() - 1)
@@ -105,6 +111,9 @@ void SlabGeometryService::generateMesh2D(BIMElement* slabElement, Mesh* mesh)
         vertices_textureIndex,
         edge_indices,
         edge_width,
+        edge_dashLength,
+        edge_gapLength,
+        edge_dash,
         edge_materialIndex,
         indices
         );
@@ -139,7 +148,7 @@ void SlabGeometryService::generateMesh3D(BIMElement* slabElement, Mesh* mesh)
 
     if (referenceLine.size() < 3)
     {
-        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {});
+        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
         return;
     }
 
@@ -188,10 +197,16 @@ void SlabGeometryService::generateMesh3D(BIMElement* slabElement, Mesh* mesh)
     std::vector<int> vertices_textureIndex = {};
     std::vector<EdgeIndex> edge_indices = {};
     std::vector<float> edge_width = {};
+    std::vector<float> edge_dashLength = {};
+    std::vector<float> edge_gapLength = {};
+    std::vector<int> edge_dash = {};
     std::vector<int> edge_materialIndex = {};
     int textureIndex = Texture::BRICK; // if less than zero then we don't need to worry about textures
     int materialIndex = OpenGLMaterial::IVORY;
-    float edgeWidth = 1;
+    float edgeWidth = 1.0f;
+    float edgeDashLength = 1.0f;
+    float edgeGapLength = 1.0f;
+    int edgeDash = 0;
     int edgeMaterialIndex = OpenGLMaterial::BLACK;
     int scalingFactor = 5;
 
@@ -205,11 +220,17 @@ void SlabGeometryService::generateMesh3D(BIMElement* slabElement, Mesh* mesh)
         meshIndices,
         edge_indices,
         edge_width,
+        edge_dashLength,
+        edge_gapLength,
+        edge_dash,
         edge_materialIndex,
         textureIndex,
         materialIndex,
         scalingFactor,
         edgeWidth,
+        edgeDashLength,
+        edgeGapLength,
+        edgeDash,
         edgeMaterialIndex
     );
 
@@ -221,6 +242,9 @@ void SlabGeometryService::generateMesh3D(BIMElement* slabElement, Mesh* mesh)
         vertices_textureIndex,
         edge_indices,
         edge_width,
+        edge_dashLength,
+        edge_gapLength,
+        edge_dash,
         edge_materialIndex,
         meshIndices
     );

@@ -89,11 +89,17 @@ public:
         std::vector<uint32_t>& meshIndices,
         std::vector<EdgeIndex>& edge_indices,
         std::vector<float>& edge_width,
+        std::vector<float>& edge_dashLength,
+        std::vector<float>& edge_gapLength,
+        std::vector<int>& edge_dash,
         std::vector<int>& edge_materialIndex,
         int textureIndex,
         int materialIndex,
         int scalingFactor,
         float edgeWidth, // inputs to put in the std::vector<>
+        float edgeDashLength,
+        float edgeGapLength,
+        int edgeDash,
         int edgeMaterialIndex // inputs to put in the std::vector<>
     );
 
@@ -106,11 +112,17 @@ public:
         std::vector<uint32_t>& meshIndices,
         std::vector<EdgeIndex>& edge_indices,
         std::vector<float>& edge_width,
+        std::vector<float>& edge_dashLength,
+        std::vector<float>& edge_gapLength,
+        std::vector<int>& edge_dash,
         std::vector<int>& edge_materialIndex,
         int textureIndex,
         int materialIndex,
         int scalingFactor,
         float edgeWidth, // inputs to put in the std::vector<>
+        float edgeDashLength,
+        float edgeGapLength,
+        int edgeDash,
         int edgeMaterialIndex // inputs to put in the std::vector<>
     );
 
@@ -123,11 +135,17 @@ public:
         std::vector<uint32_t>& meshIndices,
         std::vector<EdgeIndex>& edge_indices,
         std::vector<float>& edge_width,
+        std::vector<float>& edge_dashLength,
+        std::vector<float>& edge_gapLength,
+        std::vector<int>& edge_dash,
         std::vector<int>& edge_materialIndex,
         int textureIndex,
         int materialIndex,
         int scalingFactor,
         float edgeWidth, // inputs to put in the std::vector<>
+        float edgeDashLength,
+        float edgeGapLength,
+        int edgeDash,
         int edgeMaterialIndex // inputs to put in the std::vector<>
     );
 
@@ -140,11 +158,17 @@ public:
         std::vector<uint32_t>& meshIndices,
         std::vector<EdgeIndex>& edge_indices,
         std::vector<float>& edge_width,
+        std::vector<float>& edge_dashLength,
+        std::vector<float>& edge_gapLength,
+        std::vector<int>& edge_dash,
         std::vector<int>& edge_materialIndex,
         int textureIndex,
         int materialIndex,
         int scalingFactor,
         float edgeWidth, // inputs to put in the std::vector<>
+        float edgeDashLength,
+        float edgeGapLength,
+        int edgeDash,
         int edgeMaterialIndex // inputs to put in the std::vector<>
     );
 };

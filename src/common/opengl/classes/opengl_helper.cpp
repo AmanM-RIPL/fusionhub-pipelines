@@ -225,11 +225,17 @@ void OpenglHelper::getMeshGeometry(
     std::vector<uint32_t>& meshIndices,
     std::vector<EdgeIndex>& edge_indices,
     std::vector<float>& edge_width,
+    std::vector<float>& edge_dashLength,
+    std::vector<float>& edge_gapLength,
+    std::vector<int>& edge_dash,
     std::vector<int>& edge_materialIndex,
     int textureIndex,
     int materialIndex,
     int scalingFactor,
     float edgeWidth, // inputs to put in the std::vector<>
+    float edgeDashLength,
+    float edgeGapLength,
+    int edgeDash,
     int edgeMaterialIndex // inputs to put in the std::vector<>
 )
 {
@@ -292,6 +298,9 @@ void OpenglHelper::getMeshGeometry(
                         static_cast<int>(endPointIndex)
                     });
                     edge_width.push_back(edgeWidth);
+                    edge_dashLength.push_back(edgeDashLength);
+                    edge_gapLength.push_back(edgeGapLength);
+                    edge_dash.push_back(edgeDash);
                     edge_materialIndex.push_back(edgeMaterialIndex);
 
                     // get two dimensional point on the Face Plane
@@ -399,6 +408,9 @@ void OpenglHelper::getMeshGeometry(
                 });
 
                 edge_width.push_back(edgeWidth);
+                edge_dashLength.push_back(edgeDashLength);
+                edge_gapLength.push_back(edgeGapLength);
+                edge_dash.push_back(edgeDash);
                 edge_materialIndex.push_back(edgeMaterialIndex);
             }
 
@@ -495,11 +507,17 @@ void OpenglHelper::getMeshGeometry(
     std::vector<uint32_t>& meshIndices,
     std::vector<EdgeIndex>& edge_indices,
     std::vector<float>& edge_width,
+    std::vector<float>& edge_dashLength,
+    std::vector<float>& edge_gapLength,
+    std::vector<int>& edge_dash,
     std::vector<int>& edge_materialIndex,
     int textureIndex,
     int materialIndex,
     int scalingFactor,
     float edgeWidth, // inputs to put in the std::vector<>
+    float edgeDashLength,
+    float edgeGapLength,
+    int edgeDash,
     int edgeMaterialIndex // inputs to put in the std::vector<>
 )
 {
@@ -628,11 +646,17 @@ void OpenglHelper::getMeshGeometry(
     std::vector<uint32_t>& meshIndices,
     std::vector<EdgeIndex>& edge_indices,
     std::vector<float>& edge_width,
+    std::vector<float>& edge_dashLength,
+    std::vector<float>& edge_gapLength,
+    std::vector<int>& edge_dash,
     std::vector<int>& edge_materialIndex,
     int textureIndex,
     int materialIndex,
     int scalingFactor,
     float edgeWidth, // inputs to put in the std::vector<>
+    float edgeDashLength,
+    float edgeGapLength,
+    int edgeDash,
     int edgeMaterialIndex // inputs to put in the std::vector<>
 )
 {
@@ -762,11 +786,17 @@ void OpenglHelper::getMeshGeometry(
     std::vector<uint32_t>& meshIndices,
     std::vector<EdgeIndex>& edge_indices,
     std::vector<float>& edge_width,
+    std::vector<float>& edge_dashLength,
+    std::vector<float>& edge_gapLength,
+    std::vector<int>& edge_dash,
     std::vector<int>& edge_materialIndex,
     int textureIndex,
     int materialIndex,
     int scalingFactor,
     float edgeWidth, // inputs to put in the std::vector<>
+    float edgeDashLength,
+    float edgeGapLength,
+    int edgeDash,
     int edgeMaterialIndex // inputs to put in the std::vector<>
 )
 {

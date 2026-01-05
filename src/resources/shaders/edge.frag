@@ -1,6 +1,6 @@
 #version 330 core
 flat in int MaterialIndex;
-flat in bool uDashRequired;
+flat in int uDashRequired;
 in float vDist;
 in float uDash;
 in float uGap;
@@ -42,8 +42,8 @@ Material getMaterial(int id) {
 
 void main()
 {
-   // 1. generating dashes
-   if (uDashRequired == true)
+   // 1. generating dashes where 0 = false and 1 means true
+   if (uDashRequired != 0)
     {
         float pattern = uDash + uGap;
         if (mod(vDist, pattern) > uDash)
