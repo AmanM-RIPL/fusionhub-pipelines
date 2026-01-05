@@ -80,6 +80,56 @@ void TaskController::create(const QString &name, const QString &description, con
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+void TaskController::update(const QString &taskName ,const QString &description, const QString &bimElement ,const QString &startDate ,const QString &endDate, const long long pid, const long long task_id, int draftId) const
+{
+
+
+    QJsonObject jsonObject;
+
+    jsonObject["id"] = task_id;
+    jsonObject["task_name"] = taskName;
+    jsonObject["description"] = description;
+    jsonObject["bim_element"] = bimElement;
+    jsonObject["start_date"] = startDate;
+    jsonObject["end_date"] = endDate;
+    jsonObject["pid"] = pid;
+
+    QJsonDocument jsonDoc(jsonObject);
+    QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
+    //qDebug() << "Task::EntitySchema: " << entitySchema;
+
+    QDateTime currentDateTimeUtc = QDateTime::currentDateTimeUtc();
+    QString isoDateTimeString = currentDateTimeUtc.toString(Qt::ISODateWithMs);
+
+    QJsonObject jsonObjectChangeHistory;
+    jsonObjectChangeHistory["user"] = gUser->getId();
+    jsonObjectChangeHistory["timestamp"] =  isoDateTimeString;
+    jsonObjectChangeHistory["changeType"] =  "update";
+    jsonObjectChangeHistory["description"] = "Updated By User";
+    jsonObjectChangeHistory["approvalHistory"] = "null";
+
+    QJsonDocument jsonDocChangeHistory(jsonObjectChangeHistory);
+    QString changeHistory = jsonDocChangeHistory.toJson(QJsonDocument::Indented);
+
+    QDate createdOn = QDate::currentDate();
+
+    DraftEntity draftEntity;
+    draftEntity.setId(draftId);
+    draftEntity.setTenant(gTenantId);
+    draftEntity.setCreatedOn(createdOn);
+    draftEntity.setProject(gProjectId);
+    draftEntity.setEntity("Task");
+    draftEntity.setCreatedByUser(gUser->getId());
+    draftEntity.setNextApprovingUser(0);
+    draftEntity.setEntitySchema(entitySchema);
+    draftEntity.setAssociatedApprovedEntity(0);
+    draftEntity.setChangeHistory(changeHistory);
+
+    m_draftEntityRepository->updateQML(&draftEntity);
+
+}
+
+
 std::vector<Task*> TaskController::getTaskList(bool isApproved) const
 {    
     qDebug()<<"IsApproved: "<< isApproved;
@@ -147,6 +197,9 @@ std::vector<Task*> TaskController::getTaskList(bool isApproved) const
                 auto task = new Task();
                 QJsonObject jsonObj = jsonDoc.object();
                 //task->setId(i + 1);
+
+                int draftId = draftEntitys[i]->getId();
+                task->setDraftId(draftId);
                 task->setId(jsonObj["id"].toVariant().toLongLong());               
                 task->setGlobalId("123");
                 task->setApprovalStatus(true);

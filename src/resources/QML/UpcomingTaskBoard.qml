@@ -4,6 +4,8 @@ import QtQuick.Controls
 import QtQuick.Layouts 1.15
 import com.fh.models 1.0
 import com.fh.controllers
+import QtQuick.Controls 2.15
+
 
 Rectangle {
     id:upcomingTaskBoard_root
@@ -24,12 +26,15 @@ Rectangle {
     property date selectedDate: new Date()
 
     property string txtTotalUpcomingTask: "0"
+    property int activeRowIndex: -1
+
+    // Signals
+    signal viewTask(var row)
+    signal editTask(var row)
 
     ListModel {
         id: yearModel
     }
-
-
 
     TaskController{
         id:taskController
@@ -38,6 +43,7 @@ Rectangle {
     WorkBillingLineController{
       id:workBillingLineController
     }
+
 
     /************Start of Calendar******************/
 
@@ -290,7 +296,7 @@ Rectangle {
                         {
                             let yearText = yearModel.get(j).text;
 
-                            if(currentYear.localeCompare(yearText)===0)
+                            if(currentYear.localeCompare(yearText) === 0)
                             {
                                 currentIndex = j;
                             }
@@ -535,7 +541,6 @@ Rectangle {
     }
 
 
-
     Rectangle{
         width: 16
         height: 16
@@ -621,9 +626,19 @@ Rectangle {
             id: listDelegate
 
             Rectangle{
-                width: 276.5
+
+                required property var id
+                required property string title
+                required property string desc
+                required property int index
+
+                width: 276.5 + 15
                 height: 114
                 color: "#FFFFFF"
+
+                //property var rowData: modelData
+                property int rowIndex: index
+
 
                 Text{
                     text: title
@@ -645,9 +660,82 @@ Rectangle {
                     anchors.top: parent.top
                     anchors.topMargin: 21
 
+
+
                     Image {
+                        id: dots
                         source: "qrc:/resources/images/dotMenu.svg"
                         anchors.centerIn: parent
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                activeRowIndex = activeRowIndex === rowIndex ? -1 : rowIndex
+                            }
+                        }
+                    }
+
+                    // Action buttons
+                    Column {
+                        spacing: 6
+                        anchors.right: dots.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.leftMargin: 6
+                        visible: activeRowIndex === rowIndex
+
+                        Rectangle {
+                            width: 35
+                            height: 24
+                            radius: 4
+                            color: viewMouseArea.pressed ? "#0056b3" : (viewMouseArea.containsMouse ? "#0069d9" : "#007AFF")
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "View"
+                                color: "white"
+                                font.pixelSize: 12
+                            }
+
+                            MouseArea {
+                                id: viewMouseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    var rowData = {"id": id, "title": title, "desc": desc };
+                                   viewTask(rowData)
+                                    activeRowIndex = -1
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            width: 35
+                            height: 24
+                            radius: 4
+                            color: editMouseArea.pressed ? "#0056b3" : (editMouseArea.containsMouse ? "#0069d9" : "#007AFF")
+                            visible: isApproved === false ? true : false
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "Edit"
+                                color: "white"
+                                font.pixelSize: 12
+                            }
+
+                            MouseArea {
+                                id: editMouseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    var rowData = {"id": id, "title": title, "desc": desc };
+                                    editTask(rowData)
+                                    activeRowIndex = -1
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -670,7 +758,6 @@ Rectangle {
 
     Component.onCompleted: {
         showList();
-
     }
 
     onVisibleChanged: {
@@ -681,7 +768,6 @@ Rectangle {
         if(upcomingTaskBoard_root.visible){
             task_idList = [];
             listModel.clear();
-
 
             task_month_paramList = taskController.getTaskList(isApproved);
             /*var allTaskList = taskController.getTaskList(isApproved);
@@ -732,7 +818,8 @@ Rectangle {
 
                 listModel.append({
                     "title": task.id + "_" + task.taskName,
-                    "desc": task.description
+                    "desc": task.description,
+                    "id":task.id
                 });
             }
         }
