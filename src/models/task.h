@@ -10,6 +10,7 @@ class Task: public QObject
     Q_OBJECT
 
     Q_PROPERTY(long long id READ getId CONSTANT)
+    Q_PROPERTY(int draftId READ getDraftId CONSTANT)
     Q_PROPERTY(bool approvalStatus READ getApprovalStatus WRITE setApprovalStatus NOTIFY approvalStatusChanged)
     Q_PROPERTY(QString globalId READ getGlobalId WRITE setGlobalId NOTIFY globalIdChanged)
     Q_PROPERTY(QString taskName READ getTaskName WRITE setTaskName NOTIFY taskNameChanged)
@@ -67,6 +68,7 @@ public:
             QObject* parent = nullptr);
 
     long long getId() const { return id; }
+    int getDraftId() const { return draftId; }
     QString getGlobalId() const { return globalId; }
     bool getApprovalStatus() const { return approvalStatus; }
     QString getTaskName() const { return taskName; }
@@ -108,6 +110,7 @@ public:
 
 
     void setId(long long id) { this->id = id; }
+    void setDraftId(int draftId) { this->draftId = draftId; }
     void setGlobalId(const QString& globalId) { this->globalId = globalId; }
     void setApprovalStatus(bool status) { this->approvalStatus = status; }
     void setTaskName(const QString& taskName) { this->taskName = taskName; }
@@ -192,13 +195,14 @@ signals:
 
 private:
     long long id = 0;
+    int draftId = 0;
     QString globalId;
     bool approvalStatus = true;
-    QString taskName;
-    QString description;
-    QString bimElement;
-    QString startDate;
-    QString endDate;
+    QString taskName = "";
+    QString description = "";
+    QString bimElement = "";
+    QString startDate = "";
+    QString endDate = "";
     int days = 0;
     long long pid = 0;
 

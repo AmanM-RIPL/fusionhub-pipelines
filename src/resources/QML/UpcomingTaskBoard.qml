@@ -4,6 +4,8 @@ import QtQuick.Controls
 import QtQuick.Layouts 1.15
 import com.fh.models 1.0
 import com.fh.controllers
+import QtQuick.Controls 2.15
+
 
 Rectangle {
     id:upcomingTaskBoard_root
@@ -24,12 +26,16 @@ Rectangle {
     property date selectedDate: new Date()
 
     property string txtTotalUpcomingTask: "0"
+    property int activeRowIndex: -1
+    property int activeTextBoxIndex: -1;
+
+    // Signals
+    signal viewTask(var row)
+    signal editTask(var row)
 
     ListModel {
         id: yearModel
     }
-
-
 
     TaskController{
         id:taskController
@@ -39,10 +45,11 @@ Rectangle {
       id:workBillingLineController
     }
 
+
     /************Start of Calendar******************/
 
     Popup {
-            id: calendarPopup_startDate
+            id: calendarPopup
             anchors.centerIn: parent
             y: taskStartDateTextBox.y + taskStartDateTextBox.height + 10
             visible: false
@@ -56,7 +63,7 @@ Rectangle {
 
                     Button {
                         id: idPrevMonthButton
-                        text: "< "//"Previous Month"
+                        text: "< "
                         font.pixelSize: 20
                         font.weight: 700
                         onClicked: {
@@ -104,7 +111,7 @@ Rectangle {
 
                     Button {
                         id:idNextMonthButton
-                        text:" >" //"Next Month"
+                        text:" >"
                         font.pixelSize: 20
                         font.weight: 700
                         onClicked: {
@@ -145,9 +152,17 @@ Rectangle {
                     Layout.fillWidth: true
 
                     onClicked: (date) => {
-                        taskStartDateTextBox.text = date.toLocaleDateString(Qt.locale(), "dd/MM/yyyy");
-                        calendarPopup_startDate.visible = false;
-                        //taskStartDateTextBox.activeFocus = false;
+                        if(activeTextBoxIndex === 1)
+                        {
+                            taskStartDateTextBox.text = date.toLocaleDateString(Qt.locale(), "dd/MM/yyyy");
+                            calendarPopup.visible = false;
+                        }
+
+                        if(activeTextBoxIndex === 2)
+                        {
+                            taskEndDateTextBox.text = date.toLocaleDateString(Qt.locale(), "dd/MM/yyyy");
+                            calendarPopup.visible = false;
+                        }
                     }
 
                     Component.onCompleted: {
@@ -170,138 +185,7 @@ Rectangle {
                     }
                 }
             }
-       }
-
-
-    Popup {
-            id: calendarPopup_endDate
-            anchors.centerIn: parent
-            y: taskEndDateTextBox.y + taskEndDateTextBox.height + 10
-            visible: false
-            closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-            parent: Overlay.overlay
-
-            ColumnLayout {
-                ///////////////////
-                RowLayout {
-
-                    Button {
-                        id: idPrevMonthButtonNew
-                        text: "< "//"Previous Month"
-                        font.pixelSize: 20
-                        font.weight: 700
-                        onClicked: {
-                            if(monthNew.currentIndex > 0){
-                                 --monthNew.currentIndex;
-                                idNextMonthButtonNew.enabled = true;
-                                idPrevMonthButtonNew.enabled = true;
-                            }
-                            else{
-                                if(yearNew.currentIndex > 0)
-                                {
-                                    --yearNew.currentIndex;
-                                    monthNew.currentIndex = 11;
-                                    idPrevMonthButtonNew.enabled = true;
-                                    idNextMonthButtonNew.enabled = true;
-                                }
-                                else
-                                {
-                                    idPrevMonthButtonNew.enabled = false;
-                                }
-                            }
-                        }
-                    }
-
-                    ComboBox {
-                        id: monthNew
-                        height: 40
-                        width: 150
-                        model: monthModel
-                        font.pixelSize: 20
-                        font.weight: 700
-                        currentIndex: 0
-                    }
-
-                    ComboBox {
-                        id: yearNew
-                        height: 40
-                        width: 150
-                        model: yearModel
-                        font.pixelSize: 20
-                        font.weight: 700
-                        currentIndex: 0
-                    }
-
-                    Button {
-                        id:idNextMonthButtonNew
-                        text:" >" //"Next Month"
-                        font.pixelSize: 20
-                        font.weight: 700
-                        onClicked: {
-                            if(monthNew.currentIndex < 11){
-                                ++monthNew.currentIndex;
-                                idNextMonthButtonNew.enabled = true;
-                                idPrevMonthButtonNew.enabled = true;
-                            }
-                            else{
-                                if(yearNew.currentIndex < yearModel.count - 1)
-                                {
-                                    ++yearNew.currentIndex;
-                                    monthNew.currentIndex = 0;
-                                    idNextMonthButtonNew.enabled = true;
-                                    idPrevMonthButtonNew.enabled = true;
-                                }
-                                else
-                                {
-                                    idNextMonthButtonNew.enabled = false;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                ///////////////
-
-                DayOfWeekRow {
-                    locale: monthGrid_endDate.locale
-                    Layout.fillWidth: true
-                }
-
-                MonthGrid {
-                    id: monthGrid_endDate
-                    month: monthNew.currentIndex
-                    year: yearModel.get(yearNew.currentIndex).text
-                    locale: Qt.locale("en_US")
-                    Layout.fillWidth: true
-
-                    onClicked: (date) => {
-                        taskEndDateTextBox.text = date.toLocaleDateString(Qt.locale(), "dd/MM/yyyy");
-                        calendarPopup_endDate.visible = false;
-                        //taskEndDateTextBox.activeFocus = false;
-                    }
-
-                    Component.onCompleted: {
-                         loadSampleYears()
-                        var now = new Date ();
-                        let currentYear = now.getFullYear().toString();
-
-                        var currentIndex = 0;
-                        for(var j = 0; j < yearModel.count; j++)
-                        {
-                            let yearText = yearModel.get(j).text;
-
-                            if(currentYear.localeCompare(yearText)===0)
-                            {
-                                currentIndex = j;
-                            }
-                        }
-                        yearNew.currentIndex =  currentIndex;
-                        monthNew.currentIndex = now.getMonth();
-                    }
-                }
-            }
-       }
-
+       }    
 
     /********************End of Calendar*****************************/
 
@@ -329,12 +213,9 @@ Rectangle {
 
             showList();
 
-            calendarPopup_startDate.visible = false;
-            calendarPopup_endDate.visible = false;
+            calendarPopup.visible = false;
             taskStartDateTextBox.focus = false;
             taskEndDateTextBox.focus = false;
-
-
         }
 
         onCancelCallback: function () {
@@ -344,9 +225,7 @@ Rectangle {
             taskEndDateTextBox.text = "";
             taskBIMObjectTextBox.text = "";
 
-
-            calendarPopup_startDate.visible = false;
-            calendarPopup_endDate.visible = false;
+            calendarPopup.visible = false;
             taskStartDateTextBox.focus = false;
             taskEndDateTextBox.focus = false;
 
@@ -414,17 +293,11 @@ Rectangle {
                 text:""
                 color: "#323130"
 
-                onActiveFocusChanged: {
-                    if (activeFocus) {
-                        calendarPopup_startDate.visible = true;
-
-                    }
-                }
-
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        taskStartDateTextBox.forceActiveFocus();
+                        activeTextBoxIndex = 1;
+                        calendarPopup.visible = !calendarPopup.visible;
                     }
                 }
             }
@@ -444,18 +317,13 @@ Rectangle {
                 id: taskEndDateTextBox
                 placeholderText: "End Date"
                 text:""
-                color: "#323130"
-                onActiveFocusChanged: {
-                    if (activeFocus) {
-                        calendarPopup_endDate.visible = true;
-
-                    }
-                }
+                color: "#323130"                
 
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        taskEndDateTextBox.forceActiveFocus();
+                        activeTextBoxIndex = 2;
+                        calendarPopup.visible = !calendarPopup.visible;
                     }
                 }
             }
@@ -533,7 +401,6 @@ Rectangle {
         anchors.left: statusRect.right
         anchors.leftMargin: 10
     }
-
 
 
     Rectangle{
@@ -621,9 +488,19 @@ Rectangle {
             id: listDelegate
 
             Rectangle{
-                width: 276.5
+
+                required property var id
+                required property string title
+                required property string desc
+                required property int index
+
+                width: 276.5 + 15
                 height: 114
                 color: "#FFFFFF"
+
+                //property var rowData: modelData
+                property int rowIndex: index
+
 
                 Text{
                     text: title
@@ -645,9 +522,82 @@ Rectangle {
                     anchors.top: parent.top
                     anchors.topMargin: 21
 
+
+
                     Image {
+                        id: dots
                         source: "qrc:/resources/images/dotMenu.svg"
                         anchors.centerIn: parent
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                activeRowIndex = activeRowIndex === rowIndex ? -1 : rowIndex
+                            }
+                        }
+                    }
+
+                    // Action buttons
+                    Column {
+                        spacing: 6
+                        anchors.right: dots.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.leftMargin: 6
+                        visible: activeRowIndex === rowIndex
+
+                        Rectangle {
+                            width: 35
+                            height: 24
+                            radius: 4
+                            color: viewMouseArea.pressed ? "#0056b3" : (viewMouseArea.containsMouse ? "#0069d9" : "#007AFF")
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "View"
+                                color: "white"
+                                font.pixelSize: 12
+                            }
+
+                            MouseArea {
+                                id: viewMouseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    var rowData = {"id": id, "title": title, "desc": desc };
+                                   viewTask(rowData)
+                                    activeRowIndex = -1
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            width: 35
+                            height: 24
+                            radius: 4
+                            color: editMouseArea.pressed ? "#0056b3" : (editMouseArea.containsMouse ? "#0069d9" : "#007AFF")
+                            visible: isApproved === false ? true : false
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "Edit"
+                                color: "white"
+                                font.pixelSize: 12
+                            }
+
+                            MouseArea {
+                                id: editMouseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    var rowData = {"id": id, "title": title, "desc": desc };
+                                    editTask(rowData)
+                                    activeRowIndex = -1
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -670,7 +620,6 @@ Rectangle {
 
     Component.onCompleted: {
         showList();
-
     }
 
     onVisibleChanged: {
@@ -681,7 +630,6 @@ Rectangle {
         if(upcomingTaskBoard_root.visible){
             task_idList = [];
             listModel.clear();
-
 
             task_month_paramList = taskController.getTaskList(isApproved);
             /*var allTaskList = taskController.getTaskList(isApproved);
@@ -732,7 +680,8 @@ Rectangle {
 
                 listModel.append({
                     "title": task.id + "_" + task.taskName,
-                    "desc": task.description
+                    "desc": task.description,
+                    "id":task.id
                 });
             }
         }

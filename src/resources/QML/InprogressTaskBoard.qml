@@ -114,7 +114,7 @@ Rectangle {
             id: listDelegate
 
             Rectangle{
-                width: 276.5
+                width: 276.5 + 15
                 height: 114
                 color: "#FFFFFF"
 
@@ -160,8 +160,5 @@ Rectangle {
                 }
             }
         }
-
     }
-
-
 }

@@ -78,7 +78,7 @@ Rectangle {
         width: 276.5
         height: parent.height-50 //480
         color: parent.color
-       // anchors.bottom: parent.bottom
+        //anchors.bottom: parent.bottom
         //anchors.bottomMargin: 8
         anchors.top: parent.top
         anchors.topMargin: 50
@@ -87,8 +87,17 @@ Rectangle {
 
         ListModel{
             id: listModel
-
             // no element
+            ListElement{
+                title: "Excavation Work"
+                desc: "Filling in plinth, floors, trenches, pits..."
+            }
+
+
+            ListElement{
+                title: "Disposal Work"
+                desc: "Disposal of excaveted earth, soft rock, rock..."
+            }
         }
 
 
@@ -105,12 +114,12 @@ Rectangle {
             id: listDelegate
 
             Rectangle{
-                width: 276.5
+                width: 276.5 + 15
                 height: 114
                 color: "#FFFFFF"
 
                 Text{
-                    text: "Title"
+                    text: title
                     color: "#323130"
                     font.pixelSize: 16
                     font.weight: 400
@@ -136,8 +145,8 @@ Rectangle {
                 }
 
 
-                Text{
-                    text: "Some quick example text to build on the card title and make up the bulk of the card content."
+                Text{                   
+                    text: desc
                     width: 252.5
                     height: 32
                     color: "#323130"
@@ -151,8 +160,5 @@ Rectangle {
                 }
             }
         }
-
     }
-
-
 }

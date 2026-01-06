@@ -18,6 +18,12 @@ Rectangle {
     property string txtTotalBilledTask: "0"
     property bool isApproved: true
 
+    property int activeRowIndex: -1
+
+    // Signals
+    signal viewTask(var row)
+    //signal editTask(var row)
+
 
     Rectangle{
         id: statusRect
@@ -120,9 +126,18 @@ Rectangle {
             id: listDelegate
 
             Rectangle{
-                width: 276.5
+
+                required property var id
+                required property string title
+                required property string desc
+                required property int index
+
+                width: 276.5 + 15
                 height: 114
                 color: "#FFFFFF"
+
+                property int rowIndex: index
+
 
                 Text{
                     text: title
@@ -145,8 +160,52 @@ Rectangle {
                     anchors.topMargin: 21
 
                     Image {
+                        id: dots
                         source: "qrc:/resources/images/dotMenu.svg"
                         anchors.centerIn: parent
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                activeRowIndex = activeRowIndex === rowIndex ? -1 : rowIndex
+                            }
+                        }
+                    }
+
+                    // Action buttons
+                    Column {
+                        spacing: 6
+                        anchors.right: dots.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.leftMargin: 6
+                        visible: activeRowIndex === rowIndex
+
+                        Rectangle {
+                            width: 35
+                            height: 24
+                            radius: 4
+                            color: viewMouseArea.pressed ? "#0056b3" : (viewMouseArea.containsMouse ? "#0069d9" : "#007AFF")
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "View"
+                                color: "white"
+                                font.pixelSize: 12
+                            }
+
+                            MouseArea {
+                                id: viewMouseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    var rowData = {"id": id, "title": title, "desc": desc };
+                                    viewTask(rowData)
+                                    activeRowIndex = -1
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -193,10 +252,11 @@ Rectangle {
 
         for(var i = 0; i < billedTaskList.length; i++ )
         {
-            console.log("Billed_task_billedTaskList[i].id:", billedTaskList[i].id)
+            //console.log("Billed_task_billedTaskList[i].id:", billedTaskList[i].id)
             listModel.append({
                              "title": String(billedTaskList[i].id) + "_" + billedTaskList[i].taskName,
-                             "desc": billedTaskList[i].description
+                             "desc": billedTaskList[i].description,
+                             "id":billedTaskList[i].id
                         });
         }
     }

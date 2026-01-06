@@ -11,6 +11,11 @@ class TaskController: public QObject
 public:
     explicit TaskController(QObject *parent = nullptr);
     Q_INVOKABLE void create(const QString &taskName ,const QString &description, const QString &bimElement ,const QString &startDate ,const QString &endDate, const long long pid) const;
+
+    Q_INVOKABLE void update(const QString &taskName ,const QString &description, const QString &bimElement ,const QString &startDate ,const QString &endDate, const long long pid, const long long id, int draftId) const;
+
+
+
     Q_INVOKABLE std::vector<Task*> getTaskList(bool isApproved = false) const;
 
 

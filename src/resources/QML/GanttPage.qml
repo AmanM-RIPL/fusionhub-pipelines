@@ -16,30 +16,12 @@ Rectangle {
     property string txtProjectName: "NA"
     property int febMonthWidth: 28
     property int monthScale: 5
+    property int activeTextBoxIndex: -1
 
-    //property bool isApproved: false
     property int approvedNo: 0
-
-    //property date startDate: new Date(2025, 0, 15) // Jan 15, 2025 (months are 0-based)
-   // property date endDate: new Date(2025, 0, 20)   // Jan 20, 2025
-
     property int startYear: 2080
     property int endYear: 2010
-
     property date selectedDate: new Date()
-
-
-
-   /* property var  task_month_paramList: [
-        {"id":"1", "pid":"0", "task":"Cutting", "duration":"20 days", "days":"20", "startx":"3", "endx":"22", "start":"3/01/2025", "end":"22/01/2025",  "jan":"20", "feb":" ", "mar":" ", "apr":" ", "may":" ", "jun":" ",
-                                 "jul":" ", "aug":" ", "sep":" ", "oct":" ", "nov":" ", "dec":" "},
-
-        {"id":"2", "pid":"1", "task":"Bending", "duration":"10 days", "days":"10", "startx":"19", "endx":"28", "start":"19/02/2025", "end":"28/02/2025",  "jan":" ", "feb":"10", "mar":" ", "apr":" ", "may":" ", "jun":" ",
-                                "jul":" ", "aug":" ", "sep":" ", "oct":" ", "nov":" ", "dec":" "},
-
-        {"id":"3", "pid":"2", "task":"Clustering", "duration":"26 days", "days":"26", "startx":"5", "endx":"30", "start":"5/03/2025", "end":"30/03/2025", "jan":" ", "feb":" ", "mar":"26", "apr":" ", "may":" ", "jun":" ",
-                            "jul":" ", "aug":" ", "sep":" ", "oct":" ", "nov":" ", "dec":" "}
-    ]*/
 
     property var monthModel: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     property var  task_month_paramList: []
@@ -56,8 +38,272 @@ Rectangle {
     }
 
 
+    // Popup {
+    //         id: calendarPopup_startDate
+    //         anchors.centerIn: parent
+    //         y: taskStartDateTextBox.y + taskStartDateTextBox.height + 10
+    //         visible: false
+    //         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    //         parent: Overlay.overlay
+
+    //         ColumnLayout {
+
+    //             ///////////////////
+    //             RowLayout {
+
+    //                 Button {
+    //                     id: idPrevMonthButton
+    //                     text: "< "//"Previous Month"
+    //                     font.pixelSize: 20
+    //                     font.weight: 700
+    //                     onClicked: {
+    //                         if(month.currentIndex > 0){
+    //                              --month.currentIndex;
+    //                             idNextMonthButton.enabled = true;
+    //                             idPrevMonthButton.enabled = true;
+    //                         }
+    //                         else{
+    //                             if(year.currentIndex > 0)
+    //                             {
+    //                                 --year.currentIndex;
+    //                                 month.currentIndex = 11;
+    //                                 idPrevMonthButton.enabled = true;
+    //                                 idNextMonthButton.enabled = true;
+    //                             }
+    //                             else
+    //                             {
+    //                                 idPrevMonthButton.enabled = false;
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+
+
+    //                 ComboBox {
+    //                     id: month
+    //                     height: 40
+    //                     width: 150
+    //                     model: monthModel
+    //                     font.pixelSize: 20
+    //                     font.weight: 700
+    //                     currentIndex: 0
+    //                 }
+
+    //                 ComboBox {
+    //                     id: year
+    //                     height: 40
+    //                     width: 150
+    //                     model: yearModel
+    //                     font.pixelSize: 20
+    //                     font.weight: 700
+    //                     currentIndex: 0
+    //                 }
+
+    //                 Button {
+    //                     id:idNextMonthButton
+    //                     text:" >" //"Next Month"
+    //                     font.pixelSize: 20
+    //                     font.weight: 700
+    //                     onClicked: {
+    //                         if(month.currentIndex < 11){
+    //                             ++month.currentIndex;
+    //                             idNextMonthButton.enabled = true;
+    //                             idPrevMonthButton.enabled = true;
+    //                         }
+    //                         else{
+    //                             if(year.currentIndex < yearModel.count - 1)
+    //                             {
+    //                                 ++year.currentIndex;
+    //                                 month.currentIndex = 0;
+    //                                 idNextMonthButton.enabled = true;
+    //                                 idPrevMonthButton.enabled = true;
+    //                             }
+    //                             else
+    //                             {
+    //                                 idNextMonthButton.enabled = false;
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+    //             }
+
+    //             ///////////////
+
+    //             DayOfWeekRow {
+    //                 locale: monthGrid_startDate.locale
+    //                 Layout.fillWidth: true
+    //             }
+
+    //             MonthGrid {
+    //                 id: monthGrid_startDate
+    //                 month: month.currentIndex
+    //                 year: yearModel.get(year.currentIndex).text
+    //                 locale: Qt.locale("en_US")
+    //                 Layout.fillWidth: true
+
+    //                 onClicked: (date) => {
+    //                     taskStartDateTextBox.text = date.toLocaleDateString(Qt.locale(), "dd/MM/yyyy");
+    //                     calendarPopup_startDate.visible = false;
+    //                     //taskStartDateTextBox.activeFocus = false;
+    //                 }
+
+    //                 Component.onCompleted: {
+    //                      loadSampleYears()
+    //                     var now = new Date ();
+    //                     let currentYear = now.getFullYear().toString();
+
+    //                     var currentIndex = 0;
+    //                     for(var j = 0; j<yearModel.count; j++)
+    //                     {
+    //                         let yearText = yearModel.get(j).text;
+
+    //                         if(currentYear.localeCompare(yearText)===0)
+    //                         {
+    //                             currentIndex = j;
+    //                         }
+    //                     }
+    //                     year.currentIndex = currentIndex;
+    //                     month.currentIndex = now.getMonth();
+    //                 }
+    //             }
+    //         }
+    //    }
+
+
+    // Popup {
+    //         id: calendarPopup_endDate
+    //         anchors.centerIn: parent
+    //         y: taskEndDateTextBox.y + taskEndDateTextBox.height + 10
+    //         visible: false
+    //         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    //         parent: Overlay.overlay
+
+    //         ColumnLayout {
+    //             ///////////////////
+    //             RowLayout {
+
+    //                 Button {
+    //                     id: idPrevMonthButtonNew
+    //                     text: "< "//"Previous Month"
+    //                     font.pixelSize: 20
+    //                     font.weight: 700
+    //                     onClicked: {
+    //                         if(monthNew.currentIndex > 0){
+    //                              --monthNew.currentIndex;
+    //                             idNextMonthButtonNew.enabled = true;
+    //                             idPrevMonthButtonNew.enabled = true;
+    //                         }
+    //                         else{
+    //                             if(yearNew.currentIndex > 0)
+    //                             {
+    //                                 --yearNew.currentIndex;
+    //                                 monthNew.currentIndex = 11;
+    //                                 idPrevMonthButtonNew.enabled = true;
+    //                                 idNextMonthButtonNew.enabled = true;
+    //                             }
+    //                             else
+    //                             {
+    //                                 idPrevMonthButtonNew.enabled = false;
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+
+    //                 ComboBox {
+    //                     id: monthNew
+    //                     height: 40
+    //                     width: 150
+    //                     model: monthModel
+    //                     font.pixelSize: 20
+    //                     font.weight: 700
+    //                     currentIndex: 0
+    //                 }
+
+    //                 ComboBox {
+    //                     id: yearNew
+    //                     height: 40
+    //                     width: 150
+    //                     model: yearModel
+    //                     font.pixelSize: 20
+    //                     font.weight: 700
+    //                     currentIndex: 0
+    //                 }
+
+    //                 Button {
+    //                     id:idNextMonthButtonNew
+    //                     text:" >" //"Next Month"
+    //                     font.pixelSize: 20
+    //                     font.weight: 700
+    //                     onClicked: {
+    //                         if(monthNew.currentIndex < 11){
+    //                             ++monthNew.currentIndex;
+    //                             idNextMonthButtonNew.enabled = true;
+    //                             idPrevMonthButtonNew.enabled = true;
+    //                         }
+    //                         else{
+    //                             if(yearNew.currentIndex < yearModel.count - 1)
+    //                             {
+    //                                 ++yearNew.currentIndex;
+    //                                 monthNew.currentIndex = 0;
+    //                                 idNextMonthButtonNew.enabled = true;
+    //                                 idPrevMonthButtonNew.enabled = true;
+    //                             }
+    //                             else
+    //                             {
+    //                                 idNextMonthButtonNew.enabled = false;
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+    //             }
+
+    //             ///////////////
+
+    //             DayOfWeekRow {
+    //                 locale: monthGrid_endDate.locale
+    //                 Layout.fillWidth: true
+    //             }
+
+    //             MonthGrid {
+    //                 id: monthGrid_endDate
+    //                 month: monthNew.currentIndex
+    //                 year: yearModel.get(yearNew.currentIndex).text
+    //                 locale: Qt.locale("en_US")
+    //                 Layout.fillWidth: true
+
+    //                 onClicked: (date) => {
+    //                     taskEndDateTextBox.text = date.toLocaleDateString(Qt.locale(), "dd/MM/yyyy");
+    //                     calendarPopup_endDate.visible = false;
+    //                     //taskEndDateTextBox.activeFocus = false;
+    //                 }
+
+    //                 Component.onCompleted: {
+    //                      loadSampleYears()
+    //                     var now = new Date ();
+    //                     let currentYear = now.getFullYear().toString();
+
+    //                     var currentIndex = 0;
+    //                     for(var j = 0; j < yearModel.count; j++)
+    //                     {
+    //                         let yearText = yearModel.get(j).text;
+
+    //                         if(currentYear.localeCompare(yearText)===0)
+    //                         {
+    //                             currentIndex = j;
+    //                         }
+    //                     }
+    //                     yearNew.currentIndex =  currentIndex;
+    //                     monthNew.currentIndex = now.getMonth();
+    //                 }
+    //             }
+    //         }
+    //    }
+
+
+    /************Start of Calendar******************/
+
     Popup {
-            id: calendarPopup_startDate
+            id: calendarPopup
             anchors.centerIn: parent
             y: taskStartDateTextBox.y + taskStartDateTextBox.height + 10
             visible: false
@@ -71,7 +317,7 @@ Rectangle {
 
                     Button {
                         id: idPrevMonthButton
-                        text: "< "//"Previous Month"
+                        text: "< "
                         font.pixelSize: 20
                         font.weight: 700
                         onClicked: {
@@ -119,7 +365,7 @@ Rectangle {
 
                     Button {
                         id:idNextMonthButton
-                        text:" >" //"Next Month"
+                        text:" >"
                         font.pixelSize: 20
                         font.weight: 700
                         onClicked: {
@@ -160,9 +406,17 @@ Rectangle {
                     Layout.fillWidth: true
 
                     onClicked: (date) => {
-                        taskStartDateTextBox.text = date.toLocaleDateString(Qt.locale(), "dd/MM/yyyy");
-                        calendarPopup_startDate.visible = false;
-                        //taskStartDateTextBox.activeFocus = false;
+                        if(activeTextBoxIndex === 1)
+                        {
+                            taskStartDateTextBox.text = date.toLocaleDateString(Qt.locale(), "dd/MM/yyyy");
+                            calendarPopup.visible = false;
+                        }
+
+                        if(activeTextBoxIndex === 2)
+                        {
+                            taskEndDateTextBox.text = date.toLocaleDateString(Qt.locale(), "dd/MM/yyyy");
+                            calendarPopup.visible = false;
+                        }
                     }
 
                     Component.onCompleted: {
@@ -187,135 +441,7 @@ Rectangle {
             }
        }
 
-
-    Popup {
-            id: calendarPopup_endDate
-            anchors.centerIn: parent
-            y: taskEndDateTextBox.y + taskEndDateTextBox.height + 10
-            visible: false
-            closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-            parent: Overlay.overlay
-
-            ColumnLayout {
-                ///////////////////
-                RowLayout {
-
-                    Button {
-                        id: idPrevMonthButtonNew
-                        text: "< "//"Previous Month"
-                        font.pixelSize: 20
-                        font.weight: 700
-                        onClicked: {
-                            if(monthNew.currentIndex > 0){
-                                 --monthNew.currentIndex;
-                                idNextMonthButtonNew.enabled = true;
-                                idPrevMonthButtonNew.enabled = true;
-                            }
-                            else{
-                                if(yearNew.currentIndex > 0)
-                                {
-                                    --yearNew.currentIndex;
-                                    monthNew.currentIndex = 11;
-                                    idPrevMonthButtonNew.enabled = true;
-                                    idNextMonthButtonNew.enabled = true;
-                                }
-                                else
-                                {
-                                    idPrevMonthButtonNew.enabled = false;
-                                }
-                            }
-                        }
-                    }
-
-                    ComboBox {
-                        id: monthNew
-                        height: 40
-                        width: 150
-                        model: monthModel
-                        font.pixelSize: 20
-                        font.weight: 700
-                        currentIndex: 0
-                    }
-
-                    ComboBox {
-                        id: yearNew
-                        height: 40
-                        width: 150
-                        model: yearModel
-                        font.pixelSize: 20
-                        font.weight: 700
-                        currentIndex: 0
-                    }
-
-                    Button {
-                        id:idNextMonthButtonNew
-                        text:" >" //"Next Month"
-                        font.pixelSize: 20
-                        font.weight: 700
-                        onClicked: {
-                            if(monthNew.currentIndex < 11){
-                                ++monthNew.currentIndex;
-                                idNextMonthButtonNew.enabled = true;
-                                idPrevMonthButtonNew.enabled = true;
-                            }
-                            else{
-                                if(yearNew.currentIndex < yearModel.count - 1)
-                                {
-                                    ++yearNew.currentIndex;
-                                    monthNew.currentIndex = 0;
-                                    idNextMonthButtonNew.enabled = true;
-                                    idPrevMonthButtonNew.enabled = true;
-                                }
-                                else
-                                {
-                                    idNextMonthButtonNew.enabled = false;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                ///////////////
-
-                DayOfWeekRow {
-                    locale: monthGrid_endDate.locale
-                    Layout.fillWidth: true
-                }
-
-                MonthGrid {
-                    id: monthGrid_endDate                   
-                    month: monthNew.currentIndex
-                    year: yearModel.get(yearNew.currentIndex).text
-                    locale: Qt.locale("en_US")
-                    Layout.fillWidth: true
-
-                    onClicked: (date) => {
-                        taskEndDateTextBox.text = date.toLocaleDateString(Qt.locale(), "dd/MM/yyyy");
-                        calendarPopup_endDate.visible = false;
-                        //taskEndDateTextBox.activeFocus = false;
-                    }
-
-                    Component.onCompleted: {
-                         loadSampleYears()
-                        var now = new Date ();
-                        let currentYear = now.getFullYear().toString();
-
-                        var currentIndex = 0;
-                        for(var j = 0; j < yearModel.count; j++)
-                        {
-                            let yearText = yearModel.get(j).text;
-
-                            if(currentYear.localeCompare(yearText)===0)
-                            {
-                                currentIndex = j;
-                            }
-                        }
-                        yearNew.currentIndex =  currentIndex;
-                        monthNew.currentIndex = now.getMonth();
-                    }
-                }
-            }
-       }
+    /********************End of Calendar*****************************/
 
 
     FHPopup {
@@ -341,8 +467,7 @@ Rectangle {
 
             showList();
 
-            calendarPopup_startDate.visible = false;
-            calendarPopup_endDate.visible = false;
+            calendarPopup.visible = false;
             taskStartDateTextBox.focus = false;
             taskEndDateTextBox.focus = false;
         }
@@ -354,8 +479,7 @@ Rectangle {
             taskEndDateTextBox.text = "";
             taskBIMObjectTextBox.text = "";
 
-            calendarPopup_startDate.visible = false;
-            calendarPopup_endDate.visible = false;
+            calendarPopup.visible = false;
             taskStartDateTextBox.focus = false;
             taskEndDateTextBox.focus = false;
         }
@@ -420,17 +544,18 @@ Rectangle {
                 text:""
                 color: "#323130"
 
-                onActiveFocusChanged: {
-                    if (activeFocus) {
-                        calendarPopup_startDate.visible = true;
+                // onActiveFocusChanged: {
+                //     if (activeFocus) {
+                //         calendarPopup_startDate.visible = true;
 
-                    }
-                }
+                //     }
+                // }
 
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        taskStartDateTextBox.forceActiveFocus();
+                        activeTextBoxIndex = 1;
+                        calendarPopup.visible = !calendarPopup.visible;
                     }
                 }
             }
@@ -451,17 +576,18 @@ Rectangle {
                 placeholderText: "End Date"
                 text:""
                 color: "#323130"
-                onActiveFocusChanged: {
-                    if (activeFocus) {
-                        calendarPopup_endDate.visible = true;
+                // onActiveFocusChanged: {
+                //     if (activeFocus) {
+                //         calendarPopup_endDate.visible = true;
 
-                    }
-                }
+                //     }
+                // }
 
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        taskEndDateTextBox.forceActiveFocus();
+                        activeTextBoxIndex = 2;
+                        calendarPopup.visible = !calendarPopup.visible;
                     }
                 }
             }
