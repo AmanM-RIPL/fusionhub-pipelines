@@ -17,6 +17,7 @@ class WorkBillingLine: public QObject
     Q_PROPERTY(double taxAmount READ getTaxAmount WRITE setTaxAmount NOTIFY taxAmountChanged)
     Q_PROPERTY(double taxWithHolding READ getTaxWithHolding WRITE setTaxWithHolding NOTIFY taxWithHoldingChanged)
     Q_PROPERTY(double retentionAmount READ getRetentionAmount WRITE setRetentionAmount NOTIFY retentionAmountChanged)
+    Q_PROPERTY(QString workBillingName READ getWorkBillingName WRITE setWorkBillingName NOTIFY workBillingNameChanged)
 
     Q_PROPERTY(QString workOrderName READ getWorkOrderName WRITE setWorkOrderName NOTIFY workOrderNameChanged)
     Q_PROPERTY(QString workOrderLineName READ getWorkOrderLineName WRITE setWorkOrderLineName NOTIFY workOrderLineNameChanged)
@@ -24,7 +25,7 @@ public:
     // Default constructor
     explicit WorkBillingLine(QObject* parent = nullptr): QObject(parent) {}
 
-      WorkBillingLine(int id, const QString& globalId, bool approvalStatus,int workOrderId, int workOrderLineId,
+      WorkBillingLine(int id, const QString& globalId, bool approvalStatus,int workOrderId, int workOrderLineId,const QString& workBillingName,
                     double amount , double taxAmount, double taxWithHolding, double retentionAmount,QObject* parent = nullptr);
 
     // Getters
@@ -33,6 +34,7 @@ public:
     bool getApprovalStatus() const { return approvalStatus; }
     int getWorkOrderId() const { return workOrderId; }
     int getWorkOrderLineId() const { return workOrderLineId; }
+    QString getWorkBillingName() const { return workBillingName; }
     double getAmount() const { return amount; }
     double getTaxAmount() const { return taxAmount; }
     double getTaxWithHolding() const { return taxWithHolding; }
@@ -46,6 +48,7 @@ public:
     void setApprovalStatus(bool status) { this->approvalStatus = status; }
     void setWorkOrderId(int workOrderId) { this->workOrderId = workOrderId; }
     void setWorkOrderLineId(int workOrderLineId) { this->workOrderLineId = workOrderLineId; }
+    void setWorkBillingName(const QString& workBillingName){this->workBillingName = workBillingName;}
     void setAmount(double amount) { this->amount = amount; }
     void setTaxAmount(double taxAmount) { this->taxAmount = taxAmount; }
     void setTaxWithHolding(double taxWithHolding) { this->taxWithHolding = taxWithHolding; }
@@ -58,6 +61,7 @@ signals:
     void approvalStatusChanged();
     void workOrderIdChanged();
     void workOrderLineIdChanged();
+    void workBillingNameChanged();
     void amountChanged();
     void taxAmountChanged();
     void taxWithHoldingChanged();
@@ -71,6 +75,7 @@ private:
     bool approvalStatus = true;
     int workOrderId = 0;
     int workOrderLineId = 0;
+    QString workBillingName;
     double amount = 0;
     double taxAmount = 0;
     double taxWithHolding = 0;

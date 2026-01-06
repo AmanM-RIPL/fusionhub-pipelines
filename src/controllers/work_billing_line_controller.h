@@ -14,7 +14,10 @@ class WorkBillingLineController : public QObject
 public:
     explicit WorkBillingLineController(QObject *parent = nullptr);
 
-    Q_INVOKABLE void create(const int &workOrderId, const QVariantList &workBillingLine) const;
+    Q_INVOKABLE void create(const int &workOrderId, const QString &description, const QVariantList &workBillingLine) const;
+
+    Q_INVOKABLE void update(int id, const int &workOrderId,const QString &description,const QVariantList &workBillingLineData) const;
+
     Q_INVOKABLE std::vector<WorkBillingLine*> getWorkBillingLineList(bool isApproved = false) const;
     Q_INVOKABLE  std::vector<Task*> getBilledTaskList(bool isApproved) const;
 

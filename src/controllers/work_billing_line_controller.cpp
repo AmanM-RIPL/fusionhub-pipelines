@@ -20,10 +20,12 @@ WorkBillingLineController::WorkBillingLineController(QObject *parent)
 {}
 
 
-void WorkBillingLineController::create(const int &workOrderId, const QVariantList &workBillingLine) const
+void WorkBillingLineController::create(const int &workOrderId, const QString &description, const QVariantList &workBillingLine) const
 {
     QJsonObject jsonObject;
     jsonObject["workOrderId"] = workOrderId;
+    jsonObject["description"] = description;
+
     QJsonArray lineArray;
     for (const QVariant &item : workBillingLine) {
         lineArray.append(QJsonObject::fromVariantMap(item.toMap()));
@@ -55,7 +57,7 @@ void WorkBillingLineController::create(const int &workOrderId, const QVariantLis
     draftEntity.setTenant(gTenantId);
     draftEntity.setCreatedOn(createdOn);
     draftEntity.setProject(gProjectId);
-    draftEntity.setEntity("WorkBillingLine");
+    draftEntity.setEntity("WorkBilling");
     draftEntity.setCreatedByUser(gUser->getId());
     draftEntity.setNextApprovingUser(0);
     draftEntity.setEntitySchema(entitySchema);
@@ -65,81 +67,146 @@ void WorkBillingLineController::create(const int &workOrderId, const QVariantLis
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+
+void WorkBillingLineController::update(int id, const int &workOrderId, const QString &description, const QVariantList &workBillingLine) const
+{
+    QJsonObject jsonObject;
+    jsonObject["id"] = id;
+    jsonObject["workOrderId"] = workOrderId;
+    jsonObject["description"] = description;
+    QJsonArray lineArray;
+    for (const QVariant &item : workBillingLine) {
+        lineArray.append(QJsonObject::fromVariantMap(item.toMap()));
+    }
+
+    jsonObject["listData"] = lineArray;
+
+    QJsonDocument jsonDoc(jsonObject);
+    QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
+    qDebug() << "WorkBilling:EntitySchema: " << entitySchema;
+
+    QDateTime currentDateTimeUtc = QDateTime::currentDateTimeUtc();
+    QString isoDateTimeString = currentDateTimeUtc.toString(Qt::ISODateWithMs);
+
+    QJsonObject jsonObjectChangeHistory;
+    jsonObjectChangeHistory["user"] = gUser->getId();
+    jsonObjectChangeHistory["timestamp"] = isoDateTimeString;
+    jsonObjectChangeHistory["changeType"] =  "create";
+    jsonObjectChangeHistory["description"] = "Updated By User";
+    jsonObjectChangeHistory["approvalHistory"] = "null";
+
+    QJsonDocument jsonDocChangeHistory(jsonObjectChangeHistory);
+    QString changeHistory = jsonDocChangeHistory.toJson(QJsonDocument::Indented);
+
+    QDate updatedOn = QDate::currentDate();
+
+    DraftEntity draftEntity;
+    draftEntity.setId(id);
+    draftEntity.setTenant(gTenantId);
+    draftEntity.setCreatedOn(updatedOn);
+    draftEntity.setProject(gProjectId);
+    draftEntity.setEntity("WorkOrder");
+    draftEntity.setCreatedByUser(gUser->getId());
+    draftEntity.setNextApprovingUser(0);
+    draftEntity.setEntitySchema(entitySchema);
+    draftEntity.setAssociatedApprovedEntity(0);
+    draftEntity.setChangeHistory(changeHistory);
+
+    m_draftEntityRepository->updateQML(&draftEntity);
+}
+
+
 std::vector<WorkBillingLine*> WorkBillingLineController::getWorkBillingLineList(bool isApproved) const
 {
     qDebug() << "IsApproved: " << isApproved;
+
+    std::vector<WorkBillingLine*> workBillingLines;
+
+    // ---------- Approved Data ----------
     if (isApproved)
     {
         return m_workBillingLineRepository->findAllQML();
+      //   auto approvedList = m_workBillingLineRepository->findAllQML();
+      // qDebug() << "IsApproved: " << approvedList;
+      //   for (auto *item : approvedList)
+      //   {
+      //        qDebug() << "Item: " << item;
+      //       workBillingLines.push_back(item);
+      //   }
     }
 
-    // ---- Fetch Draft WorkBillingLine Data ----
-    std::vector<DraftEntity*> draftEntitys = m_draftEntityRepository->findAllQML("WorkBillingLine");
+    // ---- Fetch Draft WorkBilling Data ----
+    std::vector<DraftEntity*> draftEntitys = m_draftEntityRepository->findAllQML("WorkBilling");
 
     // Reference data for mapping
     WorkOrderController workOrderController;
     WorkOrderLineController workOrderLineController;
 
-    std::vector<WorkOrder*> vecWorkOrder = workOrderController.getWorkOrderList(isApproved);
-    std::vector<WorkOrderLine*> vecWorkOrderLine = workOrderLineController.getWorkOrderLineList(isApproved);
-
-    std::vector<WorkBillingLine*> workBillingLines;
+    std::vector<WorkOrder*> vecWorkOrder = workOrderController.getWorkOrderList(true);
+    std::vector<WorkOrderLine*> vecWorkOrderLine = workOrderLineController.getWorkOrderLineList(true);
 
     for (int i = 0; i < draftEntitys.size(); i++)
     {
+        int draftId = draftEntitys[i]->getId();
         QString jsonString = draftEntitys[i]->getEntitySchema();
         QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
 
         if (!jsonDoc.isNull() && jsonDoc.isObject())
         {
             QJsonObject mainObject = jsonDoc.object();
-
             int workOrderId = mainObject["workOrderId"].toInt();
-            QJsonArray lineArray = mainObject["listData"].toArray();
+            QString description = mainObject["description"].toString();
 
-            foreach(const QJsonValue &value, lineArray)
+            QJsonArray lineArray = mainObject["listData"].toArray();
+           int lineIndex = 0;
+            foreach (const QJsonValue &value, lineArray)
             {
                 QJsonObject obj = value.toObject();
 
-                QString amount              = obj["amount"].toString();
-                QString retentionAmount     = obj["retention_amount"].toString();
-                QString taxAmount           = obj["tax_amount"].toString();
-                QString taxWithHolding      = obj["tax_with_holding"].toString();
-                int workOrderLineId     = obj["work_order_line_id"].toInt();
+                QString dollarValue          = obj["dollar_value"].toString();
+                QString taxAmount            = obj["tax_amount"].toString();
+                QString taxWithholdingAmount = obj["tax_withholding_amount"].toString();
+                QString retentionAmount      = obj["retention_amount"].toString();
+                QString workOrderLineId      = obj["work_order_line_id"].toString();
 
-                auto workBilling = new WorkBillingLine();
+                auto workBillingLine = new WorkBillingLine();
 
                 // Assign values
-                workBilling->setAmount(amount.toDouble());
-                workBilling->setRetentionAmount(retentionAmount.toDouble());
-                workBilling->setTaxAmount(taxAmount.toDouble());
-                workBilling->setTaxWithHolding(taxWithHolding.toDouble());
+                workBillingLine->setAmount(dollarValue.toDouble());
+                workBillingLine->setTaxAmount(taxAmount.toDouble());
+                workBillingLine->setTaxWithHolding(taxWithholdingAmount.toDouble());
+                workBillingLine->setRetentionAmount(retentionAmount.toDouble());
 
-                // Store IDs (important for QML binding)
-                workBilling->setWorkOrderId(workOrderId);
-                workBilling->setWorkOrderLineId(workOrderLineId);
+                // Store IDs
+                workBillingLine->setWorkOrderId(workOrderId);
+                workBillingLine->setWorkOrderLineId(workOrderLineId.toInt());
 
-                // ---- Match Work Order  ----
-                foreach(const WorkOrder *wo, vecWorkOrder)
+                // Draft info
+                workBillingLine->setId(draftId);
+                workBillingLine->setWorkBillingName(description);
+
+                // ---- Match Work Order ----
+                foreach (const WorkOrder *wo, vecWorkOrder)
                 {
                     if (wo->getId() == workOrderId)
                     {
-                        workBilling->setWorkOrderName(wo->getWorkOrderName());
+                        workBillingLine->setWorkOrderName(wo->getWorkOrderName());
                         break;
                     }
                 }
 
                 // ---- Match Work Order Line ----
-                foreach(const WorkOrderLine *wol, vecWorkOrderLine)
+                foreach (const WorkOrderLine *wol, vecWorkOrderLine)
                 {
-                    if (wol->getId() == workOrderLineId)
+                    if (wol->getId() == workOrderLineId.toInt())
                     {
-                        workBilling->setWorkOrderLineName(wol->getDescription());
+                        workBillingLine->setWorkOrderLineName(wol->getDescriptionLine());
                         break;
                     }
                 }
 
-                workBillingLines.push_back(workBilling);
+                workBillingLines.push_back(workBillingLine);
+                lineIndex++;
             }
         }
     }
@@ -252,7 +319,7 @@ std::vector<Task*> WorkBillingLineController::getBilledTaskList(bool isApproved)
                                 task->setTaskName(obj["task_name"].toString());
                                 task->setDescription(obj["description"].toString());
                                 //task->setId(obj["task_id"].toInt());
-                                 task->setId(obj["task_id"].toVariant().toLongLong());
+                                task->setId(obj["task_id"].toVariant().toLongLong());
                                 /*foreach (Task *tsk, taskList)
                                 {
                                     if(tsk->getId() == obj["task_id"].toInt())
@@ -260,7 +327,7 @@ std::vector<Task*> WorkBillingLineController::getBilledTaskList(bool isApproved)
                                         tasklist.push_back(tsk);
                                     }
                                 }*/
-                                 tasklist.push_back(task);
+                                tasklist.push_back(task);
                             }
                         }
                     } else {

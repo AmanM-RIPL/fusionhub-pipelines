@@ -1,7 +1,13 @@
 #include "purchase_order_line_controller.h"
-
+#include "vendor_controller.h"
+#include "material_controller.h"
+#include "unit_of_measurement_controller.h"
 #include "common/repository_locator.h"
 #include <QDir>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QDebug>
 
 extern std::shared_ptr<User> gUser;
 extern int gTenantId;
@@ -9,20 +15,21 @@ extern int gProjectId;
 
 PurchaseOrderLineController::PurchaseOrderLineController(QObject *parent)
     : QObject{parent},
-    m_purchaseOrderRepository(RepositoryLocator::instance().purchaseOrderRepository()),
     m_purchaseOrderLineRepository(RepositoryLocator::instance().purchaseOrderLineRepository()),
-    m_materialRepository(RepositoryLocator::instance().materialRepository()),
-    m_unitOfMeasurementRepository(RepositoryLocator::instance().unitOfMeasurementRepository()),
     m_draftEntityRepository(RepositoryLocator::instance().draftEntityRepository())
 {}
 
-void PurchaseOrderLineController::create(const int &purchaseOrderId, const int &unitOfMeasurementId,
-                                         const int &materialId, const int amount,const int quantity, const double tax_amount, const double tax_withholding ) const
+void PurchaseOrderLineController::create(const int &vendorId, const QVariantList &purchaseOrderLine) const
 {
-
     QJsonObject jsonObject;
-    jsonObject["purchaseOrderId"] = purchaseOrderId;
-    jsonObject["materialId"] = materialId;
+    jsonObject["vendorId"] = vendorId;
+
+    QJsonArray lineArray;
+    for (const QVariant &item : purchaseOrderLine) {
+        lineArray.append(QJsonObject::fromVariantMap(item.toMap()));
+    }
+
+    jsonObject["listData"] = lineArray;
 
     QJsonDocument jsonDoc(jsonObject);
     QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
@@ -32,11 +39,10 @@ void PurchaseOrderLineController::create(const int &purchaseOrderId, const int &
     QString isoDateTimeString = currentDateTimeUtc.toString(Qt::ISODateWithMs);
 
     QJsonObject jsonObjectChangeHistory;
-    //jsonObjectChangeHistory["user"] = gUser->getUserId();
     jsonObjectChangeHistory["user"] = gUser->getId();
-    jsonObjectChangeHistory["timestamp"] =  isoDateTimeString;
-    jsonObjectChangeHistory["changeType"] =  "create";
-    jsonObjectChangeHistory["description"] = "Cretaed By User";
+    jsonObjectChangeHistory["timestamp"] = isoDateTimeString;
+    jsonObjectChangeHistory["changeType"] = "create";
+    jsonObjectChangeHistory["description"] = "Created By User";
     jsonObjectChangeHistory["approvalHistory"] = "null";
 
     QJsonDocument jsonDocChangeHistory(jsonObjectChangeHistory);
@@ -50,7 +56,6 @@ void PurchaseOrderLineController::create(const int &purchaseOrderId, const int &
     draftEntity.setCreatedOn(createdOn);
     draftEntity.setProject(gProjectId);
     draftEntity.setEntity("PurchaseOrder");
-    //draftEntity.setCreatedByUser(gUser->getUserId());
     draftEntity.setCreatedByUser(gUser->getId());
     draftEntity.setNextApprovingUser(0);
     draftEntity.setEntitySchema(entitySchema);
@@ -60,50 +65,153 @@ void PurchaseOrderLineController::create(const int &purchaseOrderId, const int &
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+void PurchaseOrderLineController::update(int id, const int &vendorId, const QVariantList &purchaseOrderLine) const
+{
+    QJsonObject jsonObject;
+    jsonObject["id"] = id;
+    jsonObject["vendorId"] = vendorId;
+
+    QJsonArray lineArray;
+    for (const QVariant &item : purchaseOrderLine) {
+        lineArray.append(QJsonObject::fromVariantMap(item.toMap()));
+    }
+
+    jsonObject["listData"] = lineArray;
+
+    QJsonDocument jsonDoc(jsonObject);
+    QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
+    qDebug() << "PurchaseOrder:EntitySchema: " << entitySchema;
+
+    QDateTime currentDateTimeUtc = QDateTime::currentDateTimeUtc();
+    QString isoDateTimeString = currentDateTimeUtc.toString(Qt::ISODateWithMs);
+
+    QJsonObject jsonObjectChangeHistory;
+    jsonObjectChangeHistory["user"] = gUser->getId();
+    jsonObjectChangeHistory["timestamp"] = isoDateTimeString;
+    jsonObjectChangeHistory["changeType"] = "update";
+    jsonObjectChangeHistory["description"] = "Updated By User";
+    jsonObjectChangeHistory["approvalHistory"] = "null";
+
+    QJsonDocument jsonDocChangeHistory(jsonObjectChangeHistory);
+    QString changeHistory = jsonDocChangeHistory.toJson(QJsonDocument::Indented);
+
+    QDate updatedOn = QDate::currentDate();
+
+    DraftEntity draftEntity;
+    draftEntity.setId(id);
+    draftEntity.setTenant(gTenantId);
+    draftEntity.setCreatedOn(updatedOn);
+    draftEntity.setProject(gProjectId);
+    draftEntity.setEntity("PurchaseOrder");
+    draftEntity.setCreatedByUser(gUser->getId());
+    draftEntity.setNextApprovingUser(0);
+    draftEntity.setEntitySchema(entitySchema);
+    draftEntity.setAssociatedApprovedEntity(0);
+    draftEntity.setChangeHistory(changeHistory);
+
+    m_draftEntityRepository->updateQML(&draftEntity);
+}
 
 std::vector<PurchaseOrderLine*> PurchaseOrderLineController::getPurchaseOrderLineList(bool isApproved) const
 {
-    qDebug()<<"IsApproved: "<< isApproved;
+    qDebug() << "IsApproved: " << isApproved;
 
-    if(isApproved){
+    std::vector<PurchaseOrderLine*> purchaseOrderLines;
+
+    // ---------- Approved Data ----------
+    if (isApproved)
+    {
         return m_purchaseOrderLineRepository->findAllQML();
     }
-    else{
-        std::vector<DraftEntity*>  draftEntitys  =  m_draftEntityRepository->findAllQML("PurchaseOrderLine");
-        std::vector<PurchaseOrderLine*> purchaseOrderLines;
-        for(int i = 0; i < draftEntitys.size(); i++)
-        {
-            QString  jsonString = draftEntitys[i]->getEntitySchema();
-            QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
-            if (!jsonDoc.isNull() && jsonDoc.isObject())
-            {
-                auto purchaseOrderLine = new PurchaseOrderLine();
-                QJsonObject jsonObj = jsonDoc.object();
-                purchaseOrderLine->setId(i + 1);
-                purchaseOrderLine->setGlobalId("123");
-                purchaseOrderLine->setApprovalStatus(true);
 
-                purchaseOrderLine->setUnitOfMeasurementId(jsonObj["unitOfMeasurementId"].toInt());
+    // ---- Fetch Draft PurchaseOrder Data ----
+    std::vector<DraftEntity*> draftEntitys = m_draftEntityRepository->findAllQML("PurchaseOrder");
+
+    // Reference data for mapping
+    VendorController vendorController;
+    MaterialController materialController;
+    UnitOfMeasurementController unitOfMeasurementController;
+
+    std::vector<Vendor*> vecVendor = vendorController.getVendorList(true);
+    std::vector<Material*> vecMaterial = materialController.getMaterialList(true);
+    std::vector<UnitOfMeasurement*> vecUnitOfMeasurement = unitOfMeasurementController.getUOMList(true);
+
+    for (int i = 0; i < draftEntitys.size(); i++)
+    {
+        int draftId = draftEntitys[i]->getId();
+        QString jsonString = draftEntitys[i]->getEntitySchema();
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
+
+        if (!jsonDoc.isNull() && jsonDoc.isObject())
+        {
+            QJsonObject mainObject = jsonDoc.object();
+            int vendorId = mainObject["vendorId"].toInt();
+
+            QJsonArray lineArray = mainObject["listData"].toArray();
+            int lineIndex = 0;
+
+            foreach (const QJsonValue &value, lineArray)
+            {
+                QJsonObject obj = value.toObject();
+
+                QString materialId           = obj["material_id"].toString();
+                QString quantity             = obj["quantity"].toString();
+                QString unitOfMeasurementId  = obj["unit_of_measurement_id"].toString();
+                QString dollarValue          = obj["dollar_value"].toString();
+                QString taxAmount            = obj["tax_amount"].toString();
+                QString taxWithholding       = obj["tax_withholding"].toString();
+
+                auto purchaseOrderLine = new PurchaseOrderLine();
+
+                // Assign values
+                purchaseOrderLine->setMaterialId(materialId.toInt());
+                purchaseOrderLine->setQuantity(quantity.toDouble());
+                purchaseOrderLine->setUnitOfMeasurementId(unitOfMeasurementId.toInt());
+                purchaseOrderLine->setAmount(dollarValue.toDouble());
+                purchaseOrderLine->setTaxAmount(taxAmount.toDouble());
+                purchaseOrderLine->setTaxWithHolding(taxWithholding.toDouble());
+
+                // Store IDs
+                purchaseOrderLine->setVendorId(vendorId);
+
+                // Draft info
+                purchaseOrderLine->setId(draftId);
+
+                // ---- Match Vendor ----
+                foreach (const Vendor *v, vecVendor)
+                {
+                    if (v->getId() == vendorId)
+                    {
+                        purchaseOrderLine->setVendorName(v->getVendorName());
+                        break;
+                    }
+                }
+
+                // ---- Match Material ----
+                foreach (const Material *m, vecMaterial)
+                {
+                    if (m->getId() == materialId.toInt())
+                    {
+                        purchaseOrderLine->setMaterialName(m->getMaterialName());
+                        break;
+                    }
+                }
+
+                // ---- Match Unit of Measurement ----
+                foreach (const UnitOfMeasurement *uom, vecUnitOfMeasurement)
+                {
+                    if (uom->getId() == unitOfMeasurementId.toInt())
+                    {
+                        purchaseOrderLine->setUnitOfMeasurementName(uom->getUomName());
+                        break;
+                    }
+                }
 
                 purchaseOrderLines.push_back(purchaseOrderLine);
+                lineIndex++;
             }
         }
-        return purchaseOrderLines;
     }
-}
 
-std::vector<UnitOfMeasurement*> PurchaseOrderLineController::getUOMList() const
-{
-    return m_unitOfMeasurementRepository->findAllQML();
+    return purchaseOrderLines;
 }
-
-std::vector<Material*> PurchaseOrderLineController::getMaterialList() const
-{
-    return m_materialRepository->findAllQML();
-}
-
-std::vector<PurchaseOrder*> PurchaseOrderLineController::getPurchaseOrderList() const
-{
-    return m_purchaseOrderRepository->findAllQML();
-}
-

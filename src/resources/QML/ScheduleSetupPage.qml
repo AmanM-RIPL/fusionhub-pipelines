@@ -116,14 +116,14 @@ Column {
             }
 
             Rectangle {
-                width: parent.width-6
+                width: parent.width - 6
                 height: 140
                 color: "#EDF1F4"
                 Column{
 
                     FHTable {
-                        height: 130
-                        //leftPadding: 20
+                        width: parent.width - 4
+                        height: 300
                         leftPadding: 2
                         removeRow: true
                         model: costParameterList
@@ -240,10 +240,10 @@ Column {
                 color: "#EDF1F4"
                 Column{
                     FHTable {
-                        height: 130
-                        //leftPadding: 20
-                        removeRow: true
+                        width: parent.width - 4
+                        height: 300
                         leftPadding: 2
+                        removeRow: true
                         model: resourceParameterList
                         columns: [
                             { label: "Resource Parameter Name", width: 322, key: "resource_param_name" },

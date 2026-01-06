@@ -34,6 +34,7 @@
 #include "repositories/task_repository.h"
 #include "repositories/work_order_repository.h"
 #include "repositories/work_order_line_repository.h"
+#include "repositories/work_billing_repository.h"
 #include "repositories/work_billing_line_repository.h"
 #include "repositories/file_repository.h"
 #include "repositories/purchase_order_repository.h"
@@ -55,6 +56,7 @@
 #include "controllers/bill_of_quantity_line_controller.h"
 #include "controllers/task_controller.h"
 #include "controllers/work_order_controller.h"
+#include "controllers/work_billing_controller.h"
 #include "controllers/work_billing_line_controller.h"
 #include "controllers/work_order_line_controller.h"
 #include "controllers/project_budget_controller.h"
@@ -547,7 +549,7 @@ int main(int argc, char *argv[])
     TaskRepository* taskRepository = new TaskRepository(&engine);
     WorkOrderRepository* workOrderRepository = new WorkOrderRepository(&engine);
     WorkOrderLineRepository* workOrderLineRepository = new WorkOrderLineRepository(&engine);
-
+    WorkBillingRepository* workBillingRepository = new WorkBillingRepository(&engine);
     WorkBillingLineRepository* workBillingLineRepository = new WorkBillingLineRepository(&engine);
     ProjectBudgetRepository* projectBudgetRepository = new ProjectBudgetRepository(&engine);
     FileRepository* fileRepository = new FileRepository(&engine);
@@ -636,6 +638,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("taskRepository", taskRepository);
     engine.rootContext()->setContextProperty("workOrderRepository", workOrderRepository);
     engine.rootContext()->setContextProperty("workOrderLineRepository", workOrderLineRepository);
+    engine.rootContext()->setContextProperty("workBillingRepository", workBillingRepository);
     engine.rootContext()->setContextProperty("workBillingLineRepository", workBillingLineRepository);
     engine.rootContext()->setContextProperty("projectBudgetRepository", projectBudgetRepository);
     engine.rootContext()->setContextProperty("fileRepository", fileRepository);
@@ -659,6 +662,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<ScheduleOfRates>("com.fh.models", 1, 0, "ScheduleOfRates");
     qmlRegisterType<WorkOrder>("com.fh.models", 1, 0, "WorkOrder");
     qmlRegisterType<WorkOrderLine>("com.fh.models", 1, 0, "WorkOrderLine");
+    qmlRegisterType<WorkBilling>("com.fh.models", 1, 0, "WorkBilling");
     qmlRegisterType<WorkBillingLine>("com.fh.models", 1, 0, "WorkBillingLine");
     qmlRegisterType<ProjectBudget>("com.fh.models", 1, 0, "ProjectBudget");
     qmlRegisterType<File>("com.fh.models", 1, 0, "File");
@@ -689,6 +693,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<WorkOrderController>("com.fh.controllers", 1, 0, "WorkOrderController");
     qmlRegisterType<WorkOrderLineController>("com.fh.controllers", 1, 0, "WorkOrderLineController");
 
+    qmlRegisterType<WorkBillingController>("com.fh.controllers", 1, 0, "WorkBillingController");
     qmlRegisterType<WorkBillingLineController>("com.fh.controllers", 1, 0, "WorkBillingLineController");
     qmlRegisterType<ProjectBudgetController>("com.fh.controllers", 1, 0, "ProjectBudgetController");
     qmlRegisterType<FileController>("com.fh.controllers", 1, 0, "FileController");

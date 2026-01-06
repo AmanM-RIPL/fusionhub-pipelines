@@ -5,24 +5,22 @@ import com.fh.models 1.0
 import com.fh.controllers
 
 Column {
-    id: purchaseOrderRoot
+    id: workBillingRoot
     width: parent.width
     padding: 10
 
     // Properties - Data from controllers
-    property var vendorsFromCtrl: []
-    property var materialsFromCtrl: []
-    property var unitsOfMeasurementFromCtrl: []
+    property var workOrdersFromCtrl: []
+    property var workOrderLinesFromCtrl: []
 
     // Properties - Lists for UI
-    property var purchaseOrderList: []
-    property var vendorList: []
-    property var materialList: []
-    property var unitOfMeasurementList: []
+    property var workBillingList: []
+    property var workOrderList: []
+    property var workOrderLineList: []
 
-    // Properties - Purchase order data
-    property var purchaseOrderLineData: []
-    property var purchaseOrderLineDataEdit: []
+    // Properties - Work billing data
+    property var workBillingLineData: []
+    property var workBillingLineDataEdit: []
 
     // Properties - State management
     property var selectedData: null
@@ -30,84 +28,77 @@ Column {
     property bool isApproved: false
 
     // Controllers
-    VendorController {
-        id: vendorController
+    WorkOrderController {
+        id: workOrderController
     }
 
-    MaterialController {
-        id: materialController
+    WorkOrderLineController {
+        id: workOrderLineController
     }
 
-    UnitOfMeasurementController {
-        id: unitOfMeasurementController
+    WorkBillingController {
+        id: workBillingController
     }
 
-    PurchaseOrderController {
-        id: purchaseOrderController
-    }
-
-    PurchaseOrderLineController {
-        id: purchaseOrderLineController
+    WorkBillingLineController {
+        id: workBillingLineController
     }
 
     /* ---------- Create Popup ---------- */
     FHPopup {
-        id: newPurchaseOrderPopup
-        popupWidth: 1000
+        id: newWorkBillingPopup
+        popupWidth: 900
         popupHeight: 600
-        title: "Create Purchase Order"
+        title: "Create Work Billing"
         parent: Overlay.overlay
 
         onAcceptCallback: function () {
-            if (purchaseOrderLineData.length > 0) {
-                purchaseOrderLineController.create(
-                            vendorsFromCtrl[vendorCombo.currentIndex].id,
-                            purchaseOrderLineData
+            if (workBillingLineData.length > 0) {
+                workBillingLineController.create(
+                            workOrdersFromCtrl[workOrderCombo.currentIndex].id,
+                            descriptionTextBox.text,
+                            workBillingLineData
                             )
                 // Reset
-                purchaseOrderLineData = []
+                workBillingLineData = []
+                descriptionTextBox.text = ""
             }
             close()
         }
 
         onCancelCallback: function () {
-            purchaseOrderLineData = []
+            workBillingLineData = []
+            descriptionTextBox.text = ""
             close()
         }
 
         onClosed: {
-            showPurchaseOrderList()
+            showWorkBillingList()
         }
 
         onOpened: {
             // Load lists
-            purchaseOrderLineData = []
+            workBillingLineData = []
+            descriptionTextBox.text = ""
 
-            if (purchaseOrderRoot.visible) {
-                vendorsFromCtrl = []
-                materialsFromCtrl = []
-                unitsOfMeasurementFromCtrl = []
+            if (workBillingRoot.visible) {
+                workOrdersFromCtrl = []
+                workOrderLinesFromCtrl = []
 
-                vendorsFromCtrl = vendorController.getVendorList(true)
-                materialsFromCtrl = materialController.getMaterialList(true)
-                unitsOfMeasurementFromCtrl = unitOfMeasurementController.getUOMList(true)
+                workOrdersFromCtrl = workOrderController.getWorkOrderList(true)
+                workOrderLinesFromCtrl = workOrderLineController.getWorkOrderLineList(true)
 
                 // Clear current lists then populate
-                purchaseOrderRoot.vendorList = []
-                purchaseOrderRoot.materialList = []
-                purchaseOrderRoot.unitOfMeasurementList = []
+                workBillingRoot.workOrderList = []
+                workBillingRoot.workOrderLineList = []
 
-                for (var i = 0; i < vendorsFromCtrl.length; i++) {
-                    purchaseOrderRoot.vendorList = purchaseOrderRoot.vendorList.concat(
-                                vendorsFromCtrl[i].vendorName)
+                for (var i = 0; i < workOrdersFromCtrl.length; i++) {
+                    workBillingRoot.workOrderList = workBillingRoot.workOrderList.concat(
+                                workOrdersFromCtrl[i].workOrderName)
                 }
-                for (var j = 0; j < materialsFromCtrl.length; j++) {
-                    purchaseOrderRoot.materialList = purchaseOrderRoot.materialList.concat(
-                                materialsFromCtrl[j].materialName)
-                }
-                for (var k = 0; k < unitsOfMeasurementFromCtrl.length; k++) {
-                    purchaseOrderRoot.unitOfMeasurementList = purchaseOrderRoot.unitOfMeasurementList.concat(
-                                unitsOfMeasurementFromCtrl[k].uomName)
+                for (var j = 0; j < workOrderLinesFromCtrl.length; j++) {
+                    workBillingRoot.workOrderLineList = workBillingRoot.workOrderLineList.concat(
+                                workOrderLinesFromCtrl[j].description)
                 }
             }
         }
@@ -116,7 +107,7 @@ Column {
             width: parent.width
             spacing: 10
 
-            // -------- Vendor Selection --------
+            // -------- Work Order + Description Row --------
             Row {
                 width: parent.width
                 spacing: 40
@@ -124,24 +115,41 @@ Column {
                 Column {
                     spacing: 4
                     Text {
-                        text: "Select Vendor"
+                        text: "Select Work Order"
                         color: "#323130"
                         font.weight: 700
                         font.pixelSize: 14
                     }
                     CustomComboBox {
-                        id: vendorCombo
+                        id: workOrderCombo
                         width: 300
-                        model: vendorList
+                        model: workOrderList
                         currentIndex: 0
+                    }
+                }
+
+                Column {
+                    spacing: 4
+                    Text {
+                        text: "Description"
+                        color: "#323130"
+                        font.weight: 700
+                        font.pixelSize: 14
+                    }
+                    CustomTextBox {
+                        id: descriptionTextBox
+                        placeholderText: "Work Billing Description"
+                        color: "#323130"
+                        width: 500
+                        height: 30
                     }
                 }
             }
 
-            // -------- Purchase Order Line Items --------
+            // -------- Work Billing Line Item --------
             Text {
-                id: purchaseOrderLineLabel
-                text: "Purchase Order Items:"
+                id: workBillingLineLabel
+                text: "Work Billing Items:"
                 color: "#323130"
                 font.weight: 700
                 font.pixelSize: 14
@@ -163,48 +171,43 @@ Column {
                         height: 300
                         leftPadding: 2
                         removeRow: true
-                        model: purchaseOrderLineData
+                        model: workBillingLineData
                         columns: [
                             {
-                                "label": "Material",
+                                "label": "Work Order Line",
+                                "width": 200,
+                                "key": "work_order_line_name"
+                            },
+                            {
+                                "label": "Amount",
                                 "width": 150,
-                                "key": "material_name"
-                            },
-                            {
-                                "label": "Quantity",
-                                "width": 100,
-                                "key": "quantity"
-                            },
-                            {
-                                "label": "Unit",
-                                "width": 100,
-                                "key": "unit_name"
-                            },
-                            {
-                                "label": "Dollar Value",
-                                "width": 120,
                                 "key": "dollar_value"
                             },
                             {
                                 "label": "Tax Amount",
-                                "width": 120,
+                                "width": 150,
                                 "key": "tax_amount"
                             },
                             {
                                 "label": "Tax Withholding",
-                                "width": 140,
-                                "key": "tax_withholding"
+                                "width": 150,
+                                "key": "tax_withholding_amount"
+                            },
+                            {
+                                "label": "Retention Amount",
+                                "width": 170,
+                                "key": "retention_amount"
                             }
                         ]
                         onRemovedIndexChanged: {
-                            if (removedIndex >= 0 && removedIndex < purchaseOrderLineData.length) {
+                            if (removedIndex >= 0 && removedIndex < workBillingLineData.length) {
                                 var temp = []
-                                for (var i = 0; i < purchaseOrderLineData.length; i++) {
+                                for (var i = 0; i < workBillingLineData.length; i++) {
                                     if (i !== removedIndex) {
-                                        temp.push(purchaseOrderLineData[i])
+                                        temp.push(workBillingLineData[i])
                                     }
                                 }
-                                purchaseOrderLineData = temp
+                                workBillingLineData = temp
                             }
                         }
                     }
@@ -223,37 +226,19 @@ Column {
                     spacing: 6
 
                     CustomComboBox {
-                        id: materialCombo
-                        width: 150
+                        id: workOrderLineCombo
+                        width: 180
                         height: 24
-                        model: purchaseOrderRoot.materialList
-                        currentIndex: 0
-                    }
-
-                    CustomTextBox {
-                        id: quantityTextBox
-                        placeholderText: "Quantity"
-                        text: ""
-                        color: "#323130"
-                        width: 100
-                        height: 24
-                        topPadding: 1
-                    }
-
-                    CustomComboBox {
-                        id: unitCombo
-                        width: 100
-                        height: 24
-                        model: purchaseOrderRoot.unitOfMeasurementList
+                        model: workBillingRoot.workOrderLineList
                         currentIndex: 0
                     }
 
                     CustomTextBox {
                         id: dollarValueTextBox
-                        placeholderText: "Dollar Value"
+                        placeholderText: "Amount"
                         text: ""
                         color: "#323130"
-                        width: 120
+                        width: 150
                         height: 24
                         topPadding: 1
                     }
@@ -263,7 +248,7 @@ Column {
                         placeholderText: "Tax Amount"
                         text: ""
                         color: "#323130"
-                        width: 120
+                        width: 150
                         height: 24
                         topPadding: 1
                     }
@@ -274,6 +259,16 @@ Column {
                         text: ""
                         color: "#323130"
                         width: 140
+                        height: 24
+                        topPadding: 1
+                    }
+
+                    CustomTextBox {
+                        id: retentionAmountTextBox
+                        placeholderText: "Retention Amount"
+                        text: ""
+                        color: "#323130"
+                        width: 150
                         height: 24
                         topPadding: 1
                     }
@@ -297,24 +292,22 @@ Column {
 
                             onClicked: {
                                 var newElements = {
-                                    "material_id": String(materialsFromCtrl[materialCombo.currentIndex].id),
-                                    "material_name": materialCombo.currentValue,
-                                    "quantity": quantityTextBox.text,
-                                    "unit_of_measurement_id": String(unitsOfMeasurementFromCtrl[unitCombo.currentIndex].id),
-                                    "unit_name": unitCombo.currentValue,
+                                    "work_order_line_id": String(workOrderLinesFromCtrl[workOrderLineCombo.currentIndex].id),
+                                    "work_order_line_name": workOrderLineCombo.currentValue,
                                     "dollar_value": dollarValueTextBox.text,
                                     "tax_amount": taxAmountTextBox.text,
-                                    "tax_withholding": taxWithholdingTextBox.text
+                                    "tax_withholding_amount": taxWithholdingTextBox.text,
+                                    "retention_amount": retentionAmountTextBox.text
                                 }
 
-                                // Append to purchaseOrderLineData
-                                purchaseOrderLineData = purchaseOrderLineData.concat(newElements)
+                                // Append to workBillingLineData
+                                workBillingLineData = workBillingLineData.concat(newElements)
 
                                 // Clear the inputs
-                                quantityTextBox.text = ""
                                 dollarValueTextBox.text = ""
                                 taxAmountTextBox.text = ""
                                 taxWithholdingTextBox.text = ""
+                                retentionAmountTextBox.text = ""
                             }
                         }
                     }
@@ -331,9 +324,9 @@ Column {
     /* ---------- View / Edit Popup ---------- */
     FHPopup {
         id: viewEditPopup
-        popupWidth: 1000
+        popupWidth: 900
         popupHeight: 600
-        title: popupMode === "view" ? "View Purchase Order" : "Edit Purchase Order"
+        title: popupMode === "view" ? "View Work Billing" : "Edit Work Billing"
 
         showAcceptButton: popupMode === "edit"
         buttonName: popupMode === "edit" ? "Update" : ""
@@ -341,56 +334,52 @@ Column {
 
         onAcceptCallback: function () {
             if (popupMode === "edit" && selectedData) {
-                if (purchaseOrderLineDataEdit.length > 0) {
-                    purchaseOrderLineController.update(
+                if (workBillingLineDataEdit.length > 0) {
+                    workBillingLineController.update(
                                 selectedData.id,
-                                vendorsFromCtrl[vendorComboEdit.currentIndex].id,
-                                purchaseOrderLineDataEdit
+                                workOrdersFromCtrl[workOrderComboEdit.currentIndex].id,
+                                descriptionTextBoxEdit.text,
+                                workBillingLineDataEdit
                                 )
                     // Reset
-                    purchaseOrderLineDataEdit = []
-                    vendorComboEdit.currentIndex = -1
+                    workBillingLineDataEdit = []
+                    descriptionTextBoxEdit.text = ""
+                    workOrderComboEdit.currentIndex = -1
                 }
-                showPurchaseOrderList()
+                showWorkBillingList()
             }
         }
 
         onCancelCallback: function () {
-            purchaseOrderLineDataEdit = []
+            workBillingLineDataEdit = []
+            descriptionTextBoxEdit.text = ""
         }
 
         onOpened: {
             // Load lists from controllers
-            purchaseOrderLineDataEdit = []
+            workBillingLineDataEdit = []
+            descriptionTextBoxEdit.text = ""
 
-            vendorsFromCtrl = []
-            materialsFromCtrl = []
-            unitsOfMeasurementFromCtrl = []
+            workOrdersFromCtrl = []
+            workOrderLinesFromCtrl = []
 
-            vendorsFromCtrl = vendorController.getVendorList(true)
-            materialsFromCtrl = materialController.getMaterialList(true)
-            unitsOfMeasurementFromCtrl = unitOfMeasurementController.getUOMList(true)
+            workOrdersFromCtrl = workOrderController.getWorkOrderList(true)
+            workOrderLinesFromCtrl = workOrderLineController.getWorkOrderLineList(true)
 
-            // Clear and populate lists
-            var tempVendorList = []
-            var tempMaterialList = []
-            var tempUnitList = []
+            // Clear and populate work order and work order line lists
+            var tempWorkOrderList = []
+            var tempWorkOrderLineList = []
 
-            for (var i = 0; i < vendorsFromCtrl.length; i++) {
-                tempVendorList = tempVendorList.concat(vendorsFromCtrl[i].vendorName)
+            for (var i = 0; i < workOrdersFromCtrl.length; i++) {
+                tempWorkOrderList = tempWorkOrderList.concat(workOrdersFromCtrl[i].workOrderName)
             }
 
-            for (var j = 0; j < materialsFromCtrl.length; j++) {
-                tempMaterialList = tempMaterialList.concat(materialsFromCtrl[j].materialName)
+            for (var k = 0; k < workOrderLinesFromCtrl.length; k++) {
+                tempWorkOrderLineList = tempWorkOrderLineList.concat(workOrderLinesFromCtrl[k].description)
             }
 
-            for (var k = 0; k < unitsOfMeasurementFromCtrl.length; k++) {
-                tempUnitList = tempUnitList.concat(unitsOfMeasurementFromCtrl[k].uomName)
-            }
-
-            purchaseOrderRoot.vendorList = tempVendorList
-            purchaseOrderRoot.materialList = tempMaterialList
-            purchaseOrderRoot.unitOfMeasurementList = tempUnitList
+            workBillingRoot.workOrderList = tempWorkOrderList
+            workBillingRoot.workOrderLineList = tempWorkOrderLineList
 
             // Fill popup with selected data
             if (selectedData) {
@@ -402,7 +391,7 @@ Column {
             width: parent.width
             spacing: 10
 
-            // -------- Vendor Selection --------
+            // -------- Work Order + Description Row --------
             Row {
                 width: parent.width
                 spacing: 40
@@ -410,25 +399,43 @@ Column {
                 Column {
                     spacing: 4
                     Text {
-                        text: "Select Vendor"
+                        text: "Select Work Order"
                         color: "#323130"
                         font.weight: 700
                         font.pixelSize: 14
                     }
                     CustomComboBox {
-                        id: vendorComboEdit
+                        id: workOrderComboEdit
                         width: 300
-                        model: vendorList
+                        model: workOrderList
                         currentIndex: 0
+                        enabled: popupMode === "edit"
+                    }
+                }
+
+                Column {
+                    spacing: 4
+                    Text {
+                        text: "Description"
+                        color: "#323130"
+                        font.weight: 700
+                        font.pixelSize: 14
+                    }
+                    CustomTextBox {
+                        id: descriptionTextBoxEdit
+                        placeholderText: "Work Billing Description"
+                        color: "#323130"
+                        width: 500
+                        height: 30
                         enabled: popupMode === "edit"
                     }
                 }
             }
 
-            // -------- Purchase Order Line Items --------
+            // -------- Work Billing Line Row --------
             Text {
-                id: purchaseOrderLineLabelEdit
-                text: "Purchase Order Items:"
+                id: workBillingLineLabelEdit
+                text: "Work Billing Items:"
                 color: "#323130"
                 font.weight: 700
                 font.pixelSize: 14
@@ -450,48 +457,43 @@ Column {
                         height: 300
                         leftPadding: 2
                         removeRow: popupMode === "edit"
-                        model: purchaseOrderLineDataEdit
+                        model: workBillingLineDataEdit
                         columns: [
                             {
-                                "label": "Material",
+                                "label": "Work Order Line",
                                 "width": 200,
-                                "key": "material_name"
-                            },
-                            {
-                                "label": "Quantity",
-                                "width": 130,
-                                "key": "quantity"
-                            },
-                            {
-                                "label": "Unit",
-                                "width": 200,
-                                "key": "unit_name"
+                                "key": "work_order_line_name"
                             },
                             {
                                 "label": "Amount",
-                                "width": 120,
+                                "width": 150,
                                 "key": "dollar_value"
                             },
                             {
                                 "label": "Tax Amount",
-                                "width": 130,
+                                "width": 150,
                                 "key": "tax_amount"
                             },
                             {
                                 "label": "Tax Withholding",
                                 "width": 150,
-                                "key": "tax_withholding"
+                                "key": "tax_withholding_amount"
+                            },
+                            {
+                                "label": "Retention Amount",
+                                "width": 170,
+                                "key": "retention_amount"
                             }
                         ]
                         onRemovedIndexChanged: {
-                            if (removedIndex >= 0 && removedIndex < purchaseOrderLineDataEdit.length) {
+                            if (removedIndex >= 0 && removedIndex < workBillingLineDataEdit.length) {
                                 var temp = []
-                                for (var i = 0; i < purchaseOrderLineDataEdit.length; i++) {
+                                for (var i = 0; i < workBillingLineDataEdit.length; i++) {
                                     if (i !== removedIndex) {
-                                        temp.push(purchaseOrderLineDataEdit[i])
+                                        temp.push(workBillingLineDataEdit[i])
                                     }
                                 }
-                                purchaseOrderLineDataEdit = temp
+                                workBillingLineDataEdit = temp
                             }
                         }
                     }
@@ -511,28 +513,10 @@ Column {
                     spacing: 6
 
                     CustomComboBox {
-                        id: materialComboEdit
-                        width: 150
+                        id: workOrderLineComboEdit
+                        width: 180
                         height: 24
-                        model: purchaseOrderRoot.materialList
-                        currentIndex: 0
-                    }
-
-                    CustomTextBox {
-                        id: quantityTextBoxEdit
-                        placeholderText: "Quantity"
-                        text: ""
-                        color: "#323130"
-                        width: 100
-                        height: 24
-                        topPadding: 1
-                    }
-
-                    CustomComboBox {
-                        id: unitComboEdit
-                        width: 100
-                        height: 24
-                        model: purchaseOrderRoot.unitOfMeasurementList
+                        model: workBillingRoot.workOrderLineList
                         currentIndex: 0
                     }
 
@@ -541,7 +525,7 @@ Column {
                         placeholderText: "Amount"
                         text: ""
                         color: "#323130"
-                        width: 120
+                        width: 150
                         height: 24
                         topPadding: 1
                     }
@@ -551,7 +535,7 @@ Column {
                         placeholderText: "Tax Amount"
                         text: ""
                         color: "#323130"
-                        width: 120
+                        width: 150
                         height: 24
                         topPadding: 1
                     }
@@ -559,6 +543,16 @@ Column {
                     CustomTextBox {
                         id: taxWithholdingTextBoxEdit
                         placeholderText: "Tax Withholding"
+                        text: ""
+                        color: "#323130"
+                        width: 140
+                        height: 24
+                        topPadding: 1
+                    }
+
+                    CustomTextBox {
+                        id: retentionAmountTextBoxEdit
+                        placeholderText: "Retention Amount"
                         text: ""
                         color: "#323130"
                         width: 140
@@ -585,24 +579,22 @@ Column {
 
                             onClicked: {
                                 var newElements = {
-                                    "material_id": String(materialsFromCtrl[materialComboEdit.currentIndex].id),
-                                    "material_name": materialComboEdit.currentValue,
-                                    "quantity": quantityTextBoxEdit.text,
-                                    "unit_of_measurement_id": String(unitsOfMeasurementFromCtrl[unitComboEdit.currentIndex].id),
-                                    "unit_name": unitComboEdit.currentValue,
+                                    "work_order_line_id": String(workOrderLinesFromCtrl[workOrderLineComboEdit.currentIndex].id),
+                                    "work_order_line_name": workOrderLineComboEdit.currentValue,
                                     "dollar_value": dollarValueTextBoxEdit.text,
                                     "tax_amount": taxAmountTextBoxEdit.text,
-                                    "tax_withholding": taxWithholdingTextBoxEdit.text
+                                    "tax_withholding_amount": taxWithholdingTextBoxEdit.text,
+                                    "retention_amount": retentionAmountTextBoxEdit.text
                                 }
 
-                                // Append to purchaseOrderLineDataEdit
-                                purchaseOrderLineDataEdit = purchaseOrderLineDataEdit.concat(newElements)
+                                // Append to workBillingLineDataEdit
+                                workBillingLineDataEdit = workBillingLineDataEdit.concat(newElements)
 
                                 // Clear inputs
-                                quantityTextBoxEdit.text = ""
                                 dollarValueTextBoxEdit.text = ""
                                 taxAmountTextBoxEdit.text = ""
                                 taxWithholdingTextBoxEdit.text = ""
+                                retentionAmountTextBoxEdit.text = ""
                             }
                         }
                     }
@@ -620,7 +612,7 @@ Column {
     Row {
         spacing: 20
         Text {
-            text: "Purchase Order"
+            text: "Work Billing"
             color: "#000000"
             font.family: "Segoe UI"
             font.weight: 700
@@ -641,7 +633,7 @@ Column {
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: newPurchaseOrderPopup.open()
+                onClicked: newWorkBillingPopup.open()
             }
         }
     }
@@ -686,7 +678,7 @@ Column {
 
                 onCurrentTextChanged: {
                     isApproved = (approvalTypeComboBox.currentText === "Approved")
-                    showPurchaseOrderList()
+                    showWorkBillingList()
                 }
             }
         }
@@ -702,18 +694,23 @@ Column {
     FHTable {
         height: 200
         leftPadding: 20
-        model: purchaseOrderRoot.purchaseOrderList
+        model: workBillingRoot.workBillingList
 
         columns: [
             {
                 "label": "Id",
-                "width": 400,
+                "width": 300,
                 "key": "id"
             },
             {
-                "label": "Vendor",
-                "width": 800,
-                "key": "vendorName"
+                "label": "Work Order",
+                "width": 500,
+                "key": "workOrderName"
+            },
+            {
+                "label": "Description",
+                "width": 500,
+                "key": "workBillingName"
             }
         ]
 
@@ -733,51 +730,51 @@ Column {
     }
 
     // -------- Component Initialization --------
-    Component.onCompleted: showPurchaseOrderList()
-    onVisibleChanged: showPurchaseOrderList()
+    Component.onCompleted: showWorkBillingList()
+    onVisibleChanged: showWorkBillingList()
 
     // -------- Functions --------
-    function showPurchaseOrderList() {
-        purchaseOrderRoot.purchaseOrderList = []
+    function showWorkBillingList() {
+        workBillingRoot.workBillingList = []
 
-        if (!purchaseOrderRoot.visible)
+        if (!workBillingRoot.visible)
             return
 
-        purchaseOrderRoot.purchaseOrderList = purchaseOrderController.getPurchaseOrderList(isApproved)
+        workBillingRoot.workBillingList = workBillingController.getWorkBillingList(isApproved)
     }
 
     function fillPopup() {
         if (!selectedData)
             return
 
-        // Find and set vendor
-        for (var i = 0; i < vendorsFromCtrl.length; i++) {
-            if (vendorsFromCtrl[i].id === selectedData.vendorId) {
-                vendorComboEdit.currentIndex = i
+        // Find and set work order
+        for (var i = 0; i < workOrdersFromCtrl.length; i++) {
+            if (workOrdersFromCtrl[i].id === selectedData.workOrderId) {
+                workOrderComboEdit.currentIndex = i
                 break
             }
         }
+        descriptionTextBoxEdit.text = selectedData.workBillingName || ""
 
         // Load line items
         var tempLines = []
-        var allLines = purchaseOrderLineController.getPurchaseOrderLineList(isApproved)
+        var allLines = workBillingLineController.getWorkBillingLineList(isApproved)
+       // console.log("allLines==",JSON.stringify(allLines))
 
         for (var j = 0; j < allLines.length; j++) {
             if (allLines[j].id === selectedData.id) {
                 var lineItem = {
-                    "material_id": String(allLines[j].materialId || ""),
-                    "material_name": allLines[j].materialName || "",
-                    "quantity": String(allLines[j].quantity || "0"),
-                    "unit_of_measurement_id": String(allLines[j].unitOfMeasurementId || ""),
-                    "unit_name": allLines[j].unitOfMeasurementName || "",
+                    "work_order_line_id": String(allLines[j].workOrderLineId || ""),
+                    "work_order_line_name": allLines[j].workOrderLineName || "",
                     "dollar_value": String(allLines[j].amount || "0"),
                     "tax_amount": String(allLines[j].taxAmount || "0"),
-                    "tax_withholding": String(allLines[j].taxWithHolding || "0")
+                    "tax_withholding_amount": String(allLines[j].taxWithHolding || "0"),
+                    "retention_amount": String(allLines[j].retentionAmount || "0")
                 }
                 tempLines.push(lineItem)
             }
         }
 
-        purchaseOrderLineDataEdit = tempLines
+        workBillingLineDataEdit = tempLines
     }
 }
