@@ -1,4 +1,5 @@
 #include "purchase_order_controller.h"
+#include "vendor_controller.h"
 #include "common/repository_locator.h"
 #include <QDir>
 
@@ -9,34 +10,40 @@ extern int gProjectId;
 PurchaseOrderController::PurchaseOrderController(QObject *parent)
     : QObject{parent},
     m_purchaseOrderRepository(RepositoryLocator::instance().purchaseOrderRepository()),
-    m_vendorRepository(RepositoryLocator::instance().vendorRepository()),
-    m_materialRepository(RepositoryLocator::instance().materialRepository()),
-    m_unitOfMeasurementRepository(RepositoryLocator::instance().unitOfMeasurementRepository()),
     m_draftEntityRepository(RepositoryLocator::instance().draftEntityRepository())
 {}
 
-void PurchaseOrderController::create(const QString &vendorId,  const QVariant &purchaseOrderData) const
+void PurchaseOrderController::create( const int vendorId) const
 {
-    QString purchaseOrder =  CreateJson(purchaseOrderData);
-    qDebug() <<"Created purchaseOrder:" << purchaseOrder;
+    // PurchaseOrder workOrde
+
+    // qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+    // purchaseOrder.setId(id_in_milliseconds);
+    // purchaseOrder.setGlobalId("123");
+    // purchaseOrder.setApprovalStatus(true);
+    // purchaseOrder.setDescription(purchaseOrderName);
+    // purchaseOrder.setWorkOrderId(workOrderId);
+
+    // m_purchaseOrderRepository->saveQML(&purchaseOrder);
+
+    /***********Start of DraftEntity******************/
 
     QJsonObject jsonObject;
-    jsonObject["vendorName"] = vendorId;
-    jsonObject["purchaseOrder"] = purchaseOrder;
+    jsonObject["vendorId"] = vendorId;
+
 
     QJsonDocument jsonDoc(jsonObject);
     QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
-    qDebug() << "PurchaseOrder:EntitySchema: " << entitySchema;
+    qDebug() << "PurchaseOrder::EntitySchema: " << entitySchema;
 
     QDateTime currentDateTimeUtc = QDateTime::currentDateTimeUtc();
     QString isoDateTimeString = currentDateTimeUtc.toString(Qt::ISODateWithMs);
 
     QJsonObject jsonObjectChangeHistory;
-    //jsonObjectChangeHistory["user"] = gUser->getUserId();
     jsonObjectChangeHistory["user"] = gUser->getId();
     jsonObjectChangeHistory["timestamp"] =  isoDateTimeString;
     jsonObjectChangeHistory["changeType"] =  "create";
-    jsonObjectChangeHistory["description"] = "Cretaed By User";
+    jsonObjectChangeHistory["purchaseOrderName"] = "Cretaed By User";
     jsonObjectChangeHistory["approvalHistory"] = "null";
 
     QJsonDocument jsonDocChangeHistory(jsonObjectChangeHistory);
@@ -50,7 +57,6 @@ void PurchaseOrderController::create(const QString &vendorId,  const QVariant &p
     draftEntity.setCreatedOn(createdOn);
     draftEntity.setProject(gProjectId);
     draftEntity.setEntity("PurchaseOrder");
-    //draftEntity.setCreatedByUser(gUser->getUserId());
     draftEntity.setCreatedByUser(gUser->getId());
     draftEntity.setNextApprovingUser(0);
     draftEntity.setEntitySchema(entitySchema);
@@ -60,122 +66,81 @@ void PurchaseOrderController::create(const QString &vendorId,  const QVariant &p
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
-
 std::vector<PurchaseOrder*> PurchaseOrderController::getPurchaseOrderList(bool isApproved) const
 {
-    qDebug() << "IsApproved: " << isApproved;
-
-    std::vector<PurchaseOrder*> purchaseOrders;
-
+    qDebug()<<"IsApproved: "<< isApproved;
     if (isApproved)
     {
-        purchaseOrders = m_purchaseOrderRepository->findAllQML();
-    }
-    else
-    {
-        std::vector<DraftEntity*> draftEntitys = m_draftEntityRepository->findAllQML("PurchaseOrder");
+        VendorController vendorController;
+        std::vector<Vendor*> vecVendor = vendorController.getVendorList(true);
+        std::vector<PurchaseOrder*> purchaseOrders;
 
-        for (int i = 0; i < draftEntitys.size(); i++)
+        auto approvedList = m_purchaseOrderRepository->findAllQML();
+
+        foreach (const PurchaseOrder *order, approvedList)
         {
-            QString jsonString = draftEntitys[i]->getEntitySchema();
-            QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
+            int vendorId = order->getVendorId();
 
+            QString vendorName = "N/A";
+            foreach (const Vendor *vendor, vecVendor)
+            {
+                if (vendor->getId() == vendorId)
+                {
+                    vendorName = vendor->getVendorName();
+                    break;
+                }
+            }
+
+            PurchaseOrder *purchaseOrder = new PurchaseOrder();
+
+            purchaseOrder->setId(order->getId());
+            purchaseOrder->setVendorId(vendorId);
+            purchaseOrder->setVendorName(vendorName);
+
+            purchaseOrders.push_back(purchaseOrder);
+        }
+
+        return purchaseOrders;
+    }
+    else{
+        std::vector<DraftEntity*>  draftEntitys  =  m_draftEntityRepository->findAllQML("PurchaseOrder");
+        std::vector<PurchaseOrder*> purchaseOrders;
+        VendorController vendorController;
+
+        std::vector<Vendor*> vecVendor = vendorController.getVendorList(true);
+
+        for(int i = 0; i < draftEntitys.size(); i++)
+        {
+            QString  jsonString = draftEntitys[i]->getEntitySchema();
+            int draftId = draftEntitys[i]->getId();
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
             if (!jsonDoc.isNull() && jsonDoc.isObject())
             {
+                auto purchaseOrder = new PurchaseOrder();
                 QJsonObject jsonObj = jsonDoc.object();
-                QString vendorName = jsonObj["vendorName"].toString();
+                purchaseOrder->setId(draftId);
+                purchaseOrder->setGlobalId("123");
+                purchaseOrder->setApprovalStatus(true);
+                purchaseOrder->setVendorId(jsonObj["vendorId"].toInt());
 
-                QString purchaseOrderString = jsonObj["purchaseOrder"].toString();
-                QJsonDocument jsonDocPO = QJsonDocument::fromJson(purchaseOrderString.toUtf8());
-                if (!jsonDocPO.isNull() && jsonDocPO.isObject())
+                int vendorId = purchaseOrder->getVendorId();
+                QString vendorName = "N/A";
+                foreach (const Vendor *vendor, vecVendor)
                 {
-                    QJsonArray dataArray = jsonDocPO["data"].toArray();
-                    foreach (const QJsonValue & value, dataArray)
+                    qDebug()<<"woid:" <<vendor->getId();
+                    if (vendor->getId() == vendorId)
                     {
-                        auto purchaseOrder = new PurchaseOrder();
-                        QJsonObject lineItem = value.toObject();
-                        QString vendorId = lineItem["vendor_id"].toString();
-                        QString amount = lineItem["amount"].toString();
-                        QString materialId = lineItem["material_id"].toString();
-                        QString material_name = lineItem["material_name"].toString();
-                        QString quantity = lineItem["quantity"].toString();
-                        QString tax_amount = lineItem["tax_amount"].toString();
-                        QString tax_with_holding = lineItem["tax_with_holding"].toString();
-                        QString unit_of_measurementId = lineItem["unit_of_measurement_id"].toString();
-                        QString unit_of_measurementName = lineItem["unit_of_measurement_name"].toString();
-
-                        //purchaseOrder->setAmount();
-                        purchaseOrder->setVendorName(vendorName);
-                        purchaseOrder->setVendorId(vendorId.toInt());
-                        purchaseOrder->setAmount(amount.toInt());
-                        purchaseOrder->setMaterialId(materialId.toInt());
-                        purchaseOrder->setMaterialName(material_name);
-                        purchaseOrder->setQuantity(quantity.toInt());
-                        purchaseOrder->setTaxAmount(tax_amount.toInt());
-                        purchaseOrder->setTaxWithHolding(tax_with_holding.toInt());
-                        purchaseOrder->setUnitOfMeasurementId(unit_of_measurementId.toInt());
-                        purchaseOrder->setUnitOfMeasurementName(unit_of_measurementName);
-
-                        purchaseOrders.push_back(purchaseOrder);
+                        vendorName = vendor->getVendorName();
+                        break;
                     }
                 }
+                purchaseOrder->setVendorName(vendorName);
+                //  purchaseOrder->setVendorId(jsonObj["vendorId"].toInt());
+
+
+                purchaseOrders.push_back(purchaseOrder);
             }
         }
-    }
-
-    return purchaseOrders;
-}
-
-
-
-
-std::vector<Vendor*> PurchaseOrderController::getVendorList() const
-{
-    return m_vendorRepository->findAllQML();
-}
-
-std::vector<Material*> PurchaseOrderController::getMaterialList() const
-{
-    return m_materialRepository->findAllQML();
-}
-
-std::vector<UnitOfMeasurement*> PurchaseOrderController::getUOMList() const
-{
-    return m_unitOfMeasurementRepository->findAllQML();
-}
-
-QString PurchaseOrderController::CreateJson(const QVariant &param) const
-{
-    QJsonObject jsonObject;
-    if (param.canConvert<QVariantList>()) {
-        QVariantList list = param.toList();
-        int len = list.size();
-        jsonObject["rows"] = len;
-
-        QJsonArray dataArray;
-
-        for (const QVariant &item : list) {
-            qDebug() << "Item:" << item.toString();
-
-            if (item.canConvert<QVariantMap>()) {
-                QVariantMap map = item.toMap();
-                QJsonObject jsonObjectNew;
-
-                for (auto it = map.begin(); it != map.end(); ++it) {
-                    jsonObjectNew.insert(it.key(), QJsonValue::fromVariant(it.value()));
-                }
-
-                dataArray.append(jsonObjectNew);
-            } else {
-                qDebug() << "Item is not a QVariantMap!";
-            }
-        }
-
-        jsonObject["data"] = dataArray;
-        QJsonDocument jsonDoc(jsonObject);
-        QString JsonString = jsonDoc.toJson(QJsonDocument::Indented);
-        qDebug() <<"Created PurchaseOrder:" << JsonString;
-
-        return JsonString;
+        return purchaseOrders;
     }
 }

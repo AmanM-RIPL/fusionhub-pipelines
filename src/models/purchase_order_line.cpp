@@ -1,15 +1,19 @@
 #include "models/purchase_order_line.h"
 
-PurchaseOrderLine::PurchaseOrderLine(int id, const QString& globalId, bool approvalStatus,int purchaseOrderId, int materialId,
-                                      int amount , int unitOfMeasurementId, double quantity ,double taxAmount ,double taxWithHolding , QObject* parent)
+PurchaseOrderLine::PurchaseOrderLine(int id, const QString& globalId, bool approvalStatus,int purchaseOrderId, int vendorId, const QString& vendorName,
+                                       int materialId, const QString& materialName ,int amount , int unitOfMeasurementId, const QString& unitOfMeasurementName , double quantity ,double taxAmount ,double taxWithHolding , QObject* parent)
     : QObject(parent),
     id(id),
     globalId(globalId),
     approvalStatus(approvalStatus),
     purchaseOrderId(purchaseOrderId),
+    vendorId(vendorId),
+    vendorName(vendorName),
     materialId(materialId),
+    materialName(materialName),
     quantity(quantity),
     unitOfMeasurementId(unitOfMeasurementId),
+    unitOfMeasurementName(unitOfMeasurementName),
     amount(amount),
     taxAmount(taxAmount),
     taxWithHolding(taxWithHolding)

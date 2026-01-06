@@ -25,6 +25,7 @@
 #include "repositories/purchase_order_line_repository.h"
 #include "repositories/good_received_note_repository.h"
 #include "repositories/material_indent_repository.h"
+#include "repositories/work_billing_repository.h"
 #include "repositories/work_billing_line_repository.h"
 
 class RepositoryLocator
@@ -57,6 +58,7 @@ public:
     PurchaseOrderLineRepository* purchaseOrderLineRepository();
     GoodReceivedNoteRepository* goodReceivedNoteRepository();
     MaterialIndentRepository* materialIndentRepository();
+    WorkBillingRepository* workBillingRepository();
     WorkBillingLineRepository* workBillingLineRepository();
 
     IFCWallRepository* ifcWallRepository();
@@ -89,6 +91,8 @@ private:
     std::unique_ptr<BillOfQuantityLineRepository> m_billOfQuantityLineRepository;
     std::unique_ptr<ProjectBudgetRepository> m_projectBudgetRepository;
     std::unique_ptr<MaterialIndentRepository> m_materialIndentRepository;
+
+    std::unique_ptr<WorkBillingRepository> m_workBillingRepository;
     std::unique_ptr<WorkBillingLineRepository> m_workBillingLineRepository;
 
     std::unique_ptr<IFCWallRepository> m_ifcWallRepository;
