@@ -27,6 +27,7 @@ Rectangle {
 
     property string txtTotalUpcomingTask: "0"
     property int activeRowIndex: -1
+    property int activeTextBoxIndex: -1;
 
     // Signals
     signal viewTask(var row)
@@ -48,7 +49,7 @@ Rectangle {
     /************Start of Calendar******************/
 
     Popup {
-            id: calendarPopup_startDate
+            id: calendarPopup
             anchors.centerIn: parent
             y: taskStartDateTextBox.y + taskStartDateTextBox.height + 10
             visible: false
@@ -62,7 +63,7 @@ Rectangle {
 
                     Button {
                         id: idPrevMonthButton
-                        text: "< "//"Previous Month"
+                        text: "< "
                         font.pixelSize: 20
                         font.weight: 700
                         onClicked: {
@@ -110,7 +111,7 @@ Rectangle {
 
                     Button {
                         id:idNextMonthButton
-                        text:" >" //"Next Month"
+                        text:" >"
                         font.pixelSize: 20
                         font.weight: 700
                         onClicked: {
@@ -151,9 +152,17 @@ Rectangle {
                     Layout.fillWidth: true
 
                     onClicked: (date) => {
-                        taskStartDateTextBox.text = date.toLocaleDateString(Qt.locale(), "dd/MM/yyyy");
-                        calendarPopup_startDate.visible = false;
-                        //taskStartDateTextBox.activeFocus = false;
+                        if(activeTextBoxIndex === 1)
+                        {
+                            taskStartDateTextBox.text = date.toLocaleDateString(Qt.locale(), "dd/MM/yyyy");
+                            calendarPopup.visible = false;
+                        }
+
+                        if(activeTextBoxIndex === 2)
+                        {
+                            taskEndDateTextBox.text = date.toLocaleDateString(Qt.locale(), "dd/MM/yyyy");
+                            calendarPopup.visible = false;
+                        }
                     }
 
                     Component.onCompleted: {
@@ -176,138 +185,7 @@ Rectangle {
                     }
                 }
             }
-       }
-
-
-    Popup {
-            id: calendarPopup_endDate
-            anchors.centerIn: parent
-            y: taskEndDateTextBox.y + taskEndDateTextBox.height + 10
-            visible: false
-            closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-            parent: Overlay.overlay
-
-            ColumnLayout {
-                ///////////////////
-                RowLayout {
-
-                    Button {
-                        id: idPrevMonthButtonNew
-                        text: "< "//"Previous Month"
-                        font.pixelSize: 20
-                        font.weight: 700
-                        onClicked: {
-                            if(monthNew.currentIndex > 0){
-                                 --monthNew.currentIndex;
-                                idNextMonthButtonNew.enabled = true;
-                                idPrevMonthButtonNew.enabled = true;
-                            }
-                            else{
-                                if(yearNew.currentIndex > 0)
-                                {
-                                    --yearNew.currentIndex;
-                                    monthNew.currentIndex = 11;
-                                    idPrevMonthButtonNew.enabled = true;
-                                    idNextMonthButtonNew.enabled = true;
-                                }
-                                else
-                                {
-                                    idPrevMonthButtonNew.enabled = false;
-                                }
-                            }
-                        }
-                    }
-
-                    ComboBox {
-                        id: monthNew
-                        height: 40
-                        width: 150
-                        model: monthModel
-                        font.pixelSize: 20
-                        font.weight: 700
-                        currentIndex: 0
-                    }
-
-                    ComboBox {
-                        id: yearNew
-                        height: 40
-                        width: 150
-                        model: yearModel
-                        font.pixelSize: 20
-                        font.weight: 700
-                        currentIndex: 0
-                    }
-
-                    Button {
-                        id:idNextMonthButtonNew
-                        text:" >" //"Next Month"
-                        font.pixelSize: 20
-                        font.weight: 700
-                        onClicked: {
-                            if(monthNew.currentIndex < 11){
-                                ++monthNew.currentIndex;
-                                idNextMonthButtonNew.enabled = true;
-                                idPrevMonthButtonNew.enabled = true;
-                            }
-                            else{
-                                if(yearNew.currentIndex < yearModel.count - 1)
-                                {
-                                    ++yearNew.currentIndex;
-                                    monthNew.currentIndex = 0;
-                                    idNextMonthButtonNew.enabled = true;
-                                    idPrevMonthButtonNew.enabled = true;
-                                }
-                                else
-                                {
-                                    idNextMonthButtonNew.enabled = false;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                ///////////////
-
-                DayOfWeekRow {
-                    locale: monthGrid_endDate.locale
-                    Layout.fillWidth: true
-                }
-
-                MonthGrid {
-                    id: monthGrid_endDate
-                    month: monthNew.currentIndex
-                    year: yearModel.get(yearNew.currentIndex).text
-                    locale: Qt.locale("en_US")
-                    Layout.fillWidth: true
-
-                    onClicked: (date) => {
-                        taskEndDateTextBox.text = date.toLocaleDateString(Qt.locale(), "dd/MM/yyyy");
-                        calendarPopup_endDate.visible = false;
-                        //taskEndDateTextBox.activeFocus = false;
-                    }
-
-                    Component.onCompleted: {
-                         loadSampleYears()
-                        var now = new Date ();
-                        let currentYear = now.getFullYear().toString();
-
-                        var currentIndex = 0;
-                        for(var j = 0; j < yearModel.count; j++)
-                        {
-                            let yearText = yearModel.get(j).text;
-
-                            if(currentYear.localeCompare(yearText) === 0)
-                            {
-                                currentIndex = j;
-                            }
-                        }
-                        yearNew.currentIndex =  currentIndex;
-                        monthNew.currentIndex = now.getMonth();
-                    }
-                }
-            }
-       }
-
+       }    
 
     /********************End of Calendar*****************************/
 
@@ -335,12 +213,9 @@ Rectangle {
 
             showList();
 
-            calendarPopup_startDate.visible = false;
-            calendarPopup_endDate.visible = false;
+            calendarPopup.visible = false;
             taskStartDateTextBox.focus = false;
             taskEndDateTextBox.focus = false;
-
-
         }
 
         onCancelCallback: function () {
@@ -350,9 +225,7 @@ Rectangle {
             taskEndDateTextBox.text = "";
             taskBIMObjectTextBox.text = "";
 
-
-            calendarPopup_startDate.visible = false;
-            calendarPopup_endDate.visible = false;
+            calendarPopup.visible = false;
             taskStartDateTextBox.focus = false;
             taskEndDateTextBox.focus = false;
 
@@ -420,17 +293,11 @@ Rectangle {
                 text:""
                 color: "#323130"
 
-                onActiveFocusChanged: {
-                    if (activeFocus) {
-                        calendarPopup_startDate.visible = true;
-
-                    }
-                }
-
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        taskStartDateTextBox.forceActiveFocus();
+                        activeTextBoxIndex = 1;
+                        calendarPopup.visible = !calendarPopup.visible;
                     }
                 }
             }
@@ -450,18 +317,13 @@ Rectangle {
                 id: taskEndDateTextBox
                 placeholderText: "End Date"
                 text:""
-                color: "#323130"
-                onActiveFocusChanged: {
-                    if (activeFocus) {
-                        calendarPopup_endDate.visible = true;
-
-                    }
-                }
+                color: "#323130"                
 
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        taskEndDateTextBox.forceActiveFocus();
+                        activeTextBoxIndex = 2;
+                        calendarPopup.visible = !calendarPopup.visible;
                     }
                 }
             }
