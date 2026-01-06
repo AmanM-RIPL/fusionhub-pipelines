@@ -36,6 +36,7 @@ public:
     void AddCamera(Camera* cam);
     void AddShader(Shader* shad);
     void AddPickingShader(Shader* shad);
+    void AddEdgeShader(Shader* shad);
 
     void SetProjection(QMatrix4x4& projection);
     void SetWidth(int width);
@@ -45,7 +46,23 @@ public:
 
 private:
     GLuint m_vao = 0;
-    GLuint m_static_vbo = 0;
+    GLuint m_edge_vao = 0;
+
+    GLuint m_static_position_vbo = 0;
+    GLuint m_static_normal_vbo = 0;
+    GLuint m_static_textureuv_vbo = 0;
+    GLuint m_static_materialIndex_vbo = 0;
+    GLuint m_static_textureIndex_vbo = 0;
+
+    GLuint m_static_corner_vbo = 0;
+    GLuint m_static_edge_indices_vbo = 0;
+    GLuint m_static_edge_width_vbo = 0;
+    GLuint m_static_edge_dashLength_vbo = 0;
+    GLuint m_static_edge_gapLength_vbo = 0;
+    GLuint m_static_edge_dash_vbo = 0;
+    GLuint m_static_edge_materialIndex_vbo = 0;
+
+
     GLuint m_editor_vbo = 0;
     GLuint m_static_ibo = 0;
     GLuint m_editor_ibo = 0;
@@ -54,6 +71,8 @@ private:
     GLuint m_material_tbo = 0;
     GLuint m_matrixTexture = 0;
     GLuint m_materialTexture = 0;
+    GLuint m_verticesTexture = 0;
+    GLuint m_matrixIndexTexture = 0;
     GLuint m_model_matrix_vbo = 0;
     GLuint m_pick_color_vbo = 0;
 
@@ -82,6 +101,7 @@ private:
     Camera* camera;
     Shader* shader;
     Shader* pickingShader;
+    Shader* edgeShader;
 
     // For Color Picking
     void encodeIdToColor(unsigned int id, unsigned char &r, unsigned char &g, unsigned char &b);

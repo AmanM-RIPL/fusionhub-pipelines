@@ -32,7 +32,7 @@ void WindowGeometryService::generateMesh2D(BIMElement* windowElement, Mesh* mesh
 
     if (referenceLine.size() < 2)
     {
-        mesh->Initialize({}, {}, {}, 0, 0, 0);
+        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
         return;
     }
 
@@ -57,22 +57,29 @@ void WindowGeometryService::generateMesh2D(BIMElement* windowElement, Mesh* mesh
     // }
 
     // 5. Create and export mesh
-    std::vector<Vertex> verticesVector = {};
+    std::vector<Position> vertices_position = {};
+    std::vector<Normal> vertices_normal = {};
+    std::vector<TextureUV> vertices_textureuv = {};
+    std::vector<int> vertices_materialIndex = {};
+    std::vector<int> vertices_textureIndex = {};
     for (int i = 0; i < referenceLine.size(); i++)
     {
         Point point = referenceLine[i];
 
-        Vertex v = {
-            {point[0], point[1], 0.0f},
-            {0.0f, 0.0f, 1.0f},
-            {0.0f, 0.0f},
-            OpenGLMaterial::IVORY,
-            Texture::NONE
-        };
+        // Vertex v = {
+        //     {point[0], point[1], 0.0f},
+        //     {0.0f, 0.0f, 1.0f},
+        //     {0.0f, 0.0f},
+        //     OpenGLMaterial::IVORY,
+        //     Texture::NONE
+        // };
 
-        verticesVector.push_back(v);
+        vertices_position.push_back({point[0], point[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
 
-        // Point point = referenceLine[i];
         // verticesVector.push_back(point[0]); // x
         // verticesVector.push_back(point[1]); // y
         // verticesVector.push_back(0.0f); // z
@@ -81,18 +88,27 @@ void WindowGeometryService::generateMesh2D(BIMElement* windowElement, Mesh* mesh
         // verticesVector.push_back(1.0f); // n.z
     }
 
-    std::vector<uint32_t> borderIndices = {};
+    std::vector<EdgeIndex> edge_indices = {};
+    std::vector<float> edge_width = {};
+    std::vector<float> edge_dashLength = {};
+    std::vector<float> edge_gapLength = {};
+    std::vector<int> edge_dash = {};
+    std::vector<int> edge_materialIndex = {};
     for (int i = 0; i < referenceLine.size(); i++)
     {
-        borderIndices.push_back(i);
+        edge_width.push_back(1.0f);
+        edge_dashLength.push_back(1.0f);
+        edge_gapLength.push_back(1.0f);
+        edge_dash.push_back(0);
+        edge_materialIndex.push_back(OpenGLMaterial::BLACK);
 
         if (i == referenceLine.size() - 1)
         {
-            borderIndices.push_back(0);
+            edge_indices.push_back({i, 0});
         }
         else
         {
-            borderIndices.push_back(i + 1);
+            edge_indices.push_back({i, i + 1});
         }
     }
 
@@ -103,7 +119,20 @@ void WindowGeometryService::generateMesh2D(BIMElement* windowElement, Mesh* mesh
     // std::copy(indices.begin(), indices.end(), indices_raw.get());
 
     // Mesh* mesh = new Mesh(this);
-    mesh->Initialize(verticesVector, indices, borderIndices, referenceLine.size(), indices.size(), borderIndices.size());
+    mesh->Initialize(
+        vertices_position,
+        vertices_normal,
+        vertices_textureuv,
+        vertices_materialIndex,
+        vertices_textureIndex,
+        edge_indices,
+        edge_width,
+        edge_dashLength,
+        edge_gapLength,
+        edge_dash,
+        edge_materialIndex,
+        indices
+    );
     mesh->setBIMElementId(windowElement->getId());
 
 
@@ -136,12 +165,12 @@ void WindowGeometryService::generateMesh3D(BIMElement* windowElement, Mesh* mesh
 
     if (referenceLine.size() < 2)
     {
-        mesh->Initialize({}, {}, {}, 0, 0, 0);
+        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
         return;
     }
 
     // Initialize the mesh
-    mesh->Initialize({}, {}, {}, 0, 0, 0);
+    mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
 
     QMatrix4x4 modelMatrix;
     modelMatrix.setToIdentity();

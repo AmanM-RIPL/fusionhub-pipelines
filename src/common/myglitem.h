@@ -177,6 +177,7 @@ private:
     Camera* m_camera = nullptr;
     Shader* m_shader = nullptr;
     Shader* m_picking_shader = nullptr;
+    Shader* m_edge_shader = nullptr;
     View* m_view = nullptr;
     QList<OpenGLMaterial*> m_materialList;
     QList<Texture*> m_textureList;

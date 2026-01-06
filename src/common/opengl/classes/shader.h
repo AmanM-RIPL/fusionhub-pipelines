@@ -13,6 +13,8 @@ public:
     explicit Shader(QObject *parent = nullptr);
     ~Shader();
 
+    enum ShaderType { MESH, MESH_COLOR_PICKING, EDGE };
+
     void CreateFromFiles(const QString& vertexLocation, const QString& fragmentLocation);
     QByteArray ReadFile(const QString& fileLocation);
 
@@ -40,14 +42,19 @@ public:
     GLuint getModelMatrixBufferId();
     GLuint getMaterialBufferId();
 
-    void SetPickColor(bool value);
+    GLuint getViewPortId();
+    GLuint getVerticesId();
+    GLuint getModelMatrixIndexBufferId();
+
+    void SetShaderType(ShaderType value);
 
 private:
     GLuint shaderID,
         m_projectionId, m_viewId,
         m_pickColorId, m_viewPositionId,
         m_lightPositionId, m_lightAmbientId, m_lightDiffuseId, m_lightSpecularId,
-        m_modelMatrixBufferId, m_materialBufferId;
+        m_modelMatrixBufferId, m_materialBufferId,
+        m_viewportId, m_verticesId, m_modelMatrixIndexBufferId; // for edge shader only
 
     GLuint m_textureArrayId;
     int m_textureCount = 1;
@@ -63,7 +70,7 @@ private:
         GLint  m_materialShininessId;
     } m_materialId[2];
 
-    bool setPickColorId = false;
+    ShaderType m_shaderType = Shader::MESH;
 
     void AddShader(GLenum type, const char* src);
     void CompileShader(const char* vertexCode, const char* fragmentCode);

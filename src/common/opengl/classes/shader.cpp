@@ -91,11 +91,11 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 
     m_modelMatrixBufferId = this->glGetUniformLocation(shaderID, "modelMatrixBuffer");
 
-    if (setPickColorId)
+    if (m_shaderType == Shader::MESH_COLOR_PICKING)
     {
         m_pickColorId = this->glGetUniformLocation(shaderID, "pickColor");
     }
-    else
+    else if (m_shaderType == Shader::MESH_COLOR_PICKING || m_shaderType == Shader::MESH)
     {
         m_viewPositionId = this->glGetUniformLocation(shaderID, "viewPosition");
 
@@ -114,6 +114,21 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
         m_materialBufferId = this->glGetUniformLocation(shaderID, "materialBuffer");
 
         m_textureArrayId = this->glGetUniformLocation(shaderID, "textureArray");
+
+        m_lightPositionId = this->glGetUniformLocation(shaderID, "light.position");
+        m_lightAmbientId = this->glGetUniformLocation(shaderID, "light.ambient");
+        m_lightDiffuseId = this->glGetUniformLocation(shaderID, "light.diffuse");
+        m_lightSpecularId = this->glGetUniformLocation(shaderID, "light.specular");
+    }
+    else if (m_shaderType == Shader::EDGE)
+    {
+        m_materialBufferId = this->glGetUniformLocation(shaderID, "materialBuffer");
+
+        m_viewportId = this->glGetUniformLocation(shaderID, "viewport");
+
+        m_verticesId = this->glGetUniformLocation(shaderID, "vertices");
+
+        m_modelMatrixIndexBufferId = this->glGetUniformLocation(shaderID, "modelMatrixIndexBuffer");
 
         m_lightPositionId = this->glGetUniformLocation(shaderID, "light.position");
         m_lightAmbientId = this->glGetUniformLocation(shaderID, "light.ambient");
@@ -207,9 +222,24 @@ GLuint Shader::getMaterialBufferId()
     return m_materialBufferId;
 }
 
-void Shader::SetPickColor(bool value)
+GLuint Shader::getViewPortId()
 {
-    setPickColorId = value;
+    return m_viewportId;
+}
+
+GLuint Shader::getVerticesId()
+{
+    return m_verticesId;
+}
+
+GLuint Shader::getModelMatrixIndexBufferId()
+{
+    return m_modelMatrixIndexBufferId;
+}
+
+void Shader::SetShaderType(ShaderType value)
+{
+    m_shaderType = value;
 }
 
 Shader::~Shader()
