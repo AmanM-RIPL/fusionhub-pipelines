@@ -13,14 +13,13 @@ class GoodReceivedNoteController: public QObject
 public:
     explicit GoodReceivedNoteController(QObject *parent = nullptr);
     Q_INVOKABLE void create(const int &quantity, const int &purchaseOrderLineId) const;
+
+    Q_INVOKABLE void update(int id, const int &quantity, const int &purchaseOrderLineId) const;
+
     Q_INVOKABLE std::vector<GoodReceivedNote*> getGoodReceivedNoteList(bool isApproved = false) const;
 
-    //Q_INVOKABLE std::vector<PurchaseOrderLine*> getPurchaseOrderLineList() const;
-    //Q_INVOKABLE std::vector<PurchaseOrder*> getPurchaseOrderList() const;
 private:
     GoodReceivedNoteRepository* m_goodReceivedNoteRepository;
-    //PurchaseOrderLineRepository* m_purchaseOrderLineRepository;
-    //PurchaseOrderRepository* m_purchaseOrderRepository;
     DraftEntityRepository* m_draftEntityRepository;
 };
 

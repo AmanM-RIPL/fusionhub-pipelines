@@ -2,77 +2,114 @@ import QtQuick 2.15
 import QtQuick.Controls
 import QtQuick.Layouts
 import com.fh.models 1.0
-import com.fh.controllers;
+import com.fh.controllers
 
 Column {
-    // anchors.fill: parent
     id: materialIndentRoot
     width: parent.width
     padding: 10
 
-    property var materialIndentList: []
-    property var materialIndentListForTable: []
-    property var materialText: []
-    property var materialList: []
+    // Properties - Data from controllers
+    property var materialsFromCtrl: []
+    property var tasksFromCtrl: []
 
-    property var taskText: []
+    // Properties - Lists for UI
+    property var materialIndentList: []
+    property var materialList: []
     property var taskList: []
 
-    property bool isApproved:false
+    // Properties - State management
+    property var selectedData: null
+    property string popupMode: "view"
+    property bool isApproved: false
 
-
+    // Controllers
     MaterialIndentController {
         id: materialIndentController
     }
 
-    MaterialController
-    {
-        id:materialController
+    MaterialController {
+        id: materialController
     }
 
-    TaskController
-    {
-        id:taskController
+    TaskController {
+        id: taskController
     }
 
+    /* ---------- Create Popup ---------- */
     FHPopup {
         id: newMaterialIndentPopup
-        popupWidth: 500
-        popupHeight: 350
-        title: "New Material Indent"
+        popupWidth: 600
+        popupHeight: 450
+        title: "Create Material Indent"
+        parent: Overlay.overlay
 
         onAcceptCallback: function () {
             if (materialComboBox.currentIndex === -1 || taskComboBox.currentIndex === -1 || quantityTextBox.text === "") {
-                console.log("Validation Error: Please select material, task and enter quantity");
-                return;
+                console.log("Validation Error: Please select material, task and enter quantity")
+                return
             }
 
             materialIndentController.create(
-                quantityTextBox.text,
-                materialIndentRoot.materialList[materialComboBox.currentIndex].id,
-                materialIndentRoot.taskList[taskComboBox.currentIndex].id
-            );
+                        quantityTextBox.text,
+                        materialsFromCtrl[materialComboBox.currentIndex].id,
+                        tasksFromCtrl[taskComboBox.currentIndex].id
+                        )
 
-            showList();
+            // Reset
+            quantityTextBox.text = ""
+            materialComboBox.currentIndex = -1
+            taskComboBox.currentIndex = -1
 
-            // reset fields
-            quantityTextBox.text = "";
-            materialComboBox.currentIndex = -1;
-            taskComboBox.currentIndex = -1;
+            showMaterialIndentList()
+
+            close()
         }
 
-
         onCancelCallback: function () {
-            quantityTextBox.text = "";
-            materialComboBox.currentIndex = -1;
-            taskComboBox.currentIndex = -1;
+            quantityTextBox.text = ""
+            materialComboBox.currentIndex = -1
+            taskComboBox.currentIndex = -1
+            close()
+        }
+
+        onClosed: {
+            showMaterialIndentList()
+        }
+
+        onOpened: {
+            // Load lists
+            quantityTextBox.text = ""
+            materialComboBox.currentIndex = -1
+            taskComboBox.currentIndex = -1
+
+            if (materialIndentRoot.visible) {
+                materialsFromCtrl = []
+                tasksFromCtrl = []
+
+                materialsFromCtrl = materialController.getMaterialList(true)
+                tasksFromCtrl = taskController.getTaskList(true)
+
+                // Clear current lists then populate
+                materialIndentRoot.materialList = []
+                materialIndentRoot.taskList = []
+
+                for (var i = 0; i < materialsFromCtrl.length; i++) {
+                    materialIndentRoot.materialList = materialIndentRoot.materialList.concat(
+                                materialsFromCtrl[i].materialName)
+                }
+                for (var j = 0; j < tasksFromCtrl.length; j++) {
+                    materialIndentRoot.taskList = materialIndentRoot.taskList.concat(
+                                tasksFromCtrl[j].taskName)
+                }
+            }
         }
 
         Column {
             width: parent.width
-            height: 200//parent.height //30 for each top bottom
+            spacing: 10
 
-            Text{
+            Text {
                 id: materialLabel
                 text: "Material"
                 color: "#323130"
@@ -84,10 +121,12 @@ Column {
 
             CustomComboBox {
                 id: materialComboBox
-                model: materialIndentRoot.materialText
+                width: parent.width
+                model: materialIndentRoot.materialList
+                currentIndex: -1
             }
 
-            Text{
+            Text {
                 id: taskLabel
                 text: "Task"
                 color: "#323130"
@@ -99,29 +138,170 @@ Column {
 
             CustomComboBox {
                 id: taskComboBox
-                model: materialIndentRoot.taskText
+                width: parent.width
+                model: materialIndentRoot.taskList
+                currentIndex: -1
             }
 
-            Text{
+            Text {
                 id: quantityLabel
                 text: "Quantity"
                 color: "#323130"
                 font.weight: 700
                 font.pixelSize: 14
                 font.family: "Segoe UI"
+                topPadding: 10
             }
 
-            CustomTextBox{
+            CustomTextBox {
                 id: quantityTextBox
                 placeholderText: "Quantity"
-                text:""
+                text: ""
                 color: "#323130"
+                width: parent.width
+                height: 30
             }
-
         }
-
     }
 
+    /* ---------- View / Edit Popup ---------- */
+    FHPopup {
+        id: viewEditPopup
+        popupWidth: 600
+        popupHeight: 450
+        title: popupMode === "view" ? "View Material Indent" : "Edit Material Indent"
+
+        showAcceptButton: popupMode === "edit"
+        buttonName: popupMode === "edit" ? "Update" : ""
+        buttonSource: popupMode === "edit" ? "qrc:/resources/images/editWhite_icon.png" : ""
+
+        onAcceptCallback: function () {
+            if (popupMode === "edit" && selectedData) {
+                if (materialComboBoxEdit.currentIndex === -1 || taskComboBoxEdit.currentIndex === -1 || quantityTextBoxEdit.text === "") {
+                    console.log("Validation Error: Please select material, task and enter quantity")
+                    return
+                }
+
+                materialIndentController.update(
+                            selectedData.id,
+                            quantityTextBoxEdit.text,
+                            materialsFromCtrl[materialComboBoxEdit.currentIndex].id,
+                            tasksFromCtrl[taskComboBoxEdit.currentIndex].id
+                            )
+
+                // Reset
+                quantityTextBoxEdit.text = ""
+                materialComboBoxEdit.currentIndex = -1
+                taskComboBoxEdit.currentIndex = -1
+
+                showMaterialIndentList()
+                close()
+            }
+        }
+
+        onCancelCallback: function () {
+            quantityTextBoxEdit.text = ""
+            materialComboBoxEdit.currentIndex = -1
+            taskComboBoxEdit.currentIndex = -1
+            close()
+        }
+
+        onOpened: {
+            // Load lists from controllers
+            quantityTextBoxEdit.text = ""
+            materialComboBoxEdit.currentIndex = -1
+            taskComboBoxEdit.currentIndex = -1
+
+            materialsFromCtrl = []
+            tasksFromCtrl = []
+
+            materialsFromCtrl = materialController.getMaterialList(true)
+            tasksFromCtrl = taskController.getTaskList(true)
+
+            // Clear and populate material and task lists
+            var tempMaterialList = []
+            var tempTaskList = []
+
+            for (var i = 0; i < materialsFromCtrl.length; i++) {
+                tempMaterialList = tempMaterialList.concat(materialsFromCtrl[i].materialName)
+            }
+
+            for (var k = 0; k < tasksFromCtrl.length; k++) {
+                tempTaskList = tempTaskList.concat(tasksFromCtrl[k].taskName)
+            }
+
+            materialIndentRoot.materialList = tempMaterialList
+            materialIndentRoot.taskList = tempTaskList
+
+            // Fill popup with selected data
+            if (selectedData) {
+                fillPopup()
+            }
+        }
+
+        Column {
+            width: parent.width
+            spacing: 10
+
+            Text {
+                id: materialLabelEdit
+                text: "Material"
+                color: "#323130"
+                font.weight: 700
+                font.pixelSize: 14
+                font.family: "Segoe UI"
+                topPadding: 10
+            }
+
+            CustomComboBox {
+                id: materialComboBoxEdit
+                width: parent.width
+                model: materialIndentRoot.materialList
+                currentIndex: -1
+                enabled: popupMode === "edit"
+            }
+
+            Text {
+                id: taskLabelEdit
+                text: "Task"
+                color: "#323130"
+                font.weight: 700
+                font.pixelSize: 14
+                font.family: "Segoe UI"
+                topPadding: 10
+            }
+
+            CustomComboBox {
+                id: taskComboBoxEdit
+                width: parent.width
+                model: materialIndentRoot.taskList
+                currentIndex: -1
+                enabled: popupMode === "edit"
+            }
+
+            Text {
+                id: quantityLabelEdit
+                text: "Quantity"
+                color: "#323130"
+                font.weight: 700
+                font.pixelSize: 14
+                font.family: "Segoe UI"
+                topPadding: 10
+            }
+
+            CustomTextBox {
+                id: quantityTextBoxEdit
+                placeholderText: "Quantity"
+                text: ""
+                color: "#323130"
+                width: parent.width
+                height: 30
+                enabled: popupMode === "edit"
+            }
+        }
+    }
+
+    // -------- Header Row --------
     Row {
         spacing: 20
         Text {
@@ -131,7 +311,6 @@ Column {
             font.weight: 700
             font.pixelSize: 44
             leftPadding: 20
-            // topPadding: 20
         }
 
         CustomButton {
@@ -139,18 +318,15 @@ Column {
             width: 85
             height: 38
             radius: 4
-            // border.color: "#007AFF"
             btnSource: "qrc:/resources/images/addWhite_icon.png"
             btnName: "New"
             btnNameColor: "white"
             anchors.verticalCenter: parent.verticalCenter
 
-            MouseArea{
+            MouseArea {
                 anchors.fill: parent
-
-                onClicked: {
-                    newMaterialIndentPopup.open();
-                }
+                cursorShape: Qt.PointingHandCursor
+                onClicked: newMaterialIndentPopup.open()
             }
         }
     }
@@ -161,98 +337,130 @@ Column {
         color: "#EDF1F4"
     }
 
-    Row {
+    // -------- Approval Type Selection --------
+    Column {
         spacing: 20
-        Text{
-            id: approvalTypeLabel
-            text: "Choose Approval Type"
-            color: "#323130"
-            font.weight: 700
-            font.pixelSize: 14
-            font.family: "Segoe UI"
-            topPadding: 10
-            leftPadding: 20
-        }
+        Row {
+            spacing: 20
+            anchors.left: parent.left
 
+            Text {
+                id: approvalTypeLabel
+                text: "Choose Approval Type"
+                color: "#323130"
+                font.weight: 700
+                font.pixelSize: 14
+                font.family: "Segoe UI"
+                topPadding: 10
+                leftPadding: 20
+            }
 
-        CustomComboBox {
-            id: approvalTypeComboBox
-            model: ["Approved", "Draft"]
-            width:200
+            CustomComboBox {
+                id: approvalTypeComboBox
+                model: ["Approved", "Draft"]
+                width: 200
+                currentIndex: 0
 
-            onCurrentTextChanged: {
-                if(approvalTypeComboBox.currentText === "Approved"){
-                    isApproved = true
+                contentItem: Text {
+                    text: approvalTypeComboBox.displayText
+                    leftPadding: 10
+                    verticalAlignment: Text.AlignVCenter
+                    color: "#323130"
+                    font.pixelSize: 14
                 }
-                else{
-                    isApproved = false;
+
+                onCurrentTextChanged: {
+                    isApproved = (approvalTypeComboBox.currentText === "Approved")
+                    showMaterialIndentList()
                 }
-                showList();
             }
         }
     }
 
     Rectangle {
         width: 100
-        height: 40
+        height: 5
         color: "#EDF1F4"
     }
 
-
-
+    // -------- Main Table --------
     FHTable {
         height: 200
         leftPadding: 20
-        model: materialIndentRoot.materialIndentListForTable
+        model: materialIndentRoot.materialIndentList
+
         columns: [
-            { label: "Id", width: 100, key: "id" },
-            { label: "Quantity", width: 200, key: "quantity" },
-            { label: "Material", width: 200, key: "material" },
-            { label: "Task", width: 200, key: "task" }
+            {
+                "label": "Id",
+                "width": 200,
+                "key": "id"
+            },
+            {
+                "label": "Quantity",
+                "width": 400,
+                "key": "quantity"
+            },
+            {
+                "label": "Material",
+                "width": 350,
+                "key": "materialName"
+            },
+            {
+                "label": "Task",
+                "width": 350,
+                "key": "taskName"
+            }
         ]
-    }
 
-    Component.onCompleted: {
-        showList();
-    }
+        onViewRequested: function(row) {
+            popupMode = "view"
+            selectedData = row
+            fillPopup()
+            viewEditPopup.open()
+        }
 
-    onVisibleChanged: {
-         showList();
-    }
-
-    function showList() {
-        if (materialIndentRoot.visible) {
-
-            // get data
-            materialIndentList = materialIndentController.getMaterialIndentList(isApproved);
-            materialList = materialController.getMaterialList(isApproved);
-            taskList = taskController.getTaskList(isApproved);
-
-            // Material list for dropdown
-            materialText = materialList.map(m => m.materialName);
-
-            // Task list for dropdown
-            taskText = taskList.map(t => t.taskName);
-
-            // Table binding
-            materialIndentListForTable = materialIndentList.map(materialIndent => {
-
-            console.log("Raw MaterialIndent:", JSON.stringify(materialIndent, null, 2));
-                const material = materialList.find(x => x.id === materialIndent.materialId);
-                const task = taskList.find(t => t.id === materialIndent.taskId);
-
-                return {
-                    id: materialIndent.id,
-                    quantity: materialIndent.quantity,
-                    material: material ? material.materialName : "Unknown",
-                    task: task ? task.taskName : "Unknown"
-                };
-            });
-
-          //  console.log("Raw MaterialIndent List:", JSON.stringify(materialIndentList, null, 2));
-
+        onEditRequested: function(row) {
+            popupMode = "edit"
+            selectedData = row
+            fillPopup()
+            viewEditPopup.open()
         }
     }
 
-}
+    // -------- Component Initialization --------
+    Component.onCompleted: showMaterialIndentList()
+    onVisibleChanged: showMaterialIndentList()
 
+    // -------- Functions --------
+    function showMaterialIndentList() {
+        materialIndentRoot.materialIndentList = []
+
+        if (!materialIndentRoot.visible)
+            return
+
+        materialIndentRoot.materialIndentList = materialIndentController.getMaterialIndentList(isApproved)
+    }
+
+    function fillPopup() {
+        if (!selectedData)
+            return
+
+        // Find and set material
+        for (var i = 0; i < materialsFromCtrl.length; i++) {
+            if (materialsFromCtrl[i].id === selectedData.materialId) {
+                materialComboBoxEdit.currentIndex = i
+                break
+            }
+        }
+
+        // Find and set task
+        for (var j = 0; j < tasksFromCtrl.length; j++) {
+            if (tasksFromCtrl[j].id === selectedData.taskId) {
+                taskComboBoxEdit.currentIndex = j
+                break
+            }
+        }
+
+        quantityTextBoxEdit.text = selectedData.quantity || ""
+    }
+}

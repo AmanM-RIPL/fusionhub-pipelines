@@ -13,6 +13,9 @@ class MaterialIndentController: public QObject
 public:
     explicit MaterialIndentController(QObject *parent = nullptr);
     Q_INVOKABLE void create(const double &quantity, const int &materialId, const int &taskId) const;
+
+    Q_INVOKABLE void update(int id, const double &quantity, const int &materialId, const int &taskId) const;
+
     Q_INVOKABLE std::vector<MaterialIndent*> getMaterialIndentList(bool isApproved ) const;
 
 private:
