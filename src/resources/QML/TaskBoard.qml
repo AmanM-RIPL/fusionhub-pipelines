@@ -13,7 +13,7 @@ Rectangle {
     property string txtProjectName: "NA"
     property bool isApproved: true
 
-    property var selectedData: null
+    property var selectedData: {"id" : "", "taskName" : "", "desc" : "", "startDate" : "", "endDate" : "", "bimElement" : "", "pid" : "", "status" : "", "draftId": ""  }
     property string popupMode: "view"
 
 
