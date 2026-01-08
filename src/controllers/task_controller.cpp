@@ -13,7 +13,7 @@ TaskController::TaskController(QObject *parent)
     m_draftEntityRepository(RepositoryLocator::instance().draftEntityRepository())
 {}
 
-void TaskController::create(const QString &name, const QString &description, const QString &bimElement, const QString &startDate , const QString &endDate, const long long pid) const
+void TaskController::create(const QString &name, const QString &description, const QString &bimElement, const QString &startDate , const QString &endDate, const long long pid, const QString &status) const
 {
     Task task;
 
@@ -26,7 +26,7 @@ void TaskController::create(const QString &name, const QString &description, con
     task.setBimElement(bimElement);
     task.setStartDate(startDate);
     task.setEndDate(endDate);
-    task.setParentId(pid);
+    task.setParentId(pid);    
 
     m_taskRepository->saveQML(&task);
 */
@@ -43,7 +43,8 @@ void TaskController::create(const QString &name, const QString &description, con
     jsonObject["bim_element"] = bimElement;
     jsonObject["start_date"] = startDate;
     jsonObject["end_date"] = endDate;
-    jsonObject["pid"] = pid;    
+    jsonObject["pid"] = pid;
+    jsonObject["status"] = status;
 
     QJsonDocument jsonDoc(jsonObject);
     QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
@@ -80,7 +81,7 @@ void TaskController::create(const QString &name, const QString &description, con
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
-void TaskController::update(const QString &taskName ,const QString &description, const QString &bimElement ,const QString &startDate ,const QString &endDate, const long long pid, const long long task_id, int draftId) const
+void TaskController::update(const QString &taskName ,const QString &description, const QString &bimElement ,const QString &startDate ,const QString &endDate, const long long pid, const long long task_id, const int draftId, const QString &status) const
 {
 
 
@@ -93,6 +94,7 @@ void TaskController::update(const QString &taskName ,const QString &description,
     jsonObject["start_date"] = startDate;
     jsonObject["end_date"] = endDate;
     jsonObject["pid"] = pid;
+    jsonObject["status"] = status;
 
     QJsonDocument jsonDoc(jsonObject);
     QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
@@ -130,7 +132,7 @@ void TaskController::update(const QString &taskName ,const QString &description,
 }
 
 
-std::vector<Task*> TaskController::getTaskList(bool isApproved) const
+std::vector<Task*> TaskController::getTaskList(bool isApproved, const QString &status) const
 {    
     qDebug()<<"IsApproved: "<< isApproved;
 
@@ -142,7 +144,7 @@ std::vector<Task*> TaskController::getTaskList(bool isApproved) const
 
     if(isApproved){
        // return m_taskRepository->findAllQML();
-      std::vector<Task*> tasks = m_taskRepository->findAllQML();
+      std::vector<Task*> tasks = m_taskRepository->findAllQML(status);
        for(int i = 0; i < tasks.size(); i++)
        {
            //QString startData = tasks[i]->getStartDate();
@@ -210,6 +212,8 @@ std::vector<Task*> TaskController::getTaskList(bool isApproved) const
                 task->setEndDate(jsonObj["end_date"].toString());
                 //task->setParentId(jsonObj["pid"].toInt());
                 task->setParentId(jsonObj["pid"].toVariant().toLongLong());
+
+                task->setTaskStatus(jsonObj["status"].toString());
 
                 QString dateFormat = "dd/MM/yyyy";
                // QString dateFormat = "YYYY-MM-DD";

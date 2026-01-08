@@ -1,10 +1,43 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts 1.15
+import com.fh.models 1.0
+import com.fh.controllers
+import QtQuick.Controls 2.15
 
 Rectangle {
+    id: inProgressTaskBoard_root
     width: 296.5
     height: 544
     color: "#FAF9F8"
+
+    property var monthModel: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    property var  inProgressTaskList: []
+    //property var task_idList: []
+    //property var valuesToRemove: []
+
+    property bool isApproved: true
+    //property int startYear: 2080
+    //property int endYear: 2010
+
+    //property date selectedDate: new Date()
+
+    //property string txtTotalInProgressTask: "0"
+    property int activeRowIndex: -1
+    //property int activeTextBoxIndex: -1;
+
+    // Signals
+    signal viewTask(var row)
+    signal editTask(var row)
+
+    // ListModel {
+    //     id: yearModel
+    // }
+
+    TaskController{
+        id:taskController
+    }
+
 
 
     Rectangle{
@@ -19,7 +52,7 @@ Rectangle {
         anchors.leftMargin: 8
 
         Text{
-            text: "2"
+            text: String(inProgressTaskList.length)
             color: "#FFFFFF"
             font.pixelSize: 10
             font.weight: 400
@@ -86,18 +119,7 @@ Rectangle {
 
 
         ListModel{
-            id: listModel
-
-            ListElement{
-                title: "Excavation Work"
-                desc: "Filling in plinth, floors, trenches, pits..."
-            }
-
-
-            ListElement{
-                title: "Disposal Work"
-                desc: "Disposal of excaveted earth, soft rock, rock..."
-            }
+            id: listModel           
         }
 
 
@@ -114,9 +136,28 @@ Rectangle {
             id: listDelegate
 
             Rectangle{
+                required property var id
+                required property string title
+                required property string desc
+                required property int index
+
+                required property string taskName
+                required property string startDate
+                required property string endDate
+                required property string bimElement
+                required property string status
+                required property var pid
+                required property int draftId
+
                 width: 276.5 + 15
                 height: 114
                 color: "#FFFFFF"
+
+                //property var rowData: modelData
+                property int rowIndex: index
+
+                property var rowData: {"id": id, "taskName": taskName, "title": title, "desc": desc, "startDate": startDate, "endDate": endDate, "bimElement": bimElement, "pid":pid, "status": status, "draftId":draftId };
+
 
                 Text{
                     text: title
@@ -139,8 +180,79 @@ Rectangle {
                     anchors.topMargin: 21
 
                     Image {
+                        id: dots
                         source: "qrc:/resources/images/dotMenu.svg"
                         anchors.centerIn: parent
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                activeRowIndex = activeRowIndex === rowIndex ? -1 : rowIndex
+                            }
+                        }
+                    }
+
+                    // Action buttons
+                    Column {
+                        spacing: 6
+                        anchors.right: dots.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.leftMargin: 6
+                        visible: activeRowIndex === rowIndex
+
+                        Rectangle {
+                            width: 35
+                            height: 24
+                            radius: 4
+                            color: viewMouseArea.pressed ? "#0056b3" : (viewMouseArea.containsMouse ? "#0069d9" : "#007AFF")
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "View"
+                                color: "white"
+                                font.pixelSize: 12
+                            }
+
+                            MouseArea {
+                                id: viewMouseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                   // var rowData = {"id": id, "title": title, "desc": desc};
+                                   viewTask(rowData)
+                                    activeRowIndex = -1
+                                }
+                            }
+                        }
+
+                        // Rectangle {
+                        //     width: 35
+                        //     height: 24
+                        //     radius: 4
+                        //     color: editMouseArea.pressed ? "#0056b3" : (editMouseArea.containsMouse ? "#0069d9" : "#007AFF")
+                        //     visible: isApproved === false ? true : false
+
+                        //     Text {
+                        //         anchors.centerIn: parent
+                        //         text: "Edit"
+                        //         color: "white"
+                        //         font.pixelSize: 12
+                        //     }
+
+                        //     MouseArea {
+                        //         id: editMouseArea
+                        //         anchors.fill: parent
+                        //         hoverEnabled: true
+                        //         cursorShape: Qt.PointingHandCursor
+                        //         onClicked: {
+                        //             var rowData = {"id": id, "title": title, "desc": desc};
+                        //             editTask(rowData)
+                        //             activeRowIndex = -1
+                        //         }
+                        //     }
+                        // }
                     }
                 }
 
@@ -158,6 +270,65 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.leftMargin: 12
                 }
+            }
+        }
+    }
+
+    Component.onCompleted: {
+        showList();
+    }
+
+    onVisibleChanged: {
+        showList();
+    }
+
+    function showList(){
+        if(inProgressTaskBoard_root.visible){
+            //task_idList = [];
+            listModel.clear();
+
+            if(!isApproved)
+            {
+                return;
+            }
+
+            inProgressTaskList = taskController.getTaskList(isApproved, "In-Progress");
+
+            //here added first element zero for there is no parent id
+            // task_idList = [0, ...task_month_paramList.map(element => element.id)];
+
+            // var tempFilteredArray = task_idList.filter(function(element) {
+            //             return valuesToRemove.indexOf(element) === -1;
+            // });
+
+            // task_idList = tempFilteredArray;
+
+            for(var i = 0; i < inProgressTaskList.length; i++)
+            {
+               var task =  inProgressTaskList[i];
+
+                // if(startYear > task.startYear )
+                // {
+                //     startYear = task.startYear;
+                // }
+                // if(endYear < task.endYear)
+                // {
+                //     endYear = task.endYear;
+                // }
+
+                listModel.append({
+                    "title": task.id + "_" + task.taskName,
+                    "desc": task.description,
+                    "id": task.id,
+                    "taskName": task.taskName,
+                    "startDate": task.startDate,
+                    "endDate": task.endDate,
+                    "bimElement": task.bimElement,
+                    "status": task.status,
+                    "pid": task.pid,
+                    "draftId": task.draftId
+
+                });
             }
         }
     }

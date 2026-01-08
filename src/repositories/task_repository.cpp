@@ -3,13 +3,26 @@ TaskRepository::TaskRepository(QObject* parent) : QObject(parent) {}
 
 std::unique_ptr<Task> TaskRepository::findById(int id) { return nullptr; }
 std::vector<std::unique_ptr<Task>> TaskRepository::findAll() { return {}; }
-std::vector<Task*> TaskRepository::findAllQML() {
+std::vector<Task*> TaskRepository::findAllQML(const QString &status) {
     std::vector<Task*> tasks;
     QSqlQuery query(dbManager->getDatabase());
 
-    if (query.exec("SELECT * FROM Task")) {
-        while (query.next()) {
-            tasks.push_back(mapFromQueryQML(query, this));
+    if(status == nullptr)
+    {
+        if (query.exec("SELECT * FROM Task")) {
+            while (query.next()) {
+                tasks.push_back(mapFromQueryQML(query, this));
+            }
+        }
+    }
+    else{
+        query.prepare("SELECT * FROM Task WHERE status = ?");
+        query.addBindValue(status);
+
+        if (query.exec()) {
+            while (query.next()) {
+                tasks.push_back(mapFromQueryQML(query, this));
+            }
         }
     }
 
@@ -42,6 +55,7 @@ Task* TaskRepository::mapFromQueryQML(const QSqlQuery& query, QObject* parent) c
     task->setStartDate(query.value("start_date").toString());
     task->setEndDate(query.value("end_date").toString());
     task->setParentId(query.value("pid").toInt());
+    task->setTaskStatus(query.value("status").toString());
 
     return task;
 }
@@ -54,11 +68,12 @@ void TaskRepository::bindEntityToQuery(QSqlQuery& query, const Task& entity) con
     query.addBindValue(entity.getStartDate());
     query.addBindValue(entity.getEndDate());
     query.addBindValue(entity.getParentId());
+    query.addBindValue(entity.getTaskStatus());
 }
 QString TaskRepository::getInsertQuery() const {
-    return "INSERT INTO Task (global_id, approval_status, task_name, description, bim_element, start_date, end_date, pid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    return "INSERT INTO Task (global_id, approval_status, task_name, description, bim_element, start_date, end_date, pid, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 }
 QString TaskRepository::getUpdateQuery() const {
     return "UPDATE Task SET global_id = ?, approval_status = ?, task_name = ?, "
-           "description = ?, bim_element = ?, start_date = ?, end_date = ?, pid = ?";
+           "description = ?, bim_element = ?, start_date = ?, end_date = ?, pid = ?, status = ?";
 }

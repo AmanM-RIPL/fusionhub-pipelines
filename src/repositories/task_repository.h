@@ -9,7 +9,7 @@ public:
     explicit TaskRepository(QObject* parent = nullptr);
     Q_INVOKABLE std::unique_ptr<Task> findById(int id) override;
     std::vector<std::unique_ptr<Task>> findAll() override;
-    Q_INVOKABLE std::vector<Task*> findAllQML();
+    Q_INVOKABLE std::vector<Task*> findAllQML(const QString &status = nullptr);
     bool save(const Task& entity) override;
     Q_INVOKABLE bool saveQML(Task* entity);
     bool update(const Task& entity) override;
