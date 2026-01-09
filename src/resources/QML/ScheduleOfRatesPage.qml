@@ -55,7 +55,8 @@ Column {
         onOpened: {
             dataList = []
             if (scheduleOfRatesRoot.visible) {
-                var scheduleSetupData = scheduleSetupController.getScheduleSetupList(true)
+                //var scheduleSetupData = scheduleSetupController.getScheduleSetupList(true)
+                var scheduleSetupData = scheduleSetupController.getSetupList(true)
                 for (var i = 0; i < scheduleSetupData.length; i++) {
                     dataList.push(scheduleSetupData[i].scheduleSetupName)
                 }
@@ -95,32 +96,32 @@ Column {
 
             Rectangle {
                 width: parent.width - 6
-                height: 140
+                height: parent.height//140
                 color: "#EDF1F4"
                 Column {
 
                     FHTable {
+                        width: 644;//parent.width - 4
                         height: 130
                         leftPadding: 2
                         removeRow: true
                         model: dataList
                         columns: [{
                                 "label": "Schedule Name",
-                                "width": 214,
+                                "width": 215,
                                 "key": "schedule_name"
                             }, {
                                 "label": "Cost",
-                                "width": 214,
+                                "width": 215,
                                 "key": "cost"
                             }, {
                                 "label": "Resource",
-                                "width": 214,
+                                "width": 215,
                                 "key": "resource"
                             }]
 
                         onRemoveRowChanged: {
-                            console.log("onRemoveRowChanged:",
-                                        removedIndex.toString())
+                            //console.log("onRemoveRowChanged:", removedIndex.toString())
                             dataList.splice(removedIndex, 1)
                         }
                     }
@@ -140,7 +141,7 @@ Column {
 
                     CustomComboBox {
                         id: scheduleNameComboBox
-                        width: 198
+                        width: 215
                         height: 22
                         model: scheduleSetupList
                         currentIndex: 0
@@ -148,7 +149,7 @@ Column {
 
                     CustomComboBox {
                         id: scheduleSetupComboBox
-                        width: 214
+                        width: 215
                         height: 22
                         model: costeList
                         currentIndex: 0

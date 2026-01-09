@@ -31,6 +31,8 @@ Row {
     property int windowExpandedIndex: -1
     property int stairsExpandedIndex: -1
 
+   property var scheduleSetupList: []
+
     onPageActionChanged: {
         if (pageAction === "ModelView" || pageAction === "PlanView")
         {
@@ -45,6 +47,10 @@ Row {
 
     BIMElementController{
         id: bimElementController
+    }
+
+    ScheduleSetupController{
+        id:scheduleSetupController
     }
 
 
@@ -495,14 +501,18 @@ Row {
 
             property string wallTotalHeightText: ""
             property string wallWidthText: ""
+            property string wallSheduleSetupText: ""
 
 
             onAcceptCallback: function () {                
                 //wallController.create("projectname", wallTotalHeightTextBox.text, wallWidthTextBox.text);
+
                 let bimElementPtr = bimElementController.create("Wall", "Front Wall", 0, 0);
                 bimElementController.addParameter(bimElementPtr, "Height", wallTotalHeightText);
                 bimElementController.addParameter(bimElementPtr, "Width", wallWidthText);
                 bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
+
+                bimElementController.addParameter(bimElementPtr, "ScheduleSetup", wallSheduleSetupText);
 
                 glscene.updateEditableBimElement(bimElementPtr);
 
@@ -515,8 +525,20 @@ Row {
 
             onCancelCallback: function () {
                 wallTotalHeightText = "";
-                wallWidthText= "";
+                wallWidthText = "";
+                //wallSheduleSetupText = "";
                 glscene.update();
+            }
+
+            onOpened:
+            {
+                var list = scheduleSetupController.getSetupList(true)
+
+                for(var x = 0; x < list.length; x++)
+                {
+                   //scheduleSetupList.push(String(list[x].description))
+                    scheduleSetupList.push(list[x])
+                }
             }
 
 
@@ -1444,6 +1466,7 @@ Row {
             // glscene.update();
 
         }
+
     }
 
     //Components for Geometry and Positioning For WallSettings
@@ -1644,8 +1667,36 @@ Row {
             spacing: 5
             Rectangle {
                 id: firstColumn
-                width: (wallRowLayoutCP.width - wallRowLayoutCP.spacing) / 2-20
+                //width: (wallRowLayoutCP.width - wallRowLayoutCP.spacing) / 2-20
+                width: wallRowLayoutCP.width - wallRowLayoutCP.spacing
                 height: 300
+
+                ColumnLayout {
+                    width: firstColumn.width
+                    height:40// firstColumn.height
+
+                    Text{
+                        id: wallHomeScheduleSetup
+                        text: "Schedule Setup"
+                        color: "#323130"
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                    }
+                    CustomComboBox{
+                        id: wallHomeScheduleSetupComboBox
+                        model: scheduleSetupList
+                        width: parent.width
+                        currentIndex: 0
+                        textRole: "description"
+                        onCurrentTextChanged: {
+                            if(scheduleSetupList.length > 0)
+                            {
+                              wallSettingsPopup.wallSheduleSetupText = String(scheduleSetupList[currentIndex].id);
+                            }
+                        }
+                    }
+                }
+
             }
         }
     }
