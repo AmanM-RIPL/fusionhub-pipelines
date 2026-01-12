@@ -136,6 +136,22 @@ std::vector<ScheduleSetup*> ScheduleSetupController::getSetupList(bool isApprove
                 QString strRows = QString::number(totalRow);
                 scheduleSetups[i]->setCostParameter(strRows);
               //  qDebug() << "jsonStringCostParam:" << strRows;
+
+                QVector<costParamDataDetails*> costDetails;
+
+                QJsonArray dataArray = jsonObj["data"].toArray();
+
+                for (const QJsonValue &value : dataArray) {
+                    QJsonObject obj = value.toObject();
+                    costParamDataDetails* info = new costParamDataDetails();
+                    info->setCostParam(obj["cost_param_name"].toString());
+                    info->setMaterialParam(obj["purchase_material"].toString());
+                    info->setCostBimParam(obj["type_of_bim_dimension"].toString());
+                    costDetails.push_back(info);
+                }
+
+                qDebug() << "costDetails.length:" << costDetails.size();
+                scheduleSetups[i]->setCostParameterDataDetails(costDetails);
             }
         }
 
@@ -147,7 +163,22 @@ std::vector<ScheduleSetup*> ScheduleSetupController::getSetupList(bool isApprove
                 int totalRow = jsonObj["rows"].toInt();
                 QString strRows = QString::number(totalRow);
                 scheduleSetups[i]->setResourceParameter(strRows);
-             //   qDebug() << "jsonStringResourceParam:" << strRows;
+                //qDebug() << "jsonStringResourceParam:" << strRows;
+
+                QVector<resourceParamDataDetails*> resourceDetails;
+
+                QJsonArray dataArray = jsonObj["data"].toArray();
+
+                for (const QJsonValue &value : dataArray) {
+                    QJsonObject obj = value.toObject();
+                    resourceParamDataDetails* info = new resourceParamDataDetails();
+                    info->setResourceParam(obj["resource_param_name"].toString());
+                    info->setResourceBimParam(obj["type_of_bim_dimension"].toString());
+                    resourceDetails.push_back(info);
+                }
+
+                qDebug() << "resourceDetails.length:" << resourceDetails.size();
+                scheduleSetups[i]->setResourceParameterDataDetails(resourceDetails);
             }
         }
     }

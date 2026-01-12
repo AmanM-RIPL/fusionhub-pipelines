@@ -14,7 +14,7 @@ Column {
 
     property var scheduleSetupList: ["--","scheduleSetupList"]
     property var resourceList: ["--","resourceList"]
-    property var costeList: ["--","costeList"]
+    property var costList: ["--","costList"]
     property var dataList: []
 
     ScheduleSetupController {
@@ -34,32 +34,25 @@ Column {
 
         onAcceptCallback: function () {
             if (dataList.length > 0 && resourceList.length > 0) {
-                scheduleOfRatesController.create(scheduleNameTextBox.text,
-                                                 descriptionTextBox.text,
-                                                 dataList, resourceList)
-
+                scheduleOfRatesController.create(scheduleNameTextBox.text, dataList)
                 scheduleNameTextBox.text = ""
-                descriptionTextBox.text = ""
                 dataList = []
-                resourceList = []
             }
             showList()
         }
 
         onCancelCallback: function () {
             scheduleNameTextBox.text = ""
-            dataList = []
-            resourceList = []
+            dataList = []            
         }
 
         onOpened: {
             dataList = []
             if (scheduleOfRatesRoot.visible) {
-                //var scheduleSetupData = scheduleSetupController.getScheduleSetupList(true)
-                var scheduleSetupData = scheduleSetupController.getSetupList(true)
-                for (var i = 0; i < scheduleSetupData.length; i++) {
-                    dataList.push(scheduleSetupData[i].scheduleSetupName)
-                }
+                scheduleSetupList = scheduleSetupController.getSetupList(true)
+                var scheduleSetup = scheduleSetupList[scheduleNameComboBox.currentIndex];
+                costList = scheduleSetup.vecCostParamDataDetails;
+                resourceList = scheduleSetup.vecResourceParamDataDetails;
             }
         }
 
@@ -85,7 +78,7 @@ Column {
             }
 
             Text {
-                id: costParemeterLabel
+                id: scheduleLabel
                 text: "Select Schedule:"
                 color: "#323130"
                 font.weight: 700
@@ -96,7 +89,7 @@ Column {
 
             Rectangle {
                 width: parent.width - 6
-                height: parent.height//140
+                height: parent.height-20//140
                 color: "#EDF1F4"
                 Column {
 
@@ -110,15 +103,24 @@ Column {
                                 "label": "Schedule Name",
                                 "width": 215,
                                 "key": "schedule_name"
-                            }, {
+                            },
+                            {
                                 "label": "Cost",
                                 "width": 215,
                                 "key": "cost"
-                            }, {
-                                "label": "Resource",
+                            },
+                            // {
+                            //     "label": "Resource",
+                            //     "width": 215,
+                            //     "key": "resource"
+                            // },
+                            {
+                                "label": "Value",
                                 "width": 215,
-                                "key": "resource"
-                            }]
+                                "key": "value"
+                            }
+
+                        ]
 
                         onRemoveRowChanged: {
                             //console.log("onRemoveRowChanged:", removedIndex.toString())
@@ -144,23 +146,48 @@ Column {
                         width: 215
                         height: 22
                         model: scheduleSetupList
-                        currentIndex: 0
+                        textRole: "scheduleName"
+                        currentIndex: 0                        
+
+                        onCurrentIndexChanged: {
+                            if (currentIndex >= 0) {
+                                var scheduleSetup = scheduleSetupList[currentIndex];
+                                costList = scheduleSetup.vecCostParamDataDetails;
+                                resourceList = scheduleSetup.vecResourceParamDataDetails;
+                            }
+                        }
                     }
 
                     CustomComboBox {
-                        id: scheduleSetupComboBox
+                        id: costComboBox
                         width: 215
                         height: 22
-                        model: costeList
+                        model: costList
+                        textRole: "cost_param_name"
                         currentIndex: 0
                     }
 
-                    CustomComboBox {
-                        id: resourceForCostParam
+                    // CustomComboBox {
+                    //     id: resourceComboBox
+                    //     width: 198
+                    //     height: 22
+                    //     model: resourceList
+                    //     textRole: "resource_param_name"
+                    //     currentIndex: 0
+                    //     visible: false
+                    // }
+
+                    CustomTextBox {
+                        id: costValueTextBox
+                        placeholderText: "value"
+                        text: ""
+                        color: "#323130"
                         width: 198
                         height: 22
-                        model: resourceList
-                        currentIndex: 0
+
+                        font.weight: 700
+                        font.pixelSize: 10
+                        font.family: "Segoe UI"
                     }
 
                     CustomButton {
@@ -188,9 +215,11 @@ Column {
 
                             onClicked: {
                                 var newElements = {
-                                    "schedule_name": scheduleParamComboBox.currentText,
-                                    "cost": scheduleSetupComboBox.currentText,
-                                    "resource": resourceForCostParam.currentText
+                                     "schedule_name": scheduleNameComboBox.currentText,
+                                     "schedule_id": String(scheduleSetupList[scheduleNameComboBox.currentIndex].id),
+                                     "cost": costComboBox.currentText,
+                                    // "resource": resourceComboBox.currentText
+                                    "value": costValueTextBox.text
                                 }
 
                                 dataList = dataList.concat(newElements)
@@ -282,20 +311,20 @@ Column {
 
         columns: [
             {
-                "label": "SOR Name",
-                "width": 300,
-                "key": "scheduleOfRatesName"
-            },
-            {
                 "label": "Global ID",
                 "width": 200,
                 "key": "globalId"
             },
             {
-                "label": "Approval",
-                "width": 100,
-                "key": "approvalStatus"
-            }
+                "label": "SOR Name",
+                "width": 300,
+                "key": "scheduleOfRatesName"
+            }//,
+            // {
+            //     "label": "Approval",
+            //     "width": 100,
+            //     "key": "approvalStatus"
+            // }
         ]
     }
 

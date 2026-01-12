@@ -12,14 +12,17 @@ ScheduleOfRatesController::ScheduleOfRatesController(QObject *parent)
     m_draftEntityRepository(RepositoryLocator::instance().draftEntityRepository())
 {}
 
-void ScheduleOfRatesController::create(const QString &name) const
+void ScheduleOfRatesController::create(const QString &name, const QVariant &costValueParameter) const
 {
     // ScheduleOfRates scheduleOfRates;
 
     /***********Start of DraftEntity******************/
 
+    QString costValueParam =  CreateJson(costValueParameter);
+
     QJsonObject jsonObject;
     jsonObject["scheduleOfRatesName"] = name;
+    jsonObject["costValueParameter"] = costValueParam;
 
 
     QJsonDocument jsonDoc(jsonObject);
@@ -87,3 +90,42 @@ std::vector<ScheduleOfRates*> ScheduleOfRatesController::getScheduleOfRatesList(
         return scheduleOfRatess;
     }
 }
+
+QString ScheduleOfRatesController::CreateJson(const QVariant &param) const
+{
+    QJsonObject jsonObject;
+    if (param.canConvert<QVariantList>()) {
+        QVariantList list = param.toList();
+        int len = list.size();
+        jsonObject["rows"] = len;
+
+        QJsonArray dataArray;
+
+        for (const QVariant &item : list) {
+            qDebug() << "Item:" << item.toString();
+
+            if (item.canConvert<QVariantMap>()) {
+                QVariantMap map = item.toMap();
+                QJsonObject jsonObjectNew;
+
+                // Iterate through the map to populate the QJsonObject
+                for (auto it = map.begin(); it != map.end(); ++it) {
+                    jsonObjectNew.insert(it.key(), QJsonValue::fromVariant(it.value()));
+                }
+
+                dataArray.append(jsonObjectNew);
+            } else {
+                qDebug() << "Item is not a QVariantMap!";
+            }
+        }
+
+        jsonObject["data"] = dataArray;
+        QJsonDocument jsonDoc(jsonObject);
+        QString JsonString = jsonDoc.toJson(QJsonDocument::Indented);
+        qDebug() <<"Created ScheduleOfRates:" << JsonString;
+
+        return JsonString;
+    }
+}
+
+
