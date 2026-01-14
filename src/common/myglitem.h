@@ -18,8 +18,10 @@
 #include <QVector3D>
 #include <QVector4D>
 #include <QString>
+#include <QTimer>
 
 #include <vector>
+#include <chrono>
 
 #include "OdaCommon.h"
 #include "RxObject.h"
@@ -106,6 +108,8 @@ public:
 
     int m_lastClickX = -1;
     int m_lastClickY = -1;
+    int m_lastHoverX = -1;
+    int m_lastHoverY = -1;
     Mesh* mesh = nullptr;
     IFCDetailController* pIfcDetailController;
     IfcGeometryService* pIfcGeometryService;
@@ -132,6 +136,7 @@ public slots:
     void updateView(QString viewType);
 
     void requestPick(int x, int y);
+    void requestHover(int x, int y);
 
     void handlePick(int id);
     void viewIfc();
@@ -143,6 +148,7 @@ public slots:
     void saveEditableBimElement();
 
 private:
+    bool render_update_allowed = true;
 
 signals:
     void selectionChanged(int id);
@@ -174,6 +180,7 @@ private:
     bool projectionMatrixInitialized = false;
 
     QList<Mesh*> m_meshList;
+    Mesh* editableMesh = nullptr;
     Camera* m_camera = nullptr;
     Shader* m_shader = nullptr;
     Shader* m_picking_shader = nullptr;
@@ -183,6 +190,7 @@ private:
     QList<Texture*> m_textureList;
 
     bool m_pickRequested = false;
+    bool m_hoverRequested = false;
     int m_pickedBimElementId = -1;
     int m_pickX = -1;
     int m_pickY = -1;

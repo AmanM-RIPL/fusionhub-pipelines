@@ -215,6 +215,31 @@ Point OpenglHelper::getParallelProjectionPoint(Point point1, Point point2, float
     return result;
 }
 
+Point OpenglHelper::getPointAtPerpendicularDistance(Point point1, Point point2, float distance)
+{
+    // vector from point 1 to 2 = (x2 - x1, y2 - y1)
+    // vector length = sqrt((x2 - x1)^2 + (y2-y1)^2)
+    // perpendicular vector = ((y2-y1)/length, -1 * (x2-x1)/length) -1 decides the point is on which side
+    // point is = point1 + (distance * perpendicular vector)
+
+    float x_proj = point2[0] - point1[0];
+    float y_proj = point2[1] - point1[1];
+
+    float length = qSqrt(qPow(x_proj, 2) + qPow(y_proj, 2));
+
+    Point perpendicular_vector = {
+        y_proj/length,
+        -1 * x_proj/length
+    };
+
+    Point new_point = {
+        point1[0] - (distance * perpendicular_vector[0]) ,
+        point1[1] - (distance * perpendicular_vector[1])
+    };
+
+    return new_point;
+}
+
 void OpenglHelper::getMeshGeometry(
     const FacetModeler::Body& body,
     std::vector<Position>& vertices_position,

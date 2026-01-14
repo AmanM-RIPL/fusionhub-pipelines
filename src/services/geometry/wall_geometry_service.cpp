@@ -307,3 +307,195 @@ void WallGeometryService::updateGeometry(BIMElement *wallElement, const QVector3
         }
     }
 }
+
+void WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view)
+{
+    std::vector<std::vector<Point>> polygon;
+    std::vector<Point> referenceLine = {};
+    float width = 0;
+    float height = 0;
+    float distance = 0;
+
+    m_openglHelper.extractBIMParameters(wallElement, referenceLine, width, height, distance);
+
+    // if reference line is only one point then we don't need to render
+    if (referenceLine.size() < 1)
+    {
+        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
+        return;
+    }
+
+    // last point of referenceLine
+    Point lastPointReferenceLine = referenceLine.back();
+    QVector3D lastPoint(lastPointReferenceLine[0], lastPointReferenceLine[1], 0.0f);
+    Point lastPointScreenSpace = view->GetPointInScreenSpace(lastPoint);
+
+    Point new_point1 = m_openglHelper.getPointAtPerpendicularDistance(lastPointScreenSpace, screen_point, 4);
+    Point new_point2 = m_openglHelper.getPointAtPerpendicularDistance(lastPointScreenSpace, screen_point, 10);
+    Point new_point3 = m_openglHelper.getPointAtPerpendicularDistance(screen_point, lastPointScreenSpace, -10);
+    Point new_point4 = m_openglHelper.getPointAtPerpendicularDistance(screen_point, lastPointScreenSpace, -4);
+
+    QVector3D wcs_point1 = view->GetPointInViewSpace(new_point1[0], new_point1[1]);
+    QVector3D wcs_point2 = view->GetPointInViewSpace(new_point2[0], new_point2[1]);
+    QVector3D wcs_point3 = view->GetPointInViewSpace(new_point3[0], new_point3[1]);
+    QVector3D wcs_point4 = view->GetPointInViewSpace(new_point4[0], new_point4[1]);
+
+    // qInfo() << "New Point: " << new_point[0] << ", " << new_point[1];
+
+    // 2. Add point to referenceLine
+    referenceLine.push_back({ point.x(), point.y() });
+
+    // 3. Generate a parallel line
+    std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
+
+    referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
+
+    // for (Point point: referenceLine)
+    // {
+    //     qInfo() << "x: " << point[0] << " , y: " << point[1];
+    // }
+
+    // 4. Get triangulated mesh
+    polygon.push_back(referenceLine);
+    polygon.push_back({}); // for holes
+    std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(polygon);
+
+    // for (uint32_t index: indices)
+    // {
+    //     qInfo() << index;
+    // }
+
+    // 5. Create and export mesh
+    std::vector<Position> vertices_position = {};
+    std::vector<Normal> vertices_normal = {};
+    std::vector<TextureUV> vertices_textureuv = {};
+    std::vector<int> vertices_materialIndex = {};
+    std::vector<int> vertices_textureIndex = {};
+    for (int i = 0; i < referenceLine.size(); i++)
+    {
+        Point point = referenceLine[i];
+
+        // Vertex v = {
+        //     {point[0], point[1], 0.0f},
+        //     {0.0f, 0.0f, 1.0f},
+        //     {0.0f, 0.0f},
+        //     OpenGLMaterial::IVORY,
+        //     Texture::NONE
+        // };
+
+        vertices_position.push_back({point[0], point[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
+
+        // verticesVector.push_back(point[0]); // x
+        // verticesVector.push_back(point[1]); // y
+        // verticesVector.push_back(0.0f); // z
+        // verticesVector.push_back(0.0f); // n.x
+        // verticesVector.push_back(0.0f); // n.y
+        // verticesVector.push_back(1.0f); // n.z
+    }
+
+    std::vector<EdgeIndex> edge_indices = {};
+    std::vector<float> edge_width = {};
+    std::vector<float> edge_dashLength = {};
+    std::vector<float> edge_gapLength = {};
+    std::vector<int> edge_dash = {};
+    std::vector<int> edge_materialIndex = {};
+    for (int i = 0; i < referenceLine.size(); i++)
+    {
+        edge_width.push_back(1.0f);
+        edge_dashLength.push_back(1.0f);
+        edge_gapLength.push_back(1.0f);
+        edge_dash.push_back(0);
+        edge_materialIndex.push_back(OpenGLMaterial::BLACK);
+
+        if (i == referenceLine.size() - 1)
+        {
+            edge_indices.push_back({i, 0});
+        }
+        else
+        {
+            edge_indices.push_back({i, i + 1});
+        }
+    }
+
+
+    // Add the vertex and edges of helper lines
+    vertices_position.push_back({wcs_point1[0], wcs_point1[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({wcs_point2[0], wcs_point2[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({wcs_point3[0], wcs_point3[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({wcs_point4[0], wcs_point4[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    for (int i = 0; i < 3; i++)
+    {
+        int first_point = referenceLine.size() + i;
+        int second_point = referenceLine.size() + i + 1;
+        edge_indices.push_back({first_point, second_point });
+        edge_width.push_back(2.0f);
+        edge_dashLength.push_back(0.5f);
+        edge_gapLength.push_back(0.5f);
+        edge_dash.push_back(1);
+        edge_materialIndex.push_back(OpenGLMaterial::BLACK);
+    }
+
+    // // Allocate memory for the new array using std::unique_ptr for safety.
+    // auto indices_raw = std::make_unique<unsigned int[]>(indices.size());
+
+    // // Copy elements from the vector to the new array.
+    // std::copy(indices.begin(), indices.end(), indices_raw.get());
+
+    // Mesh* mesh = new Mesh(this);
+    mesh->Initialize(
+        vertices_position,
+        vertices_normal,
+        vertices_textureuv,
+        vertices_materialIndex,
+        vertices_textureIndex,
+        edge_indices,
+        edge_width,
+        edge_dashLength,
+        edge_gapLength,
+        edge_dash,
+        edge_materialIndex,
+        indices
+        );
+    mesh->setBIMElementId(wallElement->getId());
+
+
+    // GLfloat* vertices1 = mesh->getVerticies();
+    // unsigned int* indices1 = mesh->getIndices();
+    // for (int i = 0; i < 6; i++)
+    // {
+    //     qInfo() << vertices1[6*i] << " , " << vertices1[6*i + 1] << " , " << vertices1[6*i + 2] << " , " << vertices1[6*i + 3] << " , " << vertices1[6*i + 4] << " , " << vertices1[6*i + 5];
+    // }
+
+    // qInfo() << "----------------------------------";
+
+    // for (int i = 0; i < 6; i++)
+    // {
+    //     qInfo() << indices1[i];
+    // }
+
+    // return mesh;
+}

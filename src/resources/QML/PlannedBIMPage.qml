@@ -1370,6 +1370,7 @@ Row {
 
             MouseArea {
                 anchors.fill: parent
+                hoverEnabled: true
                 onWheel: function(wheel) { // Declare 'wheel' as a formal parameter
                     if (wheel.modifiers & Qt.ControlModifier) {
                         if (wheel.angleDelta.y > 0) {
@@ -1392,10 +1393,11 @@ Row {
                 //     glscene.mouseReleased();
                 //     mouse.accepted = true;
                 // }
-                // onPositionChanged: function(mouse) {
-                //     glscene.mousePositionChanged(mouse.x, mouse.y);
-                //     mouse.accepted = true;
-                // }
+                onPositionChanged: function(mouse) {
+                    // glscene.mousePositionChanged(mouse.x, mouse.y);
+                    // mouse.accepted = true;
+                    glscene.requestHover(mouse.x, mouse.y);
+                }
             }
 
 

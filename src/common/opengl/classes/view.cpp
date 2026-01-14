@@ -11,38 +11,12 @@ void View::Initialize()
 
     this->glEnable(GL_DEPTH_TEST);
 
-    this->glGenVertexArrays(1, &m_vao);
-    this->glGenVertexArrays(1, &m_edge_vao);
-    this->glGenBuffers(1, &m_static_ibo);
-
-    this->glGenBuffers(1, &m_static_position_vbo);
-    this->glGenBuffers(1, &m_static_normal_vbo);
-    this->glGenBuffers(1, &m_static_textureuv_vbo);
-    this->glGenBuffers(1, &m_static_materialIndex_vbo);
-    this->glGenBuffers(1, &m_static_textureIndex_vbo);
-
-    this->glGenBuffers(1, &m_static_corner_vbo);
-    this->glGenBuffers(1, &m_static_edge_indices_vbo);
-    this->glGenBuffers(1, &m_static_edge_width_vbo);
-    this->glGenBuffers(1, &m_static_edge_dashLength_vbo);
-    this->glGenBuffers(1, &m_static_edge_gapLength_vbo);
-    this->glGenBuffers(1, &m_static_edge_dash_vbo);
-    this->glGenBuffers(1, &m_static_edge_materialIndex_vbo);
-
-    this->glGenBuffers(1, &m_static_border_ibo);
-    this->glGenBuffers(1, &m_tbo);
-    this->glGenBuffers(1, &m_material_tbo);
-    this->glGenBuffers(1, &m_model_matrix_vbo);
-    this->glGenTextures(1, &m_matrixTexture);
-    this->glGenTextures(1, &m_materialTexture);
-    this->glGenTextures(1, &m_verticesTexture); // for edge shader
-    this->glGenTextures(1, &m_matrixIndexTexture); // for edge shader
-    this->glGenBuffers(1, &m_pick_color_vbo);
-
-    BindMeshWithOpenGL();
+    InitializeHandles();
+    InitializeStaticBuffers();
+    InitializeDynamicBuffers();
 }
 
-void View::BindMeshWithOpenGL()
+void View::LoadStaticMeshData(QList<Mesh*>& meshList)
 {
     delete combinedMesh;
     combinedMesh = new Mesh();
@@ -67,7 +41,6 @@ void View::BindMeshWithOpenGL()
 
     int* modelMatrixIndices = combinedMesh->getModelMatrixIndicesData();
     std::array<float, 4>* pickColors = combinedMesh->getPickColorData();
-    std::vector<float> materials = OpenGLMaterial::GenerateMaterialData(materialList);
 
     unsigned int numOfVertices = combinedMesh->getNumOfVertices();
     unsigned int numOfIndices = combinedMesh->getNumOfIndices();
@@ -76,8 +49,14 @@ void View::BindMeshWithOpenGL()
     unsigned int numOfModelMatrixIndices = combinedMesh->getNumOfModelMatrixIndices();
 
     // Initializing the vao, vbo, and ibo
-    m_indexCount = numOfIndices;
-    m_borderIndexCount = numOfEdges;
+    m_static_indexCount = numOfIndices;
+    m_static_borderIndexCount = numOfEdges;
+
+    int numOfVerticesDefault = 1000;
+    int numOfIndicesDefault = 1000;
+    int numOfEdgesDefault = 1000;
+    int numOfModelMatricesDefault = 100;
+    int numOfModelMatrixIndicesDefault = 1000;
 
     // for (int i = 0; i < numOfVertices; i++)
     // {
@@ -93,146 +72,344 @@ void View::BindMeshWithOpenGL()
 
     // VAO for Mesh + Mesh Color Picking
     this->glBindVertexArray(m_vao);
+        // Buffer Orphaning
         //VBO
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_position_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(Position) * numOfVertices, vertices_position, GL_STATIC_DRAW);
-            // postition in verticies
-            this->glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Position), (void*)0);
-            this->glEnableVertexAttribArray(0);
-
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(Position) * numOfVerticesDefault, NULL, GL_STATIC_DRAW);
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_normal_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(Normal) * numOfVertices, vertices_normal, GL_STATIC_DRAW);
-            // normal in verticies
-            this->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Normal), (void*)0);
-            this->glEnableVertexAttribArray(1);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(Normal) * numOfVerticesDefault, NULL, GL_STATIC_DRAW);
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_textureuv_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(TextureUV) * numOfVertices, vertices_textureuv, GL_STATIC_DRAW);
-            // texture uv in verticies
-            this->glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(TextureUV), (void*)0);
-            this->glEnableVertexAttribArray(2);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(TextureUV) * numOfVerticesDefault, NULL, GL_STATIC_DRAW);
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_materialIndex_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfVertices, vertices_materialIndex, GL_STATIC_DRAW);
-            //materialIndex in verticies
-            this->glVertexAttribIPointer(3, 1, GL_INT, sizeof(int), (void*)0);
-            this->glEnableVertexAttribArray(3);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfVerticesDefault, NULL, GL_STATIC_DRAW);
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_textureIndex_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfVertices, vertices_textureIndex, GL_STATIC_DRAW);
-            //textureIndex in verticies
-            this->glVertexAttribIPointer(4, 1, GL_INT, sizeof(int), (void*)0);
-            this->glEnableVertexAttribArray(4);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfVerticesDefault, NULL, GL_STATIC_DRAW);
 
-        // this->glBindBuffer(GL_ARRAY_BUFFER, 0);
-        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_model_matrix_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfModelMatrixIndices, modelMatrixIndices, GL_STATIC_DRAW);
-
-            this->glVertexAttribIPointer(5, 1, GL_INT, sizeof(int), (void*)0);
-            this->glEnableVertexAttribArray(5);
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_model_matrix_vbo);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfModelMatrixIndicesDefault, NULL, GL_STATIC_DRAW);
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_pick_color_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(std::array<float, 4>) * numOfVertices, pickColors, GL_STATIC_DRAW);
-
-            // pickColor Values
-            this->glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(std::array<float, 4>), (void*)0);
-            this->glEnableVertexAttribArray(6);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(std::array<float, 4>) * numOfVerticesDefault, NULL, GL_STATIC_DRAW);
 
 
         //TRIANGLE IBO
         this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
-            this->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * numOfIndices, indices, GL_STATIC_DRAW);
+        this->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * numOfIndicesDefault, NULL, GL_STATIC_DRAW);
+
+        // TBO for Model Matrix
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_static_matrix_tbo);
+        this->glBufferData(GL_TEXTURE_BUFFER, numOfModelMatricesDefault * sizeof(float), NULL, GL_STATIC_DRAW);
+
+
+
+        // Reloading Data
+        //VBO
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_position_vbo);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Position) * numOfVertices, vertices_position);
+
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_normal_vbo);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Normal) * numOfVertices, vertices_normal);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_textureuv_vbo);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(TextureUV) * numOfVertices, vertices_textureuv);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_materialIndex_vbo);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfVertices, vertices_materialIndex);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_textureIndex_vbo);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfVertices, vertices_textureIndex);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_model_matrix_vbo);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfModelMatrixIndices, modelMatrixIndices);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_pick_color_vbo);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(std::array<float, 4>) * numOfVertices, pickColors);
+
+
+        //TRIANGLE IBO
+        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
+            this->glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(unsigned int) * numOfIndices, indices);
 
         // //LINE IBO
         // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_border_ibo);
-        //     this->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * numOfBorderIndices, borderIndices, GL_STATIC_DRAW);
+        //     this->glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * numOfBorderIndices, borderIndices, GL_STATIC_DRAW);
 
         // TBO for Model Matrix
-        this->glBindBuffer(GL_TEXTURE_BUFFER, m_tbo);
-            this->glBufferData(GL_TEXTURE_BUFFER, numOfModelMatrices * sizeof(float), modelMatrices, GL_STATIC_DRAW);
-        this->glBindBuffer(GL_TEXTURE_BUFFER, 0);
-
-        this->glBindTexture(GL_TEXTURE_BUFFER, m_matrixTexture);
-            this->glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, m_tbo);
-        this->glBindTexture(GL_TEXTURE_BUFFER, 0);
-
-        // TBO for Materials
-        this->glBindBuffer(GL_TEXTURE_BUFFER, m_material_tbo);
-            this->glBufferData(GL_TEXTURE_BUFFER, materials.size() * sizeof(float), materials.data(), GL_STATIC_DRAW);
-        this->glBindBuffer(GL_TEXTURE_BUFFER, 0);
-
-        this->glBindTexture(GL_TEXTURE_BUFFER, m_materialTexture);
-            this->glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, m_material_tbo);
-        this->glBindTexture(GL_TEXTURE_BUFFER, 0);
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_static_matrix_tbo);
+            this->glBufferSubData(GL_TEXTURE_BUFFER, 0, numOfModelMatrices * sizeof(float), modelMatrices);
 
     this->glBindVertexArray(0);
 
     // VAO for edge
     this->glBindVertexArray(m_edge_vao);
+        // Buffer Orphaning
         //VBO
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_corner_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 4, corners.data(), GL_STATIC_DRAW);
-            // corners
-            this->glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-            this->glEnableVertexAttribArray(0);
-
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_indices_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(EdgeIndex) * numOfEdges, edge_indices, GL_STATIC_DRAW);
-            // edges
-            this->glVertexAttribIPointer(1, 2, GL_INT, sizeof(EdgeIndex), (void*)0);
-            this->glEnableVertexAttribArray(1);
-            this->glVertexAttribDivisor(1, 1);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(EdgeIndex) * numOfEdgesDefault, NULL, GL_STATIC_DRAW);
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_width_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdges, edge_width, GL_STATIC_DRAW);
-            // edge width
-            this->glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-            this->glEnableVertexAttribArray(2);
-            this->glVertexAttribDivisor(2, 1);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STATIC_DRAW);
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_materialIndex_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdges, edge_materialIndex, GL_STATIC_DRAW);
-            // edge material index
-            this->glVertexAttribIPointer(3, 1, GL_INT, sizeof(int), (void*)0);
-            this->glEnableVertexAttribArray(3);
-            this->glVertexAttribDivisor(3, 1);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgesDefault, NULL, GL_STATIC_DRAW);
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_dashLength_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdges, edge_dashLength, GL_STATIC_DRAW);
-            // edge dash length
-            this->glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-            this->glEnableVertexAttribArray(4);
-            this->glVertexAttribDivisor(4, 1);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STATIC_DRAW);
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_gapLength_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdges, edge_gapLength, GL_STATIC_DRAW);
-            // edge gap length
-            this->glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-            this->glEnableVertexAttribArray(5);
-            this->glVertexAttribDivisor(5, 1);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STATIC_DRAW);
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_dash_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdges, edge_dash, GL_STATIC_DRAW);
-            // edge dash
-            this->glVertexAttribIPointer(6, 1, GL_INT, sizeof(int), (void*)0);
-            this->glEnableVertexAttribArray(6);
-            this->glVertexAttribDivisor(6, 1);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgesDefault, NULL, GL_STATIC_DRAW);
 
 
-        // TBO for Vertices
-        this->glBindTexture(GL_TEXTURE_BUFFER, m_verticesTexture);
-            this->glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, m_static_position_vbo);
-        this->glBindTexture(GL_TEXTURE_BUFFER, 0);
+        // Reloading Data
+        //VBO
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_indices_vbo);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(EdgeIndex) * numOfEdges, edge_indices);
 
-        // TBO for Matrix Index
-        this->glBindTexture(GL_TEXTURE_BUFFER, m_matrixIndexTexture);
-            this->glTexBuffer(GL_TEXTURE_BUFFER, GL_R32I, m_model_matrix_vbo);
-        this->glBindTexture(GL_TEXTURE_BUFFER, 0);
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_width_vbo);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * numOfEdges, edge_width);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_materialIndex_vbo);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfEdges, edge_materialIndex);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_dashLength_vbo);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * numOfEdges, edge_dashLength);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_gapLength_vbo);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * numOfEdges, edge_gapLength);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_dash_vbo);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfEdges, edge_dash);
     this->glBindVertexArray(0);
 }
+
+void View::LoadDynamicMeshData(Mesh* mesh)
+{
+    int numOfVerticesDefault = 100;
+    int numOfIndicesDefault = 100;
+    int numOfEdgesDefault = 100;
+    int numOfModelMatricesDefault = 50;
+    int numOfModelMatrixIndicesDefault = 100;
+
+    if (mesh == nullptr)
+    {
+        // VAO for Mesh + Mesh Color Picking
+        this->glBindVertexArray(m_dynamic_vao);
+            // Buffer Orphaning
+            //VBO
+            this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_position_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(Position) * numOfVerticesDefault, NULL, GL_STREAM_DRAW);
+
+
+            this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_normal_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(Normal) * numOfVerticesDefault, NULL, GL_STREAM_DRAW);
+
+            this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_textureuv_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(TextureUV) * numOfVerticesDefault, NULL, GL_STREAM_DRAW);
+
+            this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_materialIndex_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfVerticesDefault, NULL, GL_STREAM_DRAW);
+
+            this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_textureIndex_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfVerticesDefault, NULL, GL_STREAM_DRAW);
+
+            this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_model_matrix_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfModelMatrixIndicesDefault, NULL, GL_STREAM_DRAW);
+
+            //TRIANGLE IBO
+            this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_dynamic_ibo);
+            this->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * numOfIndicesDefault, NULL, GL_STREAM_DRAW);
+
+            // TBO for Model Matrix
+            this->glBindBuffer(GL_TEXTURE_BUFFER, m_dynamic_matrix_tbo);
+            this->glBufferData(GL_TEXTURE_BUFFER, numOfModelMatricesDefault * sizeof(float), NULL, GL_STREAM_DRAW);
+        this->glBindVertexArray(0);
+
+        // VAO for edge
+        this->glBindVertexArray(m_dynamic_edge_vao);
+            // Buffer Orphaning
+            //VBO
+            this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_indices_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(EdgeIndex) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
+
+            this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_width_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
+
+            this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_materialIndex_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
+
+            this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_dashLength_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
+
+            this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_gapLength_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
+
+            this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_dash_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
+        this->glBindVertexArray(0);
+
+        return;
+    }
+
+
+
+
+    Position* vertices_position = mesh->getVerticiesPositionData();
+    Normal* vertices_normal = mesh->getVerticiesNormalData();
+    TextureUV* vertices_textureuv = mesh->getVerticiesTextureUVData();
+    int* vertices_materialIndex = mesh->getVerticiesMaterialIndexData();
+    int* vertices_textureIndex = mesh->getVerticiesTextureIndexData();
+
+    EdgeIndex* edge_indices = mesh->getEdgeIndicesData();
+    float* edge_width = mesh->getEdgeWidthData();
+    float* edge_dashLength = mesh->getEdgeDashLengthData();
+    float* edge_gapLength = mesh->getEdgeGapLengthData();
+    int* edge_dash = mesh->getEdgeDashData();
+    int* edge_materialIndex = mesh->getEdgeMaterialIndexData();
+
+    float* modelMatrices = mesh->getModelMatriciesData();
+    unsigned int* indices = mesh->getIndicesData();
+
+    int* modelMatrixIndices = mesh->getModelMatrixIndicesData();
+
+    unsigned int numOfVertices = mesh->getNumOfVertices();
+    unsigned int numOfIndices = mesh->getNumOfIndices();
+    unsigned int numOfEdges = mesh->getNumOfEdges();
+    unsigned int numOfModelMatrices = mesh->getNumOfModelMatricies();
+    unsigned int numOfModelMatrixIndices = mesh->getNumOfModelMatrixIndices();
+
+    // Initializing the vao, vbo, and ibo
+    m_dynamic_indexCount = numOfIndices;
+    m_dynamic_borderIndexCount = numOfEdges;
+
+    // for (int i = 0; i < numOfVertices; i++)
+    // {
+    //     Position pos = vertices_position[i];
+    //     qInfo() << "Position: (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")";
+    // }
+
+    // for (int i = 0; i < numOfEdges; i++)
+    // {
+    //     EdgeIndex edge = edge_indices[i];
+    //     qInfo() << "Edge: (" << edge[0] << ", " << edge[1] << ")";
+    // }
+
+    // VAO for Mesh + Mesh Color Picking
+    this->glBindVertexArray(m_dynamic_vao);
+        // Buffer Orphaning
+        //VBO
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_position_vbo);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(Position) * numOfVerticesDefault, NULL, GL_STREAM_DRAW);
+
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_normal_vbo);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(Normal) * numOfVerticesDefault, NULL, GL_STREAM_DRAW);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_textureuv_vbo);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(TextureUV) * numOfVerticesDefault, NULL, GL_STREAM_DRAW);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_materialIndex_vbo);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfVerticesDefault, NULL, GL_STREAM_DRAW);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_textureIndex_vbo);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfVerticesDefault, NULL, GL_STREAM_DRAW);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_model_matrix_vbo);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfModelMatrixIndicesDefault, NULL, GL_STREAM_DRAW);
+
+        //TRIANGLE IBO
+        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_dynamic_ibo);
+        this->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * numOfIndicesDefault, NULL, GL_STREAM_DRAW);
+
+        // TBO for Model Matrix
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_dynamic_matrix_tbo);
+        this->glBufferData(GL_TEXTURE_BUFFER, numOfModelMatricesDefault * sizeof(float), NULL, GL_STREAM_DRAW);
+
+
+
+        // Reloading data
+        //VBO
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_position_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Position) * numOfVertices, vertices_position);
+
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_normal_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Normal) * numOfVertices, vertices_normal);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_textureuv_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(TextureUV) * numOfVertices, vertices_textureuv);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_materialIndex_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfVertices, vertices_materialIndex);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_textureIndex_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfVertices, vertices_textureIndex);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_model_matrix_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfModelMatrixIndices, modelMatrixIndices);
+
+
+        //TRIANGLE IBO
+        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_dynamic_ibo);
+        this->glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(unsigned int) * numOfIndices, indices);
+
+        // TBO for Model Matrix
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_dynamic_matrix_tbo);
+        this->glBufferSubData(GL_TEXTURE_BUFFER, 0, numOfModelMatrices * sizeof(float), modelMatrices);
+
+    this->glBindVertexArray(0);
+
+    // VAO for edge
+    this->glBindVertexArray(m_dynamic_edge_vao);
+        // Buffer Orphaning
+        //VBO
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_indices_vbo);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(EdgeIndex) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_width_vbo);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_materialIndex_vbo);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_dashLength_vbo);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_gapLength_vbo);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_dash_vbo);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
+
+        // Reloading data
+        //VBO
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_indices_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(EdgeIndex) * numOfEdges, edge_indices);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_width_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * numOfEdges, edge_width);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_materialIndex_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfEdges, edge_materialIndex);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_dashLength_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * numOfEdges, edge_dashLength);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_gapLength_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * numOfEdges, edge_gapLength);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_dash_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfEdges, edge_dash);
+    this->glBindVertexArray(0);
+}
+
 
 void View::Render()
 {
@@ -256,96 +433,38 @@ void View::Render()
     QVector3D cameraPosition = camera->getCameraPosition();
     this->glUniform3f(shader->getViewPositionId(), cameraPosition.x(), cameraPosition.y(), cameraPosition.z());
 
-    // For 3D
-    // for (int i = 0; i < materialList.size(); i++)
-    // {
-    //     OpenGLMaterial* material = materialList[i];
-
-    //     auto ambient = material->ambient();
-    //     this->glUniform3f(shader->getMaterialAmbientId(i), ambient[0], ambient[1], ambient[2]); // 0.96, 0.47f, 0.02f
-
-    //     auto diffuse = material->diffuse();
-    //     this->glUniform3f(shader->getMaterialDiffuseId(i), diffuse[0], diffuse[1], diffuse[2]); // 0.0f, 0.5f, 0.31f
-
-    //     auto specular = material->specular();
-    //     this->glUniform3f(shader->getMaterialSpecularId(i), specular[0], specular[1], specular[2]); //0.5f, 0.5f, 0.5f
-
-    //     this->glUniform1f(shader->getMaterialShininessId(i), material->shininess());
-    // }
-
-    // for (int i = 0; i < 1; ++i) {
-    //     this->glActiveTexture(GL_TEXTURE0 + i);
-    //     this->glBindTexture(GL_TEXTURE_2D, textureList[i]->getTextureId());
-    // }
-
     // For texture arrays
-    this->glActiveTexture(GL_TEXTURE0);
-        this->glBindTexture(GL_TEXTURE_2D_ARRAY, textureList[0]->getTextureId());
     this->glUniform1i(shader->getTextureArrayId(), 0);
 
     // For Model Matrices
-    this->glActiveTexture(GL_TEXTURE1);
-        this->glBindTexture(GL_TEXTURE_BUFFER, m_matrixTexture);
-    this->glUniform1i(shader->getModelMatrixBufferId(), 1);
+    this->glUniform1i(shader->getModelMatrixBufferId(), 2);
 
     // For Material List
-    this->glActiveTexture(GL_TEXTURE2);
-        this->glBindTexture(GL_TEXTURE_BUFFER, m_materialTexture);
-    this->glUniform1i(shader->getMaterialBufferId(), 2);
+    this->glUniform1i(shader->getMaterialBufferId(), 1);
 
     this->glUniform3f(shader->getLightPositionId(), 20.0f, 0.0f, 0.0f);
     this->glUniform3f(shader->getLightAmbientId(), 1.0f, 1.0f, 1.0f); // 0.2f, 0.2f, 0.2f
     this->glUniform3f(shader->getLightDiffuseId(), 0.5f, 0.5f, 0.5f); // 0.5f, 0.5f, 0.5f
     this->glUniform3f(shader->getLightSpecularId(), 1.0f, 1.0f, 1.0f);
 
-    // For 2D
-    // this->glUniform3f(shader->getMaterialAmbientId(), 0.96f, 0.47f, 0.02f);
-    // this->glUniform3f(shader->getMaterialDiffuseId(), 0.0f, 0.0f, 0.0f);
-    // this->glUniform3f(shader->getMaterialSpecularId(), 0.0f, 0.0f, 0.0f);
-    // this->glUniform1f(shader->getMaterialShininessId(), 32.0f);
-
-    // this->glUniform3f(shader->getLightPositionId(), 0.0f, 0.0f, 2.0f);
-    // this->glUniform3f(shader->getLightAmbientId(), 1.0f, 1.0f, 1.0f);
-    // this->glUniform3f(shader->getLightDiffuseId(), 0.5f, 0.5f, 0.5f);
-    // this->glUniform3f(shader->getLightSpecularId(), 1.0f, 1.0f, 1.0f);
-
     // --- Upload to shader ---
-    // this->glUniformMatrix4fv(shader->getModelId(), 1, GL_FALSE, meshList[0]->getModelMatrix().constData());
     this->glUniformMatrix4fv(shader->getViewId(),  1, GL_FALSE, camera->calculateViewMatrix().constData());
     this->glUniformMatrix4fv(shader->getProjectionId(),  1, GL_FALSE, m_projectionMatrix.constData());
-
-    // GLint depthTestEnabled = 1;
-    // this->glGetIntegerv(GL_DEPTH_TEST, &depthTestEnabled);
-    // qInfo() << "Depth test:" << (depthTestEnabled ? "ON" : "OFF");
-    // this->glGetIntegerv(GL_DEPTH_BITS, &depthTestEnabled);
-    // qInfo() << "Depth bits:" << depthTestEnabled;
-
-    // GLint depthBits = 0;
-
-    // // Use glGetFramebufferAttachmentParameteriv to query the specific attachment
-    // // for the currently bound FBO.
-    // // The attachment point for a renderbuffer (which Qt uses by default for depth) is GL_DEPTH_ATTACHMENT
-    // this->glGetFramebufferAttachmentParameteriv(
-    //     GL_FRAMEBUFFER,
-    //     GL_DEPTH_ATTACHMENT,
-    //     GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE,
-    //     &depthBits
-    //     );
-
-    // qInfo() << "FBO Depth bits:" << depthBits;
 
 
 
     // Draw
     this->glBindVertexArray(m_vao);
         this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
-            this->glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
-        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            this->glDrawElements(GL_TRIANGLES, m_static_indexCount, GL_UNSIGNED_INT, 0);
+    this->glBindVertexArray(0);
 
-        // this->glUniform3f(shader->getLightAmbientId(), 0.0f, 0.0f, 0.0f);
+    // For Model Matrices
+    this->glUniform1i(shader->getModelMatrixBufferId(), 5);
 
-        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_border_ibo);
-        //     this->glDrawElements(GL_LINES, m_borderIndexCount, GL_UNSIGNED_INT, 0);
+    this->glBindVertexArray(m_dynamic_vao);
+        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_dynamic_ibo);
+            this->glDrawElements(GL_TRIANGLES, m_dynamic_indexCount, GL_UNSIGNED_INT, 0);
     this->glBindVertexArray(0);
 
 
@@ -363,24 +482,16 @@ void View::Render()
     this->glUniform2fv(edgeShader->getViewPortId(), 1, viewportArray.data());
 
     // For vertices arrays
-    this->glActiveTexture(GL_TEXTURE0);
-    this->glBindTexture(GL_TEXTURE_BUFFER, m_verticesTexture);
-    this->glUniform1i(edgeShader->getVerticesId(), 0);
+    this->glUniform1i(edgeShader->getVerticesId(), 3);
 
     // For Model Matrices
-    this->glActiveTexture(GL_TEXTURE1);
-    this->glBindTexture(GL_TEXTURE_BUFFER, m_matrixTexture);
-    this->glUniform1i(edgeShader->getModelMatrixBufferId(), 1);
+    this->glUniform1i(edgeShader->getModelMatrixBufferId(), 2);
 
     // For Model Matrix Indices
-    this->glActiveTexture(GL_TEXTURE2);
-    this->glBindTexture(GL_TEXTURE_BUFFER, m_matrixIndexTexture);
-    this->glUniform1i(edgeShader->getModelMatrixIndexBufferId(), 2);
+    this->glUniform1i(edgeShader->getModelMatrixIndexBufferId(), 4);
 
     // For Material List
-    this->glActiveTexture(GL_TEXTURE3);
-    this->glBindTexture(GL_TEXTURE_BUFFER, m_materialTexture);
-    this->glUniform1i(edgeShader->getMaterialBufferId(), 3);
+    this->glUniform1i(edgeShader->getMaterialBufferId(), 1);
 
     this->glUniform3f(edgeShader->getLightPositionId(), 20.0f, 0.0f, 0.0f);
     this->glUniform3f(edgeShader->getLightAmbientId(), 1.0f, 1.0f, 1.0f); // 0.2f, 0.2f, 0.2f
@@ -389,7 +500,21 @@ void View::Render()
 
     // Draw
     this->glBindVertexArray(m_edge_vao);
-        this->glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, m_borderIndexCount);
+        this->glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, m_static_borderIndexCount);
+    this->glBindVertexArray(0);
+
+
+    // For vertices arrays
+    this->glUniform1i(edgeShader->getVerticesId(), 6);
+
+    // For Model Matrices
+    this->glUniform1i(edgeShader->getModelMatrixBufferId(), 5);
+
+    // For Model Matrix Indices
+    this->glUniform1i(edgeShader->getModelMatrixIndexBufferId(), 7);
+
+    this->glBindVertexArray(m_dynamic_edge_vao);
+        this->glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, m_dynamic_borderIndexCount);
     this->glBindVertexArray(0);
 }
 
@@ -424,16 +549,14 @@ unsigned int View::Selection()
             this->glUniform4f(pickingShader->getPickColorId(), r/255.0f, g/255.0f, b/255.0f, 1.0f);
 
             // --- Upload to shader ---
-            this->glActiveTexture(GL_TEXTURE0);
-                this->glBindTexture(GL_TEXTURE_BUFFER, m_matrixTexture);
-            this->glUniform1i(pickingShader->getModelMatrixBufferId(), 0);
+            this->glUniform1i(pickingShader->getModelMatrixBufferId(), 2);
 
             this->glUniformMatrix4fv(pickingShader->getViewId(),  1, GL_FALSE, camera->calculateViewMatrix().constData());
             this->glUniformMatrix4fv(pickingShader->getProjectionId(),  1, GL_FALSE, m_projectionMatrix.constData());
 
             this->glBindVertexArray(m_vao);
                 this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
-                    this->glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
+                    this->glDrawElements(GL_TRIANGLES, m_static_indexCount, GL_UNSIGNED_INT, 0);
                 // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             this->glBindVertexArray(0);
 
@@ -448,12 +571,12 @@ unsigned int View::Selection()
         // Restore default framebuffer
         this->glBindFramebuffer(GL_FRAMEBUFFER, defaultFBO);
 
-        qInfo() << "Picked Id: " << pickedId;
+        // qInfo() << "Picked Id: " << pickedId;
         return pickedId;
     }
 }
 
-QVector3D View::GetPointInModelSpace(int meshIndex)
+QVector3D View::GetPointInModelSpace(Mesh* mesh)
 {
     // --- Step 1: Screen -> NDC
     float x = (2.0f * m_pickX) / float(viewportWidth) - 1.0f;
@@ -469,7 +592,7 @@ QVector3D View::GetPointInModelSpace(int meshIndex)
     QVector3D rayOriginWorld = camera->getCameraPosition();
 
     // --- Step 4: Transform ray into *model space*
-    QMatrix4x4 invModel = meshList[meshIndex]->getModelMatrix().inverted();
+    QMatrix4x4 invModel = mesh->getModelMatrix().inverted();
     QVector3D rayOriginModel = (invModel * QVector4D(rayOriginWorld, 1.0f)).toVector3D();
     QVector3D rayDirModel    = (invModel * QVector4D(rayDirWorld, 0.0f)).toVector3D().normalized();
 
@@ -492,11 +615,11 @@ QVector3D View::GetPointInModelSpace(int meshIndex)
     return hitPoint;
 }
 
-QVector3D View::GetPointInViewSpace()
+QVector3D View::GetPointInViewSpace(int pointX, int pointY)
 {
     // --- Step 1: Screen -> NDC
-    float x = (2.0f * m_pickX) / float(viewportWidth) - 1.0f;
-    float y = 1.0f - (2.0f * m_pickY) / float(viewportHeight);
+    float x = (2.0f * pointX) / float(viewportWidth) - 1.0f;
+    float y = 1.0f - (2.0f * pointY) / float(viewportHeight);
     QVector4D rayClip(x, y, -1.0f, 1.0f);
 
     // --- Step 2: NDC -> Eye space
@@ -533,20 +656,29 @@ QVector3D View::GetPointInViewSpace()
     return hitPoint;
 }
 
+std::array<float, 2> View::GetPointInScreenSpace(QVector3D& point3D)
+{
+    QRect viewport(0, 0, viewportWidth, viewportHeight);
+
+    QVector3D screenPos = point3D.project(camera->calculateViewMatrix(), m_projectionMatrix, viewport);
+
+    return { screenPos.x(),  (viewportHeight - screenPos.y()) };
+}
+
 void View::AddMesh(Mesh *mesh)
 {
-    meshList.append(mesh);
+    // meshList.append(mesh);
 }
 
 void View::DeleteAllMesh()
 {
     // Only clears the QList does not delete the Mesh object being pointed too
-    meshList.clear();
+    // meshList.clear();
 }
 
-void View::AddMaterial(OpenGLMaterial *material)
+void View::AddMaterialData(std::vector<float> materialData)
 {
-    materialList.append(material);
+    materials = materialData;
 }
 
 void View::AddTexture(Texture *texture)
@@ -646,8 +778,404 @@ void View::ensurePickFBO()
     this->glBindFramebuffer(GL_FRAMEBUFFER, defaultFBO);
 }
 
+void View::InitializeHandles()
+{
+    //
+    /*
+        Static VBOs and IBOs
+    */
+    this->glGenVertexArrays(1, &m_vao);
+    this->glGenVertexArrays(1, &m_edge_vao);
+    this->glGenBuffers(1, &m_static_ibo);
+
+    this->glGenBuffers(1, &m_static_position_vbo);
+    this->glGenBuffers(1, &m_static_normal_vbo);
+    this->glGenBuffers(1, &m_static_textureuv_vbo);
+    this->glGenBuffers(1, &m_static_materialIndex_vbo);
+    this->glGenBuffers(1, &m_static_textureIndex_vbo);
+
+    this->glGenBuffers(1, &m_static_corner_vbo);
+    this->glGenBuffers(1, &m_static_edge_indices_vbo);
+    this->glGenBuffers(1, &m_static_edge_width_vbo);
+    this->glGenBuffers(1, &m_static_edge_dashLength_vbo);
+    this->glGenBuffers(1, &m_static_edge_gapLength_vbo);
+    this->glGenBuffers(1, &m_static_edge_dash_vbo);
+    this->glGenBuffers(1, &m_static_edge_materialIndex_vbo);
+
+    this->glGenBuffers(1, &m_static_border_ibo);
+    this->glGenBuffers(1, &m_static_matrix_tbo);
+    this->glGenBuffers(1, &m_static_model_matrix_vbo);
+    this->glGenTextures(1, &m_static_matrixTexture);
+    this->glGenTextures(1, &m_static_verticesTexture);
+    this->glGenTextures(1, &m_static_matrixIndexTexture);
+
+    /*
+        Dynmic VBOs and IBOs
+    */
+    this->glGenVertexArrays(1, &m_dynamic_vao);
+    this->glGenVertexArrays(1, &m_dynamic_edge_vao);
+    this->glGenBuffers(1, &m_dynamic_ibo);
+
+    this->glGenBuffers(1, &m_dynamic_position_vbo);
+    this->glGenBuffers(1, &m_dynamic_normal_vbo);
+    this->glGenBuffers(1, &m_dynamic_textureuv_vbo);
+    this->glGenBuffers(1, &m_dynamic_materialIndex_vbo);
+    this->glGenBuffers(1, &m_dynamic_textureIndex_vbo);
+
+    this->glGenBuffers(1, &m_dynamic_corner_vbo);
+    this->glGenBuffers(1, &m_dynamic_edge_indices_vbo);
+    this->glGenBuffers(1, &m_dynamic_edge_width_vbo);
+    this->glGenBuffers(1, &m_dynamic_edge_dashLength_vbo);
+    this->glGenBuffers(1, &m_dynamic_edge_gapLength_vbo);
+    this->glGenBuffers(1, &m_dynamic_edge_dash_vbo);
+    this->glGenBuffers(1, &m_dynamic_edge_materialIndex_vbo);
+
+    this->glGenBuffers(1, &m_dynamic_border_ibo);
+    this->glGenBuffers(1, &m_dynamic_matrix_tbo);
+    this->glGenBuffers(1, &m_dynamic_model_matrix_vbo);
+    this->glGenTextures(1, &m_dynamic_matrixTexture);
+    this->glGenTextures(1, &m_dynamic_verticesTexture);
+    this->glGenTextures(1, &m_dynamic_matrixIndexTexture);
+
+    /*
+        Texture Buffers
+    */
+    this->glGenBuffers(1, &m_material_tbo);
+    this->glGenTextures(1, &m_materialTexture);
+    this->glGenBuffers(1, &m_pick_color_vbo);
+}
+
+void View::InitializeStaticBuffers()
+{
+    // For now num of verticies is 1000
+    int numOfVertices = 1000;
+    int numOfIndices = 1000;
+    int numOfEdges = 1000;
+    int numOfModelMatrices = 100;
+    int numOfModelMatrixIndices = 1000;
+    std::array<float, 4> corners = {-1.0f, 1.0f, -1.0f, 1.0f};
+
+    // VAO for Mesh + Mesh Color Picking
+    this->glBindVertexArray(m_vao);
+        //VBO
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_position_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(Position) * numOfVertices, NULL, GL_STATIC_DRAW);
+            // postition in verticies
+            this->glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Position), (void*)0);
+            this->glEnableVertexAttribArray(0);
+
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_normal_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(Normal) * numOfVertices, NULL, GL_STATIC_DRAW);
+            // normal in verticies
+            this->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Normal), (void*)0);
+            this->glEnableVertexAttribArray(1);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_textureuv_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(TextureUV) * numOfVertices, NULL, GL_STATIC_DRAW);
+            // texture uv in verticies
+            this->glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(TextureUV), (void*)0);
+            this->glEnableVertexAttribArray(2);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_materialIndex_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfVertices, NULL, GL_STATIC_DRAW);
+            // materialIndex in verticies
+            this->glVertexAttribIPointer(3, 1, GL_INT, sizeof(int), (void*)0);
+            this->glEnableVertexAttribArray(3);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_textureIndex_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfVertices, NULL, GL_STATIC_DRAW);
+            // textureIndex in verticies
+            this->glVertexAttribIPointer(4, 1, GL_INT, sizeof(int), (void*)0);
+            this->glEnableVertexAttribArray(4);
+
+        // this->glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_model_matrix_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfModelMatrixIndices, NULL, GL_STATIC_DRAW);
+
+            this->glVertexAttribIPointer(5, 1, GL_INT, sizeof(int), (void*)0);
+            this->glEnableVertexAttribArray(5);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_pick_color_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(std::array<float, 4>) * numOfVertices, NULL, GL_STATIC_DRAW);
+
+            // pickColor Values
+            this->glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(std::array<float, 4>), (void*)0);
+            this->glEnableVertexAttribArray(6);
+
+
+        //TRIANGLE IBO
+        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
+            this->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * numOfIndices, NULL, GL_STATIC_DRAW);
+
+        // TBO for Model Matrix
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_static_matrix_tbo);
+            this->glBufferData(GL_TEXTURE_BUFFER, numOfModelMatrices * sizeof(float), NULL, GL_STATIC_DRAW);
+        this->glBindBuffer(GL_TEXTURE_BUFFER, 0);
+
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_static_matrixTexture);
+            this->glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, m_static_matrix_tbo);
+        this->glBindTexture(GL_TEXTURE_BUFFER, 0);
+
+        // TBO for Materials
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_material_tbo);
+            this->glBufferData(GL_TEXTURE_BUFFER, materials.size() * sizeof(float), materials.data(), GL_STATIC_DRAW);
+        this->glBindBuffer(GL_TEXTURE_BUFFER, 0);
+
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_materialTexture);
+            this->glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, m_material_tbo);
+        this->glBindTexture(GL_TEXTURE_BUFFER, 0);
+
+    this->glBindVertexArray(0);
+
+    // VAO for edge
+    this->glBindVertexArray(m_edge_vao);
+        //VBO
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_corner_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 4, corners.data(), GL_STATIC_DRAW);
+            // corners
+            this->glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+            this->glEnableVertexAttribArray(0);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_indices_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(EdgeIndex) * numOfEdges, NULL, GL_STATIC_DRAW);
+            // edges
+            this->glVertexAttribIPointer(1, 2, GL_INT, sizeof(EdgeIndex), (void*)0);
+            this->glEnableVertexAttribArray(1);
+            this->glVertexAttribDivisor(1, 1);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_width_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdges, NULL, GL_STATIC_DRAW);
+            // edge width
+            this->glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+            this->glEnableVertexAttribArray(2);
+            this->glVertexAttribDivisor(2, 1);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_materialIndex_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdges, NULL, GL_STATIC_DRAW);
+            // edge material index
+            this->glVertexAttribIPointer(3, 1, GL_INT, sizeof(int), (void*)0);
+            this->glEnableVertexAttribArray(3);
+            this->glVertexAttribDivisor(3, 1);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_dashLength_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdges, NULL, GL_STATIC_DRAW);
+            // edge dash length
+            this->glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+            this->glEnableVertexAttribArray(4);
+            this->glVertexAttribDivisor(4, 1);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_gapLength_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdges, NULL, GL_STATIC_DRAW);
+            // edge gap length
+            this->glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+            this->glEnableVertexAttribArray(5);
+            this->glVertexAttribDivisor(5, 1);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_dash_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdges, NULL, GL_STATIC_DRAW);
+            // edge dash
+            this->glVertexAttribIPointer(6, 1, GL_INT, sizeof(int), (void*)0);
+            this->glEnableVertexAttribArray(6);
+            this->glVertexAttribDivisor(6, 1);
+
+
+        // TBO for Vertices
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_static_verticesTexture);
+            this->glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, m_static_position_vbo);
+        this->glBindTexture(GL_TEXTURE_BUFFER, 0);
+
+        // TBO for Matrix Index
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_static_matrixIndexTexture);
+            this->glTexBuffer(GL_TEXTURE_BUFFER, GL_R32I, m_static_model_matrix_vbo);
+            this->glBindTexture(GL_TEXTURE_BUFFER, 0);
+    this->glBindVertexArray(0);
+
+
+    // Binding TBO to texture units
+    // For texture arrays
+    this->glActiveTexture(GL_TEXTURE0);
+        this->glBindTexture(GL_TEXTURE_2D_ARRAY, textureList[0]->getTextureId());
+
+    // For Material List
+    this->glActiveTexture(GL_TEXTURE1);
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_materialTexture);
+
+    // For Model Matrices
+    this->glActiveTexture(GL_TEXTURE2);
+    this->glBindTexture(GL_TEXTURE_BUFFER, m_static_matrixTexture);
+
+    // For vertices arrays
+    this->glActiveTexture(GL_TEXTURE3);
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_static_verticesTexture);
+
+    // For Model Matrix Indices
+    this->glActiveTexture(GL_TEXTURE4);
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_static_matrixIndexTexture);
+}
+
+void View::InitializeDynamicBuffers()
+{
+    // For now num of verticies is 1000
+    int numOfVertices = 100;
+    int numOfIndices = 100;
+    int numOfEdges = 100;
+    int numOfModelMatrices = 50;
+    int numOfModelMatrixIndices = 100;
+    std::array<float, 4> corners = {-1.0f, 1.0f, -1.0f, 1.0f};
+
+    // VAO for Mesh + Mesh Color Picking
+    this->glBindVertexArray(m_dynamic_vao);
+        //VBO
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_position_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(Position) * numOfVertices, NULL, GL_STREAM_DRAW);
+            // postition in verticies
+            this->glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Position), (void*)0);
+            this->glEnableVertexAttribArray(0);
+
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_normal_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(Normal) * numOfVertices, NULL, GL_STREAM_DRAW);
+            // normal in verticies
+            this->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Normal), (void*)0);
+            this->glEnableVertexAttribArray(1);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_textureuv_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(TextureUV) * numOfVertices, NULL, GL_STREAM_DRAW);
+            // texture uv in verticies
+            this->glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(TextureUV), (void*)0);
+            this->glEnableVertexAttribArray(2);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_materialIndex_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfVertices, NULL, GL_STREAM_DRAW);
+            // materialIndex in verticies
+            this->glVertexAttribIPointer(3, 1, GL_INT, sizeof(int), (void*)0);
+            this->glEnableVertexAttribArray(3);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_textureIndex_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfVertices, NULL, GL_STREAM_DRAW);
+            // textureIndex in verticies
+            this->glVertexAttribIPointer(4, 1, GL_INT, sizeof(int), (void*)0);
+            this->glEnableVertexAttribArray(4);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_model_matrix_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfModelMatrixIndices, NULL, GL_STREAM_DRAW);
+
+            this->glVertexAttribIPointer(5, 1, GL_INT, sizeof(int), (void*)0);
+            this->glEnableVertexAttribArray(5);
+
+
+        //TRIANGLE IBO
+        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_dynamic_ibo);
+            this->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * numOfIndices, NULL, GL_STREAM_DRAW);
+
+        // TBO for Model Matrix
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_dynamic_matrix_tbo);
+            this->glBufferData(GL_TEXTURE_BUFFER, numOfModelMatrices * sizeof(float), NULL, GL_STREAM_DRAW);
+        this->glBindBuffer(GL_TEXTURE_BUFFER, 0);
+
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_dynamic_matrixTexture);
+            this->glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, m_dynamic_matrix_tbo);
+        this->glBindTexture(GL_TEXTURE_BUFFER, 0);
+
+        // // TBO for Materials
+        // this->glBindBuffer(GL_TEXTURE_BUFFER, m_material_tbo);
+        //     this->glBufferData(GL_TEXTURE_BUFFER, materials.size() * sizeof(float), materials.data(), GL_STREAM_DRAW);
+        // this->glBindBuffer(GL_TEXTURE_BUFFER, 0);
+
+        // this->glBindTexture(GL_TEXTURE_BUFFER, m_materialTexture);
+        //     this->glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, m_material_tbo);
+        // this->glBindTexture(GL_TEXTURE_BUFFER, 0);
+
+    this->glBindVertexArray(0);
+
+    // VAO for edge
+    this->glBindVertexArray(m_dynamic_edge_vao);
+        //VBO
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_corner_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 4, corners.data(), GL_STREAM_DRAW);
+            // corners
+            this->glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+            this->glEnableVertexAttribArray(0);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_indices_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(EdgeIndex) * numOfEdges, NULL, GL_STREAM_DRAW);
+            // edges
+            this->glVertexAttribIPointer(1, 2, GL_INT, sizeof(EdgeIndex), (void*)0);
+            this->glEnableVertexAttribArray(1);
+            this->glVertexAttribDivisor(1, 1);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_width_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdges, NULL, GL_STREAM_DRAW);
+            // edge width
+            this->glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+            this->glEnableVertexAttribArray(2);
+            this->glVertexAttribDivisor(2, 1);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_materialIndex_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdges, NULL, GL_STREAM_DRAW);
+            // edge material index
+            this->glVertexAttribIPointer(3, 1, GL_INT, sizeof(int), (void*)0);
+            this->glEnableVertexAttribArray(3);
+            this->glVertexAttribDivisor(3, 1);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_dashLength_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdges, NULL, GL_STREAM_DRAW);
+            // edge dash length
+            this->glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+            this->glEnableVertexAttribArray(4);
+            this->glVertexAttribDivisor(4, 1);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_gapLength_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdges, NULL, GL_STREAM_DRAW);
+            // edge gap length
+            this->glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+            this->glEnableVertexAttribArray(5);
+            this->glVertexAttribDivisor(5, 1);
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_dash_vbo);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdges, NULL, GL_STREAM_DRAW);
+            // edge dash
+            this->glVertexAttribIPointer(6, 1, GL_INT, sizeof(int), (void*)0);
+            this->glEnableVertexAttribArray(6);
+            this->glVertexAttribDivisor(6, 1);
+
+
+        // TBO for Vertices
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_dynamic_verticesTexture);
+            this->glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, m_dynamic_position_vbo);
+        this->glBindTexture(GL_TEXTURE_BUFFER, 0);
+
+        // TBO for Matrix Index
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_dynamic_matrixIndexTexture);
+            this->glTexBuffer(GL_TEXTURE_BUFFER, GL_R32I, m_dynamic_model_matrix_vbo);
+        this->glBindTexture(GL_TEXTURE_BUFFER, 0);
+    this->glBindVertexArray(0);
+
+
+
+    // Binding TBO to texture units
+    // For Model Matrices
+    this->glActiveTexture(GL_TEXTURE5);
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_dynamic_matrixTexture);
+
+    // For vertices arrays
+    this->glActiveTexture(GL_TEXTURE6);
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_dynamic_verticesTexture);
+
+    // For Model Matrix Indices
+    this->glActiveTexture(GL_TEXTURE7);
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_dynamic_matrixIndexTexture);
+}
+
 View::~View()
 {
+    //
+    /*
+        Static VBO and IBO
+    */
     this->glDeleteBuffers(1, &m_static_position_vbo);
     this->glDeleteBuffers(1, &m_static_normal_vbo);
     this->glDeleteBuffers(1, &m_static_textureuv_vbo);
@@ -663,16 +1191,54 @@ View::~View()
     this->glDeleteBuffers(1, &m_static_edge_materialIndex_vbo);
 
     this->glDeleteBuffers(1, &m_static_ibo);
-    this->glDeleteBuffers(1, &m_tbo);
+    this->glDeleteBuffers(1, &m_static_border_ibo);
+    this->glDeleteBuffers(1, &m_static_matrix_tbo);
+    this->glDeleteTextures(1, &m_static_matrixTexture);
+    this->glDeleteTextures(1, &m_static_verticesTexture);
+    this->glDeleteTextures(1, &m_static_matrixIndexTexture);
+    this->glDeleteBuffers(1, &m_static_model_matrix_vbo);
+
+
+    /*
+        Dynamic VBO and IBO
+    */
+    this->glDeleteBuffers(1, &m_dynamic_position_vbo);
+    this->glDeleteBuffers(1, &m_dynamic_normal_vbo);
+    this->glDeleteBuffers(1, &m_dynamic_textureuv_vbo);
+    this->glDeleteBuffers(1, &m_dynamic_materialIndex_vbo);
+    this->glDeleteBuffers(1, &m_dynamic_textureIndex_vbo);
+
+    this->glDeleteBuffers(1, &m_dynamic_corner_vbo);
+    this->glDeleteBuffers(1, &m_dynamic_edge_indices_vbo);
+    this->glDeleteBuffers(1, &m_dynamic_edge_width_vbo);
+    this->glDeleteBuffers(1, &m_dynamic_edge_dashLength_vbo);
+    this->glDeleteBuffers(1, &m_dynamic_edge_gapLength_vbo);
+    this->glDeleteBuffers(1, &m_dynamic_edge_dash_vbo);
+    this->glDeleteBuffers(1, &m_dynamic_edge_materialIndex_vbo);
+
+    this->glDeleteBuffers(1, &m_dynamic_ibo);
+    this->glDeleteBuffers(1, &m_dynamic_border_ibo);
+    this->glDeleteBuffers(1, &m_dynamic_matrix_tbo);
+    this->glDeleteTextures(1, &m_dynamic_matrixTexture);
+    this->glDeleteTextures(1, &m_dynamic_verticesTexture);
+    this->glDeleteTextures(1, &m_dynamic_matrixIndexTexture);
+    this->glDeleteBuffers(1, &m_dynamic_model_matrix_vbo);
+
+    /*
+        Textures
+    */
     this->glDeleteBuffers(1, &m_material_tbo);
-    this->glDeleteTextures(1, &m_matrixTexture);
     this->glDeleteTextures(1, &m_materialTexture);
-    this->glDeleteTextures(1, &m_verticesTexture);
-    this->glDeleteTextures(1, &m_matrixIndexTexture);
-    this->glDeleteBuffers(1, &m_model_matrix_vbo);
     this->glDeleteBuffers(1, &m_pick_color_vbo);
+
+
+    /*
+        VAOs
+    */
     this->glDeleteVertexArrays(1, &m_vao);
     this->glDeleteVertexArrays(1, &m_edge_vao);
+    this->glDeleteVertexArrays(1, &m_dynamic_vao);
+    this->glDeleteVertexArrays(1, &m_dynamic_edge_vao);
 
     delete combinedMesh;
 }

@@ -37,6 +37,25 @@ void Mesh::Initialize(
     m_indices = indices;
 
     m_modelMatrix = QMatrix4x4();
+
+    unsigned char r,g,b;
+    encodeIdToColor(getBIMElementId(), r,g,b);
+    std::array<float, 4> pickColor = { r/255.0f, g/255.0f, b/255.0f, 1.0f };
+
+    std::vector<QMatrix4x4> model_matrix_list = { m_modelMatrix };
+    std::vector<std::array<float, 4>> pickColor_array;
+    std::vector<int> model_matrix_indices;
+
+    for (Position meshVertex: vertices_position)
+    {
+        model_matrix_indices.push_back(0); // 0, as model_matrix_list is 0
+        pickColor_array.push_back(pickColor);
+    }
+
+
+    SetModelMatricies(model_matrix_list);
+    SetModelMatrixIndices(model_matrix_indices);
+    SetPickColorArray(pickColor_array);
 }
 
 void Mesh::AppendGeometry(

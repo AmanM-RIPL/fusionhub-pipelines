@@ -112,10 +112,8 @@ MyGLRenderer::MyGLRenderer()
 
     // initialize Materials
     OpenGLMaterial::GenerateMaterialList(m_materialList);
-    for (OpenGLMaterial* material: m_materialList)
-    {
-        m_view->AddMaterial(material);
-    }
+    std::vector<float> materials = OpenGLMaterial::GenerateMaterialData(m_materialList);
+    m_view->AddMaterialData(materials);
 }
 
 MyGLRenderer::~MyGLRenderer()
@@ -130,7 +128,7 @@ MyGLRenderer::~MyGLRenderer()
     //     this->glDeleteRenderbuffers(1, &m_pickDepthBuf);
     // }
 
-    // delete m_mesh;
+    delete editableMesh;
     delete m_camera;
     delete m_shader;
     delete m_picking_shader;
@@ -230,12 +228,29 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         m_view->SetSelectionCoordinates(m_pickX, m_pickY);
     }
 
+    // transfer hover request safely
+    if (meshInitialized && projectionMatrixInitialized && glItem->m_lastHoverX >= 0) {
+        m_pickX = glItem->m_lastHoverX;
+        m_pickY = glItem->m_lastHoverY;
+        m_hoverRequested = true;
+        m_pickedBimElementId = -1;
+
+        // reset the stored GUI-side coords so we don't re-process
+        glItem->m_lastClickX = -1;
+        glItem->m_lastClickY = -1;
+        glItem->m_lastHoverX = -1;
+        glItem->m_lastHoverY = -1;
+
+        m_view->SetSelectionCoordinates(m_pickX, m_pickY);
+    }
+
+
     // by default m_pickedBimElementId will be a negative number
     // zero means no clicked id found, and negative means click
     // has been processed.
     if (m_pickRequested == true && m_pickedBimElementId >= 0)
     {
-        QVector3D clickedPoint = m_view->GetPointInViewSpace();
+        QVector3D clickedPoint = m_view->GetPointInViewSpace(m_pickX, m_pickY);
         BIMElement* hostElement = nullptr;
 
         for (BIMElement* element: glItem->bimElementList)
@@ -252,44 +267,44 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         {
             GeometryServiceFactory::updateGeometry(clickedPoint, glItem->editableBimElement, hostElement);
 
-            // removing old geometry
-            for (Mesh* mesh: m_meshList)
-            {
-                delete mesh;
-            }
-            m_meshList.clear();
-            m_view->DeleteAllMesh();
+            // //removing old geometry
+            // for (Mesh* mesh: m_meshList)
+            // {
+            //     delete mesh;
+            // }
+            // m_meshList.clear();
+            // m_view->DeleteAllMesh();
 
-            for (BIMElement* bimElement: glItem->bimElementList)
-            {
-                // adding new geometry
-                Mesh* mesh = new Mesh();
-                m_meshList.append(mesh);
-                m_view->AddMesh(mesh);
+            // for (BIMElement* bimElement: glItem->bimElementList)
+            // {
+            //     // adding new geometry
+            //     Mesh* mesh = new Mesh();
+            //     m_meshList.append(mesh);
+            //     // m_view->AddMesh(mesh);
 
-                if (glItem->m_viewType == "ModelView")
-                {
-                    GeometryServiceFactory::generateMesh3D(bimElement, mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
-                }
-                else if (glItem->m_viewType == "PlanView")
-                {
-                    GeometryServiceFactory::generateMesh2D(bimElement, mesh);
-                }
-            }
+            //     if (glItem->m_viewType == "ModelView")
+            //     {
+            //         GeometryServiceFactory::generateMesh3D(bimElement, mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
+            //     }
+            //     else if (glItem->m_viewType == "PlanView")
+            //     {
+            //         GeometryServiceFactory::generateMesh2D(bimElement, mesh);
+            //     }
+            // }
 
-            if (glItem->m_viewType == "ModelView")
-            {
-                Mesh* mesh = new Mesh();
-                m_meshList.append(mesh);
-                m_view->AddMesh(mesh);
+            // if (glItem->m_viewType == "ModelView")
+            // {
+            //     Mesh* mesh = new Mesh();
+            //     m_meshList.append(mesh);
+            //     // m_view->AddMesh(mesh);
 
-                Mesh::GenerateBaseSurface(mesh);
-            }
+            //     Mesh::GenerateBaseSurface(mesh);
+            // }
 
             // generating mesh for Editable BIMElement
             Mesh* mesh = new Mesh();
-            m_meshList.append(mesh);
-            m_view->AddMesh(mesh);
+            // m_meshList.append(mesh);
+            // // m_view->AddMesh(mesh);
 
             if (glItem->m_viewType == "ModelView")
             {
@@ -301,10 +316,55 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
             }
 
 
-            m_view->BindMeshWithOpenGL();
+            // m_view->BindMeshWithOpenGL();
+            // m_view->LoadStaticMeshData(m_meshList);
+            m_view->LoadDynamicMeshData(mesh);
+
+            delete mesh;
         }
 
         m_pickRequested = false;
+        m_hoverRequested = false;
+        m_pickedBimElementId = -1;
+    }
+
+    if (m_hoverRequested == true && m_pickedBimElementId >= 0)
+    {
+        QVector3D clickedPoint = m_view->GetPointInViewSpace(m_pickX, m_pickY);
+        BIMElement* hostElement = nullptr;
+
+        for (BIMElement* element: glItem->bimElementList)
+        {
+            if (element->getId() == m_pickedBimElementId)
+            {
+                hostElement = element;
+                break;
+            }
+        }
+
+        // update glItem BIM Element
+        if (glItem->editableBimElement != nullptr)
+        {
+            // generating mesh for Editable BIMElement
+            Mesh* mesh = new Mesh();
+            // m_meshList.append(mesh);
+            // m_view->AddMesh(mesh);
+
+            if (glItem->m_viewType == "PlanView")
+            {
+                // qInfo() << "PickPoint: " << m_pickX << ", " << m_pickY;
+                Point screenPoint = {m_pickX, m_pickY};
+                GeometryServiceFactory::generateWIPMesh2D(glItem->editableBimElement, mesh, clickedPoint, screenPoint, m_view);
+            }
+
+
+            m_view->LoadDynamicMeshData(mesh);
+
+            delete mesh;
+        }
+
+        m_pickRequested = false;
+        m_hoverRequested = false;
         m_pickedBimElementId = -1;
     }
 
@@ -314,7 +374,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         {
             Mesh* mesh = new Mesh();
             m_meshList.append(mesh);
-            m_view->AddMesh(mesh);
+            // m_view->AddMesh(mesh);
 
             if (glItem->m_viewType == "ModelView")
             {
@@ -330,12 +390,13 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         {
             Mesh* mesh = new Mesh();
             m_meshList.append(mesh);
-            m_view->AddMesh(mesh);
+            // m_view->AddMesh(mesh);
 
             Mesh::GenerateBaseSurface(mesh);
         }
 
         m_view->Initialize();
+        m_view->LoadStaticMeshData(m_meshList);
 
         meshInitialized = true;
         m_viewType = glItem->m_viewType;
@@ -356,7 +417,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
             // adding new geometry
             Mesh* mesh = new Mesh();
             m_meshList.append(mesh);
-            m_view->AddMesh(mesh);
+            // m_view->AddMesh(mesh);
 
             if (glItem->m_viewType == "ModelView")
             {
@@ -372,12 +433,12 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         {
             Mesh* mesh = new Mesh();
             m_meshList.append(mesh);
-            m_view->AddMesh(mesh);
+            // m_view->AddMesh(mesh);
 
             Mesh::GenerateBaseSurface(mesh);
         }
 
-        m_view->BindMeshWithOpenGL();
+        m_view->LoadStaticMeshData(m_meshList);
 
         m_viewType = glItem->m_viewType;
 
@@ -390,6 +451,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
             m_camera->SetCameraParameters(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 1.0f, 0.0f), QVector3D(0.0f, 0.0f, 20.0f), 5.0f, 0.5f);
         }
     }
+
 }
 
 void MyGLRenderer::update() {
@@ -650,7 +712,7 @@ void MyGLRenderer::render() {
         projectionMatrixInitialized = true;
     }
 
-    if (m_pickRequested)
+    if (m_pickRequested || m_hoverRequested)
     {
         // m_view->SetSelectionCoordinates(m_pickX, m_pickY);
 
@@ -1020,6 +1082,22 @@ void MyGLItem::requestPick(int x, int y) {
     update();
 }
 
+void MyGLItem::requestHover(int x, int y)
+{
+    if ((editableBimElement != nullptr) && (render_update_allowed == true))
+    {
+        render_update_allowed = false;
+
+        QTimer::singleShot(50, this, [this]() {
+            this->render_update_allowed = true;
+        });
+
+        m_lastHoverX = x;
+        m_lastHoverY = y;
+        update();
+    }
+}
+
 void MyGLItem::handlePick(int id) {
     emit selectionChanged(id);
 }
@@ -1076,3 +1154,4 @@ void MyGLItem::saveEditableBimElement()
     editableBimElement = nullptr;
     update();
 }
+
