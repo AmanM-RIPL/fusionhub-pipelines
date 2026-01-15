@@ -22,10 +22,17 @@ void ScheduleSetupController::create(const QString &scheduleName, const QString 
                                      const QVariant &resourceParameter) const
 {
 
-    QString costParam =  CreateJson(costParameter);
-    qDebug() <<"Created costParam:" << costParam;
-    QString resourceParam =  CreateJson(resourceParameter);
-    qDebug() <<"Created resourceParam:" << resourceParam;
+
+
+    //QString costParam =  CreateJson(costParameter);
+    QJsonDocument costParamJsonDoc = CreateJson(costParameter);
+    QString costParamJsonString = costParamJsonDoc.toJson(QJsonDocument::Indented);
+    qDebug() <<"Created costParam:" << costParamJsonDoc.object();
+
+    //QString resourceParam =  CreateJson(resourceParameter);
+    QJsonDocument resourceParamJsonDoc = CreateJson(resourceParameter);
+    QString resourceParamJsonString = resourceParamJsonDoc.toJson(QJsonDocument::Indented);
+    qDebug() <<"Created resourceParam:" << resourceParamJsonDoc.object();
 
 
     ScheduleSetup setup;
@@ -34,8 +41,8 @@ void ScheduleSetupController::create(const QString &scheduleName, const QString 
     setup.setApprovalStatus(true);
     setup.setScheduleName(scheduleName);
     setup.setDescription(description);
-    setup.setCostParameter(costParam);
-    setup.setResourceParameter(resourceParam);
+    setup.setCostParameter(costParamJsonString);
+    setup.setResourceParameter(resourceParamJsonString);
 
 
     m_scheduleSetupRepository->saveQML(&setup);
@@ -49,8 +56,8 @@ void ScheduleSetupController::create(const QString &scheduleName, const QString 
     //jsonObject["approvalStatus"] = true;
     jsonObject["scheduleName"] = scheduleName;
     jsonObject["description"] = description;
-    jsonObject["costParam"] = costParam;
-    jsonObject["resourceParam"] = resourceParam;
+    jsonObject["costParam"] = costParamJsonDoc.object();//costParamJsonString;
+    jsonObject["resourceParam"] = resourceParamJsonDoc.object();//costParamJsonString;
 
     QJsonDocument jsonDoc(jsonObject);
     QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
@@ -113,8 +120,19 @@ std::vector<ScheduleSetup*> ScheduleSetupController::getSetupList(bool isApprove
                 scheduleSetup->setApprovalStatus(true);
                 scheduleSetup->setScheduleName(jsonObj["scheduleName"].toString());
                 scheduleSetup->setDescription(jsonObj["description"].toString());
-                scheduleSetup->setCostParameter(jsonObj["costParam"].toString());
-                scheduleSetup->setResourceParameter(jsonObj["resourceParam"].toString());
+                //scheduleSetup->setCostParameter(jsonObj["costParam"].toString());
+                //scheduleSetup->setResourceParameter(jsonObj["resourceParam"].toString());
+
+
+                QJsonObject costParamObj = jsonObj["costParam"].toObject();
+                QJsonDocument costDoc(costParamObj);
+                QString costParamString = costDoc.toJson(QJsonDocument::Indented);
+                scheduleSetup->setCostParameter(costParamString);
+
+                QJsonObject resourceParamObj = jsonObj["resourceParam"].toObject();
+                QJsonDocument resourceDoc(resourceParamObj);
+                QString resourceParamString = resourceDoc.toJson(QJsonDocument::Indented);
+                scheduleSetup->setResourceParameter(resourceParamString);
 
                 scheduleSetups.push_back(scheduleSetup);
             }
@@ -185,7 +203,7 @@ std::vector<ScheduleSetup*> ScheduleSetupController::getSetupList(bool isApprove
     return scheduleSetups;
 }
 
-QString ScheduleSetupController::CreateJson(const QVariant &param) const
+QJsonDocument ScheduleSetupController::CreateJson(const QVariant &param) const
 {
     QJsonObject jsonObject;
     if (param.canConvert<QVariantList>()) {
@@ -215,10 +233,12 @@ QString ScheduleSetupController::CreateJson(const QVariant &param) const
 
         jsonObject["data"] = dataArray;
         QJsonDocument jsonDoc(jsonObject);
-        QString JsonString = jsonDoc.toJson(QJsonDocument::Indented);
-        qDebug() <<"Created ScheduleSetUp:" << JsonString;
+       // QString JsonString = jsonDoc.toJson(QJsonDocument::Indented);
+        //qDebug() <<"Created ScheduleSetUp:" << JsonString;
 
-        return JsonString;
+        return jsonDoc;
     }
+    QJsonDocument jsonDocEmpty;
+    return jsonDocEmpty;
 }
 

@@ -12,18 +12,18 @@ ScheduleOfRatesController::ScheduleOfRatesController(QObject *parent)
     m_draftEntityRepository(RepositoryLocator::instance().draftEntityRepository())
 {}
 
-void ScheduleOfRatesController::create(const QString &name, const QVariant &costValueParameter) const
+void ScheduleOfRatesController::create(const QString &name, const QVariant &pramMainMap) const
 {
     // ScheduleOfRates scheduleOfRates;
 
     /***********Start of DraftEntity******************/
 
-    QString costValueParam =  CreateJson(costValueParameter);
+    QJsonDocument scheduleOfRatesLineDoc =  CreateJson(pramMainMap);
 
     QJsonObject jsonObject;
     jsonObject["scheduleOfRatesName"] = name;
-    jsonObject["costValueParameter"] = costValueParam;
-
+    //jsonObject["costValueParameter"] = costValueParam;
+    jsonObject["scheduleOfRatesLine"] = scheduleOfRatesLineDoc.array();
 
     QJsonDocument jsonDoc(jsonObject);
     QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
@@ -91,41 +91,56 @@ std::vector<ScheduleOfRates*> ScheduleOfRatesController::getScheduleOfRatesList(
     }
 }
 
-QString ScheduleOfRatesController::CreateJson(const QVariant &param) const
-{
-    QJsonObject jsonObject;
-    if (param.canConvert<QVariantList>()) {
-        QVariantList list = param.toList();
-        int len = list.size();
-        jsonObject["rows"] = len;
+QJsonDocument ScheduleOfRatesController::CreateJson(const QVariant &paramMap) const
+{    
+    if (paramMap.canConvert<QVariantMap>())
+    {
+        QVariantMap mainMap = paramMap.toMap();
 
-        QJsonArray dataArray;
+        QJsonArray dataArrayMain;
+        for (auto itr = mainMap.begin(); itr != mainMap.end(); ++itr)
+        {
+            QVariant param = itr.value();
 
-        for (const QVariant &item : list) {
-            qDebug() << "Item:" << item.toString();
+            QJsonObject jsonObject;
+            if (param.canConvert<QVariantList>()) {
+                QVariantList list = param.toList();
+                int len = list.size();
+                jsonObject["scheduleSetupId"] = itr.key();
+                if(len <= 0 )
+                    continue;
 
-            if (item.canConvert<QVariantMap>()) {
-                QVariantMap map = item.toMap();
-                QJsonObject jsonObjectNew;
+                jsonObject["rows"] = len;
 
-                // Iterate through the map to populate the QJsonObject
-                for (auto it = map.begin(); it != map.end(); ++it) {
-                    jsonObjectNew.insert(it.key(), QJsonValue::fromVariant(it.value()));
+                QJsonArray dataArray;
+                for (const QVariant &item : list) {
+                    if (item.canConvert<QVariantMap>()) {
+                        QVariantMap map = item.toMap();
+                        QJsonObject jsonObjectNew;
+
+                        // Iterate through the map to populate the QJsonObject
+                        for (auto it = map.begin(); it != map.end(); ++it) {
+                            jsonObjectNew.insert(it.key(), QJsonValue::fromVariant(it.value()));
+                        }
+
+                        dataArray.append(jsonObjectNew);
+                    } else {
+                        qDebug() << "Item is not a QVariantMap!";
+                    }
                 }
+                jsonObject["data"] = dataArray;
+            }
 
-                dataArray.append(jsonObjectNew);
-            } else {
-                qDebug() << "Item is not a QVariantMap!";
+            if(!jsonObject.isEmpty())
+            {
+                dataArrayMain.append(jsonObject);
             }
         }
-
-        jsonObject["data"] = dataArray;
-        QJsonDocument jsonDoc(jsonObject);
-        QString JsonString = jsonDoc.toJson(QJsonDocument::Indented);
-        qDebug() <<"Created ScheduleOfRates:" << JsonString;
-
-        return JsonString;
+        QJsonDocument jsonDoc(dataArrayMain);
+        return jsonDoc;
     }
+    QJsonDocument emptyDoc;
+    return emptyDoc;
 }
 
 

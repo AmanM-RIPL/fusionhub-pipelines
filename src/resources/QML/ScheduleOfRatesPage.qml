@@ -3,6 +3,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import com.fh.models 1.0
 import com.fh.controllers
+import QtQuick.Controls 2.15
+import QtQuick.Dialogs
 
 Column {
     id: scheduleOfRatesRoot
@@ -17,6 +19,8 @@ Column {
     property var costList: ["--","costList"]
     property var dataList: []
 
+    property var dataMap: {"key": "", "value": ""}
+
     ScheduleSetupController {
         id: scheduleSetupController
     }
@@ -25,40 +29,83 @@ Column {
         id: scheduleOfRatesController
     }
 
+
+    MessageDialog {
+        id: confirmDialog
+        title: "Confirm Action"
+        text: "Do you want save as a draft?"
+        buttons: MessageDialog.Yes | MessageDialog.No
+        onAccepted: {
+            newScheduleOfRatesPopup.close();
+        }
+        onRejected: {
+            scheduleNameTextBox.text = ""
+            dataList = []
+            dataMap = ({})
+        }
+    }
+
+
     FHPopup {
         id: newScheduleOfRatesPopup
         popupWidth: 700
         popupHeight: 650
         title: "Create Schedule Of Rate"
-        parent: Overlay.overlay
+        parent: Overlay.overlay       
 
         onAcceptCallback: function () {
-            if (dataList.length > 0 && resourceList.length > 0) {
-                scheduleOfRatesController.create(scheduleNameTextBox.text, dataList)
+            if (dataList.length > 0 /*&& resourceList.length > 0*/) {
+                //scheduleOfRatesController.create(scheduleNameTextBox.text, dataList)
+                scheduleOfRatesController.create(scheduleNameTextBox.text, dataMap)
                 scheduleNameTextBox.text = ""
                 dataList = []
+                console.log("dataMap_Length:", Object.keys(dataMap).length)
+                dataMap = ({})
             }
             showList()
         }
 
-        onCancelCallback: function () {
-            scheduleNameTextBox.text = ""
-            dataList = []            
+
+        onCancelCallback: function () {            
+            //scheduleNameTextBox.text = ""
+            //dataList = []
+            let size = (dataMap) ? Object.keys(dataMap).length : 0;
+
+            // Object.entries(dataMap).forEach(([key, value]) => {
+            //     console.log("Key: " + key + " | Value: " + value);
+            // });
+
+            /*if(dataList.length > 0)
+            {
+                console.log("size:", size)
+                confirmDialog.open();
+            }*/
         }
 
         onOpened: {
-            dataList = []
+            //dataList = []
             if (scheduleOfRatesRoot.visible) {
                 scheduleSetupList = scheduleSetupController.getSetupList(true)
                 var scheduleSetup = scheduleSetupList[scheduleNameComboBox.currentIndex];
                 costList = scheduleSetup.vecCostParamDataDetails;
                 resourceList = scheduleSetup.vecResourceParamDataDetails;
+
+                dataMap.key = scheduleSetup.id;                
+                if(dataMap[dataMap.key])
+                {
+                    dataList = dataMap[dataMap.key];
+                }
+                else
+                {
+                   dataList = [];
+                }
             }
         }
 
         Column {
             width: parent.width
             height: 300
+            //spacing: 5
 
             Text {
                 id: scheduleNameLabel
@@ -77,6 +124,17 @@ Column {
                 width: parent.width - 8
             }
 
+            Rectangle {
+                width: parent.width - 6
+                height: 20
+                color: "white"
+            }
+
+            Row {
+                width: parent.width - 8
+                height: 30
+                leftPadding: 2
+
             Text {
                 id: scheduleLabel
                 text: "Select Schedule:"
@@ -84,7 +142,41 @@ Column {
                 font.weight: 700
                 font.pixelSize: 14
                 font.family: "Segoe UI"
-                topPadding: 10
+                //topPadding: 10
+            }
+            /////
+            CustomComboBox {
+                id: scheduleNameComboBox
+                width: 215
+                height: 22
+
+                model: scheduleSetupList
+                textRole: "scheduleName"
+                currentIndex: 0
+
+                onCurrentIndexChanged: {
+                    if (currentIndex >= 0) {
+                        //dataList = [];
+                        //var tempDataList = dataList;
+                        //dataList = [];
+
+                        var scheduleSetup = scheduleSetupList[currentIndex];
+                        dataMap.key = scheduleSetup.id;
+                        if(dataMap[dataMap.key])
+                        {
+                            dataList = dataMap[dataMap.key];
+                        }
+                        else
+                        {
+                           dataList = [];
+                        }
+
+                        costList = scheduleSetup.vecCostParamDataDetails;
+                        resourceList = scheduleSetup.vecResourceParamDataDetails;
+                    }
+                }
+            }
+            ///
             }
 
             Rectangle {
@@ -97,17 +189,19 @@ Column {
                         width: 644;//parent.width - 4
                         height: 130
                         leftPadding: 2
-                        removeRow: true
+                       // removeRow: true
                         model: dataList
-                        columns: [{
+                        columns: [/*{
                                 "label": "Schedule Name",
                                 "width": 215,
-                                "key": "schedule_name"
-                            },
+                                "key": "scheduleSetup"
+                            },*/
                             {
                                 "label": "Cost",
-                                "width": 215,
-                                "key": "cost"
+                                //"width": 215,
+                                "width": 322,
+                                "key": "cost",
+
                             },
                             // {
                             //     "label": "Resource",
@@ -116,16 +210,18 @@ Column {
                             // },
                             {
                                 "label": "Value",
-                                "width": 215,
+                                //"width": 215,
+                                "width": 322,
                                 "key": "value"
                             }
 
                         ]
 
-                        onRemoveRowChanged: {
-                            //console.log("onRemoveRowChanged:", removedIndex.toString())
+                         onRemoveRowChanged: {
+                        //     console.log("onRemoveRowChanged:", removedIndex.toString())
                             dataList.splice(removedIndex, 1)
-                        }
+
+                         }
                     }
                 }
             }
@@ -140,27 +236,10 @@ Column {
                     height: 20
                     leftPadding: 2
 
-
-                    CustomComboBox {
-                        id: scheduleNameComboBox
-                        width: 215
-                        height: 22
-                        model: scheduleSetupList
-                        textRole: "scheduleName"
-                        currentIndex: 0                        
-
-                        onCurrentIndexChanged: {
-                            if (currentIndex >= 0) {
-                                var scheduleSetup = scheduleSetupList[currentIndex];
-                                costList = scheduleSetup.vecCostParamDataDetails;
-                                resourceList = scheduleSetup.vecResourceParamDataDetails;
-                            }
-                        }
-                    }
-
                     CustomComboBox {
                         id: costComboBox
-                        width: 215
+                        //width: 215
+                        width: 322
                         height: 22
                         model: costList
                         textRole: "cost_param_name"
@@ -182,7 +261,8 @@ Column {
                         placeholderText: "value"
                         text: ""
                         color: "#323130"
-                        width: 198
+                       //width: 198
+                        width: 305
                         height: 22
 
                         font.weight: 700
@@ -215,14 +295,16 @@ Column {
 
                             onClicked: {
                                 var newElements = {
-                                     "schedule_name": scheduleNameComboBox.currentText,
-                                     "schedule_id": String(scheduleSetupList[scheduleNameComboBox.currentIndex].id),
+                                     "scheduleSetup": scheduleNameComboBox.currentText,
                                      "cost": costComboBox.currentText,
                                     // "resource": resourceComboBox.currentText
-                                    "value": costValueTextBox.text
+                                    "value": costValueTextBox.text,
+                                    "uom": String(costList[costComboBox.currentIndex].type_of_bim_dimension)
                                 }
 
                                 dataList = dataList.concat(newElements)
+
+                                dataMap[dataMap.key] = dataList;
                             }
                         }
                     }

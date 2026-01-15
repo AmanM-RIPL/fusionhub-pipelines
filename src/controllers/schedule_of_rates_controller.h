@@ -17,7 +17,7 @@ private:
     ScheduleOfRatesRepository* m_scheduleOfRatesRepository;
     DraftEntityRepository* m_draftEntityRepository;
 
-    QString CreateJson(const QVariant &param) const;
+    QJsonDocument CreateJson(const QVariant &param) const;
 };
 
 #endif // SCHEDULE_OF_RATES_CONTROLLER_H
