@@ -308,7 +308,7 @@ void WallGeometryService::updateGeometry(BIMElement *wallElement, const QVector3
     }
 }
 
-void WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view)
+Point WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view)
 {
     std::vector<std::vector<Point>> polygon;
     std::vector<Point> referenceLine = {};
@@ -322,25 +322,29 @@ void WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh,
     if (referenceLine.size() < 1)
     {
         mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
-        return;
+        return {0.0f, 0.0f};
     }
 
     // last point of referenceLine
     Point lastPointReferenceLine = referenceLine.back();
     QVector3D lastPoint(lastPointReferenceLine[0], lastPointReferenceLine[1], 0.0f);
     Point lastPointScreenSpace = view->GetPointInScreenSpace(lastPoint);
+    Point middlePointScreenSpace = m_openglHelper.getMiddlePoint(lastPointScreenSpace, screen_point);
 
     Point new_point1 = m_openglHelper.getPointAtPerpendicularDistance(lastPointScreenSpace, screen_point, 4);
     Point new_point2 = m_openglHelper.getPointAtPerpendicularDistance(lastPointScreenSpace, screen_point, 10);
     Point new_point3 = m_openglHelper.getPointAtPerpendicularDistance(screen_point, lastPointScreenSpace, -10);
     Point new_point4 = m_openglHelper.getPointAtPerpendicularDistance(screen_point, lastPointScreenSpace, -4);
+    Point middle_point = m_openglHelper.getPointAtPerpendicularDistance(middlePointScreenSpace, screen_point, 10);
 
     QVector3D wcs_point1 = view->GetPointInViewSpace(new_point1[0], new_point1[1]);
     QVector3D wcs_point2 = view->GetPointInViewSpace(new_point2[0], new_point2[1]);
     QVector3D wcs_point3 = view->GetPointInViewSpace(new_point3[0], new_point3[1]);
     QVector3D wcs_point4 = view->GetPointInViewSpace(new_point4[0], new_point4[1]);
 
-    // qInfo() << "New Point: " << new_point[0] << ", " << new_point[1];
+    // qInfo() << "Last Point: " << lastPointScreenSpace[0] << ", " << lastPointScreenSpace[1];
+    // qInfo() << "Middle Point: " << middlePointScreenSpace[0] << ", " << middlePointScreenSpace[1];
+    // qInfo() << "Screen Point: " << screen_point[0] << ", " << screen_point[1];
 
     // 2. Add point to referenceLine
     referenceLine.push_back({ point.x(), point.y() });
@@ -453,8 +457,8 @@ void WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh,
         int second_point = referenceLine.size() + i + 1;
         edge_indices.push_back({first_point, second_point });
         edge_width.push_back(2.0f);
-        edge_dashLength.push_back(0.5f);
-        edge_gapLength.push_back(0.5f);
+        edge_dashLength.push_back(5.0f);
+        edge_gapLength.push_back(5.0f);
         edge_dash.push_back(1);
         edge_materialIndex.push_back(OpenGLMaterial::BLACK);
     }
@@ -498,4 +502,6 @@ void WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh,
     // }
 
     // return mesh;
+
+    return middle_point;
 }

@@ -152,6 +152,7 @@ private:
 
 signals:
     void selectionChanged(int id);
+    void middlePointPositionChanged(float x, float y);
 };
 
 class MyGLRenderer : public QQuickFramebufferObject::Renderer, protected QOpenGLFunctions_3_3_Core

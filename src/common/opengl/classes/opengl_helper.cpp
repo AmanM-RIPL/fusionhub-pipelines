@@ -240,6 +240,16 @@ Point OpenglHelper::getPointAtPerpendicularDistance(Point point1, Point point2, 
     return new_point;
 }
 
+Point OpenglHelper::getMiddlePoint(Point point1, Point point2)
+{
+    Point middle_point = {
+        ((point2[0] - point1[0]) / 2) + point1[0],
+        ((point2[1] - point1[1]) / 2) + point1[1]
+    };
+
+    return middle_point;
+}
+
 void OpenglHelper::getMeshGeometry(
     const FacetModeler::Body& body,
     std::vector<Position>& vertices_position,

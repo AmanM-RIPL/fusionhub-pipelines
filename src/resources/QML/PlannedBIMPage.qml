@@ -1448,6 +1448,35 @@ Row {
         }
     }
 
+    // Rectangle for length of wall
+    Connections {
+        target: glscene
+        onMiddlePointPositionChanged: function(x, y) {
+
+            if (x === -1 && y === -1)
+            {
+                middlePointRectangle.visible = false;
+            }
+            else
+            {
+                middlePointRectangle.x = x + glscene.x;
+                middlePointRectangle.y = y + glscene.y;
+                middlePointRectangle.visible = true;
+            }
+        }
+    }
+
+    Rectangle {
+        id: middlePointRectangle
+        width: 100
+        height: 20
+        visible: false
+
+        Text {
+            text: qsTr("Length: ")
+        }
+    }
+
     //Components for Geometry and Positioning For WallSettings
     Component {
         id: gpDelegateComponentForWall

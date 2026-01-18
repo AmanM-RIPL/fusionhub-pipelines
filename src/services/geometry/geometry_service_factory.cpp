@@ -109,11 +109,15 @@ void GeometryServiceFactory::updateGeometry(const QVector3D& point, BIMElement* 
     }
 }
 
-void GeometryServiceFactory::generateWIPMesh2D(BIMElement *bimElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view)
+Point GeometryServiceFactory::generateWIPMesh2D(BIMElement *bimElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view)
 {
     if (bimElement->getType() == "Wall")
     {
         WallGeometryService service = WallGeometryService();
-        service.generateWIPMesh2D(bimElement, mesh, point, screen_point, view);
+        Point middle_point = service.generateWIPMesh2D(bimElement, mesh, point, screen_point, view);
+
+        return middle_point;
     }
+
+    return {0.0f, 0.0f};
 }

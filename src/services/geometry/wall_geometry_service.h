@@ -17,7 +17,7 @@ public:
     void generateMesh2D(BIMElement* wallElement, Mesh* mesh);
     void generateMesh3D(BIMElement *wallElement, Mesh* mesh);
     void updateGeometry(BIMElement* wallElement, const QVector3D &point);
-    void generateWIPMesh2D(BIMElement* wallElement, Mesh* mesh, const QVector3D &point, const Point& screen_point, View *view);
+    Point generateWIPMesh2D(BIMElement* wallElement, Mesh* mesh, const QVector3D &point, const Point& screen_point, View *view);
 
 
 signals:

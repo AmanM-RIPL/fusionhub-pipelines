@@ -354,7 +354,8 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
             {
                 // qInfo() << "PickPoint: " << m_pickX << ", " << m_pickY;
                 Point screenPoint = {m_pickX, m_pickY};
-                GeometryServiceFactory::generateWIPMesh2D(glItem->editableBimElement, mesh, clickedPoint, screenPoint, m_view);
+                Point middlePoint = GeometryServiceFactory::generateWIPMesh2D(glItem->editableBimElement, mesh, clickedPoint, screenPoint, m_view);
+                glItem->middlePointPositionChanged(middlePoint[0], middlePoint[1]); // signal to QML
             }
 
 
@@ -1137,6 +1138,9 @@ void MyGLItem::saveEditableBimElement()
 {
     bimElementList.append(editableBimElement);
 
+    // send signal to QML to stop showing helper points
+    middlePointPositionChanged(-1,-1);
+
     // add editableBimElement to as the child of host element
     if (editableBimElement->getHostId() > 0)
     {
@@ -1154,4 +1158,3 @@ void MyGLItem::saveEditableBimElement()
     editableBimElement = nullptr;
     update();
 }
-
