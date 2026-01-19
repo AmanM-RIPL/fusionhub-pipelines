@@ -244,6 +244,28 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         m_view->SetSelectionCoordinates(m_pickX, m_pickY);
     }
 
+    // transfer new middle point value safely
+    if (meshInitialized && projectionMatrixInitialized && glItem->m_middlePointValue > 0)
+    {
+        Point screenPoint = {m_pickX, m_pickY};
+        Point newPoint = GeometryServiceFactory::updatePoint2D(glItem->editableBimElement, glItem->m_middlePointValue, screenPoint, m_view);
+
+        qInfo() << "New Point: " << newPoint[0] << ", " << newPoint[1];
+
+        // m_pickX = newPoint[0];
+        // m_pickY = newPoint[1];
+
+        // m_view->SetSelectionCoordinates(m_pickX, m_pickY);
+
+        // reset the stored GUI-side coords so we don't re-process
+        glItem->m_lastClickX = -1;
+        glItem->m_lastClickY = -1;
+        glItem->m_lastHoverX = -1;
+        glItem->m_lastHoverY = -1;
+
+        m_hoverRequested = true;
+        m_pickedBimElementId = -1;
+    }
 
     // by default m_pickedBimElementId will be a negative number
     // zero means no clicked id found, and negative means click
@@ -1156,5 +1178,11 @@ void MyGLItem::saveEditableBimElement()
 
     // bimElement is created in the controller and its lifecycle is handled by the controller
     editableBimElement = nullptr;
+    update();
+}
+
+void MyGLItem::updateMiddlePointValue(float value)
+{
+    m_middlePointValue = value;
     update();
 }

@@ -110,6 +110,7 @@ public:
     int m_lastClickY = -1;
     int m_lastHoverX = -1;
     int m_lastHoverY = -1;
+    float m_middlePointValue = -1; // only value above 0 are acceptable
     Mesh* mesh = nullptr;
     IFCDetailController* pIfcDetailController;
     IfcGeometryService* pIfcGeometryService;
@@ -146,6 +147,8 @@ public slots:
     Mesh* getMeshptr();
     void updateEditableBimElement(QVariant bimElement);
     void saveEditableBimElement();
+
+    void updateMiddlePointValue(float value);
 
 private:
     bool render_update_allowed = true;

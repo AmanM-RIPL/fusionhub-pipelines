@@ -121,3 +121,16 @@ Point GeometryServiceFactory::generateWIPMesh2D(BIMElement *bimElement, Mesh *me
 
     return {0.0f, 0.0f};
 }
+
+Point GeometryServiceFactory::updatePoint2D(BIMElement *bimElement, const float &value, const Point &screen_point, View *view)
+{
+    if (bimElement->getType() == "Wall")
+    {
+        WallGeometryService service = WallGeometryService();
+        Point new_point = service.updatePoint2D(bimElement, value, screen_point, view);
+
+        return new_point;
+    }
+
+    return {0.0f, 0.0f};
+}

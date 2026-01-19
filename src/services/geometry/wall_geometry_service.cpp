@@ -505,3 +505,27 @@ Point WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh
 
     return middle_point;
 }
+
+Point WallGeometryService::updatePoint2D(BIMElement *wallElement, const float &value, const Point &screen_point, View *view)
+{
+    std::vector<std::vector<Point>> polygon;
+    std::vector<Point> referenceLine = {};
+    float width = 0;
+    float height = 0;
+    float distance = 0;
+
+    m_openglHelper.extractBIMParameters(wallElement, referenceLine, width, height, distance);
+
+    // last point of referenceLine
+    Point lastPointReferenceLine = referenceLine.back();
+
+    QVector3D screenPointInViewSpace = view->GetPointInViewSpace(screen_point[0], screen_point[1]);
+    Point screenPointInViewSpace2D = {screenPointInViewSpace[0], screenPointInViewSpace[1]};
+
+    Point newPointViewSpace = m_openglHelper.getPointAtDistance(lastPointReferenceLine, screenPointInViewSpace2D, value);
+    QVector3D newPoint(newPointViewSpace[0], newPointViewSpace[1], 0.0f);
+
+    Point newPointScreenSpace = view->GetPointInScreenSpace(newPoint);
+
+    return newPointScreenSpace;
+}

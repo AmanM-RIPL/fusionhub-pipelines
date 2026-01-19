@@ -250,6 +250,22 @@ Point OpenglHelper::getMiddlePoint(Point point1, Point point2)
     return middle_point;
 }
 
+Point OpenglHelper::getPointAtDistance(Point point1, Point point2, float distance)
+{
+    float x_proj = point2[0] - point1[0];
+    float y_proj = point2[1] - point1[1];
+
+    float length = qSqrt(qPow(x_proj, 2) + qPow(y_proj, 2));
+    float length_distance_ratio = distance / length;
+
+    Point new_point = {
+        ((point2[0] - point1[0]) * length_distance_ratio) + point1[0],
+        ((point2[1] - point1[1]) * length_distance_ratio) + point1[1]
+    };
+
+    return new_point;
+}
+
 void OpenglHelper::getMeshGeometry(
     const FacetModeler::Body& body,
     std::vector<Position>& vertices_position,

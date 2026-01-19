@@ -1420,6 +1420,8 @@ Row {
                     glscene.cameraPanRight();
                 } else if (event.key === Qt.Key_Return) {
                     glscene.saveEditableBimElement();
+                } else if (event.key === Qt.Key_Shift) {
+                    middlePointTextField.focus = true;
                 }
             }
         }
@@ -1459,8 +1461,12 @@ Row {
             }
             else
             {
-                middlePointRectangle.x = x + glscene.x;
-                middlePointRectangle.y = y + glscene.y;
+                // absolute position relative to plannedBIMRoot
+                // so x has to be incremented, but not y
+                const absolutePos = glscene.mapToItem(null, 0, 0);
+
+                middlePointRectangle.x = x + absolutePos.x;
+                middlePointRectangle.y = y;
                 middlePointRectangle.visible = true;
             }
         }
@@ -1471,9 +1477,26 @@ Row {
         width: 100
         height: 20
         visible: false
+        border.width: 2
+        border.color: "black"
 
-        Text {
-            text: qsTr("Length: ")
+        Row {
+            width: parent.width
+
+            Text {
+                text: qsTr("Length: ")
+            }
+
+            TextField {
+                id: middlePointTextField
+
+                Keys.onPressed: function (event) {
+                    if (event.key === Qt.Key_Shift)
+                    {
+                        glscene.updateMiddlePointValue(parseFloat(middlePointTextField.text));
+                    }
+                }
+            }
         }
     }
 

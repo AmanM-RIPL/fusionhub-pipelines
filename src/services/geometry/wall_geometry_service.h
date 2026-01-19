@@ -18,6 +18,7 @@ public:
     void generateMesh3D(BIMElement *wallElement, Mesh* mesh);
     void updateGeometry(BIMElement* wallElement, const QVector3D &point);
     Point generateWIPMesh2D(BIMElement* wallElement, Mesh* mesh, const QVector3D &point, const Point& screen_point, View *view);
+    Point updatePoint2D(BIMElement* wallElement, const float& value, const Point& screen_point, View *view); // value comes from m_middlePointValue
 
 
 signals:
