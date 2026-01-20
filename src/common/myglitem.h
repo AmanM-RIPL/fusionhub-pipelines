@@ -110,7 +110,10 @@ public:
     int m_lastClickY = -1;
     int m_lastHoverX = -1;
     int m_lastHoverY = -1;
+    int m_glsceneX = -1;
+    int m_glsceneY = -1;
     float m_middlePointValue = -1; // only value above 0 are acceptable
+    bool m_middlePointValueUpdated = false;
     Mesh* mesh = nullptr;
     IFCDetailController* pIfcDetailController;
     IfcGeometryService* pIfcGeometryService;
@@ -137,7 +140,8 @@ public slots:
     void updateView(QString viewType);
 
     void requestPick(int x, int y);
-    void requestHover(int x, int y);
+    void requestHover(int x, int y, int glsceneX, int glsceneY);
+    void updateMousePosition(int x, int y);
 
     void handlePick(int id);
     void viewIfc();
@@ -155,7 +159,7 @@ private:
 
 signals:
     void selectionChanged(int id);
-    void middlePointPositionChanged(float x, float y);
+    void middlePointPositionChanged(float x, float y, float length);
 };
 
 class MyGLRenderer : public QQuickFramebufferObject::Renderer, protected QOpenGLFunctions_3_3_Core
@@ -182,6 +186,7 @@ private:
 
     bool meshInitialized = false;
     bool projectionMatrixInitialized = false;
+    bool middlePointRecorded = false;
 
     QList<Mesh*> m_meshList;
     Mesh* editableMesh = nullptr;

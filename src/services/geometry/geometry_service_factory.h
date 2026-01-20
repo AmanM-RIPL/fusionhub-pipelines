@@ -25,7 +25,7 @@ public:
     static void generateMesh2D(BIMElement* bimElement, Mesh* mesh);
     static void generateMesh3D(BIMElement* bimElement, Mesh* mesh, IFCDetailController* pIfcDetailController, IfcGeometryService* pIfcGeometryService);
     static void updateGeometry(const QVector3D& point, BIMElement* bimElement, BIMElement* hostElement = nullptr);
-    static Point generateWIPMesh2D(BIMElement* bimElement, Mesh* mesh, const QVector3D &point, const Point& screen_point, View *view);
+    static Point generateWIPMesh2D(BIMElement* bimElement, Mesh* mesh, const QVector3D &point, const Point& screen_point, View *view, float &length);
     static Point updatePoint2D(BIMElement* bimElement, const float& value, const Point& screen_point, View *view);
 
 signals:

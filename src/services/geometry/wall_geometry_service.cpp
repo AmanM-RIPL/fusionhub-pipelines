@@ -308,7 +308,7 @@ void WallGeometryService::updateGeometry(BIMElement *wallElement, const QVector3
     }
 }
 
-Point WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view)
+Point WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view, float &length)
 {
     std::vector<std::vector<Point>> polygon;
     std::vector<Point> referenceLine = {};
@@ -341,6 +341,8 @@ Point WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh
     QVector3D wcs_point2 = view->GetPointInViewSpace(new_point2[0], new_point2[1]);
     QVector3D wcs_point3 = view->GetPointInViewSpace(new_point3[0], new_point3[1]);
     QVector3D wcs_point4 = view->GetPointInViewSpace(new_point4[0], new_point4[1]);
+
+    length = m_openglHelper.getDistanceBetweenPoints(lastPointReferenceLine, {point[0], point[1]});
 
     // qInfo() << "Last Point: " << lastPointScreenSpace[0] << ", " << lastPointScreenSpace[1];
     // qInfo() << "Middle Point: " << middlePointScreenSpace[0] << ", " << middlePointScreenSpace[1];

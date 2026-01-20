@@ -1396,7 +1396,9 @@ Row {
                 onPositionChanged: function(mouse) {
                     // glscene.mousePositionChanged(mouse.x, mouse.y);
                     // mouse.accepted = true;
-                    glscene.requestHover(mouse.x, mouse.y);
+                    var screenPos = glscene.mapToGlobal(0, 0);
+
+                    glscene.requestHover(mouse.x, mouse.y, screenPos.x, screenPos.y);
                 }
             }
 
@@ -1453,7 +1455,7 @@ Row {
     // Rectangle for length of wall
     Connections {
         target: glscene
-        onMiddlePointPositionChanged: function(x, y) {
+        onMiddlePointPositionChanged: function(x, y, length) {
 
             if (x === -1 && y === -1)
             {
@@ -1468,27 +1470,39 @@ Row {
                 middlePointRectangle.x = x + absolutePos.x;
                 middlePointRectangle.y = y;
                 middlePointRectangle.visible = true;
+
+                middlePointTextField.text = length.toFixed(2);
             }
         }
     }
 
     Rectangle {
         id: middlePointRectangle
-        width: 100
-        height: 20
+        width: 150
+        height: 27
         visible: false
         border.width: 2
         border.color: "black"
 
         Row {
-            width: parent.width
+            // width: parent.width
+            anchors.fill: parent
+            anchors.margins: 2
 
             Text {
                 text: qsTr("Length: ")
+                verticalAlignment: Text.AlignVCenter
+                width: parent.width * 0.70
+                height: parent.height
             }
 
             TextField {
                 id: middlePointTextField
+                width: parent.width * 0.30
+
+                background: Rectangle {
+                    border.width: 0
+                }
 
                 Keys.onPressed: function (event) {
                     if (event.key === Qt.Key_Shift)

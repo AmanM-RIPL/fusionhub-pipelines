@@ -73,7 +73,9 @@ public:
 
     Point getMiddlePoint(Point point1, Point point2);
 
-    Point getPointAtDistance(Point point1, Point point2, float distance);
+    Point getPointAtDistance(Point point1, Point point2, float distance); // parallel to the two points
+
+    float getDistanceBetweenPoints(Point point1, Point point2);
 
     /*
     void getMeshGeometry(const FacetModeler::Body& body, OdGePoint3dArray& pointArray, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, OdGeVector3dArray& normalArray);

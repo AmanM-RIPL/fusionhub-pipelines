@@ -266,6 +266,16 @@ Point OpenglHelper::getPointAtDistance(Point point1, Point point2, float distanc
     return new_point;
 }
 
+float OpenglHelper::getDistanceBetweenPoints(Point point1, Point point2)
+{
+    float x_proj = point2[0] - point1[0];
+    float y_proj = point2[1] - point1[1];
+
+    float length = qSqrt(qPow(x_proj, 2) + qPow(y_proj, 2));
+
+    return length;
+}
+
 void OpenglHelper::getMeshGeometry(
     const FacetModeler::Body& body,
     std::vector<Position>& vertices_position,

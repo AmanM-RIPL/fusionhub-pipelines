@@ -245,23 +245,23 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
     }
 
     // transfer new middle point value safely
-    if (meshInitialized && projectionMatrixInitialized && glItem->m_middlePointValue > 0)
+    if (meshInitialized && projectionMatrixInitialized && glItem->m_middlePointValue > 0 && glItem->m_middlePointValueUpdated)
     {
         Point screenPoint = {m_pickX, m_pickY};
         Point newPoint = GeometryServiceFactory::updatePoint2D(glItem->editableBimElement, glItem->m_middlePointValue, screenPoint, m_view);
 
-        qInfo() << "New Point: " << newPoint[0] << ", " << newPoint[1];
+        m_pickX = newPoint[0];
+        m_pickY = newPoint[1];
 
-        // m_pickX = newPoint[0];
-        // m_pickY = newPoint[1];
-
-        // m_view->SetSelectionCoordinates(m_pickX, m_pickY);
+        m_view->SetSelectionCoordinates(m_pickX, m_pickY);
+        glItem->updateMousePosition(m_pickX, m_pickY);
 
         // reset the stored GUI-side coords so we don't re-process
         glItem->m_lastClickX = -1;
         glItem->m_lastClickY = -1;
         glItem->m_lastHoverX = -1;
         glItem->m_lastHoverY = -1;
+        glItem->m_middlePointValueUpdated = false;
 
         m_hoverRequested = true;
         m_pickedBimElementId = -1;
@@ -376,8 +376,9 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
             {
                 // qInfo() << "PickPoint: " << m_pickX << ", " << m_pickY;
                 Point screenPoint = {m_pickX, m_pickY};
-                Point middlePoint = GeometryServiceFactory::generateWIPMesh2D(glItem->editableBimElement, mesh, clickedPoint, screenPoint, m_view);
-                glItem->middlePointPositionChanged(middlePoint[0], middlePoint[1]); // signal to QML
+                float length = 0.0f;
+                Point middlePoint = GeometryServiceFactory::generateWIPMesh2D(glItem->editableBimElement, mesh, clickedPoint, screenPoint, m_view, length);
+                glItem->middlePointPositionChanged(middlePoint[0], middlePoint[1], length); // signal to QML
             }
 
 
@@ -1105,10 +1106,13 @@ void MyGLItem::requestPick(int x, int y) {
     update();
 }
 
-void MyGLItem::requestHover(int x, int y)
+void MyGLItem::requestHover(int x, int y, int glsceneX, int glsceneY)
 {
     if ((editableBimElement != nullptr) && (render_update_allowed == true))
     {
+        m_glsceneX = glsceneX;
+        m_glsceneY = glsceneY;
+
         render_update_allowed = false;
 
         QTimer::singleShot(50, this, [this]() {
@@ -1119,6 +1123,11 @@ void MyGLItem::requestHover(int x, int y)
         m_lastHoverY = y;
         update();
     }
+}
+
+void MyGLItem::updateMousePosition(int x, int y)
+{
+    QCursor::setPos(m_glsceneX + x, m_glsceneY + y);
 }
 
 void MyGLItem::handlePick(int id) {
@@ -1161,7 +1170,7 @@ void MyGLItem::saveEditableBimElement()
     bimElementList.append(editableBimElement);
 
     // send signal to QML to stop showing helper points
-    middlePointPositionChanged(-1,-1);
+    middlePointPositionChanged(-1,-1, 0.0f);
 
     // add editableBimElement to as the child of host element
     if (editableBimElement->getHostId() > 0)
@@ -1184,5 +1193,6 @@ void MyGLItem::saveEditableBimElement()
 void MyGLItem::updateMiddlePointValue(float value)
 {
     m_middlePointValue = value;
+    m_middlePointValueUpdated = true;
     update();
 }
