@@ -276,6 +276,56 @@ float OpenglHelper::getDistanceBetweenPoints(Point point1, Point point2)
     return length;
 }
 
+float OpenglHelper::getAngleBetweenPoints(Point point1, Point point2, Point point3)
+{
+    // first vector;
+    float x_proj1 = point2[0] - point1[0];
+    float y_proj1 = point2[1] - point1[1];
+
+    float length1 = qSqrt(qPow(x_proj1, 2) + qPow(y_proj1, 2));
+    float x_proj1_unit = x_proj1/length1;
+    float y_proj1_unit = y_proj1/length1;
+
+
+    // second vector
+    float x_proj2 = point3[0] - point2[0];
+    float y_proj2 = point3[1] - point2[1];
+
+    float length2 = qSqrt(qPow(x_proj2, 2) + qPow(y_proj2, 2));
+    float x_proj2_unit = x_proj2/length2;
+    float y_proj2_unit = y_proj2/length2;
+
+    // dot product
+    float dot_product = (x_proj1_unit * x_proj2_unit) + (y_proj1_unit * y_proj2_unit);
+    float angle_radians = qAcos(dot_product);
+    float angle_degrees = qRadiansToDegrees(angle_radians);
+
+    return angle_degrees;
+}
+
+Point OpenglHelper::getPointAtDistanceAngle(Point point1, Point point2, float angle, float distance)
+{
+    // angle in radians
+    float angle_radians = qDegreesToRadians(angle);
+
+    // first vector;
+    float x_proj1 = point2[0] - point1[0];
+    float y_proj1 = point2[1] - point1[1];
+
+    float length1 = qSqrt(qPow(x_proj1, 2) + qPow(y_proj1, 2));
+    float x_proj1_unit = x_proj1/length1;
+    float y_proj1_unit = y_proj1/length1;
+
+    // rotated unit vector
+    float x_proj_rotated_unit = (x_proj1_unit * qCos(angle_radians)) - (y_proj1_unit * qSin(angle_radians));
+    float y_proj_rotated_unit = (x_proj1_unit * qSin(angle_radians)) + (y_proj1_unit * qCos(angle_radians));
+
+    return {
+        x_proj_rotated_unit * distance,
+        y_proj_rotated_unit * distance
+    };
+}
+
 void OpenglHelper::getMeshGeometry(
     const FacetModeler::Body& body,
     std::vector<Position>& vertices_position,

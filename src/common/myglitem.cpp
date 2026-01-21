@@ -158,7 +158,6 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 {
     glItem = static_cast<MyGLItem*>(item);
 
-
     // Orbit only works in 3D mode and not in 2D
     if (glItem->m_moveUp && glItem->m_viewType == "ModelView") {
         m_camera->OrbitVertical(true);
@@ -245,7 +244,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
     }
 
     // transfer new middle point value safely
-    if (meshInitialized && projectionMatrixInitialized && glItem->m_middlePointValue > 0 && glItem->m_middlePointValueUpdated)
+    if (meshInitialized && projectionMatrixInitialized && glItem->m_middlePointValueUpdated)
     {
         Point screenPoint = {m_pickX, m_pickY};
         Point newPoint = GeometryServiceFactory::updatePoint2D(glItem->editableBimElement, glItem->m_middlePointValue, screenPoint, m_view);
@@ -376,9 +375,8 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
             {
                 // qInfo() << "PickPoint: " << m_pickX << ", " << m_pickY;
                 Point screenPoint = {m_pickX, m_pickY};
-                float length = 0.0f;
-                Point middlePoint = GeometryServiceFactory::generateWIPMesh2D(glItem->editableBimElement, mesh, clickedPoint, screenPoint, m_view, length);
-                glItem->middlePointPositionChanged(middlePoint[0], middlePoint[1], length); // signal to QML
+                GeometryServiceFactory::generateWIPMesh2D(glItem->editableBimElement, mesh, clickedPoint, screenPoint, m_view, glItem->m_middlePointValue);
+                glItem->middlePointPositionChanged(); // signal to QML
             }
 
 
@@ -1163,6 +1161,8 @@ void MyGLItem::viewIfc()
 void MyGLItem::updateEditableBimElement(QVariant bimElement)
 {
     editableBimElement = bimElement.value<BIMElement*>();
+
+    GeometryServiceFactory::generateHelperPoints(editableBimElement, m_middlePointValue);
 }
 
 void MyGLItem::saveEditableBimElement()
@@ -1170,7 +1170,8 @@ void MyGLItem::saveEditableBimElement()
     bimElementList.append(editableBimElement);
 
     // send signal to QML to stop showing helper points
-    middlePointPositionChanged(-1,-1, 0.0f);
+    m_middlePointValue.clear();
+    middlePointPositionChanged();
 
     // add editableBimElement to as the child of host element
     if (editableBimElement->getHostId() > 0)
@@ -1190,9 +1191,14 @@ void MyGLItem::saveEditableBimElement()
     update();
 }
 
-void MyGLItem::updateMiddlePointValue(float value)
+void MyGLItem::updateMiddlePointValue(float value, int index)
 {
-    m_middlePointValue = value;
+    m_middlePointValue[index].value = value;
     m_middlePointValueUpdated = true;
     update();
+}
+
+QList<HelperPoint> MyGLItem::getMiddlePointValue()
+{
+    return m_middlePointValue;
 }

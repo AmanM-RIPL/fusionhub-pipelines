@@ -77,6 +77,10 @@ public:
 
     float getDistanceBetweenPoints(Point point1, Point point2);
 
+    float getAngleBetweenPoints(Point point1, Point point2, Point point3);
+
+    Point getPointAtDistanceAngle(Point point1, Point point2, float angle, float distance); // angle in degrees and counter-clockwise
+
     /*
     void getMeshGeometry(const FacetModeler::Body& body, OdGePoint3dArray& pointArray, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, OdGeVector3dArray& normalArray);
 

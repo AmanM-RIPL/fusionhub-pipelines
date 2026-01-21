@@ -62,6 +62,7 @@
 #include "common/opengl/classes/view.h"
 #include "common/opengl/classes/opengl_material.h"
 #include "common/opengl/classes/texture.h"
+#include "common/helper_point.h"
 // #include "controllers/bim_element_controller.h"
 #include "models/bim_element.h"
 #include "models/bim_parameter.h"
@@ -112,7 +113,7 @@ public:
     int m_lastHoverY = -1;
     int m_glsceneX = -1;
     int m_glsceneY = -1;
-    float m_middlePointValue = -1; // only value above 0 are acceptable
+    QList<HelperPoint> m_middlePointValue;
     bool m_middlePointValueUpdated = false;
     Mesh* mesh = nullptr;
     IFCDetailController* pIfcDetailController;
@@ -152,14 +153,15 @@ public slots:
     void updateEditableBimElement(QVariant bimElement);
     void saveEditableBimElement();
 
-    void updateMiddlePointValue(float value);
+    void updateMiddlePointValue(float value, int index);
+    QList<HelperPoint> getMiddlePointValue();
 
 private:
     bool render_update_allowed = true;
 
 signals:
     void selectionChanged(int id);
-    void middlePointPositionChanged(float x, float y, float length);
+    void middlePointPositionChanged();
 };
 
 class MyGLRenderer : public QQuickFramebufferObject::Renderer, protected QOpenGLFunctions_3_3_Core

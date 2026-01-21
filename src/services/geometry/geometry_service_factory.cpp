@@ -109,28 +109,33 @@ void GeometryServiceFactory::updateGeometry(const QVector3D& point, BIMElement* 
     }
 }
 
-Point GeometryServiceFactory::generateWIPMesh2D(BIMElement *bimElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view, float &length)
+void GeometryServiceFactory::generateWIPMesh2D(BIMElement *bimElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints)
 {
     if (bimElement->getType() == "Wall")
     {
         WallGeometryService service = WallGeometryService();
-        Point middle_point = service.generateWIPMesh2D(bimElement, mesh, point, screen_point, view, length);
-
-        return middle_point;
+        service.generateWIPMesh2D(bimElement, mesh, point, screen_point, view, helperPoints);
     }
-
-    return {0.0f, 0.0f};
 }
 
-Point GeometryServiceFactory::updatePoint2D(BIMElement *bimElement, const float &value, const Point &screen_point, View *view)
+Point GeometryServiceFactory::updatePoint2D(BIMElement *bimElement, const QList<HelperPoint> &helperPoints, const Point &screen_point, View *view)
 {
     if (bimElement->getType() == "Wall")
     {
         WallGeometryService service = WallGeometryService();
-        Point new_point = service.updatePoint2D(bimElement, value, screen_point, view);
+        Point new_point = service.updatePoint2D(bimElement, helperPoints, screen_point, view);
 
         return new_point;
     }
 
     return {0.0f, 0.0f};
+}
+
+void GeometryServiceFactory::generateHelperPoints(BIMElement *bimElement, QList<HelperPoint> &helperPoints)
+{
+    if (bimElement->getType() == "Wall")
+    {
+        WallGeometryService service = WallGeometryService();
+        service.generateHelperPoints(bimElement, helperPoints);
+    }
 }

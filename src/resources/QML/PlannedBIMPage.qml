@@ -1,5 +1,5 @@
 import QtQuick 2.15
-import QtQuick.Controls
+import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import QtQuick
 import com.fh.models 1.0
@@ -21,6 +21,10 @@ Row {
     property int treeviewWidth: parent.width/2 - 20
     property int glsceneWidth: parent.width/2
     property bool glsceneVisible: false
+
+    property int glsceneAbsoluteX: 0
+    property int glsceneAbsoluteY: 0
+    property int helperPointIndexToFocus: -1
 
     //property int expandedIndex: -1
     property int wallExpandedIndex: -1
@@ -1423,7 +1427,11 @@ Row {
                 } else if (event.key === Qt.Key_Return) {
                     glscene.saveEditableBimElement();
                 } else if (event.key === Qt.Key_Shift) {
-                    middlePointTextField.focus = true;
+                    helperPointIndexToFocus = 0;
+                    const item = helperPointRepeater.itemAt(0);
+                    if (item && item.internalTextField) {
+                        item.internalTextField.focus = true;
+                    }
                 }
             }
         }
@@ -1455,59 +1463,81 @@ Row {
     // Rectangle for length of wall
     Connections {
         target: glscene
-        onMiddlePointPositionChanged: function(x, y, length) {
+        onMiddlePointPositionChanged: function() {
 
-            if (x === -1 && y === -1)
-            {
-                middlePointRectangle.visible = false;
+            const absolutePos = glscene.mapToItem(null, 0, 0);
+
+            glsceneAbsoluteX = absolutePos.x;
+            glsceneAbsoluteY = absolutePos.y;
+            const helperPointList = glscene.getMiddlePointValue();
+
+            helperPointModel.clear();
+
+            for (const helperPoint of helperPointList) {
+                helperPointModel.append({
+                    xPos: helperPoint.x,
+                    yPos: helperPoint.y,
+                    helperText: helperPoint.text,
+                    helperValue: helperPoint.value
+                });
             }
-            else
-            {
-                // absolute position relative to plannedBIMRoot
-                // so x has to be incremented, but not y
-                const absolutePos = glscene.mapToItem(null, 0, 0);
 
-                middlePointRectangle.x = x + absolutePos.x;
-                middlePointRectangle.y = y;
-                middlePointRectangle.visible = true;
-
-                middlePointTextField.text = length.toFixed(2);
+            helperPointIndexToFocus = helperPointIndexToFocus < helperPointList.length - 1 ? helperPointIndexToFocus + 1 : 0;
+            const item = helperPointRepeater.itemAt(helperPointIndexToFocus);
+            if (item && item.internalTextField) {
+                item.internalTextField.focus = true;
             }
         }
     }
 
-    Rectangle {
-        id: middlePointRectangle
-        width: 150
-        height: 27
-        visible: false
-        border.width: 2
-        border.color: "black"
+    ListModel {
+        id: helperPointModel
+    }
 
-        Row {
-            // width: parent.width
-            anchors.fill: parent
-            anchors.margins: 2
+    Item {
+        id: helperPointItem
 
-            Text {
-                text: qsTr("Length: ")
-                verticalAlignment: Text.AlignVCenter
-                width: parent.width * 0.70
-                height: parent.height
-            }
+        Repeater {
+            id: helperPointRepeater
+            model: helperPointModel
 
-            TextField {
-                id: middlePointTextField
-                width: parent.width * 0.30
+            delegate: Rectangle {
+                property alias internalTextField: helperPointTextField
+                x: glsceneAbsoluteX + xPos
+                y: yPos
+                visible: true
+                width: 150
+                height: 29
+                border.width: 2
+                border.color: "black"
 
-                background: Rectangle {
-                    border.width: 0
-                }
+                Row {
+                    anchors.fill: parent
+                    anchors.margins: 2
 
-                Keys.onPressed: function (event) {
-                    if (event.key === Qt.Key_Shift)
-                    {
-                        glscene.updateMiddlePointValue(parseFloat(middlePointTextField.text));
+                    Text {
+                        text: qsTr(helperText)
+                        verticalAlignment: Text.AlignVCenter
+                        width: parent.width * 0.70
+                        height: parent.height
+                    }
+
+                    TextField {
+                        id: helperPointTextField
+                        width: parent.width * 0.30
+                        height: 25
+                        text: helperValue.toFixed(2)
+
+                        background: Rectangle {
+                            border.width: 0
+                        }
+
+                        Keys.onPressed: function (event) {
+                            if (event.key === Qt.Key_Shift)
+                            {
+                                glscene.updateMiddlePointValue(parseFloat(text), index);
+                            }
+                        }
                     }
                 }
             }

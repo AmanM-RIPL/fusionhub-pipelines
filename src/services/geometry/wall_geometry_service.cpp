@@ -308,7 +308,7 @@ void WallGeometryService::updateGeometry(BIMElement *wallElement, const QVector3
     }
 }
 
-Point WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view, float &length)
+void WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints)
 {
     std::vector<std::vector<Point>> polygon;
     std::vector<Point> referenceLine = {};
@@ -318,11 +318,13 @@ Point WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh
 
     m_openglHelper.extractBIMParameters(wallElement, referenceLine, width, height, distance);
 
+    int referenceLineSize = referenceLine.size(); // we need this value for the angle drawing, check at the end
+
     // if reference line is only one point then we don't need to render
     if (referenceLine.size() < 1)
     {
         mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
-        return {0.0f, 0.0f};
+        return;
     }
 
     // last point of referenceLine
@@ -337,12 +339,15 @@ Point WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh
     Point new_point4 = m_openglHelper.getPointAtPerpendicularDistance(screen_point, lastPointScreenSpace, -4);
     Point middle_point = m_openglHelper.getPointAtPerpendicularDistance(middlePointScreenSpace, screen_point, 10);
 
+    helperPoints[0].x = middle_point[0];
+    helperPoints[0].y = middle_point[1];
+
     QVector3D wcs_point1 = view->GetPointInViewSpace(new_point1[0], new_point1[1]);
     QVector3D wcs_point2 = view->GetPointInViewSpace(new_point2[0], new_point2[1]);
     QVector3D wcs_point3 = view->GetPointInViewSpace(new_point3[0], new_point3[1]);
     QVector3D wcs_point4 = view->GetPointInViewSpace(new_point4[0], new_point4[1]);
 
-    length = m_openglHelper.getDistanceBetweenPoints(lastPointReferenceLine, {point[0], point[1]});
+    helperPoints[0].value = m_openglHelper.getDistanceBetweenPoints(lastPointReferenceLine, {point[0], point[1]});
 
     // qInfo() << "Last Point: " << lastPointScreenSpace[0] << ", " << lastPointScreenSpace[1];
     // qInfo() << "Middle Point: " << middlePointScreenSpace[0] << ", " << middlePointScreenSpace[1];
@@ -465,6 +470,75 @@ Point WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh
         edge_materialIndex.push_back(OpenGLMaterial::BLACK);
     }
 
+
+    ///////////////////////////////////////////
+    // Add angle and its helper points
+
+    // second last point of referenceLine
+    if (referenceLineSize >= 2)
+    {
+        Point secondLastPointReferenceLine = referenceLine[referenceLineSize - 2];
+        QVector3D secondLastPoint(secondLastPointReferenceLine[0], secondLastPointReferenceLine[1], 0.0f);
+        Point secondLastPointScreenSpace = view->GetPointInScreenSpace(secondLastPoint);
+
+        float angle_degrees = m_openglHelper.getAngleBetweenPoints(secondLastPointReferenceLine, lastPointReferenceLine, {point[0], point[1]});
+
+        Point angle_point1 = m_openglHelper.getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, angle_degrees/4, 20);
+        Point angle_point2 = m_openglHelper.getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, angle_degrees/2, 20);
+        Point angle_point3 = m_openglHelper.getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, 3*angle_degrees/4, 20);
+        Point angle_point4 = m_openglHelper.getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, angle_degrees, 20);
+
+        QVector3D wcs_angle_point1 = view->GetPointInViewSpace(angle_point1[0], angle_point1[1]);
+        QVector3D wcs_angle_point2 = view->GetPointInViewSpace(angle_point2[0], angle_point2[1]);
+        QVector3D wcs_angle_point3 = view->GetPointInViewSpace(angle_point3[0], angle_point3[1]);
+        QVector3D wcs_angle_point4 = view->GetPointInViewSpace(angle_point4[0], angle_point4[1]);
+
+
+        helperPoints[1].x = angle_point2[0];
+        helperPoints[1].y = angle_point2[1];
+        helperPoints[1].value = angle_degrees;
+
+
+        // Add the vertex and edges of helper lines
+        vertices_position.push_back({wcs_angle_point1[0], wcs_angle_point1[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
+
+        vertices_position.push_back({wcs_angle_point2[0], wcs_angle_point2[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
+
+        vertices_position.push_back({wcs_angle_point3[0], wcs_angle_point3[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
+
+        vertices_position.push_back({wcs_angle_point4[0], wcs_angle_point4[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
+
+
+        for (int i = 0; i < 3; i++)
+        {
+            // 4 is added to account for length helper point
+            int first_point = referenceLine.size() + 4 + i;
+            int second_point = referenceLine.size() + 4 + i + 1;
+            edge_indices.push_back({first_point, second_point });
+            edge_width.push_back(2.0f);
+            edge_dashLength.push_back(5.0f);
+            edge_gapLength.push_back(5.0f);
+            edge_dash.push_back(1);
+            edge_materialIndex.push_back(OpenGLMaterial::BLACK);
+        }
+    }
+
     // // Allocate memory for the new array using std::unique_ptr for safety.
     // auto indices_raw = std::make_unique<unsigned int[]>(indices.size());
 
@@ -504,11 +578,9 @@ Point WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh
     // }
 
     // return mesh;
-
-    return middle_point;
 }
 
-Point WallGeometryService::updatePoint2D(BIMElement *wallElement, const float &value, const Point &screen_point, View *view)
+Point WallGeometryService::updatePoint2D(BIMElement *wallElement, const QList<HelperPoint> &helperPoints, const Point &screen_point, View *view)
 {
     std::vector<std::vector<Point>> polygon;
     std::vector<Point> referenceLine = {};
@@ -524,10 +596,42 @@ Point WallGeometryService::updatePoint2D(BIMElement *wallElement, const float &v
     QVector3D screenPointInViewSpace = view->GetPointInViewSpace(screen_point[0], screen_point[1]);
     Point screenPointInViewSpace2D = {screenPointInViewSpace[0], screenPointInViewSpace[1]};
 
-    Point newPointViewSpace = m_openglHelper.getPointAtDistance(lastPointReferenceLine, screenPointInViewSpace2D, value);
+    Point newPointViewSpace = {0.0f, 0.0f};
+
+    if (referenceLine.size() < 2)
+    {
+        newPointViewSpace = m_openglHelper.getPointAtDistance(lastPointReferenceLine, screenPointInViewSpace2D, helperPoints[0].value);
+    }
+    else
+    {
+        Point secondLastPointReferenceLine = referenceLine[referenceLine.size() - 2];
+        newPointViewSpace = m_openglHelper.getPointAtDistanceAngle(secondLastPointReferenceLine, lastPointReferenceLine, helperPoints[1].value, helperPoints[0].value);
+    }
+
     QVector3D newPoint(newPointViewSpace[0], newPointViewSpace[1], 0.0f);
 
     Point newPointScreenSpace = view->GetPointInScreenSpace(newPoint);
 
     return newPointScreenSpace;
+}
+
+void WallGeometryService::generateHelperPoints(BIMElement *bimElement, QList<HelperPoint> &helperPoints)
+{
+    HelperPoint length;
+    HelperPoint angle;
+
+    length.x = 0.0f;
+    length.y = 0.0f;
+    length.text = "Length";
+    length.value = 0.0f;
+
+    angle.x = 0.0f;
+    angle.y = 0.0f;
+    angle.text = "Angle";
+    angle.value = 0.0f;
+
+    helperPoints.clear();
+
+    helperPoints.append(length);
+    helperPoints.append(angle);
 }
