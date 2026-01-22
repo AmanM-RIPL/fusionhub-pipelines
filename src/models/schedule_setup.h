@@ -68,7 +68,7 @@ class ScheduleSetup: public QObject
     Q_PROPERTY(int id READ getId CONSTANT)
     Q_PROPERTY(bool approvalStatus READ getApprovalStatus WRITE setApprovalStatus NOTIFY approvalStatusChanged)
     Q_PROPERTY(QString globalId READ getGlobalId WRITE setGlobalId NOTIFY globalIdChanged)
-    Q_PROPERTY(QString scheduleName READ getScheduleName WRITE setScheduleName NOTIFY scheduleNameChanged)
+    Q_PROPERTY(QString scheduleSetupName READ getScheduleSetupName WRITE setScheduleSetupName NOTIFY scheduleSetupNameChanged)
     Q_PROPERTY(QString description READ getDescription WRITE setDescription NOTIFY descriptionChanged)
     Q_PROPERTY(QString costParameter READ getCostParameter WRITE setCostParameter NOTIFY costParameterChanged)
     Q_PROPERTY(QString resourceParameter READ getResourceParameter WRITE setResourceParameter NOTIFY resourceParameterChanged)
@@ -82,7 +82,7 @@ public:
     int getId() const { return id; }
     QString getGlobalId() const { return globalId; }
     bool getApprovalStatus() const { return approvalStatus; }
-    QString getScheduleName() const { return scheduleName; }
+    QString getScheduleSetupName() const { return scheduleSetupName; }
     QString getDescription() const { return description; }
     QString getCostParameter() const { return costParameter; }
     QString getResourceParameter() const { return resourceParameter; }
@@ -93,7 +93,7 @@ public:
     void setId(int id) { this->id = id; }
     void setGlobalId(const QString& globalId) { this->globalId = globalId; }
     void setApprovalStatus(bool status) { this->approvalStatus = status; }
-    void setScheduleName(const QString& scheduleName) { this->scheduleName = scheduleName; }
+    void setScheduleSetupName(const QString& scheduleSetupName) { this->scheduleSetupName = scheduleSetupName; }
     void setDescription(const QString& description) { this->description = description; }
     void setCostParameter(const QString& costParameter) { this->costParameter = costParameter; }
     void setResourceParameter(const QString& resourceParameter) { this->resourceParameter = resourceParameter; }
@@ -129,7 +129,7 @@ public:
 signals:
     void globalIdChanged();
     void approvalStatusChanged();
-    void scheduleNameChanged();
+    void scheduleSetupNameChanged();
     void descriptionChanged();
     void costParameterChanged();
     void resourceParameterChanged();
@@ -141,7 +141,7 @@ private:
     int id = 0;
     QString globalId;
     bool approvalStatus = true;
-    QString scheduleName;
+    QString scheduleSetupName;
     QString description;
     QString costParameter;
     QString resourceParameter;

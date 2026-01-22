@@ -151,7 +151,7 @@ Column {
                 height: 22
 
                 model: scheduleSetupList
-                textRole: "scheduleName"
+                textRole: "scheduleSetupName"
                 currentIndex: 0
 
                 onCurrentIndexChanged: {

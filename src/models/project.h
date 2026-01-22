@@ -22,6 +22,8 @@ class Project: public QObject
      Q_PROPERTY(QString totalDollarValue READ getTotalDollarValue  WRITE setTotalDollarValue NOTIFY TotalDollarValueChanged)
      Q_PROPERTY(QString description READ getDescription  WRITE setDescription NOTIFY DescriptionChanged)
      Q_PROPERTY(bool isBlocked READ getIsBlocked  WRITE setIsBlocked NOTIFY IsBlockedChanged)
+     //Q_PROPERTY(QString lastSyncedOn READ getLastSyncedOn  WRITE setLastSyncedOn NOTIFY lastSyncedOnChanged)
+     Q_PROPERTY(int lastSyncedOn READ getLastSyncedOn  WRITE setLastSyncedOn NOTIFY lastSyncedOnChanged)
 
 
 public:
@@ -30,7 +32,7 @@ public:
 
     Project(int id, const QString& globalId, bool approvalStatus,
          const QString& projectName, const QString& customerName, const QString& contactName, const QString& phoneNumber,
-            const QString& emailId, const QString& totalDollarValue, const QString& description, bool isBlocked, QObject* parent = nullptr);
+            const QString& emailId, const QString& totalDollarValue, const QString& description, bool isBlocked, int lastSyncedOn,  QObject* parent = nullptr);
 
     int getId() const { return id; }
     QString getGlobalId() const { return globalId; }
@@ -43,6 +45,7 @@ public:
     QString getTotalDollarValue() const{return totalDollarValue;}
     QString getDescription() const { return description; }
     bool getIsBlocked() const { return isBlocked; }
+    int getLastSyncedOn() const { return lastSyncedOn; }
 
 
     void setId(int id) { this->id = id; }
@@ -55,7 +58,8 @@ public:
     void setEmailId(const QString& emailId) { this->emailId = emailId; }
     void setTotalDollarValue(const QString& totalDollarValue) { this->totalDollarValue = totalDollarValue; }
     void setDescription(const QString& description) { this->description = description; }
-    void setIsBlocked(const bool isBlocked) { this->isBlocked = isBlocked; }
+    void setIsBlocked(const bool isBlocked) { this->isBlocked = isBlocked; }    
+    void setLastSyncedOn(const int lastSyncedOn) { this->lastSyncedOn = lastSyncedOn; }
 
     signals:
     void ProjectNameChanged();
@@ -66,6 +70,7 @@ public:
     void TotalDollarValueChanged();
     void DescriptionChanged();
     void IsBlockedChanged();
+    void lastSyncedOnChanged();
 
 private:
     int id = 0;
@@ -79,6 +84,7 @@ private:
     QString totalDollarValue;
     QString description;
     bool isBlocked = false;
+    int lastSyncedOn;
 };
 Q_DECLARE_METATYPE(Project)
 

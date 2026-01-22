@@ -37,7 +37,7 @@ BillOfQuantity* BillOfQuantityRepository::mapFromQueryQML(const QSqlQuery& query
     billOfQuantity->setGlobalId(query.value("global_id").toString());
     billOfQuantity->setApprovalStatus(query.value("approval_status").toBool());
     billOfQuantity->setDescription(query.value("description").toString());
-    billOfQuantity->setScheduleId(query.value("schedule_id").toInt());
+    billOfQuantity->setScheduleOfRatesId(query.value("schedule_of_rates_id").toInt());
 
     return billOfQuantity;
 }
@@ -45,13 +45,13 @@ void BillOfQuantityRepository::bindEntityToQuery(QSqlQuery& query, const BillOfQ
     query.addBindValue(entity.getGlobalId());
     query.addBindValue(entity.getApprovalStatus());
     query.addBindValue(entity.getDescription());
-    query.addBindValue(entity.getScheduleId());
+    query.addBindValue(entity.getScheduleOfRatesId());
 }
 QString BillOfQuantityRepository::getInsertQuery() const {
     return "INSERT INTO BillOfQuantity (global_id, approval_status, description, "
-           "schedule_id) "
+           "schedule_of_rates_id) "
            "VALUES (?, ?, ?, ?)";
 }
 QString BillOfQuantityRepository::getUpdateQuery() const {
-    return "UPDATE BillOfQuantity SET global_id = ?, approval_status = ?, description = ? , schedule_id = ? WHERE id = ?";
+    return "UPDATE BillOfQuantity SET global_id = ?, approval_status = ?, description = ? , schedule_of_rates_id = ? WHERE id = ?";
 }

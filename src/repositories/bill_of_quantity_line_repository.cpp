@@ -45,15 +45,15 @@ void BillOfQuantityLineRepository::bindEntityToQuery(QSqlQuery& query, const Bil
     query.addBindValue(entity.getGlobalId());
     query.addBindValue(entity.getApprovalStatus());
     query.addBindValue(entity.getBillOfQuantityLineName());
-    query.addBindValue(entity.getTaskId());
+    query.addBindValue(entity.getBimElementId());
     query.addBindValue(entity.getBillOfQuantityId());
 }
 QString BillOfQuantityLineRepository::getInsertQuery() const {
     return "INSERT INTO BillOfQuantityLine (global_id, approval_status, description , "
-    "task_id, bill_of_quantity_id) "
+    "bim_element_id, bill_of_quantity_id) "
            "VALUES (?, ?, ?, ?, ?)";
 }
 QString BillOfQuantityLineRepository::getUpdateQuery() const {
     return "UPDATE BillOfQuantityLine SET global_id = ?, approval_status = ?, description = ?, "
-           "bill_of_quantity = ?, task_id = ? WHERE id = ?";
+           "bill_of_quantity = ?, bim_element_id = ? WHERE id = ?";
 }

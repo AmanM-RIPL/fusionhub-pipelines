@@ -34,6 +34,84 @@ bool ProjectRepository::save(const Project& entity)
     createJsonFileAndAppendJsonObject(filePath, entity);
 }
 
+int ProjectRepository::getLastSyncedOn(int projectId)
+{
+     int lastSyncedOn = 0;
+
+    QDir dir;
+    if (!dir.mkpath(gEnvironmentPath)) {
+        qDebug() << "Failed to update lastSyncedOn in project folder:" << gEnvironmentPath;
+        return false;
+    }
+    QString filePath = gEnvironmentPath + "\\" + "main.json";
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Failed to open file:" << file.errorString();
+        return 0;
+    }
+
+    QByteArray rawData = file.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(rawData);
+
+    if (!doc.isArray()) {
+        qDebug() << "JSON is not an array!";
+        file.close();
+        return 0;
+    }
+    QJsonArray jsonArray = doc.array();
+    for (int i = 0; i < jsonArray.size(); ++i) {
+        QJsonObject rootObj = jsonArray[i].toObject();
+        if (rootObj["id"].toInt() == projectId) {
+            lastSyncedOn = rootObj["lastSyncedOn"].toInt();
+            break;
+        }
+    }
+
+    file.close();
+
+     return lastSyncedOn;
+}
+
+void ProjectRepository::updateLastSyncedOn(int projectId, int lastSynced)
+{
+    QDir dir;
+    if (!dir.mkpath(gEnvironmentPath)) {
+        qDebug() << "Failed to update lastSyncedOn in project folder:" << gEnvironmentPath;
+        return;
+    }
+    QString filePath = gEnvironmentPath + "\\" + "main.json";
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadWrite | QIODevice::Text)) {
+        qDebug() << "Failed to open file:" << file.errorString();
+        return;
+    }
+
+    QByteArray rawData = file.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(rawData);
+
+    if (!doc.isArray()) {
+        qDebug() << "JSON is not an array!";
+        file.close();
+        return;
+    }
+    QJsonArray jsonArray = doc.array();
+    for (int i = 0; i < jsonArray.size(); ++i) {
+        QJsonObject rootObj = jsonArray[i].toObject();
+        if (rootObj["id"].toInt() == projectId) {
+            rootObj["lastSyncedOn"] = lastSynced;
+            jsonArray.replace(i, rootObj);
+            break;
+        }
+    }
+
+    file.resize(0);
+    file.write(QJsonDocument(jsonArray).toJson());
+    file.close();
+}
+
+
 QString ProjectRepository::getProjectListAsJsonString(bool isBlocked)
 {
     //QString folderPath = "C:\\Users\\RIPL\\Documents\\FusionHubData\\";
@@ -121,7 +199,7 @@ QString ProjectRepository::getInsertQuery() const
 
 
     return "INSERT INTO Project (global_id, approval_status, projectname, customername, contactname,"
-           "phonenumber, emailid, totaldollarvalue, description, isBlocked) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+           "phonenumber, emailid, totaldollarvalue, description, isBlocked, lastSyncedOn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 
 }
@@ -144,6 +222,7 @@ void ProjectRepository::createJsonFileAndAppendJsonObject(const QString& filePat
     jsonObject.insert("totalDollarValue", entity.getTotalDollarValue());
     jsonObject.insert("isBlocked", entity.getIsBlocked());
     jsonObject.insert("description", entity.getDescription());
+    jsonObject.insert("lastSyncedOn", entity.getLastSyncedOn());
 
     QDate currentDate = QDate::currentDate();
     jsonObject.insert("dateData", currentDate.toString(Qt::ISODate));
@@ -186,4 +265,3 @@ void ProjectRepository::createJsonFileAndAppendJsonObject(const QString& filePat
     file.write(doc.toJson(QJsonDocument::Indented)); // Use Indented for readability
     file.close();
 }
-

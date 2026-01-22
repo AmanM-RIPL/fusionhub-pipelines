@@ -19,6 +19,10 @@ public:
 
     Q_INVOKABLE void openDatabase(const QString &projectName, int projectId)const;
 
+    Q_INVOKABLE int getLastSyncedOn()const;
+    Q_INVOKABLE void updateLastSyncedOn(int lastSyncedOn)const;
+
+
 
 private:
    ProjectRepository* m_projectRepository;

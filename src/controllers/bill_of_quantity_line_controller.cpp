@@ -10,11 +10,11 @@ BillOfQuantityLineController::BillOfQuantityLineController(QObject *parent)
     : QObject{parent},
     m_billOfQuantityLineRepository(RepositoryLocator::instance().billOfQuantityLineRepository()),
     m_billOfQuantityRepository(RepositoryLocator::instance().billOfQuantityRepository()),
-    m_taskRepository(RepositoryLocator::instance().taskRepository()),
+    m_bimElementRepository(RepositoryLocator::instance().bimElementRepository()),
     m_draftEntityRepository(RepositoryLocator::instance().draftEntityRepository())
 {}
 
-void BillOfQuantityLineController::create(const QString &description, const int &billOfQuantityId ,const int &taskId) const
+void BillOfQuantityLineController::create(const QString &description, const int &billOfQuantityId ,const int &bimElementId) const
 {
     BillOfQuantityLine billOfQuantityLine;
 
@@ -23,8 +23,8 @@ void BillOfQuantityLineController::create(const QString &description, const int 
     billOfQuantityLine.setGlobalId("123");
     billOfQuantityLine.setApprovalStatus(true);
     billOfQuantityLine.setBillOfQuantityLineName(description);
-    billOfQuantityLine.setBillOfQuantityId(billOfQuantityId);
-    billOfQuantityLine.setBillOfQuantityId(taskId);
+    billOfQuantityLine.setBillOfQuantityId(billOfQuantityId);  
+    billOfQuantityLine.setBimElementId(bimElementId);
 
     m_billOfQuantityLineRepository->saveQML(&billOfQuantityLine);
 
@@ -35,8 +35,8 @@ void BillOfQuantityLineController::create(const QString &description, const int 
     //jsonObject["globalId"] = "123";
     //jsonObject["approvalStatus"] = true;
     jsonObject["description"] = description;
-    jsonObject["billOfQuantityId"] = billOfQuantityId;
-    jsonObject["taskId"] = taskId;
+    jsonObject["bill_of_quantity_id"] = billOfQuantityId;
+    jsonObject["bim_element_id"] = bimElementId;
 
     QJsonDocument jsonDoc(jsonObject);
     QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
@@ -96,9 +96,9 @@ std::vector<BillOfQuantityLine*> BillOfQuantityLineController::getBillOfQuantity
                 billOfQuantityLine->setGlobalId("123");
                 billOfQuantityLine->setApprovalStatus(true);
 
-                billOfQuantityLine->setBillOfQuantityLineName(jsonObj["billOfQuantityLineName"].toString());
-                billOfQuantityLine->setTaskId(jsonObj["taskId"].toInt());
-                billOfQuantityLine->setBillOfQuantityId(jsonObj["billOfQuantityId"].toInt());
+                billOfQuantityLine->setBillOfQuantityLineName(jsonObj["description"].toString());
+                billOfQuantityLine->setBimElementId(jsonObj["bim_element_id"].toInt());
+                billOfQuantityLine->setBillOfQuantityId(jsonObj["bill_of_quantity_id"].toInt());
 
                 billOfQuantityLines.push_back(billOfQuantityLine);
             }
@@ -112,7 +112,7 @@ std::vector<BillOfQuantity*> BillOfQuantityLineController::getBOQList() const
     return m_billOfQuantityRepository->findAllQML();
 }
 
-std::vector<Task*> BillOfQuantityLineController::getTaskList() const
+std::vector<BIMElement*> BillOfQuantityLineController::getBimElementList() const
 {
-    return m_taskRepository->findAllQML();
+    return m_bimElementRepository->findAllQML();
 }

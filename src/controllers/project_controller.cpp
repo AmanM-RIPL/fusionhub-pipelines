@@ -52,6 +52,7 @@ void ProjectController::create(const QString &projectName, const QString &custom
     project.setTotalDollarValue(totalDollarValue);
     project.setDescription(description);
     project.setIsBlocked(false);
+    project.setLastSyncedOn(milliseconds);
 
     if(m_projectRepository->save(project)){
         qDebug()<<"Data Saved";
@@ -102,4 +103,15 @@ void ProjectController::openDatabase(const QString &projectName, int projectId)c
 
     qDebug() << "Database initialized successfully!";
     qDebug() << "Project path:" << dbManager->getProjectPath();
+}
+
+int ProjectController::getLastSyncedOn()const
+{
+    int lastSyncedOn = m_projectRepository->getLastSyncedOn(gProjectId);
+    return lastSyncedOn;
+}
+
+void ProjectController::updateLastSyncedOn(int lastSyncedOn)const
+{
+    m_projectRepository->updateLastSyncedOn(gProjectId, lastSyncedOn);
 }

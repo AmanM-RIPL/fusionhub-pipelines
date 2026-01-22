@@ -2,9 +2,9 @@
 
 BillOfQuantity::BillOfQuantity(int id, const QString& globalId, bool approvalStatus,
                    const QString& description,
-                   int scheduleId, QObject* parent)
+                   int scheduleOfRatedId, QObject* parent)
     : QObject(parent), id(id), globalId(globalId), approvalStatus(approvalStatus),
     description(description),
-    scheduleId(scheduleId)
+    scheduleOfRatesId(scheduleOfRatesId)
 {
 }

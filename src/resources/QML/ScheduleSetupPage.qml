@@ -25,6 +25,9 @@ Column {
     ScheduleSetupController {
         id: scheduleSetupController
     }
+    ProjectController{
+        id:projController
+    }
 
     FHPopup {
         id: newScheduleSetupPopup
@@ -424,6 +427,14 @@ Column {
 
     function showList()
     {
+        // var lastSyncdOn =   projController.getLastSyncedOn();
+        // console.log("lastSyncedOn:", String(lastSyncdOn));
+
+        // var msSinceEpoch = new Date().getTime()
+        // projController.updateLastSyncedOn(msSinceEpoch);
+        // var updatedSyncedOn =   projController.getLastSyncedOn();
+        // console.log("updatedSyncedOn:", String(updatedSyncedOn));
+
         scheduleSetupRoot.scheduleSetupList = [];
         if(scheduleSetupRoot.visible){
             var arr = scheduleSetupController.getSetupList(isApproved);

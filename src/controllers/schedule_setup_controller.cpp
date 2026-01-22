@@ -18,7 +18,7 @@ ScheduleSetupController::ScheduleSetupController(QObject *parent)
 //void ScheduleSetupController::create(const QString &scheduleName, const QString &description, const QString &costParameter,
 //                              const QString &resourceParameter) const
 
-void ScheduleSetupController::create(const QString &scheduleName, const QString &description, const QVariant &costParameter,
+void ScheduleSetupController::create(const QString &scheduleSetupName, const QString &description, const QVariant &costParameter,
                                      const QVariant &resourceParameter) const
 {
 
@@ -39,7 +39,7 @@ void ScheduleSetupController::create(const QString &scheduleName, const QString 
     setup.setId(0);
     setup.setGlobalId("123");
     setup.setApprovalStatus(true);
-    setup.setScheduleName(scheduleName);
+    setup.setScheduleSetupName(scheduleSetupName);
     setup.setDescription(description);
     setup.setCostParameter(costParamJsonString);
     setup.setResourceParameter(resourceParamJsonString);
@@ -54,7 +54,7 @@ void ScheduleSetupController::create(const QString &scheduleName, const QString 
     //jsonObject["id"] = 0;
     //jsonObject["globalId"] = "123";
     //jsonObject["approvalStatus"] = true;
-    jsonObject["scheduleName"] = scheduleName;
+    jsonObject["scheduleSetupName"] = scheduleSetupName;
     jsonObject["description"] = description;
     jsonObject["costParam"] = costParamJsonDoc.object();//costParamJsonString;
     jsonObject["resourceParam"] = resourceParamJsonDoc.object();//costParamJsonString;
@@ -118,7 +118,7 @@ std::vector<ScheduleSetup*> ScheduleSetupController::getSetupList(bool isApprove
                 scheduleSetup->setId(i + 1);
                 scheduleSetup->setGlobalId("123");
                 scheduleSetup->setApprovalStatus(true);
-                scheduleSetup->setScheduleName(jsonObj["scheduleName"].toString());
+                scheduleSetup->setScheduleSetupName(jsonObj["scheduleSetupName"].toString());
                 scheduleSetup->setDescription(jsonObj["description"].toString());
                 //scheduleSetup->setCostParameter(jsonObj["costParam"].toString());
                 //scheduleSetup->setResourceParameter(jsonObj["resourceParam"].toString());

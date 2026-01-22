@@ -17,6 +17,15 @@ public:
    Q_INVOKABLE void addParameter(BIMElement* bim_element, const QString &key, const QString &value);
    Q_INVOKABLE std::vector<BIMElement*> getAllElements() const;
 
+   Q_INVOKABLE int getAreaValue(const QString& costParam) const;
+   Q_INVOKABLE int getVolumeValue(const QString& costParam) const;
+   Q_INVOKABLE int getLengthValue(const QString& costParam) const;
+   Q_INVOKABLE int getCountValue(const QString& costParam) const;
+   Q_INVOKABLE int getWeightValue(const QString& costParam) const;
+   Q_INVOKABLE int getTimeValue(const QString& costParam) const;
+   Q_INVOKABLE int getTemperatureValue(const QString& costParam) const;
+
+
 signals:
 
 private:
