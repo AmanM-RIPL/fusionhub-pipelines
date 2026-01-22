@@ -278,9 +278,9 @@ float OpenglHelper::getDistanceBetweenPoints(Point point1, Point point2)
 
 float OpenglHelper::getAngleBetweenPoints(Point point1, Point point2, Point point3)
 {
-    // first vector;
-    float x_proj1 = point2[0] - point1[0];
-    float y_proj1 = point2[1] - point1[1];
+    // first vector (from point2 towards point1)
+    float x_proj1 = point1[0] - point2[0];
+    float y_proj1 = point1[1] - point2[1];
 
     float length1 = qSqrt(qPow(x_proj1, 2) + qPow(y_proj1, 2));
     float x_proj1_unit = x_proj1/length1;
@@ -308,9 +308,9 @@ Point OpenglHelper::getPointAtDistanceAngle(Point point1, Point point2, float an
     // angle in radians
     float angle_radians = qDegreesToRadians(angle);
 
-    // first vector;
-    float x_proj1 = point2[0] - point1[0];
-    float y_proj1 = point2[1] - point1[1];
+    // first vector (from point2 towards point1)
+    float x_proj1 = point1[0] - point2[0];
+    float y_proj1 = point1[1] - point2[1];
 
     float length1 = qSqrt(qPow(x_proj1, 2) + qPow(y_proj1, 2));
     float x_proj1_unit = x_proj1/length1;
@@ -321,8 +321,8 @@ Point OpenglHelper::getPointAtDistanceAngle(Point point1, Point point2, float an
     float y_proj_rotated_unit = (x_proj1_unit * qSin(angle_radians)) + (y_proj1_unit * qCos(angle_radians));
 
     return {
-        x_proj_rotated_unit * distance,
-        y_proj_rotated_unit * distance
+        x_proj_rotated_unit * distance + point2[0],
+        y_proj_rotated_unit * distance + point2[1]
     };
 }
 

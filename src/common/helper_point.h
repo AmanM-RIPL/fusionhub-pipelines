@@ -13,12 +13,14 @@ struct HelperPoint
     Q_PROPERTY(float y MEMBER y)
     Q_PROPERTY(QString text MEMBER text)
     Q_PROPERTY(float value MEMBER value)
+    Q_PROPERTY(bool visible MEMBER visible)
 
 public:
     float x;
     float y;
     QString text;
     float value;
+    bool visible;
 };
 
 Q_DECLARE_METATYPE(HelperPoint)

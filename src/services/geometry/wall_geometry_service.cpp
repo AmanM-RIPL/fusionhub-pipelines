@@ -327,6 +327,9 @@ void WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh,
         return;
     }
 
+    // show length helper point
+    helperPoints[0].visible = true;
+
     // last point of referenceLine
     Point lastPointReferenceLine = referenceLine.back();
     QVector3D lastPoint(lastPointReferenceLine[0], lastPointReferenceLine[1], 0.0f);
@@ -340,7 +343,7 @@ void WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh,
     Point middle_point = m_openglHelper.getPointAtPerpendicularDistance(middlePointScreenSpace, screen_point, 10);
 
     helperPoints[0].x = middle_point[0];
-    helperPoints[0].y = middle_point[1];
+    helperPoints[0].y = middle_point[1] + 30; // 30px added to offset
 
     QVector3D wcs_point1 = view->GetPointInViewSpace(new_point1[0], new_point1[1]);
     QVector3D wcs_point2 = view->GetPointInViewSpace(new_point2[0], new_point2[1]);
@@ -477,17 +480,23 @@ void WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh,
     // second last point of referenceLine
     if (referenceLineSize >= 2)
     {
+        helperPoints[1].visible = true;
+
         Point secondLastPointReferenceLine = referenceLine[referenceLineSize - 2];
         QVector3D secondLastPoint(secondLastPointReferenceLine[0], secondLastPointReferenceLine[1], 0.0f);
         Point secondLastPointScreenSpace = view->GetPointInScreenSpace(secondLastPoint);
 
         float angle_degrees = m_openglHelper.getAngleBetweenPoints(secondLastPointReferenceLine, lastPointReferenceLine, {point[0], point[1]});
 
-        Point angle_point1 = m_openglHelper.getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, angle_degrees/4, 20);
-        Point angle_point2 = m_openglHelper.getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, angle_degrees/2, 20);
-        Point angle_point3 = m_openglHelper.getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, 3*angle_degrees/4, 20);
-        Point angle_point4 = m_openglHelper.getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, angle_degrees, 20);
+        // angles are negative because the screen-coordinates are following the left-handle rule
+        // y axis points downwards
+        Point angle_point0 = m_openglHelper.getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, 0.0f, 20);
+        Point angle_point1 = m_openglHelper.getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, -1*angle_degrees/4, 20);
+        Point angle_point2 = m_openglHelper.getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, -1*angle_degrees/2, 20);
+        Point angle_point3 = m_openglHelper.getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, -3*angle_degrees/4, 20);
+        Point angle_point4 = m_openglHelper.getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, -1*angle_degrees, 20);
 
+        QVector3D wcs_angle_point0 = view->GetPointInViewSpace(angle_point0[0], angle_point0[1]);
         QVector3D wcs_angle_point1 = view->GetPointInViewSpace(angle_point1[0], angle_point1[1]);
         QVector3D wcs_angle_point2 = view->GetPointInViewSpace(angle_point2[0], angle_point2[1]);
         QVector3D wcs_angle_point3 = view->GetPointInViewSpace(angle_point3[0], angle_point3[1]);
@@ -495,11 +504,16 @@ void WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh,
 
 
         helperPoints[1].x = angle_point2[0];
-        helperPoints[1].y = angle_point2[1];
+        helperPoints[1].y = angle_point2[1] + 30; // go 30 px down
         helperPoints[1].value = angle_degrees;
 
-
         // Add the vertex and edges of helper lines
+        vertices_position.push_back({wcs_angle_point0[0], wcs_angle_point0[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
+
         vertices_position.push_back({wcs_angle_point1[0], wcs_angle_point1[1], 0.0f, 0.0f});
         vertices_normal.push_back({0.0f, 0.0f, 1.0f});
         vertices_textureuv.push_back({0.0f, 0.0f});
@@ -525,7 +539,7 @@ void WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh,
         vertices_textureIndex.push_back(Texture::NONE);
 
 
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 4; i++)
         {
             // 4 is added to account for length helper point
             int first_point = referenceLine.size() + 4 + i;
@@ -624,11 +638,13 @@ void WallGeometryService::generateHelperPoints(BIMElement *bimElement, QList<Hel
     length.y = 0.0f;
     length.text = "Length";
     length.value = 0.0f;
+    length.visible = false;
 
     angle.x = 0.0f;
     angle.y = 0.0f;
     angle.text = "Angle";
     angle.value = 0.0f;
+    angle.visible = false;
 
     helperPoints.clear();
 

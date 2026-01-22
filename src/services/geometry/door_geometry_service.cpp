@@ -447,3 +447,18 @@ void DoorGeometryService::updateGeometry(BIMElement *doorElement, BIMElement* ho
     // updatin host_id in BIMElement
     doorElement->setHostId(hostElement->getId());
 }
+
+void DoorGeometryService::generateHelperPoints(BIMElement *bimElement, QList<HelperPoint> &helperPoints)
+{
+    HelperPoint length;
+
+    length.x = 0.0f;
+    length.y = 0.0f;
+    length.text = "Length";
+    length.value = 0.0f;
+    length.visible = false;
+
+    helperPoints.clear();
+
+    helperPoints.append(length);
+}

@@ -246,24 +246,63 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
     // transfer new middle point value safely
     if (meshInitialized && projectionMatrixInitialized && glItem->m_middlePointValueUpdated)
     {
-        Point screenPoint = {m_pickX, m_pickY};
-        Point newPoint = GeometryServiceFactory::updatePoint2D(glItem->editableBimElement, glItem->m_middlePointValue, screenPoint, m_view);
+        if (glItem->editableBimElement->getType() != "Door" && glItem->editableBimElement->getType() != "Window")
+        {
+            Point screenPoint = {m_pickX, m_pickY};
+            Point newPoint = GeometryServiceFactory::updatePoint2D(glItem->editableBimElement, nullptr, glItem->m_middlePointValue, screenPoint, m_view);
 
-        m_pickX = newPoint[0];
-        m_pickY = newPoint[1];
+            m_pickX = newPoint[0];
+            m_pickY = newPoint[1];
 
-        m_view->SetSelectionCoordinates(m_pickX, m_pickY);
-        glItem->updateMousePosition(m_pickX, m_pickY);
+            m_view->SetSelectionCoordinates(m_pickX, m_pickY);
+            glItem->updateMousePosition(m_pickX, m_pickY);
 
-        // reset the stored GUI-side coords so we don't re-process
-        glItem->m_lastClickX = -1;
-        glItem->m_lastClickY = -1;
-        glItem->m_lastHoverX = -1;
-        glItem->m_lastHoverY = -1;
-        glItem->m_middlePointValueUpdated = false;
+            // reset the stored GUI-side coords so we don't re-process
+            glItem->m_lastClickX = -1;
+            glItem->m_lastClickY = -1;
+            glItem->m_lastHoverX = -1;
+            glItem->m_lastHoverY = -1;
+            glItem->m_middlePointValueUpdated = false;
 
-        m_hoverRequested = true;
-        m_pickedBimElementId = -1;
+            m_hoverRequested = true;
+            m_pickedBimElementId = -1;
+        }
+        else
+        {
+            if (m_pickedBimElementId == -1)
+            {
+                m_hoverRequested = true;
+            }
+            else
+            {
+                BIMElement* hostElement = nullptr;
+
+                for (BIMElement* element: glItem->bimElementList)
+                {
+                    if (element->getId() == m_pickedBimElementId)
+                    {
+                        hostElement = element;
+                        break;
+                    }
+                }
+
+                Point screenPoint = {m_pickX, m_pickY};
+                Point newPoint = GeometryServiceFactory::updatePoint2D(glItem->editableBimElement, hostElement, glItem->m_middlePointValue, screenPoint, m_view);
+
+                m_pickX = newPoint[0];
+                m_pickY = newPoint[1];
+
+                m_view->SetSelectionCoordinates(m_pickX, m_pickY);
+                glItem->updateMousePosition(m_pickX, m_pickY);
+
+                // reset the stored GUI-side coords so we don't re-process
+                glItem->m_lastClickX = -1;
+                glItem->m_lastClickY = -1;
+                glItem->m_lastHoverX = -1;
+                glItem->m_lastHoverY = -1;
+                glItem->m_middlePointValueUpdated = false;
+            }
+        }
     }
 
     // by default m_pickedBimElementId will be a negative number
@@ -375,7 +414,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
             {
                 // qInfo() << "PickPoint: " << m_pickX << ", " << m_pickY;
                 Point screenPoint = {m_pickX, m_pickY};
-                GeometryServiceFactory::generateWIPMesh2D(glItem->editableBimElement, mesh, clickedPoint, screenPoint, m_view, glItem->m_middlePointValue);
+                GeometryServiceFactory::generateWIPMesh2D(glItem->editableBimElement, hostElement, mesh, clickedPoint, screenPoint, m_view, glItem->m_middlePointValue);
                 glItem->middlePointPositionChanged(); // signal to QML
             }
 

@@ -1478,11 +1478,11 @@ Row {
                     xPos: helperPoint.x,
                     yPos: helperPoint.y,
                     helperText: helperPoint.text,
-                    helperValue: helperPoint.value
+                    helperValue: helperPoint.value,
+                    helperVisible: helperPoint.visible
                 });
             }
 
-            helperPointIndexToFocus = helperPointIndexToFocus < helperPointList.length - 1 ? helperPointIndexToFocus + 1 : 0;
             const item = helperPointRepeater.itemAt(helperPointIndexToFocus);
             if (item && item.internalTextField) {
                 item.internalTextField.focus = true;
@@ -1505,7 +1505,7 @@ Row {
                 property alias internalTextField: helperPointTextField
                 x: glsceneAbsoluteX + xPos
                 y: yPos
-                visible: true
+                visible: helperVisible
                 width: 150
                 height: 29
                 border.width: 2
@@ -1518,13 +1518,13 @@ Row {
                     Text {
                         text: qsTr(helperText)
                         verticalAlignment: Text.AlignVCenter
-                        width: parent.width * 0.70
+                        width: parent.width * 0.50
                         height: parent.height
                     }
 
                     TextField {
                         id: helperPointTextField
-                        width: parent.width * 0.30
+                        width: parent.width * 0.50
                         height: 25
                         text: helperValue.toFixed(2)
 
@@ -1536,6 +1536,8 @@ Row {
                             if (event.key === Qt.Key_Shift)
                             {
                                 glscene.updateMiddlePointValue(parseFloat(text), index);
+
+                                helperPointIndexToFocus = helperPointIndexToFocus < helperPointModel.count - 1 ? helperPointIndexToFocus + 1 : 0;
                             }
                         }
                     }

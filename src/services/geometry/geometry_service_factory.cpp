@@ -116,6 +116,31 @@ void GeometryServiceFactory::generateWIPMesh2D(BIMElement *bimElement, Mesh *mes
         WallGeometryService service = WallGeometryService();
         service.generateWIPMesh2D(bimElement, mesh, point, screen_point, view, helperPoints);
     }
+    else if (bimElement->getType() == "Beam")
+    {
+        BeamGeometryService service = BeamGeometryService();
+        service.generateWIPMesh2D(bimElement, mesh, point, screen_point, view, helperPoints);
+    }
+    else if (bimElement->getType() == "Column")
+    {
+        ColumnGeometryService service = ColumnGeometryService();
+        service.generateWIPMesh2D(bimElement, mesh, point, screen_point, view, helperPoints);
+    }
+    else if (bimElement->getType() == "Slab")
+    {
+        SlabGeometryService service = SlabGeometryService();
+        service.generateWIPMesh2D(bimElement, mesh, point, screen_point, view, helperPoints);
+    }
+    else if (bimElement->getType() == "Door")
+    {
+        DoorGeometryService service = DoorGeometryService();
+        // service.updateGeometry(bimElement, hostElement, point);
+    }
+    else if (bimElement->getType() == "Window")
+    {
+        WindowGeometryService service = WindowGeometryService();
+        // service.updateGeometry(bimElement, hostElement, point);
+    }
 }
 
 Point GeometryServiceFactory::updatePoint2D(BIMElement *bimElement, const QList<HelperPoint> &helperPoints, const Point &screen_point, View *view)
@@ -127,6 +152,35 @@ Point GeometryServiceFactory::updatePoint2D(BIMElement *bimElement, const QList<
 
         return new_point;
     }
+    else if (bimElement->getType() == "Beam")
+    {
+        BeamGeometryService service = BeamGeometryService();
+        Point new_point = service.updatePoint2D(bimElement, helperPoints, screen_point, view);
+
+        return new_point;
+    }
+    else if (bimElement->getType() == "Column")
+    {
+        ColumnGeometryService service = ColumnGeometryService();
+        Point new_point = service.updatePoint2D(bimElement, helperPoints, screen_point, view);
+
+        return new_point;
+    }
+    else if (bimElement->getType() == "Slab")
+    {
+        SlabGeometryService service = SlabGeometryService();
+        Point new_point = service.updatePoint2D(bimElement, helperPoints, screen_point, view);
+
+        return new_point;
+    }
+    else if (bimElement->getType() == "Door")
+    {
+        DoorGeometryService service = DoorGeometryService();
+    }
+    else if (bimElement->getType() == "Window")
+    {
+        WindowGeometryService service = WindowGeometryService();
+    }
 
     return {0.0f, 0.0f};
 }
@@ -137,5 +191,28 @@ void GeometryServiceFactory::generateHelperPoints(BIMElement *bimElement, QList<
     {
         WallGeometryService service = WallGeometryService();
         service.generateHelperPoints(bimElement, helperPoints);
+    }
+    else if (bimElement->getType() == "Beam")
+    {
+        BeamGeometryService service = BeamGeometryService();
+        service.generateHelperPoints(bimElement, helperPoints);
+    }
+    else if (bimElement->getType() == "Column")
+    {
+        ColumnGeometryService service = ColumnGeometryService();
+        service.generateHelperPoints(bimElement, helperPoints);
+    }
+    else if (bimElement->getType() == "Slab")
+    {
+        SlabGeometryService service = SlabGeometryService();
+        service.generateHelperPoints(bimElement, helperPoints);
+    }
+    else if (bimElement->getType() == "Door")
+    {
+        DoorGeometryService service = DoorGeometryService();
+    }
+    else if (bimElement->getType() == "Window")
+    {
+        WindowGeometryService service = WindowGeometryService();
     }
 }
