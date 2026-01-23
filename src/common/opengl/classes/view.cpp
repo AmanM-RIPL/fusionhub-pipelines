@@ -48,15 +48,20 @@ void View::LoadStaticMeshData(QList<Mesh*>& meshList)
     unsigned int numOfModelMatrices = combinedMesh->getNumOfModelMatricies();
     unsigned int numOfModelMatrixIndices = combinedMesh->getNumOfModelMatrixIndices();
 
+    // for (int i = 0; i < numOfModelMatrixIndices; i++)
+    // {
+    //     qInfo() << "Model Matrix Index: " << modelMatrixIndices[i];
+    // }
+
     // Initializing the vao, vbo, and ibo
     m_static_indexCount = numOfIndices;
     m_static_borderIndexCount = numOfEdges;
 
-    int numOfVerticesDefault = 1000;
-    int numOfIndicesDefault = 1000;
-    int numOfEdgesDefault = 1000;
-    int numOfModelMatricesDefault = 100;
-    int numOfModelMatrixIndicesDefault = 1000;
+    int numOfVerticesDefault = 100000;
+    int numOfIndicesDefault = 100000;
+    int numOfEdgesDefault = 100000;
+    int numOfModelMatricesDefault = 1000;
+    int numOfModelMatrixIndicesDefault = 100000;
 
     // for (int i = 0; i < numOfVertices; i++)
     // {
@@ -192,11 +197,11 @@ void View::LoadStaticMeshData(QList<Mesh*>& meshList)
 
 void View::LoadDynamicMeshData(Mesh* mesh)
 {
-    int numOfVerticesDefault = 100;
-    int numOfIndicesDefault = 100;
-    int numOfEdgesDefault = 100;
-    int numOfModelMatricesDefault = 50;
-    int numOfModelMatrixIndicesDefault = 100;
+    int numOfVerticesDefault = 100000;
+    int numOfIndicesDefault = 100000;
+    int numOfEdgesDefault = 100000;
+    int numOfModelMatricesDefault = 1000;
+    int numOfModelMatrixIndicesDefault = 100000;
 
     if (mesh == nullptr)
     {
@@ -848,11 +853,11 @@ void View::InitializeHandles()
 void View::InitializeStaticBuffers()
 {
     // For now num of verticies is 1000
-    int numOfVertices = 1000;
-    int numOfIndices = 1000;
-    int numOfEdges = 1000;
-    int numOfModelMatrices = 100;
-    int numOfModelMatrixIndices = 1000;
+    int numOfVertices = 100000;
+    int numOfIndices = 100000;
+    int numOfEdges = 100000;
+    int numOfModelMatrices = 1000;
+    int numOfModelMatrixIndices = 100000;
     std::array<float, 4> corners = {-1.0f, 1.0f, -1.0f, 1.0f};
 
     // VAO for Mesh + Mesh Color Picking
@@ -1019,11 +1024,11 @@ void View::InitializeStaticBuffers()
 void View::InitializeDynamicBuffers()
 {
     // For now num of verticies is 1000
-    int numOfVertices = 100;
-    int numOfIndices = 100;
-    int numOfEdges = 100;
-    int numOfModelMatrices = 50;
-    int numOfModelMatrixIndices = 100;
+    int numOfVertices = 100000;
+    int numOfIndices = 100000;
+    int numOfEdges = 100000;
+    int numOfModelMatrices = 1000;
+    int numOfModelMatrixIndices = 100000;
     std::array<float, 4> corners = {-1.0f, 1.0f, -1.0f, 1.0f};
 
     // VAO for Mesh + Mesh Color Picking

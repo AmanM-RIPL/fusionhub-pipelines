@@ -463,6 +463,8 @@ void Mesh::setModelMatrix(QMatrix4x4 modelMatrix)
 
 void Mesh::SetModelMatricies(std::vector<QMatrix4x4> &model_matrix)
 {
+    m_model_matrix.clear();
+
     m_model_matrix.reserve(model_matrix.size() * 16);
 
     for (int i = 0; i < model_matrix.size(); ++i) {

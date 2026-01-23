@@ -1427,6 +1427,7 @@ Row {
                 } else if (event.key === Qt.Key_Return) {
                     glscene.saveEditableBimElement();
                 } else if (event.key === Qt.Key_Shift) {
+                    console.log("Shift in GLScene");
                     helperPointIndexToFocus = 0;
                     const item = helperPointRepeater.itemAt(0);
                     if (item && item.internalTextField) {
@@ -1535,6 +1536,7 @@ Row {
                         Keys.onPressed: function (event) {
                             if (event.key === Qt.Key_Shift)
                             {
+                                console.log("Shift in Rectangle");
                                 glscene.updateMiddlePointValue(parseFloat(text), index);
 
                                 helperPointIndexToFocus = helperPointIndexToFocus < helperPointModel.count - 1 ? helperPointIndexToFocus + 1 : 0;

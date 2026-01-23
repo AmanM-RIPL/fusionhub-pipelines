@@ -249,7 +249,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         if (glItem->editableBimElement->getType() != "Door" && glItem->editableBimElement->getType() != "Window")
         {
             Point screenPoint = {m_pickX, m_pickY};
-            Point newPoint = GeometryServiceFactory::updatePoint2D(glItem->editableBimElement, nullptr, glItem->m_middlePointValue, screenPoint, m_view);
+            Point newPoint = GeometryServiceFactory::updatePoint2D(glItem->editableBimElement, glItem->m_middlePointValue, screenPoint, m_view);
 
             m_pickX = newPoint[0];
             m_pickY = newPoint[1];
@@ -287,7 +287,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
                 }
 
                 Point screenPoint = {m_pickX, m_pickY};
-                Point newPoint = GeometryServiceFactory::updatePoint2D(glItem->editableBimElement, hostElement, glItem->m_middlePointValue, screenPoint, m_view);
+                Point newPoint = GeometryServiceFactory::updatePoint2D(glItem->editableBimElement, glItem->m_middlePointValue, screenPoint, m_view, hostElement);
 
                 m_pickX = newPoint[0];
                 m_pickY = newPoint[1];
@@ -414,7 +414,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
             {
                 // qInfo() << "PickPoint: " << m_pickX << ", " << m_pickY;
                 Point screenPoint = {m_pickX, m_pickY};
-                GeometryServiceFactory::generateWIPMesh2D(glItem->editableBimElement, hostElement, mesh, clickedPoint, screenPoint, m_view, glItem->m_middlePointValue);
+                GeometryServiceFactory::generateWIPMesh2D(glItem->editableBimElement, mesh, clickedPoint, screenPoint, m_view, glItem->m_middlePointValue, hostElement);
                 glItem->middlePointPositionChanged(); // signal to QML
             }
 
@@ -921,15 +921,15 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 
     bimElementList.append(bimElement);
 
-    BIMElement* bimElementNew = new BIMElement(2,"1",false,"Wall", "Front Wall", 0, 0, this);
-    BIMParameter* widthParameterNew = new BIMParameter(1,"1",false,"Width","1",2,this);
-    BIMParameter* heightParameterNew = new BIMParameter(37, "1", false, "Height", "4", 2, this);
-    BIMParameter* rlParameterNew = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0], [4,4]]",2,this);
-    bimElementNew->addParameter(widthParameterNew);
-    bimElementNew->addParameter(heightParameterNew);
-    bimElementNew->addParameter(rlParameterNew);
+    // BIMElement* bimElementNew = new BIMElement(2,"1",false,"Wall", "Front Wall", 0, 0, this);
+    // BIMParameter* widthParameterNew = new BIMParameter(1,"1",false,"Width","1",2,this);
+    // BIMParameter* heightParameterNew = new BIMParameter(37, "1", false, "Height", "4", 2, this);
+    // BIMParameter* rlParameterNew = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0], [4,4]]",2,this);
+    // bimElementNew->addParameter(widthParameterNew);
+    // bimElementNew->addParameter(heightParameterNew);
+    // bimElementNew->addParameter(rlParameterNew);
 
-    bimElementList.append(bimElementNew);
+    // bimElementList.append(bimElementNew);
 
     // BIMElement* bimElementDoor = new BIMElement(3,"1",false,"Window", "Front Window", 0, 2, this);
     // BIMParameter* distanceParameterDoor = new BIMParameter(1,"1",false,"Distance","1",3,this);
