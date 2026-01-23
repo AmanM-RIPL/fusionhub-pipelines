@@ -36,7 +36,7 @@ ApplicationWindow {
         onLogOutClicked: {
             loginPage.visible = true
             welcomePage.visible = false
-            organizationSettingsPage.visible = false            
+            organizationSettingsPage.visible = false
         }
 
         onUserSettingsClicked:{
@@ -62,7 +62,7 @@ ApplicationWindow {
                 welcomePage.showOrgSettingsButton = false
                 welcomePage.showNewProjectButton = false
                 welcomePage.showButtonColor = "transparent"
-            }             
+            }
         }
     }
 
@@ -74,27 +74,27 @@ ApplicationWindow {
         onLogOutClicked: {
             loginPage.visible = true
             welcomePage.visible = false
-            organizationSettingsPage.visible = false            
+            organizationSettingsPage.visible = false
         }
 
         onNewProjectClicked: {
             //baseLayout.visible = true
             baseLayout.visible = false
             idCreateNewProjectDialog.open()
-            organizationSettingsPage.visible = false            
+            organizationSettingsPage.visible = false
         }
 
 
-        onUserSettingsClicked:{            
+        onUserSettingsClicked:{
             userSettingsPopup.open()
-        }        
+        }
 
         onOrganizationSettingsClicked:{
             baseLayout.visible = false
             loginPage.visible = false
             welcomePage.visible = false
             organizationSettingsPage.visible = true
-        }        
+        }
    }
 
     BaseLayout{
@@ -105,7 +105,7 @@ ApplicationWindow {
         onLogOutClicked: {
             loginPage.visible = true
             welcomePage.visible = false
-            baseLayout.visible = false            
+            baseLayout.visible = false
         }
     }
 

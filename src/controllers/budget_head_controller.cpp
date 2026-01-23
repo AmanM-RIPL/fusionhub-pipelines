@@ -68,6 +68,44 @@ void BudgetHeadController::create(const QString &description) const
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+
+void BudgetHeadController::update(int id, const QString &description) const
+{
+    QJsonObject jsonObject;
+    jsonObject["description"] = description;
+    QJsonDocument jsonDoc(jsonObject);
+    QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
+    // qDebug() << "PurchaseOrder:EntitySchema: " << entitySchema;
+
+    QDateTime currentDateTimeUtc = QDateTime::currentDateTimeUtc();
+    QString isoDateTimeString = currentDateTimeUtc.toString(Qt::ISODateWithMs);
+
+    QJsonObject jsonObjectChangeHistory;
+    jsonObjectChangeHistory["user"] = gUser->getId();
+    jsonObjectChangeHistory["timestamp"] = isoDateTimeString;
+    jsonObjectChangeHistory["changeType"] = "update";
+    jsonObjectChangeHistory["description"] = "Updated By User";
+    jsonObjectChangeHistory["approvalHistory"] = "null";
+
+    QJsonDocument jsonDocChangeHistory(jsonObjectChangeHistory);
+    QString changeHistory = jsonDocChangeHistory.toJson(QJsonDocument::Indented);
+
+    QDate updatedOn = QDate::currentDate();
+
+    DraftEntity draftEntity;
+    draftEntity.setId(id);
+    draftEntity.setTenant(gTenantId);
+    draftEntity.setCreatedOn(updatedOn);
+    draftEntity.setProject(gProjectId);
+    draftEntity.setEntity("Material");
+    draftEntity.setCreatedByUser(gUser->getId());
+    draftEntity.setNextApprovingUser(0);
+    draftEntity.setEntitySchema(entitySchema);
+    draftEntity.setAssociatedApprovedEntity(0);
+    draftEntity.setChangeHistory(changeHistory);
+
+    m_draftEntityRepository->updateQML(&draftEntity);
+}
 std::vector<BudgetHead*> BudgetHeadController::getBudgetHeadList(bool isApproved) const
 {
     qDebug()<<"IsApproved: "<< isApproved;
@@ -80,13 +118,14 @@ std::vector<BudgetHead*> BudgetHeadController::getBudgetHeadList(bool isApproved
         std::vector<BudgetHead*> budgetHeads;
         for(int i = 0; i < draftEntitys.size(); i++)
         {
+             int draftId = draftEntitys[i]->getId();
             QString  jsonString = draftEntitys[i]->getEntitySchema();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
             if (!jsonDoc.isNull() && jsonDoc.isObject())
             {
                 auto budgetHead = new BudgetHead();
                 QJsonObject jsonObj = jsonDoc.object();
-                budgetHead->setId(i + 1);
+                budgetHead->setId(draftId);
                 budgetHead->setGlobalId("123");
                 budgetHead->setApprovalStatus(true);
                 budgetHead->setDescription(jsonObj["description"].toString());

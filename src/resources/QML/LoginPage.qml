@@ -3,16 +3,27 @@ import QtQuick.Controls
 import com.fh.controllers;
 
 Rectangle {
-    // width: 1440
-    // height: 1024
-    // anchors.fill: parent
-
     signal loginClicked()
 
     UserController {
         id: userController
-    }
 
+        // Handle login success
+        onLoginSuccess: function(userData) {
+            loginErrorBox.visible = false
+            loginButton.enabled = true
+            loginButton.btnName = "Login"
+            loginClicked()
+        }
+
+        // Handle login failure
+        onLoginFailed: function(errorMessage) {
+            loginErrorBox.visible = true
+            loginErrorText.text = errorMessage
+            loginButton.enabled = true
+            loginButton.btnName = "Login"
+        }
+    }
 
     Row {
         spacing: 10
@@ -27,7 +38,7 @@ Rectangle {
             Rectangle {
                 width: 100
                 height: 200
-                visible: Screen.height > 1000 ? true : false //only when the screen is too large we show this to bring more white space
+                visible: Screen.height > 1000 ? true : false
             }
 
             Image {
@@ -39,13 +50,13 @@ Rectangle {
             Rectangle {
                 width: 100
                 height: 100
-                visible: Screen.height < 1000 ? true : false // for large screens we don't need this
+                visible: Screen.height < 1000 ? true : false
             }
 
             Row {
                 spacing: 10
 
-                Text{
+                Text {
                     id: loginText
                     text: "Log In"
                     color: "#605E5C"
@@ -53,7 +64,7 @@ Rectangle {
                     font.pixelSize: 34
                 }
 
-                Image{
+                Image {
                     source: "qrc:/resources/images/StopConstructionBoard.png"
                     height: 30
                     width: 30
@@ -62,7 +73,7 @@ Rectangle {
                 }
             }
 
-            Rectangle{
+            Rectangle {
                 width: parent.width
                 height: 1
                 color: "#8A888629"
@@ -73,7 +84,7 @@ Rectangle {
                 id: loginErrorBox
                 visible: false
                 width: 450
-                height: 25
+                height: 30
                 radius: 4
                 color: "#fa2d2d"
 
@@ -81,15 +92,17 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
                     anchors.leftMargin: 10
+                    anchors.rightMargin: 10
                     spacing: 10
 
-                    Image{
+                    Image {
                         source: "qrc:/resources/images/addWhite_icon.png"
                         height: 20
                         width: 20
                     }
 
                     Text {
+                        id: loginErrorText
                         text: "Invalid Username/Password!!"
                         font.pixelSize: 14
                         font.weight: 700
@@ -98,7 +111,7 @@ Rectangle {
                 }
             }
 
-            Text{
+            Text {
                 id: usernameLabel
                 text: "Username"
                 color: "#323130"
@@ -107,15 +120,13 @@ Rectangle {
                 font.family: "Segoe UI"
             }
 
-
-            CustomTextBox{
+            CustomTextBox {
                 id: usernameTextBox
                 placeholderText: "Username"
                 color: "#323130"
             }
 
-
-            Text{
+            Text {
                 id: passwordLabel
                 text: "Password"
                 color: "#323130"
@@ -124,7 +135,6 @@ Rectangle {
                 font.family: "Segoe UI"
             }
 
-
             CustomTextBox {
                 id: passwordTextBox
                 placeholderText: "Password"
@@ -132,8 +142,7 @@ Rectangle {
                 color: "#323130"
             }
 
-
-            Text{
+            Text {
                 id: forgotPasswordText
                 text: "Forgot Password"
                 color: "#0078D4"
@@ -141,7 +150,7 @@ Rectangle {
                 font.pixelSize: 14
                 font.family: "Segoe UI"
 
-                MouseArea{
+                MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     hoverEnabled: true
@@ -160,23 +169,20 @@ Rectangle {
                 }
             }
 
-            CustomButton{
+            CustomButton {
+                id: loginButton
                 btnName: "Login"
 
-                MouseArea{
+                MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
 
                     onClicked: {
-
-                        loginErrorBox.visible = false;
-                        const loginResult = userController.login(usernameTextBox.text, passwordTextBox.text);
-
-                        if (loginResult) {
-                            loginClicked();
-                        } else {
-                            loginErrorBox.visible = true;
-                        }
+                        // Disable button while logging in
+                        loginButton.enabled = false
+                        loginButton.btnName = "Logging in..."
+                        loginErrorBox.visible = false
+                        userController.login(usernameTextBox.text, passwordTextBox.text)
                     }
                 }
             }
@@ -192,6 +198,5 @@ Rectangle {
                 height: parent.height
             }
         }
-
     }
 }

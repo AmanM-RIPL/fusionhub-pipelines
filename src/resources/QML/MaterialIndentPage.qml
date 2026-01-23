@@ -379,7 +379,7 @@ Column {
 
     Rectangle {
         width: 100
-        height: 5
+        height: 40
         color: "#EDF1F4"
     }
 

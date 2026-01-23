@@ -67,6 +67,44 @@ bool DraftEntityRepository::updateQML(DraftEntity* entity) {
     return 1;
 }
 
+bool DraftEntityRepository::approveQML(DraftEntity* entity) {
+
+    QSqlQuery query(dbManager->getDatabase());
+    query.prepare(getApproveUpdateQuery());
+    query.addBindValue(entity->getApprovalStatus());
+    query.addBindValue(entity->getNextApprovingUser());
+    query.addBindValue(entity->getId());
+
+    if (!query.exec()) {
+        qDebug() << "Error Updated Data:" << query.lastError().text();
+        return 0;
+    } else {
+        qDebug() << "Data Updated successfully!";
+        return 1;
+    }
+
+    return 1;
+}
+
+bool DraftEntityRepository::cancelQML(DraftEntity* entity) {
+
+    QSqlQuery query(dbManager->getDatabase());
+    query.prepare(getCancelQuery());
+    query.addBindValue(entity->getApprovalStatus());
+    query.addBindValue(entity->getNextApprovingUser());
+    query.addBindValue(entity->getId());
+
+    if (!query.exec()) {
+        qDebug() << "Error Updated Data:" << query.lastError().text();
+        return 0;
+    } else {
+        qDebug() << "Data Updated successfully!";
+        return 1;
+    }
+
+    return 1;
+}
+
 
 bool DraftEntityRepository::update(const DraftEntity& entity) { return false; }
 
@@ -83,9 +121,11 @@ DraftEntity* DraftEntityRepository::mapFromQueryQML(const QSqlQuery& query, QObj
     draftEntity->setEntity(query.value("entity").toString());
     draftEntity->setCreatedOn(query.value("createdOn").toDate());
     draftEntity->setCreatedByUser(query.value("createdByUser").toInt());
+    draftEntity->setApprovalStatus(query.value("approvalStatus").toString());
+    draftEntity->setGlobalId("");
     draftEntity->setEntitySchema(query.value("entitySchema").toString());
-    draftEntity->setAssociatedApprovedEntity(query.value("associatedApprovedEntity").toInt());
     draftEntity->setNextApprovingUser(query.value("nextApprovingUser").toInt());
+    draftEntity->setAssociatedApprovedEntity(query.value("associatedApprovedEntity").toInt());
     draftEntity->setChangeHistory(query.value("changeHistory").toString());
 
     return draftEntity;
@@ -99,15 +139,22 @@ void DraftEntityRepository::bindEntityToQuery(QSqlQuery& query, const DraftEntit
     query.addBindValue(entity.getCreatedOn());
     query.addBindValue(entity.getCreatedByUser());
     query.addBindValue(entity.getEntitySchema());
-    query.addBindValue(entity.getAssociatedApprovedEntity());
     query.addBindValue(entity.getNextApprovingUser());
+    query.addBindValue(entity.getAssociatedApprovedEntity());
     query.addBindValue(entity.getChangeHistory());
 
 }
 QString DraftEntityRepository::getInsertQuery() const {
-    return "INSERT INTO DraftEntity (tenant, project, entity, createdOn, createdByUser, entitySchema, associatedApprovedEntity, nextApprovingUser, changeHistory) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    return "INSERT INTO DraftEntity (tenant, project, entity, createdOn, createdByUser, entitySchema, nextApprovingUser, associatedApprovedEntity , changeHistory) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 }
 QString DraftEntityRepository::getUpdateQuery() const {
     return "UPDATE DraftEntity SET  entitySchema = ? WHERE id = ?";
+}
+QString DraftEntityRepository::getApproveUpdateQuery() const {
+    return "UPDATE DraftEntity SET  approvalStatus = ?, nextApprovingUser = ? WHERE id = ?";
+}
+
+QString DraftEntityRepository::getCancelQuery() const {
+    return "UPDATE DraftEntity SET  approvalStatus = ?, nextApprovingUser = ? WHERE id = ?";
 }
 
