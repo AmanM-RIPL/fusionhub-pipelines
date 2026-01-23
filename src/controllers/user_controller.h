@@ -12,6 +12,8 @@ class UserController : public QObject
 public:
     explicit UserController(QObject *parent = nullptr);
     Q_INVOKABLE bool login(const QString& username, const QString& password) const;
+    Q_INVOKABLE void logout();
+    //void initializeTimer();
 
 
     Q_INVOKABLE void create(const QString& userFullName,
@@ -63,10 +65,13 @@ public:
     Q_INVOKABLE QString getCurrentUserPassword() const;
 
 
+    void startBackgroundSync();
+
 signals:
 
+
 private:
-    UserRepository* m_userRepository;    
+    UserRepository* m_userRepository;
 
 };
 

@@ -1,15 +1,48 @@
 #include "user_controller.h"
 #include "common/repository_locator.h"
+#include "common/background_thread_manager.h"
 
 extern std::shared_ptr<User> gUser;
+
+ QTimer *g_timer = nullptr;
 
 UserController::UserController(QObject *parent)
     :
     QObject{parent},
     m_userRepository(RepositoryLocator::instance().userRepository())
-
 {
+   //qDebug()<<"UserController::UserController(QObject *parent)";
+}
 
+void UserController::startBackgroundSync()
+{
+    if (!g_timer)
+    {
+        g_timer = new QTimer(this);
+        connect(g_timer, &QTimer::timeout,
+                BackgroundThreadManager::instance(),
+                &BackgroundThreadManager::runBackgroundTaskForDraftDataSync);
+
+        g_timer->start(1000);
+        qDebug() << "Timer created and started";
+    }
+    else if (!g_timer->isActive()) {
+        g_timer->start(1000);
+    }
+
+    BackgroundThreadManager::instance()->runBackgroundTaskForDraftDataSync();
+}
+
+void UserController::logout()
+{
+     qDebug()<<"logout1";
+    if(g_timer)
+    {
+        qDebug()<<"logout2";
+        g_timer->stop();
+        delete  g_timer;
+        g_timer = nullptr;
+    }
 }
 
 bool UserController::login(const QString &username, const QString &password) const
@@ -19,6 +52,9 @@ bool UserController::login(const QString &username, const QString &password) con
     if(username == "admin" || username.isEmpty())
     {
         gUser->setUserName("admin");
+
+        const_cast<UserController*>(this)->startBackgroundSync();
+
         return true;
     }
 
