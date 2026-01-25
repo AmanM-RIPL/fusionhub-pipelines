@@ -53,6 +53,11 @@ void View::LoadStaticMeshData(QList<Mesh*>& meshList)
     //     qInfo() << "Model Matrix Index: " << modelMatrixIndices[i];
     // }
 
+    // for (int i = 0; i < numOfEdges; i++)
+    // {
+    //     qInfo() << "Edges: " << edge_indices[i][0] << ", " << edge_indices[i][1];
+    // }
+
     // Initializing the vao, vbo, and ibo
     m_static_indexCount = numOfIndices;
     m_static_borderIndexCount = numOfEdges;
@@ -438,6 +443,29 @@ void View::Render()
     QVector3D cameraPosition = camera->getCameraPosition();
     this->glUniform3f(shader->getViewPositionId(), cameraPosition.x(), cameraPosition.y(), cameraPosition.z());
 
+
+    // Binding TBO to texture units
+    // For texture arrays
+    this->glActiveTexture(GL_TEXTURE0);
+    this->glBindTexture(GL_TEXTURE_2D_ARRAY, textureList[0]->getTextureId());
+
+    // For Material List
+    this->glActiveTexture(GL_TEXTURE1);
+    this->glBindTexture(GL_TEXTURE_BUFFER, m_materialTexture);
+
+    // For Model Matrices
+    this->glActiveTexture(GL_TEXTURE2);
+    this->glBindTexture(GL_TEXTURE_BUFFER, m_static_matrixTexture);
+
+    // For vertices arrays
+    this->glActiveTexture(GL_TEXTURE3);
+    this->glBindTexture(GL_TEXTURE_BUFFER, m_static_verticesTexture);
+
+    // For Model Matrix Indices
+    this->glActiveTexture(GL_TEXTURE4);
+    this->glBindTexture(GL_TEXTURE_BUFFER, m_static_matrixIndexTexture);
+
+
     // For texture arrays
     this->glUniform1i(shader->getTextureArrayId(), 0);
 
@@ -485,6 +513,31 @@ void View::Render()
 
     std::array<float, 2> viewportArray = {viewportWidth, viewportHeight};
     this->glUniform2fv(edgeShader->getViewPortId(), 1, viewportArray.data());
+
+
+    // Binding TBO to texture units
+    // For texture arrays
+    this->glActiveTexture(GL_TEXTURE0);
+    this->glBindTexture(GL_TEXTURE_2D_ARRAY, textureList[0]->getTextureId());
+
+    // For Material List
+    this->glActiveTexture(GL_TEXTURE1);
+    this->glBindTexture(GL_TEXTURE_BUFFER, m_materialTexture);
+
+    // For Model Matrices
+    this->glActiveTexture(GL_TEXTURE2);
+    this->glBindTexture(GL_TEXTURE_BUFFER, m_static_matrixTexture);
+
+    // For vertices arrays
+    this->glActiveTexture(GL_TEXTURE3);
+    this->glBindTexture(GL_TEXTURE_BUFFER, m_static_verticesTexture);
+
+    // For Model Matrix Indices
+    this->glActiveTexture(GL_TEXTURE4);
+    this->glBindTexture(GL_TEXTURE_BUFFER, m_static_matrixIndexTexture);
+
+
+
 
     // For vertices arrays
     this->glUniform1i(edgeShader->getVerticesId(), 3);

@@ -264,35 +264,6 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
         edge_materialIndex,
         meshIndices
     );
-
-    QMatrix4x4 modelMatrix;
-    modelMatrix.setToIdentity();
-
-    // set scale
-    float scaleFactor = height/4; // height of IFC file is 0.45
-    modelMatrix.scale(scaleFactor);
-
-    // set translation
-    float z = distance + 1;
-    float x = referenceLine[0][0] + 1.5; // 0.0 is the default x coordinate of left side
-    float y = referenceLine[0][1] - 0; // 0.17 is the default y coordinate of left size
-    modelMatrix.translate(x,y,z);
-
-    // set rotation
-    QVector3D directionVector;
-    directionVector.setX(referenceLine[1][0] - referenceLine[0][0]);
-    directionVector.setY(referenceLine[1][1] - referenceLine[0][1]);
-    directionVector.setZ(0);
-    directionVector.normalize();
-
-    QVector3D xAxisVector(1,0,0);
-    float dotProductResult = QVector3D::dotProduct(directionVector,xAxisVector);
-    float angleInRadians = qAcos(dotProductResult);
-    float degrees = qRadiansToDegrees(angleInRadians);
-
-    modelMatrix.rotate(degrees, 0, 0, 1);
-
-    mesh->setModelMatrix(modelMatrix);
     mesh->setBIMElementId(wallElement->getId());
 }
 

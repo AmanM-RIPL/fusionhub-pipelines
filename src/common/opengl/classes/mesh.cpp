@@ -86,7 +86,7 @@ void Mesh::AppendGeometry(
 
     for (const unsigned int& index: indices)
     {
-        m_indices.push_back(index + m_numOfVertices);
+        m_indices.push_back(index + numOfVertices);
     }
 
     for (const EdgeIndex& index: edge_indices)
