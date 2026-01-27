@@ -508,6 +508,8 @@ QString DatabaseManager::getCreateTableQuery(const QString& tableName)
                 entity TEXT NOT NULL,
                 createdByUser INTEGER NOT NULL,
                 nextApprovingUser INTEGER,
+                approvalStatus TEXT NULL,
+                globalId TEXT NULL,
                 entitySchema TEXT NOT NULL,
                 associatedApprovedEntity INTEGER,
                 changeHistory TEXT NOT NULL

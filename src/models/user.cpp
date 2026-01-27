@@ -2,6 +2,7 @@
 
 User::User(int id,
      const QString& globalId,
+     const QString& token,
      bool approvalStatus,
      const QString& user_id,
      const QString& user_fullname,
@@ -18,6 +19,7 @@ User::User(int id,
            QObject* parent)
     :id(id),
     globalId(globalId),
+    token(token),
     approvalStatus(approvalStatus),
     user_id(user_id),
     user_fullname(user_fullname),

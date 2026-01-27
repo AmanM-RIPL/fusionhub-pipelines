@@ -21,13 +21,16 @@ Popup {
     property int popupHeight: 200
     property var onAcceptCallback: null
     property var onCancelCallback: null
+    property var onApproveCallback: null
 
     property bool showAcceptButton: true
+    property bool showApproveButton: false
 
     default property alias content: contentItem.children
 
     property string buttonName: "Add"
     property string buttonSource: "qrc:/resources/images/addWhite_icon.png"
+    property bool buttonEnabled: true
 
 
     Rectangle {
@@ -50,8 +53,6 @@ Popup {
                     font.family: "Segoe UI"
                     font.weight: 700
                     font.pixelSize: 15
-                    // leftPadding: 20
-                    // topPadding: 20
                 }
 
                 CustomButton {
@@ -59,24 +60,19 @@ Popup {
                     width: 20
                     height: 20
                     radius: 4
-                    // border.color: "#007AFF"
                     btnSource: "qrc:/resources/images/close.svg"
                     btnName: " "
                     btnNameColor: "white"
-                    // anchors.verticalCenter: parent.verticalCenter
                     anchors.right: parent.right
-
 
                     MouseArea{
                         anchors.fill: parent
-
                         onClicked: {
                             popupRoot.close()
                         }
                     }
                 }
             }
-
 
             Rectangle {
                 width: parent.width
@@ -107,30 +103,32 @@ Popup {
                 spacing: 20
                 layoutDirection: Qt.RightToLeft
 
+                // Accept Button
                 CustomButton {
                     visible: popupRoot.showAcceptButton
-                    color: "#007AFF"
+                    enabled: popupRoot.buttonEnabled
+                    color: popupRoot.buttonEnabled ? "#007AFF" : "#D0D0D0"
                     width: 84
                     height: 30
                     radius: 4
-                    // border.color: "#007AFF"
-                    //btnSource: "qrc:/resources/images/addWhite_icon.png"
                     btnSource: buttonSource
-                    //btnName: "Add"
                     btnName: buttonName
-                    btnNameColor: "white"
-                    // anchors.verticalCenter: parent.verticalCenter
+                    btnNameColor: popupRoot.buttonEnabled ? "white" : "#808080"
 
                     MouseArea{
                         anchors.fill: parent
+                        enabled: popupRoot.buttonEnabled
 
                         onClicked: {
-                            popupRoot.close()
-                            if (popupRoot.onAcceptCallback) popupRoot.onAcceptCallback()
+                            if (popupRoot.buttonEnabled) {
+                                popupRoot.close()
+                                if (popupRoot.onAcceptCallback) popupRoot.onAcceptCallback()
+                            }
                         }
                     }
                 }
 
+                // Cancel Button
                 CustomButton {
                     color: "#FFFFFF"
                     width: 84
@@ -140,19 +138,35 @@ Popup {
                     btnSource: "qrc:/resources/images/close.svg"
                     btnName: "Cancel"
                     btnNameColor: "grey"
-                    // anchors.verticalCenter: parent.verticalCenter
 
                     MouseArea{
                         anchors.fill: parent
-
                         onClicked: {
                             popupRoot.close()
-
                             if (popupRoot.onCancelCallback) popupRoot.onCancelCallback()
                         }
                     }
                 }
 
+                // Approve Button
+                CustomButton {
+                    visible: popupRoot.showApproveButton
+                    color: "#4CAF50"  // Green color
+                    width: 84
+                    height: 30
+                    radius: 4
+                    btnSource: "qrc:/resources/images/addWhite_icon.png"
+                    btnName: "Approve"
+                    btnNameColor: "white"
+
+                    MouseArea{
+                        anchors.fill: parent
+                        onClicked: {
+                            popupRoot.close()
+                            if (popupRoot.onApproveCallback) popupRoot.onApproveCallback()
+                        }
+                    }
+                }
             }
         }
     }

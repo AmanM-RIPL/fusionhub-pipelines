@@ -131,7 +131,7 @@ Column {
                     }
                     CustomComboBox {
                         id: vendorCombo
-                        width: 300
+                        width: 600
                         model: vendorList
                         currentIndex: 0
                     }
@@ -167,27 +167,27 @@ Column {
                         columns: [
                             {
                                 "label": "Material",
-                                "width": 150,
+                                "width": 180,
                                 "key": "material_name"
                             },
                             {
                                 "label": "Quantity",
-                                "width": 100,
+                                "width": 180,
                                 "key": "quantity"
                             },
                             {
                                 "label": "Unit",
-                                "width": 100,
+                                "width": 140,
                                 "key": "unit_name"
                             },
                             {
                                 "label": "Dollar Value",
-                                "width": 120,
+                                "width": 140,
                                 "key": "dollar_value"
                             },
                             {
                                 "label": "Tax Amount",
-                                "width": 120,
+                                "width": 140,
                                 "key": "tax_amount"
                             },
                             {
@@ -235,14 +235,14 @@ Column {
                         placeholderText: "Quantity"
                         text: ""
                         color: "#323130"
-                        width: 100
+                        width: 150
                         height: 24
                         topPadding: 1
                     }
 
                     CustomComboBox {
                         id: unitCombo
-                        width: 100
+                        width: 150
                         height: 24
                         model: purchaseOrderRoot.unitOfMeasurementList
                         currentIndex: 0
@@ -253,7 +253,7 @@ Column {
                         placeholderText: "Dollar Value"
                         text: ""
                         color: "#323130"
-                        width: 120
+                        width: 150
                         height: 24
                         topPadding: 1
                     }
@@ -263,7 +263,7 @@ Column {
                         placeholderText: "Tax Amount"
                         text: ""
                         color: "#323130"
-                        width: 120
+                        width: 150
                         height: 24
                         topPadding: 1
                     }
@@ -273,7 +273,7 @@ Column {
                         placeholderText: "Tax Withholding"
                         text: ""
                         color: "#323130"
-                        width: 140
+                        width: 120
                         height: 24
                         topPadding: 1
                     }
@@ -417,7 +417,7 @@ Column {
                     }
                     CustomComboBox {
                         id: vendorComboEdit
-                        width: 300
+                        width: 500
                         model: vendorList
                         currentIndex: 0
                         enabled: popupMode === "edit"
@@ -523,14 +523,14 @@ Column {
                         placeholderText: "Quantity"
                         text: ""
                         color: "#323130"
-                        width: 100
+                        width: 150
                         height: 24
                         topPadding: 1
                     }
 
                     CustomComboBox {
                         id: unitComboEdit
-                        width: 100
+                        width: 150
                         height: 24
                         model: purchaseOrderRoot.unitOfMeasurementList
                         currentIndex: 0
@@ -541,7 +541,7 @@ Column {
                         placeholderText: "Amount"
                         text: ""
                         color: "#323130"
-                        width: 120
+                        width: 150
                         height: 24
                         topPadding: 1
                     }
@@ -551,7 +551,7 @@ Column {
                         placeholderText: "Tax Amount"
                         text: ""
                         color: "#323130"
-                        width: 120
+                        width: 150
                         height: 24
                         topPadding: 1
                     }
@@ -561,7 +561,7 @@ Column {
                         placeholderText: "Tax Withholding"
                         text: ""
                         color: "#323130"
-                        width: 140
+                        width: 120
                         height: 24
                         topPadding: 1
                     }
@@ -694,7 +694,7 @@ Column {
 
     Rectangle {
         width: 100
-        height: 5
+        height: 40
         color: "#EDF1F4"
     }
 
@@ -707,12 +707,12 @@ Column {
         columns: [
             {
                 "label": "Id",
-                "width": 400,
+                "width": 600,
                 "key": "id"
             },
             {
                 "label": "Vendor",
-                "width": 800,
+                "width": 700,
                 "key": "vendorName"
             }
         ]

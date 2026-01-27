@@ -18,25 +18,19 @@ VendorController::VendorController(QObject *parent)
 void VendorController::create(const QString &vendorName, const QString &vendorAddress, const QString &vendorContactPerson,
                               const QString &vendorMobile, const QString &vendorEmail) const
 {
+    // Vendor vendor;
+    // //qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
 
-    qDebug() <<"gTenantId:" << gTenantId;
-    qDebug() <<"gProjectId:" << gProjectId;
-    qDebug() <<"CurrentUserId:" << gUser->getUserId();
+    // vendor.setId(0);
+    // vendor.setGlobalId("123");
+    // vendor.setApprovalStatus(true);
+    // vendor.setVendorName(vendorName);
+    // vendor.setVendorAddress(vendorAddress);
+    // vendor.setVendorContactPerson(vendorContactPerson);
+    // vendor.setVendorMobile(vendorMobile);
+    // vendor.setVendorEmail(vendorEmail);
 
-
-    Vendor vendor;
-    //qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
-
-    vendor.setId(0);
-    vendor.setGlobalId("123");
-    vendor.setApprovalStatus(true);
-    vendor.setVendorName(vendorName);
-    vendor.setVendorAddress(vendorAddress);
-    vendor.setVendorContactPerson(vendorContactPerson);
-    vendor.setVendorMobile(vendorMobile);
-    vendor.setVendorEmail(vendorEmail);
-
-    m_vendorRepository->saveQML(&vendor);
+    // m_vendorRepository->saveQML(&vendor);
 
 
     /***********Start of DraftEntity******************/
@@ -79,13 +73,57 @@ void VendorController::create(const QString &vendorName, const QString &vendorAd
     draftEntity.setProject(gProjectId);
     draftEntity.setEntity("Vendor");
     //draftEntity.setCreatedByUser(gUser->getUserId());
-     draftEntity.setCreatedByUser(gUser->getId());
+    draftEntity.setCreatedByUser(gUser->getId());
     draftEntity.setNextApprovingUser(0);
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);
     draftEntity.setChangeHistory(changeHistory);
 
     m_draftEntityRepository->saveQML(&draftEntity);
+}
+
+void VendorController::update(int id, const QString &vendorName, const QString &vendorAddress, const QString &vendorContactPerson,
+                              const QString &vendorMobile, const QString &vendorEmail) const
+{
+    QJsonObject jsonObject;
+    jsonObject["vendorName"] = vendorName;
+    jsonObject["vendorAddress"] = vendorAddress;
+    jsonObject["vendorMobile"] = vendorMobile;
+    jsonObject["vendorEmail"] = vendorEmail;
+    jsonObject["vendorContactPerson"] = vendorContactPerson;
+
+    QJsonDocument jsonDoc(jsonObject);
+    QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
+    // qDebug() << "PurchaseOrder:EntitySchema: " << entitySchema;
+
+    QDateTime currentDateTimeUtc = QDateTime::currentDateTimeUtc();
+    QString isoDateTimeString = currentDateTimeUtc.toString(Qt::ISODateWithMs);
+
+    QJsonObject jsonObjectChangeHistory;
+    jsonObjectChangeHistory["user"] = gUser->getId();
+    jsonObjectChangeHistory["timestamp"] = isoDateTimeString;
+    jsonObjectChangeHistory["changeType"] = "update";
+    jsonObjectChangeHistory["description"] = "Updated By User";
+    jsonObjectChangeHistory["approvalHistory"] = "null";
+
+    QJsonDocument jsonDocChangeHistory(jsonObjectChangeHistory);
+    QString changeHistory = jsonDocChangeHistory.toJson(QJsonDocument::Indented);
+
+    QDate updatedOn = QDate::currentDate();
+
+    DraftEntity draftEntity;
+    draftEntity.setId(id);
+    draftEntity.setTenant(gTenantId);
+    draftEntity.setCreatedOn(updatedOn);
+    draftEntity.setProject(gProjectId);
+    draftEntity.setEntity("Vendor");
+    draftEntity.setCreatedByUser(gUser->getId());
+    draftEntity.setNextApprovingUser(0);
+    draftEntity.setEntitySchema(entitySchema);
+    draftEntity.setAssociatedApprovedEntity(0);
+    draftEntity.setChangeHistory(changeHistory);
+
+    m_draftEntityRepository->updateQML(&draftEntity);
 }
 
 std::vector<Vendor*> VendorController::getVendorList(bool isApproved) const
@@ -96,29 +134,30 @@ std::vector<Vendor*> VendorController::getVendorList(bool isApproved) const
         return m_vendorRepository->findAllQML();
     }
     else{        
-      std::vector<DraftEntity*>  draftEntitys  =  m_draftEntityRepository->findAllQML("Vendor");
-      std::vector<Vendor*> vendors;
-      for(int i = 0; i < draftEntitys.size(); i++)
-      {
-          QString  jsonString = draftEntitys[i]->getEntitySchema();
-          QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
-          if (!jsonDoc.isNull() && jsonDoc.isObject())
-          {
-              auto vendor = new Vendor();
-              QJsonObject jsonObj = jsonDoc.object();
-              vendor->setId(i + 1);
-              vendor->setGlobalId("123");
-              vendor->setApprovalStatus(true);
-              vendor->setVendorName(jsonObj["vendorName"].toString());
-              vendor->setVendorAddress(jsonObj["vendorAddress"].toString());
-              vendor->setVendorContactPerson(jsonObj["vendorContactPerson"].toString());
-              vendor->setVendorMobile(jsonObj["vendorMobile"].toString());
-              vendor->setVendorEmail(jsonObj["vendorEmail"].toString());
+        std::vector<DraftEntity*>  draftEntitys  =  m_draftEntityRepository->findAllQML("Vendor");
+        std::vector<Vendor*> vendors;
+        for(int i = 0; i < draftEntitys.size(); i++)
+        {
+            int draftId = draftEntitys[i]->getId();
+            QString  jsonString = draftEntitys[i]->getEntitySchema();
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
+            if (!jsonDoc.isNull() && jsonDoc.isObject())
+            {
+                auto vendor = new Vendor();
+                QJsonObject jsonObj = jsonDoc.object();
+                vendor->setId(draftId);
+                vendor->setGlobalId("123");
+                vendor->setApprovalStatus(true);
+                vendor->setVendorName(jsonObj["vendorName"].toString());
+                vendor->setVendorAddress(jsonObj["vendorAddress"].toString());
+                vendor->setVendorContactPerson(jsonObj["vendorContactPerson"].toString());
+                vendor->setVendorMobile(jsonObj["vendorMobile"].toString());
+                vendor->setVendorEmail(jsonObj["vendorEmail"].toString());
 
-              vendors.push_back(vendor);
-          }
-      }
-      return vendors;
+                vendors.push_back(vendor);
+            }
+        }
+        return vendors;
     }
 }
 

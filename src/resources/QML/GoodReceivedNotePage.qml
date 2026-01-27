@@ -5,20 +5,24 @@ import com.fh.models 1.0
 import com.fh.controllers
 
 Column {
-    // anchors.fill: parent
     id: goodReceivedNoteRoot
     width: parent.width
     padding: 10
 
-    property var goodReceivedNoteList: []
-    property var goodReceivedNoteListForTable: []
-    property var purchaseOrderLineText: [] // text for dropdown
-    property var purchaseOrderLineList: ["--"] // raw data of po
-    property var purchaseOrderText: [] // text for dropdown
-    property var purchaseOrderList: ["--"] // raw data of po
+    // Properties - Data from controllers
+    property var purchaseOrderLinesFromCtrl: []
+    property var purchaseOrdersFromCtrl: []
 
+    // Properties - Lists for UI
+    property var goodReceivedNoteList: []
+    property var purchaseOrderLineList: []
+
+    // Properties - State management
+    property var selectedData: null
+    property string popupMode: "view"
     property bool isApproved: false
 
+    // Controllers
     GoodReceivedNoteController {
         id: goodReceivedNoteController
     }
@@ -31,36 +35,66 @@ Column {
         id: purchaseOrderController
     }
 
+    /* ---------- Create Popup ---------- */
     FHPopup {
         id: newGoodReceivedNotePopup
         popupWidth: 500
         popupHeight: 350
-        title: "New Good Received Note"
+        title: "Create Good Received Note"
+        parent: Overlay.overlay
 
         onAcceptCallback: function () {
-
-            goodReceivedNoteController.create(
-                        goodReceivedNoteQuantityTextBox.text,
-                        goodReceivedNoteRoot.purchaseOrderLineList[purchaseOrderLineComboBox.currentIndex].id)
-
-            purchaseOrderLineComboBox.currentIndex = -1
-            goodReceivedNoteQuantityTextBox.text = ""
-
-            showList()
+            if (purchaseOrderLineCombo.currentIndex >= 0 && amountReceivedTextBox.text !== "") {
+                goodReceivedNoteController.create(
+                            purchaseOrderLinesFromCtrl[purchaseOrderLineCombo.currentIndex].id,
+                            amountReceivedTextBox.text
+                            )
+                // Reset
+                amountReceivedTextBox.text = ""
+                purchaseOrderLineCombo.currentIndex = 0
+            }
+            close()
         }
 
         onCancelCallback: function () {
-            purchaseOrderLineComboBox.currentIndex = -1
-            goodReceivedNoteQuantityTextBox.text = ""
+            amountReceivedTextBox.text = ""
+            purchaseOrderLineCombo.currentIndex = 0
+            close()
+        }
+
+        onClosed: {
+            showGoodReceivedNoteList()
+        }
+
+        onOpened: {
+            // Load lists
+            amountReceivedTextBox.text = ""
+            purchaseOrderLineCombo.currentIndex = 0
+
+            if (goodReceivedNoteRoot.visible) {
+                purchaseOrderLinesFromCtrl = []
+                purchaseOrdersFromCtrl = []
+
+                purchaseOrderLinesFromCtrl = purchaseOrderLineController.getPurchaseOrderLineList(true)
+                purchaseOrdersFromCtrl = purchaseOrderController.getPurchaseOrderList(true)
+
+                // Clear current list then populate
+                goodReceivedNoteRoot.purchaseOrderLineList = []
+
+                for (var i = 0; i < purchaseOrderLinesFromCtrl.length; i++) {
+                    goodReceivedNoteRoot.purchaseOrderLineList = goodReceivedNoteRoot.purchaseOrderLineList.concat(
+                                purchaseOrderLinesFromCtrl[i].id)
+                }
+            }
         }
 
         Column {
             width: parent.width
-            height: 200 //parent.height //30 for each top bottom
+            spacing: 10
 
             Text {
                 id: purchaseOrderLineLabel
-                text: "Purchase Order line"
+                text: "Purchase Order Line"
                 color: "#323130"
                 font.weight: 700
                 font.pixelSize: 14
@@ -69,28 +103,134 @@ Column {
             }
 
             CustomComboBox {
-                id: purchaseOrderLineComboBox
-                model: goodReceivedNoteRoot.purchaseOrderLineText
+                id: purchaseOrderLineCombo
+                width: parent.width
+                model: purchaseOrderLineList
+                currentIndex: 0
             }
 
             Text {
-                id: goodReceivedNoteQuantityLabel
-                text: "Quantity"
+                id: amountReceivedLabel
+                text: "Amount of Material Received"
                 color: "#323130"
                 font.weight: 700
                 font.pixelSize: 14
                 font.family: "Segoe UI"
+                topPadding: 10
             }
 
             CustomTextBox {
-                id: goodReceivedNoteQuantityTextBox
-                placeholderText: "quantity"
+                id: amountReceivedTextBox
+                placeholderText: "Amount of Material Received"
                 text: ""
                 color: "#323130"
+                width: parent.width
+                height: 30
             }
         }
     }
 
+    /* ---------- View / Edit Popup ---------- */
+    FHPopup {
+        id: viewEditPopup
+        popupWidth: 500
+        popupHeight: 350
+        title: popupMode === "view" ? "View Good Received Note" : "Edit Good Received Note"
+
+        showAcceptButton: popupMode === "edit"
+        buttonName: popupMode === "edit" ? "Update" : ""
+        buttonSource: popupMode === "edit" ? "qrc:/resources/images/editWhite_icon.png" : ""
+
+        onAcceptCallback: function () {
+            if (popupMode === "edit" && selectedData) {
+                goodReceivedNoteController.update(
+                            selectedData.id,
+                            purchaseOrderLinesFromCtrl[poLineComboEdit.currentIndex].id,
+                            amountReceivedFieldEdit.text
+                            )
+                // Reset
+                amountReceivedFieldEdit.text = ""
+                poLineComboEdit.currentIndex = 0
+                showGoodReceivedNoteList()
+            }
+        }
+
+        onCancelCallback: function () {
+            amountReceivedFieldEdit.text = ""
+            poLineComboEdit.currentIndex = 0
+        }
+
+        onOpened: {
+            // Load lists from controllers
+            amountReceivedFieldEdit.text = ""
+
+            purchaseOrderLinesFromCtrl = []
+            purchaseOrdersFromCtrl = []
+
+            purchaseOrderLinesFromCtrl = purchaseOrderLineController.getPurchaseOrderLineList(true)
+            purchaseOrdersFromCtrl = purchaseOrderController.getPurchaseOrderList(true)
+
+            // Clear and populate purchase order line list
+            var tempPurchaseOrderLineList = []
+
+            for (var i = 0; i < purchaseOrderLinesFromCtrl.length; i++) {
+                tempPurchaseOrderLineList = tempPurchaseOrderLineList.concat(
+                            purchaseOrderLinesFromCtrl[i].id)
+            }
+
+            goodReceivedNoteRoot.purchaseOrderLineList = tempPurchaseOrderLineList
+
+            // Fill popup with selected data
+            if (selectedData) {
+                fillPopup()
+            }
+        }
+
+        Column {
+            width: parent.width
+            spacing: 10
+
+            Text {
+                id: purchaseOrderLineLabelEdit
+                text: "Purchase Order Line"
+                color: "#323130"
+                font.weight: 700
+                font.pixelSize: 14
+                font.family: "Segoe UI"
+                topPadding: 10
+            }
+
+            CustomComboBox {
+                id: poLineComboEdit
+                width: parent.width
+                model: purchaseOrderLineList
+                currentIndex: 0
+                enabled: popupMode === "edit"
+            }
+
+            Text {
+                id: amountReceivedLabelEdit
+                text: "Amount of Material Received"
+                color: "#323130"
+                font.weight: 700
+                font.pixelSize: 14
+                font.family: "Segoe UI"
+                topPadding: 10
+            }
+
+            CustomTextBox {
+                id: amountReceivedFieldEdit
+                placeholderText: "Amount of Material Received"
+                text: ""
+                color: "#323130"
+                width: parent.width
+                height: 30
+                enabled: popupMode === "edit"
+            }
+        }
+    }
+
+    // -------- Header Row --------
     Row {
         spacing: 20
         Text {
@@ -100,7 +240,6 @@ Column {
             font.weight: 700
             font.pixelSize: 44
             leftPadding: 20
-            // topPadding: 20
         }
 
         CustomButton {
@@ -108,7 +247,6 @@ Column {
             width: 85
             height: 38
             radius: 4
-            // border.color: "#007AFF"
             btnSource: "qrc:/resources/images/addWhite_icon.png"
             btnName: "New"
             btnNameColor: "white"
@@ -116,10 +254,8 @@ Column {
 
             MouseArea {
                 anchors.fill: parent
-
-                onClicked: {
-                    newGoodReceivedNotePopup.open()
-                }
+                cursorShape: Qt.PointingHandCursor
+                onClicked: newGoodReceivedNotePopup.open()
             }
         }
     }
@@ -130,31 +266,42 @@ Column {
         color: "#EDF1F4"
     }
 
-    Row {
+    // -------- Approval Type Selection --------
+    Column {
         spacing: 20
-        Text {
-            id: approvalTypeLabel
-            text: "Choose Approval Type"
-            color: "#323130"
-            font.weight: 700
-            font.pixelSize: 14
-            font.family: "Segoe UI"
-            topPadding: 10
-            leftPadding: 20
-        }
+        Row {
+            spacing: 20
+            anchors.left: parent.left
 
-        CustomComboBox {
-            id: approvalTypeComboBox
-            model: ["Approved", "Draft"]
-            width: 200
+            Text {
+                id: approvalTypeLabel
+                text: "Choose Approval Type"
+                color: "#323130"
+                font.weight: 700
+                font.pixelSize: 14
+                font.family: "Segoe UI"
+                topPadding: 10
+                leftPadding: 20
+            }
 
-            onCurrentTextChanged: {
-                if (approvalTypeComboBox.currentText === "Approved") {
-                    isApproved = true
-                } else {
-                    isApproved = false
+            CustomComboBox {
+                id: approvalTypeComboBox
+                model: ["Approved", "Draft"]
+                width: 200
+                currentIndex: 0
+
+                contentItem: Text {
+                    text: approvalTypeComboBox.displayText
+                    leftPadding: 10
+                    verticalAlignment: Text.AlignVCenter
+                    color: "#323130"
+                    font.pixelSize: 14
                 }
-                showList()
+
+                onCurrentTextChanged: {
+                    isApproved = (approvalTypeComboBox.currentText === "Approved")
+                    showGoodReceivedNoteList()
+                }
             }
         }
     }
@@ -165,39 +312,69 @@ Column {
         color: "#EDF1F4"
     }
 
+    // -------- Main Table --------
     FHTable {
-        height: 200
+        height: 300
         leftPadding: 20
         model: goodReceivedNoteRoot.goodReceivedNoteList
-        columns: [{
+
+        columns: [
+            {
                 "label": "Id",
-                "width": 100,
+                "width": 650,
                 "key": "id"
-            }, {
-                "label": "Purchase Order",
-                "width": 300,
-                "key": "purchaseOrderLineId"
-            }, {
-                "label": "Quantity",
-                "width": 300,
+            },
+            {
+                "label": "Amount Received",
+                "width": 650,
                 "key": "quantity"
-            }]
+            }
+        ]
+
+        onViewRequested: function(row) {
+            popupMode = "view"
+            selectedData = row
+            fillPopup()
+            viewEditPopup.open()
+        }
+
+        onEditRequested: function(row) {
+            popupMode = "edit"
+            selectedData = row
+            fillPopup()
+            viewEditPopup.open()
+        }
     }
 
-    Component.onCompleted: {
-        showList()
+    // -------- Component Initialization --------
+    Component.onCompleted: showGoodReceivedNoteList()
+    onVisibleChanged: showGoodReceivedNoteList()
+
+    // -------- Functions --------
+    function showGoodReceivedNoteList() {
+        goodReceivedNoteRoot.goodReceivedNoteList = []
+
+        if (!goodReceivedNoteRoot.visible)
+            return
+
+        goodReceivedNoteRoot.goodReceivedNoteList = goodReceivedNoteController.getGoodReceivedNoteList(isApproved)
     }
 
-    onVisibleChanged: {
-        showList()
-    }
+    function fillPopup() {
+        if (!selectedData)
+            return
 
-    function showList() {
-        if (goodReceivedNoteRoot.visible) {
-            goodReceivedNoteRoot.goodReceivedNoteList =
-                    goodReceivedNoteController.getGoodReceivedNoteList(isApproved)
+        // Set amount of material received
+        amountReceivedFieldEdit.text = selectedData.quantity !== null
+                ? String(selectedData.quantity)
+                : ""
 
-            //console.log("List:", JSON.stringify(goodReceivedNoteRoot.goodReceivedNoteList))
+        // Find and set purchase order line
+        for (var i = 0; i < purchaseOrderLinesFromCtrl.length; i++) {
+            if (purchaseOrderLinesFromCtrl[i].id === selectedData.purchaseOrderLineId) {
+                poLineComboEdit.currentIndex = i
+                break
+            }
         }
     }
 }

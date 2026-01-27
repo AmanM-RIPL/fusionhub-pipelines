@@ -1,60 +1,74 @@
 #include "user_controller.h"
+#include "network/network_manager.h"
 #include "common/repository_locator.h"
+#include <QDateTime>
+#include <QUuid>
+#include <QDebug>
 
 extern std::shared_ptr<User> gUser;
 
 UserController::UserController(QObject *parent)
-    :
-    QObject{parent},
+    : QObject(parent),
     m_userRepository(RepositoryLocator::instance().userRepository())
-
 {
+    // Connect NetworkManager signals to UserController slots
+    NetworkManager* network = NetworkManager::getInstance();
+
+    connect(network, &NetworkManager::loginDone,
+            this, [this, network]() {
+                QJsonObject userData = network->getLastUserData();
+                onNetworkLoginSuccess(userData);
+            });
+
+    connect(network, &NetworkManager::loginFailed,
+            this, &UserController::onNetworkLoginFailed);
 
 }
 
-bool UserController::login(const QString &username, const QString &password) const
+void UserController::login(const QString& username, const QString& password)
 {
-    qInfo() << username << " " << password;
-
-    if(username == "admin" || username.isEmpty())
-    {
-        gUser->setUserName("admin");
-        return true;
+    if (username.isEmpty() || password.isEmpty()) {
+        emit loginFailed("Username or password cannot be empty");
+        return;
     }
 
-    //When user will try to login
-    // 1) User will get userdetails from server if login get success otherwise userdetails will be null;
-    auto dbManager = DatabaseManager::getInstance();
-    QSqlDatabase database = dbManager->getDatabase();
-    if (database.isOpen())
-    {
-        database.close();
-    }
-
-    if (!dbManager->initializeDatabase("Users")) {
-        qDebug() << "Failed to initialize database";
-        return -1;
-    }
-
-    qDebug() << "Database initialized successfully!";
-    qDebug() << "Project path:" << dbManager->getProjectPath();
-
-
-    gUser =  m_userRepository->getUserDetailsByNameAndPassword(username, password);
-
-    if (database.isOpen())
-    {
-        database.close();
-    }
-
-    if(gUser == nullptr || gUser->getUserId().trimmed().isEmpty())
-    {
-        return false;
-    }
-    return true; // implement NetworkManager later
+    // Get NetworkManager instance and trigger async login
+    NetworkManager* network = NetworkManager::getInstance();
+    network->loginAPI(username, password);
 }
 
-std::shared_ptr<User>  UserController::getCurrentUserObject()const
+void UserController::onNetworkLoginSuccess(const QJsonObject& userData)
+{
+    qDebug() << "UserController: Login successful";
+
+    gUser->setUserId(userData["id"].toString());
+    gUser->setUserName(userData["username"].toString());
+    gUser->setToken(userData["token"].toString());
+
+    if (userData.contains("firstName")) {
+        gUser->setUserFullName(userData["firstName"].toString());
+    }
+    if (userData.contains("email")) {
+        gUser->setUserEmail1(userData["email"].toString());
+    }
+    if (userData.contains("mobile")) {
+        gUser->setUserMobile1(userData["mobile"].toString());
+    }
+
+    // Emit success signal to QML
+    emit loginSuccess(userData);
+}
+
+void UserController::onNetworkLoginFailed(const QString& error)
+{
+    qDebug() << "UserController: Login failed -" << error;
+    qWarning() << "Login failed:" << error;
+
+    // Emit failure signal to QML
+    emit loginFailed(error);
+}
+
+std::shared_ptr<User> UserController::getCurrentUserObject() const
 {
     return gUser;
 }
@@ -64,7 +78,12 @@ int UserController::getCurrentId() const
     return gUser->getId();
 }
 
-QString UserController::getCurrentUserGlobalId()const
+QString UserController::getToken() const
+{
+    return gUser->getToken();
+}
+
+QString UserController::getCurrentUserGlobalId() const
 {
     return gUser->getGlobalId();
 }
@@ -74,82 +93,78 @@ bool UserController::getCurrentUserApprovalStatus() const
     return gUser->getApprovalStatus();
 }
 
-
 QString UserController::getCurrentUserId() const
 {
-     return gUser->getUserId();
+    return gUser->getUserId();
 }
 
-
-QString UserController::getCurrentUserFullName()const
+QString UserController::getCurrentUserFullName() const
 {
-     return gUser->getUserFullName();
+    return gUser->getUserFullName();
 }
 
-QString UserController::getCurrentUserName()const
+QString UserController::getCurrentUserName() const
 {
     return gUser->getUserName();
 }
 
-QString UserController::getCurrentUserMobile1()const
+QString UserController::getCurrentUserMobile1() const
 {
     return gUser->getUserMobile1();
 }
 
-QString UserController::getCurrentUserMobile2()const
+QString UserController::getCurrentUserMobile2() const
 {
     return gUser->getUserMobile2();
 }
 
-QString UserController::getCurrentUserEmail1()const
+QString UserController::getCurrentUserEmail1() const
 {
     return gUser->getUserEmail1();
 }
 
-QString UserController::getCurrentUserEmail2()const
+QString UserController::getCurrentUserEmail2() const
 {
-     return gUser->getUserEmail2();
+    return gUser->getUserEmail2();
 }
 
-QString UserController::getCurrentUserJobTitle()const
+QString UserController::getCurrentUserJobTitle() const
 {
-     return gUser->getUserJobTitle();
+    return gUser->getUserJobTitle();
 }
 
-QString UserController::getCurrentUserStartDate()const
+QString UserController::getCurrentUserStartDate() const
 {
-     return gUser->getUserStartDate();
+    return gUser->getUserStartDate();
 }
 
-QString UserController::getCurrentUserEndDate()const
+QString UserController::getCurrentUserEndDate() const
 {
-     return gUser->getUserEndDate();
+    return gUser->getUserEndDate();
 }
 
 QString UserController::getCurrentUserMonthlyDeskCostValue() const
 {
-     return gUser->getUserMonthlyDeskCostValue();
+    return gUser->getUserMonthlyDeskCostValue();
 }
 
-QString UserController::getCurrentUserPassword()const
+QString UserController::getCurrentUserPassword() const
 {
-     return gUser->getUserPassword();
+    return gUser->getUserPassword();
 }
-
 
 void UserController::create(const QString& user_fullname,
-                        const QString& user_name,
-                        const QString& mobile1,
-                        const QString& mobile2,
-                        const QString& email1,
-                        const QString& email2,
-                        const QString& jobTitle,
-                        const QString& startDate,
-                        const QString& endDate,
-                        const QString& monthlyDeskCostValue) const
+                            const QString& user_name,
+                            const QString& mobile1,
+                            const QString& mobile2,
+                            const QString& email1,
+                            const QString& email2,
+                            const QString& jobTitle,
+                            const QString& startDate,
+                            const QString& endDate,
+                            const QString& monthlyDeskCostValue) const
 {
-
-    //This is used only for user creation
+    // This is used only for user creation
     auto dbManager = DatabaseManager::getInstance();
     QSqlDatabase database = dbManager->getDatabase();
     if (database.isOpen())
@@ -159,6 +174,7 @@ void UserController::create(const QString& user_fullname,
 
     if (!dbManager->initializeDatabase("Users")) {
         qDebug() << "Failed to initialize database";
+        return;
     }
 
     qDebug() << "Database initialized successfully!";
@@ -190,11 +206,11 @@ void UserController::create(const QString& user_fullname,
 
     if(m_userRepository->saveQML(&user))
     {
-        qDebug()<<"Data Saved";
+        qDebug() << "Data Saved";
     }
     else
     {
-        qDebug()<<"Data not Saved";
+        qDebug() << "Data not Saved";
     }
 }
 
@@ -211,7 +227,7 @@ void UserController::update(const QString& userId,
                             const QString& monthlyDeskCostValue,
                             const QString& password) const
 {
-    //This is used only for user creation
+    // This is used only for user update
     auto dbManager = DatabaseManager::getInstance();
     QSqlDatabase database = dbManager->getDatabase();
     if (database.isOpen())
@@ -221,6 +237,7 @@ void UserController::update(const QString& userId,
 
     if (!dbManager->initializeDatabase("Users")) {
         qDebug() << "Failed to initialize database";
+        return;
     }
 
     qDebug() << "Database initialized successfully!";
@@ -242,18 +259,17 @@ void UserController::update(const QString& userId,
 
     if(m_userRepository->update(user))
     {
-        qDebug()<<"Data Updated";
+        qDebug() << "Data Updated";
     }
     else
     {
-        qDebug()<<"Data not Updated";
-    }    
-
+        qDebug() << "Data not Updated";
+    }
 }
 
 std::vector<User*> UserController::getUserList() const
 {
-    //This is used only for user creation
+    // This is used to fetch all users
     auto dbManager = DatabaseManager::getInstance();
     QSqlDatabase database = dbManager->getDatabase();
     if (database.isOpen())
@@ -263,6 +279,7 @@ std::vector<User*> UserController::getUserList() const
 
     if (!dbManager->initializeDatabase("Users")) {
         qDebug() << "Failed to initialize database";
+        return std::vector<User*>();
     }
 
     qDebug() << "Database initialized successfully!";
@@ -275,4 +292,3 @@ std::shared_ptr<User> UserController::getUserDetailsById(const QString& userid) 
 {
     return m_userRepository->findByUserId(userid);
 }
-

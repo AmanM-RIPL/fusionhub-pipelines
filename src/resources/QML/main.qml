@@ -36,7 +36,7 @@ ApplicationWindow {
         onLogOutClicked: {
             loginPage.visible = true
             welcomePage.visible = false
-            organizationSettingsPage.visible = false            
+            organizationSettingsPage.visible = false
         }
 
         onUserSettingsClicked:{
@@ -62,7 +62,7 @@ ApplicationWindow {
                 welcomePage.showOrgSettingsButton = false
                 welcomePage.showNewProjectButton = false
                 welcomePage.showButtonColor = "transparent"
-            }             
+            }
         }
     }
 
@@ -74,27 +74,27 @@ ApplicationWindow {
         onLogOutClicked: {
             loginPage.visible = true
             welcomePage.visible = false
-            organizationSettingsPage.visible = false            
+            organizationSettingsPage.visible = false
         }
 
         onNewProjectClicked: {
             //baseLayout.visible = true
             baseLayout.visible = false
             idCreateNewProjectDialog.open()
-            organizationSettingsPage.visible = false            
+            organizationSettingsPage.visible = false
         }
 
 
-        onUserSettingsClicked:{            
+        onUserSettingsClicked:{
             userSettingsPopup.open()
-        }        
+        }
 
         onOrganizationSettingsClicked:{
             baseLayout.visible = false
             loginPage.visible = false
             welcomePage.visible = false
             organizationSettingsPage.visible = true
-        }        
+        }
    }
 
     BaseLayout{
@@ -105,7 +105,7 @@ ApplicationWindow {
         onLogOutClicked: {
             loginPage.visible = true
             welcomePage.visible = false
-            baseLayout.visible = false            
+            baseLayout.visible = false
         }
     }
 
@@ -128,7 +128,7 @@ ApplicationWindow {
         buttonSource: ""
 
         onOpened: {
-
+            tokenTextBox.text = userControllerUpdate.getToken();
             userFullNameTextBox.text = userControllerUpdate.getCurrentUserFullName();
             userNameTextBox.text = userControllerUpdate.getCurrentUserName();
             userMobile1TextBox.text = userControllerUpdate.getCurrentUserMobile1();
@@ -144,6 +144,7 @@ ApplicationWindow {
 
 
         onAcceptCallback: function () {
+            console.log("token: " + tokenTextBox.text);
             userControllerUpdate.update(userControllerUpdate.getCurrentUserId(),
                                   userFullNameTextBox.text,
                                   userNameTextBox.text,
@@ -189,7 +190,21 @@ ApplicationWindow {
          content: Column{
             width: parent.width
             height:650;//parent.height //30 for each top bottom
-
+            Text{
+                id: tokenLabel
+                text: "Token:"
+                color: "#323130"
+                font.weight: 700
+                font.pixelSize: 14
+                font.family: "Segoe UI"
+                topPadding: 10
+            }
+            CustomTextBox{
+                id: tokenTextBox
+                placeholderText: "token"
+                text:""
+                color: "#323130"
+            }
             Text{
                 id: userFullNameLabel
                 text: "FullName:"

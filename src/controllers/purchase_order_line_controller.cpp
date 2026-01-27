@@ -33,7 +33,7 @@ void PurchaseOrderLineController::create(const int &vendorId, const QVariantList
 
     QJsonDocument jsonDoc(jsonObject);
     QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
-    qDebug() << "PurchaseOrder:EntitySchema: " << entitySchema;
+  //  qDebug() << "PurchaseOrder:EntitySchema: " << entitySchema;
 
     QDateTime currentDateTimeUtc = QDateTime::currentDateTimeUtc();
     QString isoDateTimeString = currentDateTimeUtc.toString(Qt::ISODateWithMs);
@@ -80,7 +80,7 @@ void PurchaseOrderLineController::update(int id, const int &vendorId, const QVar
 
     QJsonDocument jsonDoc(jsonObject);
     QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
-    qDebug() << "PurchaseOrder:EntitySchema: " << entitySchema;
+    // qDebug() << "PurchaseOrder:EntitySchema: " << entitySchema;
 
     QDateTime currentDateTimeUtc = QDateTime::currentDateTimeUtc();
     QString isoDateTimeString = currentDateTimeUtc.toString(Qt::ISODateWithMs);

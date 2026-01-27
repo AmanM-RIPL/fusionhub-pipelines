@@ -1,18 +1,16 @@
 #ifndef USER_CONTROLLER_H
 #define USER_CONTROLLER_H
-
 #include <QObject>
+#include <QJsonObject>
 #include "repositories/user_repository.h"
-
-//extern std::shared_ptr<User> gUser;
 
 class UserController : public QObject
 {
     Q_OBJECT
 public:
     explicit UserController(QObject *parent = nullptr);
-    Q_INVOKABLE bool login(const QString& username, const QString& password) const;
 
+    Q_INVOKABLE void login(const QString& username, const QString& password);
 
     Q_INVOKABLE void create(const QString& userFullName,
                             const QString& userName,
@@ -24,7 +22,6 @@ public:
                             const QString& startDate,
                             const QString& endDate,
                             const QString& monthlyDeskCostValue) const;
-
     Q_INVOKABLE void update(const QString& userId,
                             const QString& userFullName,
                             const QString& userName,
@@ -37,20 +34,15 @@ public:
                             const QString& endDate,
                             const QString& monthlyDeskCostValue,
                             const QString& password) const;
-
-
     Q_INVOKABLE std::vector<User*> getUserList() const;
-
     Q_INVOKABLE std::shared_ptr<User> getUserDetailsById(const QString& userId) const;
-
-
-    Q_INVOKABLE std::shared_ptr<User>  getCurrentUserObject()const;
-
+    Q_INVOKABLE std::shared_ptr<User> getCurrentUserObject() const;
     Q_INVOKABLE int getCurrentId() const;
-    Q_INVOKABLE QString getCurrentUserGlobalId()const;
+    Q_INVOKABLE QString getCurrentUserGlobalId() const;
     Q_INVOKABLE bool getCurrentUserApprovalStatus() const;
     Q_INVOKABLE QString getCurrentUserId() const;
     Q_INVOKABLE QString getCurrentUserFullName() const;
+    Q_INVOKABLE QString getToken() const;
     Q_INVOKABLE QString getCurrentUserName() const;
     Q_INVOKABLE QString getCurrentUserMobile1() const;
     Q_INVOKABLE QString getCurrentUserMobile2() const;
@@ -62,12 +54,18 @@ public:
     Q_INVOKABLE QString getCurrentUserMonthlyDeskCostValue() const;
     Q_INVOKABLE QString getCurrentUserPassword() const;
 
-
 signals:
+    // Login signals
+    void loginSuccess(const QJsonObject& userData);
+    void loginFailed(const QString& errorMessage);
+
+private slots:
+    // Handle network manager responses
+    void onNetworkLoginSuccess(const QJsonObject& userData);
+    void onNetworkLoginFailed(const QString& error);
 
 private:
-    UserRepository* m_userRepository;    
-
+    UserRepository* m_userRepository;
 };
 
 #endif // USER_CONTROLLER_H
