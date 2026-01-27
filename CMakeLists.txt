@@ -80,6 +80,11 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+
+find_package(Qt6 REQUIRED COMPONENTS Concurrent)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -257,10 +262,6 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/controllers/purchase_order_controller.h src/controllers/purchase_order_controller.cpp
     src/controllers/good_received_note_controller.h src/controllers/good_received_note_controller.cpp
 
-
-
-
-
     src/services/geometry/wall_geometry_service.h src/services/geometry/wall_geometry_service.cpp
     src/services/geometry/beam_geometry_service.h src/services/geometry/beam_geometry_service.cpp
     src/services/geometry/column_geometry_service.h src/services/geometry/column_geometry_service.cpp
@@ -281,6 +282,8 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/controllers/work_order_line_controller.h src/controllers/work_order_line_controller.cpp
     src/controllers/work_billing_line_controller.h src/controllers/work_billing_line_controller.cpp
     src/controllers/work_billing_controller.h src/controllers/work_billing_controller.cpp
+    src/controllers/schedule_of_rates_line_controller.h src/controllers/schedule_of_rates_line_controller.cpp
+    src/common/background_thread_manager.h src/common/background_thread_manager.cpp
     src/network/network_manager.cpp
     src/network/network_manager.h
     src/common/helper_point.h
@@ -349,7 +352,6 @@ target_sources(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\Ke
 #target_sources(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\KernelBase\\Extensions\\ExServices\\ExSystemServices.cpp")
 #target_sources(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\KernelBase\\Extensions\\alloc\\OdAllocOp.cpp")
 
-
 target_sources(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\Ifc\\Extensions\\ExServices\\ExIfcHostAppServices.cpp")
 
 #End
@@ -366,14 +368,11 @@ target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_2
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_ExamplesCommon.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_BrepBuilder.lib")
 
-
-
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TD_Ge.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TV_CoreDb.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TV_DbCore.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TV_Visualize.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\TV_VisualizeTools.lib")
-
 
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\IfcCore.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\IfcCoreTools.lib")
@@ -388,37 +387,10 @@ target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\Ifc2x3.lib")
 target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\lib\\vc17_amd64dll\\Ifc4x3.lib")
 
-
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
-target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Concurrent)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 #End
-
 
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Alloc_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Root_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
@@ -432,7 +404,6 @@ file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\RxCommon
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\tinyxml.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\FacetModeler_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_BrepBuilder_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
-
 
 file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TV_Visualize_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_SpatialIndex_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
@@ -451,15 +422,10 @@ file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Br
 file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TD_Zlib.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\Visualize_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\TV_DbIO_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
 
-
 #file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcCore_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 #file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\sdai_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
 #file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcGeom_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 #file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IFC4X3_26.7_17.txexp DESTINATION ${CMAKE_BINARY_DIR})
-
-
-
-
 
 file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcCore_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IfcCoreTools_26.7_17.dll DESTINATION ${CMAKE_BINARY_DIR})

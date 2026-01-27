@@ -9,6 +9,9 @@ class UserController : public QObject
     Q_OBJECT
 public:
     explicit UserController(QObject *parent = nullptr);
+    Q_INVOKABLE bool login(const QString& username, const QString& password) const;
+    Q_INVOKABLE void logout();
+    //void initializeTimer();
 
     Q_INVOKABLE void login(const QString& username, const QString& password);
 
@@ -53,6 +56,9 @@ public:
     Q_INVOKABLE QString getCurrentUserEndDate() const;
     Q_INVOKABLE QString getCurrentUserMonthlyDeskCostValue() const;
     Q_INVOKABLE QString getCurrentUserPassword() const;
+
+
+    void startBackgroundSync();
 
 signals:
     // Login signals

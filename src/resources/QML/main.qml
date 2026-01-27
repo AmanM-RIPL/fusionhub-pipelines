@@ -3,10 +3,7 @@ import QtQuick.Controls
 //import QtQuick.Window
 //import QtQuick.Controls 2.15
 //import QtQuick.Layouts 1.3
-
 import com.fh.controllers;
-
-
 
 
 ApplicationWindow {
@@ -17,6 +14,10 @@ ApplicationWindow {
     visibility: Window.Maximized
     visible: true
 
+    UserController{
+        id:userController
+    }
+
 
     AddUserPage{
         id: addUserPage
@@ -26,6 +27,8 @@ ApplicationWindow {
             loginPage.visible = true
             welcomePage.visible = false
             addUserPage.visible = false
+            userController.logout()
+
         }
     }
 
@@ -37,6 +40,7 @@ ApplicationWindow {
             loginPage.visible = true
             welcomePage.visible = false
             organizationSettingsPage.visible = false
+            userController.logout()
         }
 
         onUserSettingsClicked:{
@@ -51,7 +55,7 @@ ApplicationWindow {
         onLoginClicked: {
             welcomePage.visible = true
             organizationSettingsPage.visible = false
-            if(userControllerUpdate.getCurrentUserName() === "admin")
+            if(userController.getCurrentUserName() === "admin")
             {
                 welcomePage.showOrgSettingsButton = true
                 welcomePage.showNewProjectButton = true
@@ -75,6 +79,7 @@ ApplicationWindow {
             loginPage.visible = true
             welcomePage.visible = false
             organizationSettingsPage.visible = false
+            userController.logout()
         }
 
         onNewProjectClicked: {
@@ -106,6 +111,7 @@ ApplicationWindow {
             loginPage.visible = true
             welcomePage.visible = false
             baseLayout.visible = false
+            userController.logout()
         }
     }
 
@@ -114,9 +120,9 @@ ApplicationWindow {
 
     /***********This is common Popup Dialog only for UserSettings******************************/
 
-    UserController {
-        id: userControllerUpdate
-    }
+    // UserController {
+    //     id: userControllerUpdate
+    // }
 
     FHPopup {
         id: userSettingsPopup
@@ -144,8 +150,7 @@ ApplicationWindow {
 
 
         onAcceptCallback: function () {
-            console.log("token: " + tokenTextBox.text);
-            userControllerUpdate.update(userControllerUpdate.getCurrentUserId(),
+            userController.update(userController.getCurrentUserId(),
                                   userFullNameTextBox.text,
                                   userNameTextBox.text,
                                   userMobile1TextBox.text,
@@ -156,7 +161,7 @@ ApplicationWindow {
                                   userStartDateTextBox.text,
                                   userEndDateTextBox.text,
                                  // userMonthlyDeskCostTextBox.text,
-                                  userControllerUpdate.getCurrentUserMonthlyDeskCostValue(),
+                                  userController.getCurrentUserMonthlyDeskCostValue(),
                                   userPasswordTextBox.text);
 
             userFullNameTextBox.text = "";

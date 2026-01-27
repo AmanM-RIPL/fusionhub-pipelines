@@ -55,6 +55,8 @@ class Task: public QObject
 
     Q_PROPERTY(QString month_year READ getMonth_Year WRITE setMonth_Year NOTIFY month_yearChanged)
 
+     Q_PROPERTY(QString status READ getTaskStatus WRITE setTaskStatus NOTIFY taskStatusChanged)
+
 
 public:
     explicit Task(QObject* parent = nullptr): QObject(parent) {}
@@ -84,6 +86,8 @@ public:
     int getEndDay() const { return endDay; }
     int getStartMonth() const { return startMonth; }
     int getEndMonth() const { return endMonth; }
+
+    QString getTaskStatus() const { return status; }
 
     QString getJan() const { return jan; }
     QString getFeb() const { return feb; }
@@ -128,6 +132,8 @@ public:
     void setStartMonth(const int startMonth) { this->startMonth = startMonth; }
     void setEndMonth(const int endMonth) { this->endMonth = endMonth; }
 
+    void setTaskStatus(const QString& status) { this->status = status; }
+
     void setJan(const QString& jan) { this->jan = jan; }
     void setFeb(const QString& feb) { this->feb = feb; }
 
@@ -171,6 +177,8 @@ signals:
     void startMonthChanged();
     void endMonthChanged();
 
+    void taskStatusChanged();
+
     void janChanged();
     void febChanged();
 
@@ -213,6 +221,7 @@ private:
 
     int startMonth = 0;
     int endMonth = 0;
+    QString status = "Upcoming";
 
     QString jan = "";
     QString feb = "";

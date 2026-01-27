@@ -171,7 +171,7 @@ Column {
         columns: [
             { label: "Id", width: 100, key: "id" },
             { label: "Name", width: 300, key: "description" },
-            { label: "Schedule Rate", width: 500, key: "schedule" }
+            { label: "Schedule Rate", width: 500, key: "schedule_of_rates_id" }
         ]
     }
 
@@ -194,6 +194,7 @@ Column {
         // Fetch schedule of rates list
         billOfQuantityRoot.scheduleOfRatesList = billOfQuantityController.getScheduleOfRatesList();
 
+
         // Prepare text list for combo box
         const scheduleNames = billOfQuantityRoot.scheduleOfRatesList.map(
             schedule => schedule.scheduleOfRatesName
@@ -204,17 +205,15 @@ Column {
         billOfQuantityRoot.billOfQuantityListForTable = billOfQuantityRoot.billOfQuantityList.map(
             bill => {
                 const matchedSchedule = billOfQuantityRoot.scheduleOfRatesList.find(
-                    s => Number(s.id) === Number(bill.scheduleId)
+                    s => Number(s.id) === Number(bill.scheduleOfRatesId)
                 );
                 return {
                     id: bill.id,
                     description: bill.description,
-                    schedule: matchedSchedule ? matchedSchedule.scheduleOfRatesName : "Unknown"
+                    schedule_of_rates_id: matchedSchedule ? matchedSchedule.scheduleOfRatesName : "Unknown"
                 };
             }
-        );
-
-      //  console.log("BOQ Table Data:", JSON.stringify(billOfQuantityRoot.billOfQuantityListForTable, null, 2));
+        );       
     }
 
 }

@@ -13,14 +13,15 @@ Rectangle {
     property string txtProjectName: "NA"
     property bool isApproved: true
 
-    property var selectedData: null
+    property var selectedData: {"id" : "", "taskName" : "", "desc" : "", "startDate" : "", "endDate" : "", "bimElement" : "", "pid" : "", "status" : "", "draftId": ""  }
     property string popupMode: "view"
 
 
     property var  taskList: []
     //property var task_idList: []
+    property var  taskStatusList: ["Upcoming", "In-Progress", "Measurement Complete"]
 
-    property var  task: {"taskName" : "", "description" : "", "startDate" : "", "endDate" : "", "bimElement" : "", "pid" : "" }
+   // property var  task: {"id" : "", "taskName" : "", "description" : "", "startDate" : "", "endDate" : "", "bimElement" : "", "pid" : "", "status" : ""  }
 
     TaskController{
         id:taskController
@@ -31,7 +32,7 @@ Rectangle {
     FHPopup {
         id: viewEditPopup
         popupWidth: 500
-        popupHeight: 550
+        popupHeight: 600
         title: popupMode === "view" ? "View Task" : "Edit Task"
 
         parent: Overlay.overlay
@@ -46,7 +47,7 @@ Rectangle {
 
                 taskController.update(taskNameTextBox.text, taskDescriptionTextBox.text,
                                 taskBIMObjectTextBox.text, taskStartDateTextBox.text,
-                                taskEndDateTextBox.text, task.pid, task.id, task.draftId);
+                                taskEndDateTextBox.text, selectedData.pid, selectedData.id, selectedData.draftId, taskStatusList[taskStatusComboBox.currentIndex]);
 
                 upcomingtaskBoardLoader.sourceComponent = undefined;
                 upcomingtaskBoardLoader.sourceComponent = upcomingTaskComponent;
@@ -57,12 +58,12 @@ Rectangle {
 
         }
 
-        onOpened: {
-            // Fill popup with selected data
-            if (selectedData) {
-                fillPopup()
-            }
-        }
+        // onOpened: {
+        //     // Fill popup with selected data
+        //     if (selectedData) {
+        //         fillPopup()
+        //     }
+        // }
 
         Column {
             width: parent.width
@@ -82,7 +83,7 @@ Rectangle {
             CustomTextBox{
                 id: taskNameTextBox
                 placeholderText: "Task Name"
-                text:task.taskName
+                text:selectedData.taskName
                 color: "#323130"
                 readOnly: popupMode === "view" ? true : false
             }
@@ -102,7 +103,8 @@ Rectangle {
             CustomTextBox{
                 id: taskDescriptionTextBox
                 placeholderText: "Description"
-                text:task.description
+                //text:task.description
+                text:selectedData.desc
                 color: "#323130"
                 readOnly: popupMode === "view" ? true : false
             }
@@ -120,7 +122,7 @@ Rectangle {
             CustomTextBox{
                 id: taskStartDateTextBox
                 placeholderText: "Start Date"
-                text:task.startDate
+                text:selectedData.startDate
                 color: "#323130"
                 readOnly: popupMode === "view" ? true : false
 
@@ -153,7 +155,7 @@ Rectangle {
             CustomTextBox{
                 id: taskEndDateTextBox
                 placeholderText: "End Date"
-                text:task.endDate
+                text:selectedData.endDate
                 color: "#323130"
                 readOnly: popupMode === "view" ? true : false
                 // onActiveFocusChanged: {
@@ -185,7 +187,7 @@ Rectangle {
             CustomTextBox{
                 id: taskBIMObjectTextBox
                 placeholderText: "BIM Object"
-                text:task.bimElement
+                text:selectedData.bimElement
                 color: "#323130"
                 readOnly: popupMode === "view" ? true : false
             }
@@ -212,8 +214,36 @@ Rectangle {
             // }
 
             CustomTextBox{
-                id: parentIdComboBox
-                text:task.pid
+                id: parentIdTextBox
+                text:selectedData.pid
+                color: "#323130"
+                readOnly:true
+            }
+
+
+            Text{
+                id: taskStatusLabel
+                text: "Task Status"
+                color: "#323130"
+                font.weight: 700
+                font.pixelSize: 14
+                font.family: "Segoe UI"
+                topPadding: 10
+            }
+
+            // CustomComboBox {
+            //     id: taskStatusComboBox
+            //     model: popupMode === "view" ? [task.status] : taskStatusList
+            //     width:200
+            //     currentIndex: 0
+            //     onCurrentTextChanged: {
+
+            //     }
+            // }
+
+            CustomTextBox{
+                id: taskStatusTextBox
+                text:selectedData.status
                 color: "#323130"
                 readOnly:true
             }
@@ -269,36 +299,42 @@ Rectangle {
         anchors.top: itemId.bottom
         anchors.left: mainRectId.left
 
-    Row {
-        spacing: 20
-        Text{
-            id: approvalTypeLabel
-            text: "Choose Approval Type"
-            color: "#323130"
-            font.weight: 700
-            font.pixelSize: 14
-            font.family: "Segoe UI"
-            topPadding: 10
-            //leftPadding: 20
-        }
-
-
-        CustomComboBox {
-            id: approvalTypeComboBox
-            model: ["Approved", "Draft"]
-            width:200
-
-            onCurrentTextChanged: {                
-                isApproved = (approvalTypeComboBox.currentText === "Approved");
-                // Force reset the loader
-                upcomingtaskBoardLoader.sourceComponent = undefined;
-                upcomingtaskBoardLoader.sourceComponent = upcomingTaskComponent;
-
-                billedtaskBoardLoader.sourceComponent = undefined;
-                billedtaskBoardLoader.sourceComponent = billedTaskComponent;
+        Row {
+            spacing: 20
+            Text{
+                id: approvalTypeLabel
+                text: "Choose Approval Type"
+                color: "#323130"
+                font.weight: 700
+                font.pixelSize: 14
+                font.family: "Segoe UI"
+                topPadding: 10
+                //leftPadding: 20
             }
-        }       
-    }
+
+
+            CustomComboBox {
+                id: approvalTypeComboBox
+                model: ["Approved", "Draft"]
+                width:200
+
+                onCurrentTextChanged: {
+                    isApproved = (approvalTypeComboBox.currentText === "Approved");
+                    // Force reset the loader
+                    upcomingTaskBoardLoader.sourceComponent = undefined;
+                    upcomingTaskBoardLoader.sourceComponent = upcomingTaskComponent;
+
+                    inProgressTaskBoardLoader.sourceComponent = undefined;
+                    inProgressTaskBoardLoader.sourceComponent = inProgressTaskComponent;
+
+                    measurementCompleteTaskBoardLoader.sourceComponent = undefined;
+                    measurementCompleteTaskBoardLoader.sourceComponent = measurementCompleteTaskComponent;
+
+                    billedTaskBoardLoader.sourceComponent = undefined;
+                    billedTaskBoardLoader.sourceComponent = billedTaskComponent;
+                }
+            }
+        }
     }
 
     Component {
@@ -311,7 +347,7 @@ Rectangle {
                 popupMode = "view"
                 selectedData = row
                  //console.log("selectedData1:", JSON.stringify(selectedData))
-                fillPopup()
+                //fillPopup()
                 viewEditPopup.open()
             }
 
@@ -319,7 +355,53 @@ Rectangle {
                 popupMode = "edit"
                 selectedData = row
                 //console.log("selectedData2:", JSON.stringify(selectedData))
-                fillPopup()
+                //fillPopup()
+                viewEditPopup.open()
+            }
+        }
+
+    }
+
+    Component {
+        id: inProgressTaskComponent
+        InprogressTaskBoard {
+            isApproved: root.isApproved
+
+            onViewTask: function(row) {
+                popupMode = "view"
+                selectedData = row
+                //fillPopup()
+                viewEditPopup.open()
+            }
+
+            onEditTask: function(row) {
+                popupMode = "edit"
+                selectedData = row
+
+                //fillPopup()
+                viewEditPopup.open()
+            }
+        }
+
+    }
+
+    Component {
+        id: measurementCompleteTaskComponent
+        MeasurementCompleteTaskBoard {
+            isApproved: root.isApproved
+
+            onViewTask: function(row) {
+                popupMode = "view"
+                selectedData = row
+                //fillPopup()
+                viewEditPopup.open()
+            }
+
+            onEditTask: function(row) {
+                popupMode = "edit"
+                selectedData = row
+
+                //fillPopup()
                 viewEditPopup.open()
             }
         }
@@ -337,7 +419,7 @@ Rectangle {
                 popupMode = "view"
                 selectedData = row
                  //console.log("selectedData1:", JSON.stringify(selectedData))
-                fillPopup()
+                //fillPopup()
                 viewEditPopup.open()
             }
 
@@ -404,7 +486,7 @@ Rectangle {
                     }*/
 
                     Loader {
-                        id: upcomingtaskBoardLoader
+                        id: upcomingTaskBoardLoader
                         anchors.fill: parent
                         sourceComponent: upcomingTaskComponent
                     }
@@ -416,20 +498,34 @@ Rectangle {
                     color: "#FAF9F8"
                     clip: true
 
-                    InprogressTaskBoard{
+                    // InprogressTaskBoard{
+                    //     anchors.fill: parent
+                    // }
+
+                    Loader {
+                        id: inProgressTaskBoardLoader
                         anchors.fill: parent
+                        sourceComponent: inProgressTaskComponent
                     }
                 }
+
+
 
                 Rectangle{
                     width: 296.5
                     height: parent.height
                     color: "#FAF9F8"
-                   clip: true
+                    clip: true
 
-                    MeasurementCompleteTaskBoard{
-                        anchors.fill: parent
-                    }
+                    // MeasurementCompleteTaskBoard{
+                    //     anchors.fill: parent
+                    // }
+
+                   Loader {
+                       id: measurementCompleteTaskBoardLoader
+                       anchors.fill: parent
+                       sourceComponent: measurementCompleteTaskComponent
+                   }
                 }
 
                 Rectangle{
@@ -447,7 +543,7 @@ Rectangle {
                     }*/
 
                     Loader {
-                        id: billedtaskBoardLoader
+                        id: billedTaskBoardLoader
                         anchors.fill: parent
                         sourceComponent: billedTaskComponent
                     }
@@ -456,27 +552,23 @@ Rectangle {
         }
     }
 
-    function fillPopup() {
+    // function fillPopup() {
 
-        //task_idList = [];
+    //     if (!selectedData){
+    //         return
+    //     }
+
+    //     console.log("selectedData:", JSON.stringify(selectedData))
 
 
-
-        if (!selectedData){
-            return
-        }
-
-        taskList = taskController.getTaskList(isApproved);
-        for(var i = 0; i < taskList.length; i++)
-        {
-           var taskTemp =  taskList[i];
-            if(selectedData.id === taskTemp.id)
-            {
-                task = taskTemp;
-                //task_idList.push(String(task.pid));
-                //console.log("fillPopup()::taskidList:",JSON.stringify(task_idList))
-            }
-        }
-
-    }
+    //     taskList = taskController.getTaskList(isApproved);
+    //     for(var i = 0; i < taskList.length; i++)
+    //     {
+    //        var taskTemp =  taskList[i];
+    //         if(selectedData.id === taskTemp.id)
+    //         {
+    //             task = taskTemp;
+    //         }
+    //     }
+    // }
 }

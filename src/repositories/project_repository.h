@@ -26,6 +26,9 @@ public:
    void createJsonFileAndAppendJsonObject(const QString& filePath, const Project& entity);
    QString getProjectListAsJsonString(bool isBlocked);
 
+   int getLastSyncedOn(int projectId);
+   void updateLastSyncedOn(int projectId, int lastSyncedOn);
+
 protected:
     QString getTableName() const override;
     std::unique_ptr<Project> mapFromQuery(const QSqlQuery& query) const override;

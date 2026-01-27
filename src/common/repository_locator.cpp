@@ -11,6 +11,7 @@ RepositoryLocator::RepositoryLocator() {
     m_materialRepository = std::make_unique<MaterialRepository>();
     m_scheduleSetupRepository = std::make_unique<ScheduleSetupRepository>();
     m_scheduleOfRatesRepository = std::make_unique<ScheduleOfRatesRepository>();
+    m_scheduleOfRatesLineRepository = std::make_unique<ScheduleOfRatesLineRepository>();
     m_draftEntityRepository = std::make_unique<DraftEntityRepository>();
     m_ifcDetailRepository = std::make_unique<IFCDetailRepository>();
     m_billOfQuantityRepository = std::make_unique<BillOfQuantityRepository>();
@@ -82,6 +83,11 @@ ScheduleSetupRepository *RepositoryLocator::scheduleSetupRepository()
 ScheduleOfRatesRepository *RepositoryLocator::scheduleOfRatesRepository()
 {
     return m_scheduleOfRatesRepository.get();
+}
+
+ScheduleOfRatesLineRepository *RepositoryLocator::scheduleOfRatesLineRepository()
+{
+    return m_scheduleOfRatesLineRepository.get();
 }
 
 DraftEntityRepository *RepositoryLocator::draftEntityRepository()

@@ -11,7 +11,6 @@ Rectangle {
     id:upcomingTaskBoard_root
     width: 296.5
     height: 544
-
     color: "#FAF9F8"
 
     property var monthModel: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -25,7 +24,7 @@ Rectangle {
 
     property date selectedDate: new Date()
 
-    property string txtTotalUpcomingTask: "0"
+    //property string txtTotalUpcomingTask: "0"
     property int activeRowIndex: -1
     property int activeTextBoxIndex: -1;
 
@@ -41,9 +40,9 @@ Rectangle {
         id:taskController
     }
 
-    WorkBillingLineController{
-      id:workBillingLineController
-    }
+    // WorkBillingLineController{
+    //   id:workBillingLineController
+    // }
 
 
     /************Start of Calendar******************/
@@ -202,7 +201,7 @@ Rectangle {
 
             taskController.create(taskNameTextBox.text, taskDescriptionTextBox.text,
                                   taskBIMObjectTextBox.text, taskStartDateTextBox.text,
-                                  taskEndDateTextBox.text, task_idList[parentIdComboBox.currentIndex]);
+                                  taskEndDateTextBox.text, task_idList[parentIdComboBox.currentIndex], "Upcoming");
 
 
             taskNameTextBox.text = "";
@@ -383,7 +382,7 @@ Rectangle {
         anchors.leftMargin: 8
 
         Text{
-            text: txtTotalUpcomingTask
+            text: String(task_month_paramList.length);
             color: "#FFFFFF"
             font.pixelSize: 10
             font.weight: 400
@@ -413,20 +412,20 @@ Rectangle {
         anchors.topMargin: 17        
         visible: false
 
-        Image{
-            source: "qrc:/resources/images/addBlack.svg"
-            anchors.centerIn: parent
+        // Image{
+        //     source: "qrc:/resources/images/addBlack.svg"
+        //     anchors.centerIn: parent
 
-            MouseArea{
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                hoverEnabled: true
+        //     MouseArea{
+        //         anchors.fill: parent
+        //         cursorShape: Qt.PointingHandCursor
+        //         hoverEnabled: true
 
-                onClicked: {
-                    newTaskPopup.open();
-                }
-            }
-        }
+        //         onClicked: {
+        //             newTaskPopup.open();
+        //         }
+        //     }
+        // }
     }
 
     Rectangle{
@@ -437,6 +436,7 @@ Rectangle {
         anchors.rightMargin: 17
         anchors.top: parent.top
         anchors.topMargin: 17
+        visible: false
 
         /*Image{
             source: "qrc:/resources/images/close.svg"
@@ -494,12 +494,22 @@ Rectangle {
                 required property string desc
                 required property int index
 
+                required property string taskName
+                required property string startDate
+                required property string endDate
+                required property string bimElement
+                required property string status
+                required property var pid
+                required property int draftId
+
                 width: 276.5 + 15
                 height: 114
                 color: "#FFFFFF"
 
                 //property var rowData: modelData
                 property int rowIndex: index
+
+                property var rowData: {"id": id, "taskName": taskName, "title": title, "desc": desc, "startDate": startDate, "endDate": endDate, "bimElement": bimElement, "pid":pid, "status": status, "draftId":draftId };
 
 
                 Text{
@@ -565,7 +575,7 @@ Rectangle {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
-                                    var rowData = {"id": id, "title": title, "desc": desc };
+                                    //var rowData = {"id": id, "title": title, "desc": desc};
                                    viewTask(rowData)
                                     activeRowIndex = -1
                                 }
@@ -592,7 +602,7 @@ Rectangle {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
-                                    var rowData = {"id": id, "title": title, "desc": desc };
+                                    //var rowData = {"id": id, "taskName": taskName, "title": title, "desc": desc, "startDate": startDate, "endDate": endDate, "bimElement": bimElement, "pid":pid, "status": status, "draftId":draftId };
                                     editTask(rowData)
                                     activeRowIndex = -1
                                 }
@@ -631,7 +641,7 @@ Rectangle {
             task_idList = [];
             listModel.clear();
 
-            task_month_paramList = taskController.getTaskList(isApproved);
+            task_month_paramList = taskController.getTaskList(isApproved, "Upcoming");
             /*var allTaskList = taskController.getTaskList(isApproved);
             var billedTaskList = workBillingLineController.getBilledTaskList(isApproved);
 
@@ -654,7 +664,7 @@ Rectangle {
              txtTotalUpcomingTask = String(task_month_paramList.length - billedTaskList.length);
            */
 
-            txtTotalUpcomingTask = task_month_paramList.length;
+            //txtTotalUpcomingTask = String(task_month_paramList.length);
 
             //here added first element zero for there is no parent id
             task_idList = [0, ...task_month_paramList.map(element => element.id)];
@@ -681,7 +691,14 @@ Rectangle {
                 listModel.append({
                     "title": task.id + "_" + task.taskName,
                     "desc": task.description,
-                    "id":task.id
+                    "id": task.id,
+                    "taskName": task.taskName,
+                    "startDate": task.startDate,
+                    "endDate": task.endDate,
+                    "bimElement": task.bimElement,
+                    "status": task.status,
+                    "pid": task.pid,
+                    "draftId": task.draftId
                 });
             }
         }
@@ -692,11 +709,5 @@ Rectangle {
         for (var i = 2010; i < 2081; i++) {
              yearModel.append({"text" : i});
         }
-    }
-
-    function refreshData() {
-
-       // upcomingTaskBoard_root.showList();
-         //Component.statusChanged()
-    }
+    }    
 }

@@ -209,7 +209,7 @@ Column {
             conToCubicMeterTextBox.text = "";
             conToMeterTextBox.text = "";
             conToKgTextBox.text = "";
-            uomNameBox.text = "";
+            uomNameTextBox.text = "";
             unitTypeComboBox.currentIndex = -1;
         }
 

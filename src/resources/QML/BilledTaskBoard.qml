@@ -104,12 +104,7 @@ Rectangle {
 
 
         ListModel{
-            id: listModel
-
-            /*ListElement{
-                title: "Project Initiation"
-                desc: "Project Initiation documents submitted to respective clients"
-            }*/
+            id: listModel           
         }
 
 
@@ -126,17 +121,28 @@ Rectangle {
             id: listDelegate
 
             Rectangle{
-
                 required property var id
                 required property string title
                 required property string desc
                 required property int index
 
+                required property string taskName
+                required property string startDate
+                required property string endDate
+                required property string bimElement
+                required property string status
+                required property var pid
+                required property int draftId
+
                 width: 276.5 + 15
                 height: 114
                 color: "#FFFFFF"
 
+                //property var rowData: modelData
                 property int rowIndex: index
+
+                property var rowData: {"id": id, "taskName": taskName, "title": title, "desc": desc, "startDate": startDate, "endDate": endDate, "bimElement": bimElement, "pid":pid, "status": status, "draftId":draftId };
+
 
 
                 Text{
@@ -200,7 +206,7 @@ Rectangle {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
-                                    var rowData = {"id": id, "title": title, "desc": desc };
+                                   // var rowData = {"id": id, "title": title, "desc": desc };
                                     viewTask(rowData)
                                     activeRowIndex = -1
                                 }
@@ -245,18 +251,32 @@ Rectangle {
     function showList()
     {
         listModel.clear();
-        //console.log("Billed_task_isApproved:", isApproved)
+
+        if(!isApproved)
+        {
+            return;
+        }
+
        var billedTaskList = workBillingLineController.getBilledTaskList(isApproved);
+       // console.log("billedTaskList:", JSON.stringify(billedTaskList))
 
         txtTotalBilledTask = String(billedTaskList.length);
 
         for(var i = 0; i < billedTaskList.length; i++ )
         {
+            var task =  billedTaskList[i];
             //console.log("Billed_task_billedTaskList[i].id:", billedTaskList[i].id)
             listModel.append({
-                             "title": String(billedTaskList[i].id) + "_" + billedTaskList[i].taskName,
-                             "desc": billedTaskList[i].description,
-                             "id":billedTaskList[i].id
+                            "title": String(task.id) + "_" + task.taskName,
+                            "desc": task.description,
+                            "id":task.id,
+                            "taskName": task.taskName,
+                            "startDate": task.startDate,
+                            "endDate": task.endDate,
+                            "bimElement": task.bimElement,
+                            "status": task.status,
+                            "pid": task.pid,
+                            "draftId": task.draftId
                         });
         }
     }

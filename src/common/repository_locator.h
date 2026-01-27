@@ -12,6 +12,7 @@
 #include "repositories/unit_of_measurement_repository.h"
 #include "repositories/schedule_setup_repository.h"
 #include "repositories/schedule_of_rates_repository.h"
+#include "repositories/schedule_of_rates_line_repository.h"
 #include "repositories/draft_entity_repository.h"
 #include "repositories/ifc_detail_repository.h"
 #include "repositories/ifc_repositories/ifc_wall_repository.h"
@@ -45,6 +46,7 @@ public:
     UnitOfMeasurementRepository* unitOfMeasurementRepository();
     ScheduleSetupRepository* scheduleSetupRepository();
     ScheduleOfRatesRepository* scheduleOfRatesRepository();
+    ScheduleOfRatesLineRepository* scheduleOfRatesLineRepository();
     DraftEntityRepository* draftEntityRepository();
     IFCDetailRepository* ifcDetailRepository();
     BillOfQuantityRepository* billOfQuantityRepository();
@@ -76,6 +78,7 @@ private:
     std::unique_ptr<MaterialRepository> m_materialRepository;
     std::unique_ptr<UnitOfMeasurementRepository> m_unitOfMeasurementRepository;
     std::unique_ptr<ScheduleOfRatesRepository> m_scheduleOfRatesRepository;
+    std::unique_ptr<ScheduleOfRatesLineRepository> m_scheduleOfRatesLineRepository;
     std::unique_ptr<ScheduleSetupRepository> m_scheduleSetupRepository;
     std::unique_ptr<DraftEntityRepository> m_draftEntityRepository;
     std::unique_ptr<IFCDetailRepository> m_ifcDetailRepository;

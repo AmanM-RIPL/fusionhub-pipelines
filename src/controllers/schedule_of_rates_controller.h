@@ -10,12 +10,14 @@ class ScheduleOfRatesController: public QObject
     Q_OBJECT
 public:
     explicit ScheduleOfRatesController(QObject *parent = nullptr);
-    Q_INVOKABLE void create(const QString &name) const;
+    Q_INVOKABLE void create(const QString &name, const QVariant &costValueParameter) const;
     Q_INVOKABLE std::vector<ScheduleOfRates*> getScheduleOfRatesList(bool isApproved = false) const;
 
 private:
     ScheduleOfRatesRepository* m_scheduleOfRatesRepository;
     DraftEntityRepository* m_draftEntityRepository;
+
+    QJsonDocument CreateJson(const QVariant &param) const;
 };
 
 #endif // SCHEDULE_OF_RATES_CONTROLLER_H

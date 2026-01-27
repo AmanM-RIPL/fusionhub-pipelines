@@ -205,7 +205,7 @@ QString DatabaseManager::getCreateTableQuery(const QString& tableName)
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 global_id TEXT NOT NULL,
                 approval_status BOOLEAN DEFAULT 1,
-                schedule_name TEXT NOT NULL,
+                schedule_setup_name TEXT NOT NULL,
                 description TEXT,
                 cost_parameter TEXT,
                 resource_parameter TEXT
@@ -223,7 +223,8 @@ QString DatabaseManager::getCreateTableQuery(const QString& tableName)
                 bim_element TEXT,
                 start_date TEXT,
                 end_date TEXT,
-                pid INTEGER
+                pid INTEGER,
+                status TEXT
             )
         )";
     }
@@ -302,7 +303,7 @@ QString DatabaseManager::getCreateTableQuery(const QString& tableName)
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 global_id TEXT NOT NULL,
                 approval_status BOOLEAN DEFAULT 1,
-                schedule_name TEXT NOT NULL
+                schedule_of_rates_name TEXT NOT NULL
             )
         )";
     }
@@ -312,12 +313,13 @@ QString DatabaseManager::getCreateTableQuery(const QString& tableName)
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 global_id TEXT NOT NULL,
                 approval_status BOOLEAN DEFAULT 1,
-                schedule_id INTEGER NOT NULL,
-                schedule_type_id INTEGER NOT NULL,
+                schedule_setup_id INTEGER NOT NULL,
+                schedule_of_rates_id INTEGER NOT NULL,
                 cost TEXT,
                 resource TEXT,
-                FOREIGN KEY (schedule_id) REFERENCES ScheduleOfRates(id),
-                FOREIGN KEY (schedule_type_id) REFERENCES ScheduleSetup(id)
+                FOREIGN KEY (schedule_of_rates_id) REFERENCES ScheduleOfRates(id),
+                FOREIGN KEY (schedule_setup_id) REFERENCES ScheduleSetup(id)
+
             )
         )";
     }
@@ -327,9 +329,9 @@ QString DatabaseManager::getCreateTableQuery(const QString& tableName)
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 global_id TEXT NOT NULL,
                 approval_status BOOLEAN DEFAULT 1,
-                schedule_id INTEGER NOT NULL,
+                schedule_of_rates_id INTEGER NOT NULL,
                 description TEXT,
-                FOREIGN KEY (schedule_id) REFERENCES ScheduleOfRates(id)
+                FOREIGN KEY (schedule_of_rates_id) REFERENCES ScheduleOfRates(id)
             )
         )";
     }
@@ -342,9 +344,9 @@ QString DatabaseManager::getCreateTableQuery(const QString& tableName)
                 bill_of_quantity_id INTEGER NOT NULL,
                 description TEXT,
                 dollar_value REAL,
-                task_id INTEGER,
+                bim_element_id INTEGER,
                 FOREIGN KEY (bill_of_quantity_id) REFERENCES BillOfQuantity(id),
-                FOREIGN KEY (task_id) REFERENCES Task(id)
+                FOREIGN KEY (bim_element_id) REFERENCES BIMElement(id)
             )
         )";
     }

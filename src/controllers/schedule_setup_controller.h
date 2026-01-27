@@ -25,7 +25,7 @@ private:
     ScheduleSetupRepository* m_scheduleSetupRepository;
     DraftEntityRepository* m_draftEntityRepository;
 
-    QString CreateJson(const QVariant &param) const;
+    QJsonDocument CreateJson(const QVariant &param) const;
 };
 
 #endif // SCHEDULE_SETUP_CONTROLLER_H

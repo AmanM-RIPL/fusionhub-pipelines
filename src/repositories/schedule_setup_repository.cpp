@@ -32,7 +32,7 @@ ScheduleSetup* ScheduleSetupRepository::mapFromQueryQML(const QSqlQuery& query, 
     scheduleSetup->setId(query.value("id").toInt());
     scheduleSetup->setGlobalId(query.value("global_id").toString());
     scheduleSetup->setApprovalStatus(query.value("approval_status").toBool());
-    scheduleSetup->setScheduleName(query.value("schedule_name").toString());
+    scheduleSetup->setScheduleSetupName(query.value("schedule_setup_name").toString());
     scheduleSetup->setDescription(query.value("description").toString());
     scheduleSetup->setCostParameter(query.value("cost_parameter").toString());
     scheduleSetup->setResourceParameter(query.value("resource_parameter").toString());
@@ -42,17 +42,17 @@ ScheduleSetup* ScheduleSetupRepository::mapFromQueryQML(const QSqlQuery& query, 
 void ScheduleSetupRepository::bindEntityToQuery(QSqlQuery& query, const ScheduleSetup& entity) const {
     query.addBindValue(entity.getGlobalId());
     query.addBindValue(entity.getApprovalStatus());
-    query.addBindValue(entity.getScheduleName());
+    query.addBindValue(entity.getScheduleSetupName());
     query.addBindValue(entity.getDescription());
     query.addBindValue(entity.getCostParameter());
     query.addBindValue(entity.getResourceParameter());
 }
 QString ScheduleSetupRepository::getInsertQuery() const {
-    return "INSERT INTO ScheduleSetup (global_id, approval_status, schedule_name, description, "
+    return "INSERT INTO ScheduleSetup (global_id, approval_status, schedule_setup_name, description, "
            "cost_parameter, resource_parameter) "
            "VALUES (?, ?, ?, ?, ?, ?)";
 }
 QString ScheduleSetupRepository::getUpdateQuery() const {
-    return "UPDATE ScheduleSetup SET global_id = ?, approval_status = ?, schedule_name = ?, "
+    return "UPDATE ScheduleSetup SET global_id = ?, approval_status = ?, schedule_setup_name = ?, "
            "description = ?, cost_parameter = ?, resource_parameter = ? WHERE id = ?";
 }

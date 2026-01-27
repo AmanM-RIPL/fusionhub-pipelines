@@ -36,7 +36,7 @@ ScheduleOfRates* ScheduleOfRatesRepository::mapFromQueryQML(const QSqlQuery& que
     scheduleOfRates->setId(query.value("id").toInt());
     scheduleOfRates->setGlobalId(query.value("global_id").toString());
     scheduleOfRates->setApprovalStatus(query.value("approval_status").toBool());
-    scheduleOfRates->setScheduleOfRatesName(query.value("schedule_name").toString());
+    scheduleOfRates->setScheduleOfRatesName(query.value("schedule_of_rates_name").toString());
 
     return scheduleOfRates;
 }
@@ -46,9 +46,9 @@ void ScheduleOfRatesRepository::bindEntityToQuery(QSqlQuery& query, const Schedu
     query.addBindValue(entity.getScheduleOfRatesName());
 }
 QString ScheduleOfRatesRepository::getInsertQuery() const {
-    return "INSERT INTO ScheduleOfRates (global_id, approval_status, schedule_name) "
+    return "INSERT INTO ScheduleOfRates (global_id, approval_status, schedule_of_rates_name) "
            "VALUES (?, ?, ?)";
 }
 QString ScheduleOfRatesRepository::getUpdateQuery() const {
-    return "UPDATE ScheduleOfRates SET global_id = ?, approval_status = ?, schedule_name = ? WHERE id = ?";
+    return "UPDATE ScheduleOfRates SET global_id = ?, approval_status = ?, schedule_of_rates_name = ? WHERE id = ?";
 }
