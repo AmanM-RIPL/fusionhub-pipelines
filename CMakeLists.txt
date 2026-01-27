@@ -283,6 +283,7 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/controllers/work_billing_controller.h src/controllers/work_billing_controller.cpp
     src/network/network_manager.cpp
     src/network/network_manager.h
+    src/common/helper_point.h
 )
 
 target_include_directories(FusionHubQt PRIVATE src)

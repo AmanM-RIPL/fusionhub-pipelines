@@ -68,6 +68,19 @@ public:
     // [10, 2] where 10 is x and 2 is y
     Point getParallelProjectionPoint(Point point1, Point point2, float width);
 
+    // used for finding helper lines
+    Point getPointAtPerpendicularDistance(Point point1, Point point2, float distance);
+
+    Point getMiddlePoint(Point point1, Point point2);
+
+    Point getPointAtDistance(Point point1, Point point2, float distance); // parallel to the two points
+
+    float getDistanceBetweenPoints(Point point1, Point point2);
+
+    float getAngleBetweenPoints(Point point1, Point point2, Point point3);
+
+    Point getPointAtDistanceAngle(Point point1, Point point2, float angle, float distance); // angle in degrees and counter-clockwise
+
     /*
     void getMeshGeometry(const FacetModeler::Body& body, OdGePoint3dArray& pointArray, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, OdGeVector3dArray& normalArray);
 
