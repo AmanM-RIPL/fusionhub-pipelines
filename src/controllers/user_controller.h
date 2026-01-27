@@ -9,11 +9,9 @@ class UserController : public QObject
     Q_OBJECT
 public:
     explicit UserController(QObject *parent = nullptr);
-    Q_INVOKABLE bool login(const QString& username, const QString& password) const;
+    Q_INVOKABLE bool login(const QString& username, const QString& password);
     Q_INVOKABLE void logout();
     //void initializeTimer();
-
-    Q_INVOKABLE void login(const QString& username, const QString& password);
 
     Q_INVOKABLE void create(const QString& userFullName,
                             const QString& userName,

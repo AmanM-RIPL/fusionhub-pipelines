@@ -8,7 +8,7 @@
 
 extern std::shared_ptr<User> gUser;
 
- QTimer *g_timer = nullptr;
+QTimer *g_timer = nullptr;
 
 UserController::UserController(QObject *parent)
     : QObject(parent),
@@ -58,25 +58,24 @@ void UserController::logout()
     }
 }
 
-void UserController::login(const QString& username, const QString& password)
+bool UserController::login(const QString& username, const QString& password)
 {
-    qInfo() << username << " " << password;
-
     if(username == "admin" || username.isEmpty())
     {
         gUser->setUserName("admin");
 
         const_cast<UserController*>(this)->startBackgroundSync();
-
-        return true;
-    if (username.isEmpty() || password.isEmpty()) {
+    }
+    else if (username.isEmpty() || password.isEmpty()) {
         emit loginFailed("Username or password cannot be empty");
-        return;
+        return false;
     }
 
     // Get NetworkManager instance and trigger async login
     NetworkManager* network = NetworkManager::getInstance();
     network->loginAPI(username, password);
+
+    return true;
 }
 
 void UserController::onNetworkLoginSuccess(const QJsonObject& userData)
