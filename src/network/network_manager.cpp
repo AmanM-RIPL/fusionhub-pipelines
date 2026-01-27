@@ -120,12 +120,11 @@ void NetworkManager::parseLoginResponse(const QJsonDocument& jsonDoc)
     }
     m_authToken = token;
 
-    // Store full user data (remove sensitive data like token before storing)
+    // Store full user data
     QJsonObject userData = root;
-    userData.remove("token");
     m_lastUserData = userData;
 
-    qDebug() << "Login successful. Token stored:" << m_authToken.left(20) << "...";
+    qDebug() << "Login successful. Token stored:" << m_authToken << "";
     qDebug() << "User data:" << m_lastUserData;
 
     // Emit success signal

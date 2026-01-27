@@ -42,6 +42,7 @@ public:
     Q_INVOKABLE bool getCurrentUserApprovalStatus() const;
     Q_INVOKABLE QString getCurrentUserId() const;
     Q_INVOKABLE QString getCurrentUserFullName() const;
+    Q_INVOKABLE QString getToken() const;
     Q_INVOKABLE QString getCurrentUserName() const;
     Q_INVOKABLE QString getCurrentUserMobile1() const;
     Q_INVOKABLE QString getCurrentUserMobile2() const;

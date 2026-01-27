@@ -43,6 +43,7 @@ void UserController::onNetworkLoginSuccess(const QJsonObject& userData)
 
     gUser->setUserId(userData["id"].toString());
     gUser->setUserName(userData["username"].toString());
+    gUser->setToken(userData["token"].toString());
 
     if (userData.contains("firstName")) {
         gUser->setUserFullName(userData["firstName"].toString());
@@ -75,6 +76,11 @@ std::shared_ptr<User> UserController::getCurrentUserObject() const
 int UserController::getCurrentId() const
 {
     return gUser->getId();
+}
+
+QString UserController::getToken() const
+{
+    return gUser->getToken();
 }
 
 QString UserController::getCurrentUserGlobalId() const
