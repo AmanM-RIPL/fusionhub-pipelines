@@ -12,8 +12,8 @@ class User:public QObject
     Q_PROPERTY(int id READ getId CONSTANT)
     Q_PROPERTY(bool approvalStatus READ getApprovalStatus)
     Q_PROPERTY(QString globalId READ getGlobalId)
+    Q_PROPERTY(QString token READ getToken)
     Q_PROPERTY(QString user_id READ getUserId)
-
     Q_PROPERTY(QString user_fullname READ getUserFullName  WRITE setUserFullName NOTIFY userFullNameChanged)
     Q_PROPERTY(QString user_name READ getUserName  WRITE setUserName NOTIFY userNameChanged)
     Q_PROPERTY(QString mobile1 READ getUserMobile1  WRITE setUserMobile1 NOTIFY userMobile1Changed)
@@ -36,6 +36,7 @@ public:
 
         User(int id,
              const QString& globalId,
+             const QString& token,
              bool approvalStatus,
              const QString& user_id,
              const QString& user_fullname,
@@ -50,9 +51,10 @@ public:
              const QString& monthlyDeskCostValue,
              const QString& password,
              QObject* parent = nullptr);
-    
+
     int getId() const { return id; }
     QString getGlobalId() const { return globalId; }
+    QString getToken() const { return token; }
     bool getApprovalStatus() const { return approvalStatus; }
     QString getUserId() const { return user_id; }
     QString getUserFullName() const { return user_fullname; }
@@ -67,9 +69,10 @@ public:
     QString getUserMonthlyDeskCostValue() const { return monthlyDeskCostValue; }
     QString getUserPassword() const { return password; }
 
-    
+
     void setId(int id) { this->id = id; }
     void setGlobalId(const QString& globalId) { this->globalId = globalId; }
+    void setToken(const QString& token) { this->token = token; }
     void setApprovalStatus(bool status) { this->approvalStatus = status; }
     void setUserId(const QString& user_id) { this->user_id = user_id; }
     void setUserFullName(const QString& user_fullname) { this->user_fullname = user_fullname; }
@@ -85,6 +88,8 @@ public:
     void setUserPassword(const QString& password) { this->password = password; }
 
 signals:
+
+    void TokenChanged();
     void userFullNameChanged();
     void userNameChanged();
     void userMobile1Changed();
@@ -101,6 +106,7 @@ signals:
 private:
     int id = 2;
     QString globalId= "123";
+    QString token;
     bool approvalStatus = true;
     QString user_id = "ab03";
     QString user_fullname;

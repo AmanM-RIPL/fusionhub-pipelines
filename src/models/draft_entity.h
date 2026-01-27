@@ -16,8 +16,9 @@ class DraftEntity : public QObject
     Q_PROPERTY(int project READ getProject WRITE setProject NOTIFY ProjectChanged)
     Q_PROPERTY(QString entity READ getEntity WRITE setEntity NOTIFY EntityChanged)
     Q_PROPERTY(int createdByUser READ getCreatedByUser WRITE setCreatedByUser NOTIFY CreatedByUserChanged)
-
     Q_PROPERTY(int nextApprovingUser READ getNextApprovingUser WRITE setNextApprovingUser NOTIFY NextApprovingUserChanged)
+    Q_PROPERTY(QString approvalStatus READ getApprovalStatus WRITE setApprovalStatus NOTIFY ApprovalStatusChanged)
+    Q_PROPERTY(QString globalId READ getGlobalId WRITE setGlobalId NOTIFY GlobalIdChanged)
     Q_PROPERTY(QString entitySchema READ getEntitySchema WRITE setEntitySchema NOTIFY EntitySchemaChanged)
     Q_PROPERTY(int associatedApprovedEntity READ getAssociatedApprovedEntity WRITE setAssociatedApprovedEntity NOTIFY AssociatedApprovedEntityChanged)
     Q_PROPERTY(QString changeHistory READ getChangeHistory WRITE setChangeHistory NOTIFY ChangeHistoryChanged)
@@ -25,7 +26,7 @@ class DraftEntity : public QObject
 public:
     explicit DraftEntity(QObject *parent = nullptr): QObject(parent) {}
     DraftEntity(int id, int tenant, const QDate& createdOn, int project,
-              const QString& entity, int createdByUser, int nextApprovingUser,
+              const QString& entity, int createdByUser, int nextApprovingUser,const QString& approvalStatus,const QString& globalId,
               const QString& entitySchema, int associatedApprovedEntity, const QString& changeHistory,
               QObject* parent = nullptr);
 
@@ -37,6 +38,8 @@ public:
     QString getEntity() const { return entity; }
     int getCreatedByUser() const { return createdByUser; }
     int getNextApprovingUser() const { return nextApprovingUser; }
+    QString getApprovalStatus() const { return approvalStatus; }
+    QString getGlobalId() const { return globalId; }
     QString getEntitySchema() const { return entitySchema; }
     int getAssociatedApprovedEntity() const { return associatedApprovedEntity; }
     QString getChangeHistory() const { return changeHistory; }
@@ -47,6 +50,8 @@ public:
     void setProject(int project){ this->project = project; }
     void setEntity(const QString& entity){this->entity = entity; }
     void setCreatedByUser(int createdByUser){ this->createdByUser = createdByUser; }
+    void setApprovalStatus(const QString& approvalStatus ){ this->approvalStatus = approvalStatus; }
+    void setGlobalId(const QString& globalId ){ this->globalId = globalId; }
     void setNextApprovingUser(int nextApprovingUser){ this->nextApprovingUser = nextApprovingUser; }
     void setEntitySchema(const QString& entitySchema){ this->entitySchema = entitySchema; }
     void setAssociatedApprovedEntity(int associatedApprovedEntity){ this->associatedApprovedEntity = associatedApprovedEntity; }
@@ -73,6 +78,8 @@ signals:
     void EntityChanged();
     void CreatedByUserChanged();
     void NextApprovingUserChanged();
+    void ApprovalStatusChanged();
+    void GlobalIdChanged();
     void EntitySchemaChanged();
     void AssociatedApprovedEntityChanged();
     void ChangeHistoryChanged();
@@ -85,6 +92,8 @@ private:
     QString entity;
     int createdByUser;
     int nextApprovingUser;
+    QString approvalStatus;
+    QString globalId;
     QString entitySchema;
     int associatedApprovedEntity;
     QString changeHistory;

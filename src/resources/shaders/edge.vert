@@ -29,6 +29,7 @@ void main()
 
     // 2. extract the model matrix (both edge's vertices will have the same model matrix
     int modelMatrixIndex = texelFetch(modelMatrixIndexBuffer, int(edge.x)).x;
+    // int modelMatrixIndex = texelFetch(modelMatrixIndexBuffer, 0).x;
 
     // 2.1 A mat4 takes 4 vec4 slots. We must calculate the starting offset.
     int baseIndex = modelMatrixIndex * 4;

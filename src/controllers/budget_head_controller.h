@@ -9,13 +9,12 @@ class BudgetHeadController: public QObject
 {
     Q_OBJECT
 public:
-    //BudgetHeadController();
-
     explicit BudgetHeadController(QObject *parent = nullptr);
     Q_INVOKABLE void create(const QString &description) const;
+
+    Q_INVOKABLE void update(int id, const QString &description) const;
+
     Q_INVOKABLE std::vector<BudgetHead*> getBudgetHeadList(bool isApproved = false) const;
-
-
 
 private:
     BudgetHeadRepository* m_budgetHeadRepository;

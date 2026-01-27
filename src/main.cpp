@@ -70,6 +70,9 @@
 #include "models/user.h"
 #include "models/unit_of_measurement.h"
 #include "models/draft_entity.h"
+#include "common/helper_point.h"
+
+#include "network/network_manager.h"
 
 #include <iostream>
 
@@ -557,7 +560,7 @@ int main(int argc, char *argv[])
     PurchaseOrderLineRepository* purchaseOrderLineRepository = new PurchaseOrderLineRepository(&engine);
     GoodReceivedNoteRepository* goodReceivedNoteRepository = new GoodReceivedNoteRepository(&engine);
     MaterialIndentRepository* materialIndentRepository = new MaterialIndentRepository(&engine);
-
+    NetworkManager* networkManager = NetworkManager::getInstance();
    // IFCDetailRepository* ifcDetailRepository = new IFCDetailRepository(ifcDetailList, &engine);
 
     // UserRepository userRepo;
@@ -649,6 +652,10 @@ int main(int argc, char *argv[])
 
     engine.rootContext()->setContextProperty("bimElementRepository", bimElementRepository);
     engine.rootContext()->setContextProperty("billofQuantityRepository", billOfQuantityRepository);
+    engine.rootContext()->setContextProperty("networkManager", networkManager);
+
+
+
 
 
     qmlRegisterType<MyGLItem>("com.fh.models", 1, 0, "GLScene");
@@ -674,6 +681,8 @@ int main(int argc, char *argv[])
 
     qmlRegisterType<DraftEntity>("com.fh.models", 1, 0, "DraftEntity");
     qmlRegisterType<User>("com.fh.models", 1, 0, "Project");
+
+    qRegisterMetaType<HelperPoint>();
 
 
     qmlRegisterType<UserController>("com.fh.controllers", 1, 0, "UserController");

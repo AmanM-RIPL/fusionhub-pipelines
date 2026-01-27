@@ -46,7 +46,8 @@ MaterialIndent* MaterialIndentRepository::mapFromQueryQML(const QSqlQuery& query
     materialIndent->setQuantity(query.value("total_quantity").toDouble());
     materialIndent->setMaterialId(query.value("material_id").toInt());
     materialIndent->setTaskId(query.value("task_id").toInt());
-
+    materialIndent->setMaterialName(query.value("material_name").toString());
+    materialIndent->setTaskName(query.value("task_name").toString());
     return materialIndent;
 }
 void MaterialIndentRepository::bindEntityToQuery(QSqlQuery& query, const MaterialIndent& entity) const {

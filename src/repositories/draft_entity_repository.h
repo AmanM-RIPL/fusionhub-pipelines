@@ -18,6 +18,8 @@ public:
     bool save(const DraftEntity& entity) override;
     Q_INVOKABLE bool saveQML(DraftEntity* entity);
     Q_INVOKABLE bool updateQML(DraftEntity* entity);
+    Q_INVOKABLE bool approveQML(DraftEntity* entity);
+    Q_INVOKABLE bool cancelQML(DraftEntity* entity);
     bool update(const DraftEntity& entity) override;
     bool deleteById(int id) override;
     std::vector<std::unique_ptr<DraftEntity>> findByApprovalStatus(bool status) override;
@@ -28,6 +30,8 @@ protected:
     void bindEntityToQuery(QSqlQuery& query, const DraftEntity& entity) const override;
     QString getInsertQuery() const override;
     QString getUpdateQuery() const override;
+    QString getApproveUpdateQuery() const;
+    QString getCancelQuery() const;
 
 signals:
 };

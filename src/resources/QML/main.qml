@@ -66,7 +66,7 @@ ApplicationWindow {
                 welcomePage.showOrgSettingsButton = false
                 welcomePage.showNewProjectButton = false
                 welcomePage.showButtonColor = "transparent"
-            }             
+            }
         }
     }
 
@@ -86,20 +86,20 @@ ApplicationWindow {
             //baseLayout.visible = true
             baseLayout.visible = false
             idCreateNewProjectDialog.open()
-            organizationSettingsPage.visible = false            
+            organizationSettingsPage.visible = false
         }
 
 
-        onUserSettingsClicked:{            
+        onUserSettingsClicked:{
             userSettingsPopup.open()
-        }        
+        }
 
         onOrganizationSettingsClicked:{
             baseLayout.visible = false
             loginPage.visible = false
             welcomePage.visible = false
             organizationSettingsPage.visible = true
-        }        
+        }
    }
 
     BaseLayout{
@@ -134,18 +134,18 @@ ApplicationWindow {
         buttonSource: ""
 
         onOpened: {
-
-            userFullNameTextBox.text = userController.getCurrentUserFullName();
-            userNameTextBox.text = userController.getCurrentUserName();
-            userMobile1TextBox.text = userController.getCurrentUserMobile1();
-            userMobile2TextBox.text = userController.getCurrentUserMobile2();
-            userEmail1TextBox.text = userController.getCurrentUserEmail1();
-            userEmail2TextBox.text = userController.getCurrentUserEmail2();
-            userJobTitleTextBox.text = userController.getCurrentUserJobTitle();
-            userStartDateTextBox.text = userController.getCurrentUserStartDate();
-            userEndDateTextBox.text = userController.getCurrentUserEndDate();
-            //userMonthlyDeskCostTextBox.text = userController.getCurrentUserMonthlyDeskCostValue();
-            userPasswordTextBox.text = userController.getCurrentUserPassword();
+            tokenTextBox.text = userControllerUpdate.getToken();
+            userFullNameTextBox.text = userControllerUpdate.getCurrentUserFullName();
+            userNameTextBox.text = userControllerUpdate.getCurrentUserName();
+            userMobile1TextBox.text = userControllerUpdate.getCurrentUserMobile1();
+            userMobile2TextBox.text = userControllerUpdate.getCurrentUserMobile2();
+            userEmail1TextBox.text = userControllerUpdate.getCurrentUserEmail1();
+            userEmail2TextBox.text = userControllerUpdate.getCurrentUserEmail2();
+            userJobTitleTextBox.text = userControllerUpdate.getCurrentUserJobTitle();
+            userStartDateTextBox.text = userControllerUpdate.getCurrentUserStartDate();
+            userEndDateTextBox.text = userControllerUpdate.getCurrentUserEndDate();
+            //userMonthlyDeskCostTextBox.text = userControllerUpdate.getCurrentUserMonthlyDeskCostValue();
+            userPasswordTextBox.text = userControllerUpdate.getCurrentUserPassword();
                 }
 
 
@@ -195,7 +195,21 @@ ApplicationWindow {
          content: Column{
             width: parent.width
             height:650;//parent.height //30 for each top bottom
-
+            Text{
+                id: tokenLabel
+                text: "Token:"
+                color: "#323130"
+                font.weight: 700
+                font.pixelSize: 14
+                font.family: "Segoe UI"
+                topPadding: 10
+            }
+            CustomTextBox{
+                id: tokenTextBox
+                placeholderText: "token"
+                text:""
+                color: "#323130"
+            }
             Text{
                 id: userFullNameLabel
                 text: "FullName:"

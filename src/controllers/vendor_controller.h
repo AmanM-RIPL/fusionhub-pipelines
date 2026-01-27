@@ -9,12 +9,15 @@ class VendorController: public QObject
 {
     Q_OBJECT
 public:
-    //VendorController();
     explicit VendorController(QObject *parent = nullptr);
     Q_INVOKABLE void create(const QString &vendorName, const QString &vendorAddress, const QString &vendorContactPerson,
                             const QString &vendorMobile, const QString &vendorEmail) const;
-    Q_INVOKABLE std::vector<Vendor*> getVendorList(bool isApproved = false) const;
 
+    Q_INVOKABLE void update(int id, const QString &vendorName, const QString &vendorAddress, const QString &vendorContactPerson,
+                            const QString &vendorMobile, const QString &vendorEmail) const;
+
+
+    Q_INVOKABLE std::vector<Vendor*> getVendorList(bool isApproved = false) const;
 
 private:
     VendorRepository* m_vendorRepository;

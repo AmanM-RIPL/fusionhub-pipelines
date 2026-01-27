@@ -13,18 +13,18 @@ GoodReceivedNoteController::GoodReceivedNoteController(QObject *parent)
     m_draftEntityRepository(RepositoryLocator::instance().draftEntityRepository())
 {}
 
-void GoodReceivedNoteController::create(const int &quantity, const int &purchaseOrderLineId) const
+void GoodReceivedNoteController::create(const int &purchaseOrderLineId, const int &quantity ) const
 {
-    GoodReceivedNote goodReceivedNote;
+    // GoodReceivedNote goodReceivedNote;
 
-    qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
-    goodReceivedNote.setId(id_in_milliseconds);
-    goodReceivedNote.setGlobalId("123");
-    goodReceivedNote.setApprovalStatus(true);
-    goodReceivedNote.setQuantity(quantity);
-    goodReceivedNote.setPurchaseOrderLineId(purchaseOrderLineId);
+    // qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+    // goodReceivedNote.setId(id_in_milliseconds);
+    // goodReceivedNote.setGlobalId("123");
+    // goodReceivedNote.setApprovalStatus(true);
+    // goodReceivedNote.setQuantity(quantity);
+    // goodReceivedNote.setPurchaseOrderLineId(purchaseOrderLineId);
 
-    m_goodReceivedNoteRepository->saveQML(&goodReceivedNote);
+    // m_goodReceivedNoteRepository->saveQML(&goodReceivedNote);
 
     /***********Start of DraftEntity******************/
 
@@ -69,6 +69,61 @@ void GoodReceivedNoteController::create(const int &quantity, const int &purchase
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+void GoodReceivedNoteController::update(int id, const int &purchaseOrderLineId, const int &quantity ) const
+{
+    // GoodReceivedNote goodReceivedNote;
+
+    // qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+    // goodReceivedNote.setId(id_in_milliseconds);
+    // goodReceivedNote.setGlobalId("123");
+    // goodReceivedNote.setApprovalStatus(true);
+    // goodReceivedNote.setQuantity(quantity);
+    // goodReceivedNote.setPurchaseOrderLineId(purchaseOrderLineId);
+
+    // m_goodReceivedNoteRepository->saveQML(&goodReceivedNote);
+
+    /***********Start of DraftEntity******************/
+
+    QJsonObject jsonObject;
+    jsonObject["id"] = id;
+    jsonObject["quantity"] = quantity;
+    jsonObject["purchaseOrderLineId"] = purchaseOrderLineId;
+
+
+    QJsonDocument jsonDoc(jsonObject);
+    QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
+    qDebug() << "GoodReceivedNote::EntitySchema: " << entitySchema;
+
+    QDateTime currentDateTimeUtc = QDateTime::currentDateTimeUtc();
+    QString isoDateTimeString = currentDateTimeUtc.toString(Qt::ISODateWithMs);
+
+    QJsonObject jsonObjectChangeHistory;
+    jsonObjectChangeHistory["user"] = gUser->getId();
+    jsonObjectChangeHistory["timestamp"] = isoDateTimeString;
+    jsonObjectChangeHistory["changeType"] =  "create";
+    jsonObjectChangeHistory["description"] = "Updated By User";
+    jsonObjectChangeHistory["approvalHistory"] = "null";
+
+    QJsonDocument jsonDocChangeHistory(jsonObjectChangeHistory);
+    QString changeHistory = jsonDocChangeHistory.toJson(QJsonDocument::Indented);
+
+    QDate updatedOn = QDate::currentDate();
+
+    DraftEntity draftEntity;
+    draftEntity.setId(id);
+    draftEntity.setTenant(gTenantId);
+    draftEntity.setCreatedOn(updatedOn);
+    draftEntity.setProject(gProjectId);
+    draftEntity.setEntity("GoodReceivedNote");
+    draftEntity.setCreatedByUser(gUser->getId());
+    draftEntity.setNextApprovingUser(0);
+    draftEntity.setEntitySchema(entitySchema);
+    draftEntity.setAssociatedApprovedEntity(0);
+    draftEntity.setChangeHistory(changeHistory);
+
+    m_draftEntityRepository->updateQML(&draftEntity);
+
+}
 std::vector<GoodReceivedNote*> GoodReceivedNoteController::getGoodReceivedNoteList(bool isApproved) const
 {
     qDebug() << "IsApproved: " << isApproved;
@@ -89,6 +144,7 @@ std::vector<GoodReceivedNote*> GoodReceivedNoteController::getGoodReceivedNoteLi
 
         for(int i = 0; i < draftEntities.size(); i++)
         {
+            int draftId = draftEntities[i]->getId();
             QString  jsonString = draftEntities[i]->getEntitySchema();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
 
@@ -98,12 +154,11 @@ std::vector<GoodReceivedNote*> GoodReceivedNoteController::getGoodReceivedNoteLi
 
                 int purchaseOrderLineId = jsonObj["purchaseOrderLineId"].toInt();
                 int quantity = jsonObj["quantity"].toInt();
-               // int id = jsonObj["id"].toInt();
 
                 // Create GRN object
                 GoodReceivedNote* goodReceivedNote = new GoodReceivedNote();
                 goodReceivedNote->setQuantity(quantity);
-                goodReceivedNote->setId(i + 1 );
+                goodReceivedNote->setId(draftId);
                 goodReceivedNote->setGlobalId("123");
 
                 foreach(const PurchaseOrderLine *po, vecPurchaseOrderLine)

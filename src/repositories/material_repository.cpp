@@ -33,7 +33,7 @@ Material* MaterialRepository::mapFromQueryQML(const QSqlQuery& query, QObject* p
     auto material = new Material(parent);
     material->setId(query.value("id").toInt());
     material->setGlobalId(query.value("global_id").toString());
-    material->setApprovalStatus(query.value("approval_status").toBool());
+    material->setApprovalStatus(query.value("approval_status").toString());
     material->setMaterialName(query.value("material_name").toString());
     material->setCategory(query.value("category").toString());
     material->setUnitOfMeasurementId(query.value("unit_of_measurement_id").toInt());

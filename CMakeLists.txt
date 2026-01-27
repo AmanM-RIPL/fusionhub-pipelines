@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 
+# PDB error fix
+# if(MSVC)
+#     string(REGEX REPLACE "/Zi" "/Z7" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+#     add_link_options(/DEBUG:FULL)
+# endif()
+
 project(FusionHubQt VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type")
@@ -278,6 +284,9 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/controllers/work_billing_controller.h src/controllers/work_billing_controller.cpp
     src/controllers/schedule_of_rates_line_controller.h src/controllers/schedule_of_rates_line_controller.cpp
     src/common/background_thread_manager.h src/common/background_thread_manager.cpp
+    src/network/network_manager.cpp
+    src/network/network_manager.h
+    src/common/helper_point.h
 )
 
 target_include_directories(FusionHubQt PRIVATE src)
