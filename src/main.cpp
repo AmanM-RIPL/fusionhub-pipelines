@@ -70,6 +70,7 @@
 #include "models/user.h"
 #include "models/unit_of_measurement.h"
 #include "models/draft_entity.h"
+#include "common/helper_point.h"
 
 #include <iostream>
 
@@ -674,6 +675,8 @@ int main(int argc, char *argv[])
 
     qmlRegisterType<DraftEntity>("com.fh.models", 1, 0, "DraftEntity");
     qmlRegisterType<User>("com.fh.models", 1, 0, "Project");
+
+    qRegisterMetaType<HelperPoint>();
 
 
     qmlRegisterType<UserController>("com.fh.controllers", 1, 0, "UserController");

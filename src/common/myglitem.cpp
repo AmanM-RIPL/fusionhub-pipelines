@@ -112,10 +112,8 @@ MyGLRenderer::MyGLRenderer()
 
     // initialize Materials
     OpenGLMaterial::GenerateMaterialList(m_materialList);
-    for (OpenGLMaterial* material: m_materialList)
-    {
-        m_view->AddMaterial(material);
-    }
+    std::vector<float> materials = OpenGLMaterial::GenerateMaterialData(m_materialList);
+    m_view->AddMaterialData(materials);
 }
 
 MyGLRenderer::~MyGLRenderer()
@@ -130,7 +128,7 @@ MyGLRenderer::~MyGLRenderer()
     //     this->glDeleteRenderbuffers(1, &m_pickDepthBuf);
     // }
 
-    // delete m_mesh;
+    delete editableMesh;
     delete m_camera;
     delete m_shader;
     delete m_picking_shader;
@@ -159,7 +157,6 @@ MyGLRenderer::~MyGLRenderer()
 void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 {
     glItem = static_cast<MyGLItem*>(item);
-
 
     // Orbit only works in 3D mode and not in 2D
     if (glItem->m_moveUp && glItem->m_viewType == "ModelView") {
@@ -230,12 +227,90 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         m_view->SetSelectionCoordinates(m_pickX, m_pickY);
     }
 
+    // transfer hover request safely
+    if (meshInitialized && projectionMatrixInitialized && glItem->m_lastHoverX >= 0) {
+        m_pickX = glItem->m_lastHoverX;
+        m_pickY = glItem->m_lastHoverY;
+        m_hoverRequested = true;
+        m_pickedBimElementId = -1;
+
+        // reset the stored GUI-side coords so we don't re-process
+        glItem->m_lastClickX = -1;
+        glItem->m_lastClickY = -1;
+        glItem->m_lastHoverX = -1;
+        glItem->m_lastHoverY = -1;
+
+        m_view->SetSelectionCoordinates(m_pickX, m_pickY);
+    }
+
+    // transfer new middle point value safely
+    if (meshInitialized && projectionMatrixInitialized && glItem->m_middlePointValueUpdated)
+    {
+        if (glItem->editableBimElement->getType() != "Door" && glItem->editableBimElement->getType() != "Window")
+        {
+            Point screenPoint = {m_pickX, m_pickY};
+            Point newPoint = GeometryServiceFactory::updatePoint2D(glItem->editableBimElement, glItem->m_middlePointValue, screenPoint, m_view);
+
+            m_pickX = newPoint[0];
+            m_pickY = newPoint[1];
+
+            m_view->SetSelectionCoordinates(m_pickX, m_pickY);
+            glItem->updateMousePosition(m_pickX, m_pickY);
+
+            // reset the stored GUI-side coords so we don't re-process
+            glItem->m_lastClickX = -1;
+            glItem->m_lastClickY = -1;
+            glItem->m_lastHoverX = -1;
+            glItem->m_lastHoverY = -1;
+            glItem->m_middlePointValueUpdated = false;
+
+            m_hoverRequested = true;
+            m_pickedBimElementId = -1;
+        }
+        else
+        {
+            if (m_pickedBimElementId == -1)
+            {
+                m_hoverRequested = true;
+            }
+            else
+            {
+                BIMElement* hostElement = nullptr;
+
+                for (BIMElement* element: glItem->bimElementList)
+                {
+                    if (element->getId() == m_pickedBimElementId)
+                    {
+                        hostElement = element;
+                        break;
+                    }
+                }
+
+                Point screenPoint = {m_pickX, m_pickY};
+                Point newPoint = GeometryServiceFactory::updatePoint2D(glItem->editableBimElement, glItem->m_middlePointValue, screenPoint, m_view, hostElement);
+
+                m_pickX = newPoint[0];
+                m_pickY = newPoint[1];
+
+                m_view->SetSelectionCoordinates(m_pickX, m_pickY);
+                glItem->updateMousePosition(m_pickX, m_pickY);
+
+                // reset the stored GUI-side coords so we don't re-process
+                glItem->m_lastClickX = -1;
+                glItem->m_lastClickY = -1;
+                glItem->m_lastHoverX = -1;
+                glItem->m_lastHoverY = -1;
+                glItem->m_middlePointValueUpdated = false;
+            }
+        }
+    }
+
     // by default m_pickedBimElementId will be a negative number
     // zero means no clicked id found, and negative means click
     // has been processed.
     if (m_pickRequested == true && m_pickedBimElementId >= 0)
     {
-        QVector3D clickedPoint = m_view->GetPointInViewSpace();
+        QVector3D clickedPoint = m_view->GetPointInViewSpace(m_pickX, m_pickY);
         BIMElement* hostElement = nullptr;
 
         for (BIMElement* element: glItem->bimElementList)
@@ -252,44 +327,44 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         {
             GeometryServiceFactory::updateGeometry(clickedPoint, glItem->editableBimElement, hostElement);
 
-            // removing old geometry
-            for (Mesh* mesh: m_meshList)
-            {
-                delete mesh;
-            }
-            m_meshList.clear();
-            m_view->DeleteAllMesh();
+            // //removing old geometry
+            // for (Mesh* mesh: m_meshList)
+            // {
+            //     delete mesh;
+            // }
+            // m_meshList.clear();
+            // m_view->DeleteAllMesh();
 
-            for (BIMElement* bimElement: glItem->bimElementList)
-            {
-                // adding new geometry
-                Mesh* mesh = new Mesh();
-                m_meshList.append(mesh);
-                m_view->AddMesh(mesh);
+            // for (BIMElement* bimElement: glItem->bimElementList)
+            // {
+            //     // adding new geometry
+            //     Mesh* mesh = new Mesh();
+            //     m_meshList.append(mesh);
+            //     // m_view->AddMesh(mesh);
 
-                if (glItem->m_viewType == "ModelView")
-                {
-                    GeometryServiceFactory::generateMesh3D(bimElement, mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
-                }
-                else if (glItem->m_viewType == "PlanView")
-                {
-                    GeometryServiceFactory::generateMesh2D(bimElement, mesh);
-                }
-            }
+            //     if (glItem->m_viewType == "ModelView")
+            //     {
+            //         GeometryServiceFactory::generateMesh3D(bimElement, mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
+            //     }
+            //     else if (glItem->m_viewType == "PlanView")
+            //     {
+            //         GeometryServiceFactory::generateMesh2D(bimElement, mesh);
+            //     }
+            // }
 
-            if (glItem->m_viewType == "ModelView")
-            {
-                Mesh* mesh = new Mesh();
-                m_meshList.append(mesh);
-                m_view->AddMesh(mesh);
+            // if (glItem->m_viewType == "ModelView")
+            // {
+            //     Mesh* mesh = new Mesh();
+            //     m_meshList.append(mesh);
+            //     // m_view->AddMesh(mesh);
 
-                Mesh::GenerateBaseSurface(mesh);
-            }
+            //     Mesh::GenerateBaseSurface(mesh);
+            // }
 
             // generating mesh for Editable BIMElement
             Mesh* mesh = new Mesh();
-            m_meshList.append(mesh);
-            m_view->AddMesh(mesh);
+            // m_meshList.append(mesh);
+            // // m_view->AddMesh(mesh);
 
             if (glItem->m_viewType == "ModelView")
             {
@@ -301,10 +376,56 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
             }
 
 
-            m_view->BindMeshWithOpenGL();
+            // m_view->BindMeshWithOpenGL();
+            // m_view->LoadStaticMeshData(m_meshList);
+            m_view->LoadDynamicMeshData(mesh);
+
+            delete mesh;
         }
 
         m_pickRequested = false;
+        m_hoverRequested = false;
+        m_pickedBimElementId = -1;
+    }
+
+    if (m_hoverRequested == true && m_pickedBimElementId >= 0)
+    {
+        QVector3D clickedPoint = m_view->GetPointInViewSpace(m_pickX, m_pickY);
+        BIMElement* hostElement = nullptr;
+
+        for (BIMElement* element: glItem->bimElementList)
+        {
+            if (element->getId() == m_pickedBimElementId)
+            {
+                hostElement = element;
+                break;
+            }
+        }
+
+        // update glItem BIM Element
+        if (glItem->editableBimElement != nullptr)
+        {
+            // generating mesh for Editable BIMElement
+            Mesh* mesh = new Mesh();
+            // m_meshList.append(mesh);
+            // m_view->AddMesh(mesh);
+
+            if (glItem->m_viewType == "PlanView")
+            {
+                // qInfo() << "PickPoint: " << m_pickX << ", " << m_pickY;
+                Point screenPoint = {m_pickX, m_pickY};
+                GeometryServiceFactory::generateWIPMesh2D(glItem->editableBimElement, mesh, clickedPoint, screenPoint, m_view, glItem->m_middlePointValue, hostElement);
+                glItem->middlePointPositionChanged(); // signal to QML
+            }
+
+
+            m_view->LoadDynamicMeshData(mesh);
+
+            delete mesh;
+        }
+
+        m_pickRequested = false;
+        m_hoverRequested = false;
         m_pickedBimElementId = -1;
     }
 
@@ -314,7 +435,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         {
             Mesh* mesh = new Mesh();
             m_meshList.append(mesh);
-            m_view->AddMesh(mesh);
+            // m_view->AddMesh(mesh);
 
             if (glItem->m_viewType == "ModelView")
             {
@@ -330,12 +451,13 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         {
             Mesh* mesh = new Mesh();
             m_meshList.append(mesh);
-            m_view->AddMesh(mesh);
+            // m_view->AddMesh(mesh);
 
             Mesh::GenerateBaseSurface(mesh);
         }
 
         m_view->Initialize();
+        m_view->LoadStaticMeshData(m_meshList);
 
         meshInitialized = true;
         m_viewType = glItem->m_viewType;
@@ -356,7 +478,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
             // adding new geometry
             Mesh* mesh = new Mesh();
             m_meshList.append(mesh);
-            m_view->AddMesh(mesh);
+            // m_view->AddMesh(mesh);
 
             if (glItem->m_viewType == "ModelView")
             {
@@ -372,12 +494,12 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         {
             Mesh* mesh = new Mesh();
             m_meshList.append(mesh);
-            m_view->AddMesh(mesh);
+            // m_view->AddMesh(mesh);
 
             Mesh::GenerateBaseSurface(mesh);
         }
 
-        m_view->BindMeshWithOpenGL();
+        m_view->LoadStaticMeshData(m_meshList);
 
         m_viewType = glItem->m_viewType;
 
@@ -390,6 +512,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
             m_camera->SetCameraParameters(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 1.0f, 0.0f), QVector3D(0.0f, 0.0f, 20.0f), 5.0f, 0.5f);
         }
     }
+
 }
 
 void MyGLRenderer::update() {
@@ -650,7 +773,7 @@ void MyGLRenderer::render() {
         projectionMatrixInitialized = true;
     }
 
-    if (m_pickRequested)
+    if (m_pickRequested || m_hoverRequested)
     {
         // m_view->SetSelectionCoordinates(m_pickX, m_pickY);
 
@@ -808,19 +931,19 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 
     bimElementList.append(bimElementNew);
 
-    // BIMElement* bimElementDoor = new BIMElement(3,"1",false,"Window", "Front Window", 0, 2, this);
-    // BIMParameter* distanceParameterDoor = new BIMParameter(1,"1",false,"Distance","1",3,this);
-    // BIMParameter* heightParameterDoor = new BIMParameter(37, "1", false, "Height", "2", 3, this);
-    // BIMParameter* widthParameterDoor = new BIMParameter(1,"1",false,"Width","1.5",3,this);
-    // BIMParameter* rlParameterDoor = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0]]",3,this);
-    // bimElementDoor->addParameter(distanceParameterDoor);
-    // bimElementDoor->addParameter(heightParameterDoor);
-    // bimElementDoor->addParameter(rlParameterDoor);
-    // bimElementDoor->addParameter(widthParameterDoor);
+    BIMElement* bimElementDoor = new BIMElement(3,"1",false,"Window", "Front Window", 0, 2, this);
+    BIMParameter* distanceParameterDoor = new BIMParameter(1,"1",false,"Distance","1",3,this);
+    BIMParameter* heightParameterDoor = new BIMParameter(37, "1", false, "Height", "2", 3, this);
+    BIMParameter* widthParameterDoor = new BIMParameter(1,"1",false,"Width","1.5",3,this);
+    BIMParameter* rlParameterDoor = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0]]",3,this);
+    bimElementDoor->addParameter(distanceParameterDoor);
+    bimElementDoor->addParameter(heightParameterDoor);
+    bimElementDoor->addParameter(rlParameterDoor);
+    bimElementDoor->addParameter(widthParameterDoor);
 
-    // bimElementList.append(bimElementDoor);
+    bimElementList.append(bimElementDoor);
 
-    // bimElementNew->addHostedElement(bimElementDoor);
+    bimElementNew->addHostedElement(bimElementDoor);
 
     pIfcDetailController = new IFCDetailController(this);
     pIfcGeometryService = new IfcGeometryService(this);
@@ -1020,6 +1143,30 @@ void MyGLItem::requestPick(int x, int y) {
     update();
 }
 
+void MyGLItem::requestHover(int x, int y, int glsceneX, int glsceneY)
+{
+    if ((editableBimElement != nullptr) && (render_update_allowed == true))
+    {
+        m_glsceneX = glsceneX;
+        m_glsceneY = glsceneY;
+
+        render_update_allowed = false;
+
+        QTimer::singleShot(50, this, [this]() {
+            this->render_update_allowed = true;
+        });
+
+        m_lastHoverX = x;
+        m_lastHoverY = y;
+        update();
+    }
+}
+
+void MyGLItem::updateMousePosition(int x, int y)
+{
+    QCursor::setPos(m_glsceneX + x, m_glsceneY + y);
+}
+
 void MyGLItem::handlePick(int id) {
     emit selectionChanged(id);
 }
@@ -1053,11 +1200,17 @@ void MyGLItem::viewIfc()
 void MyGLItem::updateEditableBimElement(QVariant bimElement)
 {
     editableBimElement = bimElement.value<BIMElement*>();
+
+    GeometryServiceFactory::generateHelperPoints(editableBimElement, m_middlePointValue);
 }
 
 void MyGLItem::saveEditableBimElement()
 {
     bimElementList.append(editableBimElement);
+
+    // send signal to QML to stop showing helper points
+    m_middlePointValue.clear();
+    middlePointPositionChanged();
 
     // add editableBimElement to as the child of host element
     if (editableBimElement->getHostId() > 0)
@@ -1075,4 +1228,16 @@ void MyGLItem::saveEditableBimElement()
     // bimElement is created in the controller and its lifecycle is handled by the controller
     editableBimElement = nullptr;
     update();
+}
+
+void MyGLItem::updateMiddlePointValue(float value, int index)
+{
+    m_middlePointValue[index].value = value;
+    m_middlePointValueUpdated = true;
+    update();
+}
+
+QList<HelperPoint> MyGLItem::getMiddlePointValue()
+{
+    return m_middlePointValue;
 }

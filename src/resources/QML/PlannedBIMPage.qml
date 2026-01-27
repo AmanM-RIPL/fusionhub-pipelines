@@ -1,5 +1,5 @@
 import QtQuick 2.15
-import QtQuick.Controls
+import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import QtQuick
 import com.fh.models 1.0
@@ -21,6 +21,10 @@ Row {
     property int treeviewWidth: parent.width/2 - 20
     property int glsceneWidth: parent.width/2
     property bool glsceneVisible: false
+
+    property int glsceneAbsoluteX: 0
+    property int glsceneAbsoluteY: 0
+    property int helperPointIndexToFocus: -1
 
     //property int expandedIndex: -1
     property int wallExpandedIndex: -1
@@ -1370,6 +1374,7 @@ Row {
 
             MouseArea {
                 anchors.fill: parent
+                hoverEnabled: true
                 onWheel: function(wheel) { // Declare 'wheel' as a formal parameter
                     if (wheel.modifiers & Qt.ControlModifier) {
                         if (wheel.angleDelta.y > 0) {
@@ -1392,10 +1397,13 @@ Row {
                 //     glscene.mouseReleased();
                 //     mouse.accepted = true;
                 // }
-                // onPositionChanged: function(mouse) {
-                //     glscene.mousePositionChanged(mouse.x, mouse.y);
-                //     mouse.accepted = true;
-                // }
+                onPositionChanged: function(mouse) {
+                    // glscene.mousePositionChanged(mouse.x, mouse.y);
+                    // mouse.accepted = true;
+                    var screenPos = glscene.mapToGlobal(0, 0);
+
+                    glscene.requestHover(mouse.x, mouse.y, screenPos.x, screenPos.y);
+                }
             }
 
 
@@ -1418,6 +1426,13 @@ Row {
                     glscene.cameraPanRight();
                 } else if (event.key === Qt.Key_Return) {
                     glscene.saveEditableBimElement();
+                } else if (event.key === Qt.Key_Shift) {
+                    console.log("Shift in GLScene");
+                    helperPointIndexToFocus = 0;
+                    const item = helperPointRepeater.itemAt(0);
+                    if (item && item.internalTextField) {
+                        item.internalTextField.focus = true;
+                    }
                 }
             }
         }
@@ -1443,6 +1458,93 @@ Row {
             // glscene.viewIfc();
             // glscene.update();
 
+        }
+    }
+
+    // Rectangle for length of wall
+    Connections {
+        target: glscene
+        onMiddlePointPositionChanged: function() {
+
+            const absolutePos = glscene.mapToItem(null, 0, 0);
+
+            glsceneAbsoluteX = absolutePos.x;
+            glsceneAbsoluteY = absolutePos.y;
+            const helperPointList = glscene.getMiddlePointValue();
+
+            helperPointModel.clear();
+
+            for (const helperPoint of helperPointList) {
+                helperPointModel.append({
+                    xPos: helperPoint.x,
+                    yPos: helperPoint.y,
+                    helperText: helperPoint.text,
+                    helperValue: helperPoint.value,
+                    helperVisible: helperPoint.visible
+                });
+            }
+
+            const item = helperPointRepeater.itemAt(helperPointIndexToFocus);
+            if (item && item.internalTextField) {
+                item.internalTextField.focus = true;
+            }
+        }
+    }
+
+    ListModel {
+        id: helperPointModel
+    }
+
+    Item {
+        id: helperPointItem
+
+        Repeater {
+            id: helperPointRepeater
+            model: helperPointModel
+
+            delegate: Rectangle {
+                property alias internalTextField: helperPointTextField
+                x: glsceneAbsoluteX + xPos
+                y: yPos
+                visible: helperVisible
+                width: 150
+                height: 29
+                border.width: 2
+                border.color: "black"
+
+                Row {
+                    anchors.fill: parent
+                    anchors.margins: 2
+
+                    Text {
+                        text: qsTr(helperText)
+                        verticalAlignment: Text.AlignVCenter
+                        width: parent.width * 0.50
+                        height: parent.height
+                    }
+
+                    TextField {
+                        id: helperPointTextField
+                        width: parent.width * 0.50
+                        height: 25
+                        text: helperValue.toFixed(2)
+
+                        background: Rectangle {
+                            border.width: 0
+                        }
+
+                        Keys.onPressed: function (event) {
+                            if (event.key === Qt.Key_Shift)
+                            {
+                                console.log("Shift in Rectangle");
+                                glscene.updateMiddlePointValue(parseFloat(text), index);
+
+                                helperPointIndexToFocus = helperPointIndexToFocus < helperPointModel.count - 1 ? helperPointIndexToFocus + 1 : 0;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

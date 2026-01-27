@@ -275,6 +275,7 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/controllers/work_order_line_controller.h src/controllers/work_order_line_controller.cpp
     src/controllers/work_billing_line_controller.h src/controllers/work_billing_line_controller.cpp
     src/controllers/work_billing_controller.h src/controllers/work_billing_controller.cpp
+    src/common/helper_point.h
 )
 
 target_include_directories(FusionHubQt PRIVATE src)

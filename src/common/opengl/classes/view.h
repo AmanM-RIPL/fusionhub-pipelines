@@ -22,16 +22,21 @@ public:
     ~View();
 
     void Initialize();
-    void BindMeshWithOpenGL();
     void Render();
 
+    void LoadStaticMeshData(QList<Mesh*>& meshList);
+    void LoadDynamicMeshData(Mesh* mesh);
+    // void UpdateTransformations(); // Update Camera, Light, View, Projection UBO
+    // void UpdateStaticMeshData(Mesh* mesh, int meshIndex);
+
     unsigned int Selection();
-    QVector3D GetPointInModelSpace(int meshIndex);
-    QVector3D GetPointInViewSpace();
+    QVector3D GetPointInModelSpace(Mesh* mesh);
+    QVector3D GetPointInViewSpace(int pointX, int pointY);
+    std::array<float, 2> GetPointInScreenSpace(QVector3D& point3D);
 
     void AddMesh(Mesh* mesh);
     void DeleteAllMesh(); // will clear the QList but will not delete the Mesh pointer
-    void AddMaterial(OpenGLMaterial* material);
+    void AddMaterialData(std::vector<float> materialData);
     void AddTexture(Texture* texture);
     void AddCamera(Camera* cam);
     void AddShader(Shader* shad);
@@ -47,7 +52,12 @@ public:
 private:
     GLuint m_vao = 0;
     GLuint m_edge_vao = 0;
+    GLuint m_dynamic_vao = 0; // for the bim entity being edited
+    GLuint m_dynamic_edge_vao = 0; // for the bim entity being edited
 
+    /*
+        Static VBOs and IBOs
+    */
     GLuint m_static_position_vbo = 0;
     GLuint m_static_normal_vbo = 0;
     GLuint m_static_textureuv_vbo = 0;
@@ -62,18 +72,48 @@ private:
     GLuint m_static_edge_dash_vbo = 0;
     GLuint m_static_edge_materialIndex_vbo = 0;
 
-
-    GLuint m_editor_vbo = 0;
     GLuint m_static_ibo = 0;
-    GLuint m_editor_ibo = 0;
     GLuint m_static_border_ibo = 0;
-    GLuint m_tbo = 0;
+
+    GLuint m_static_matrix_tbo = 0;
+    GLuint m_static_model_matrix_vbo = 0;
+    GLuint m_static_matrixTexture = 0;
+    GLuint m_static_verticesTexture = 0;
+    GLuint m_static_matrixIndexTexture = 0;
+
+
+    /*
+        Dynamic VBOs and IBOs
+    */
+    GLuint m_dynamic_position_vbo = 0;
+    GLuint m_dynamic_normal_vbo = 0;
+    GLuint m_dynamic_textureuv_vbo = 0;
+    GLuint m_dynamic_materialIndex_vbo = 0;
+    GLuint m_dynamic_textureIndex_vbo = 0;
+
+    GLuint m_dynamic_corner_vbo = 0;
+    GLuint m_dynamic_edge_indices_vbo = 0;
+    GLuint m_dynamic_edge_width_vbo = 0;
+    GLuint m_dynamic_edge_dashLength_vbo = 0;
+    GLuint m_dynamic_edge_gapLength_vbo = 0;
+    GLuint m_dynamic_edge_dash_vbo = 0;
+    GLuint m_dynamic_edge_materialIndex_vbo = 0;
+
+
+    GLuint m_dynamic_ibo = 0;
+    GLuint m_dynamic_border_ibo = 0;
+
+    GLuint m_dynamic_matrix_tbo = 0;
+    GLuint m_dynamic_model_matrix_vbo = 0;
+    GLuint m_dynamic_matrixTexture = 0;
+    GLuint m_dynamic_verticesTexture = 0;
+    GLuint m_dynamic_matrixIndexTexture = 0;
+
+    /*
+        Texture Buffer Objects (Common)
+    */
     GLuint m_material_tbo = 0;
-    GLuint m_matrixTexture = 0;
     GLuint m_materialTexture = 0;
-    GLuint m_verticesTexture = 0;
-    GLuint m_matrixIndexTexture = 0;
-    GLuint m_model_matrix_vbo = 0;
     GLuint m_pick_color_vbo = 0;
 
     // for color picking
@@ -84,14 +124,15 @@ private:
     GLuint m_pickColorTex = 0;
     GLuint m_pickDepthBuf = 0;
 
-    GLsizei m_indexCount;
-    GLsizei m_borderIndexCount;
+    GLsizei m_static_indexCount;
+    GLsizei m_static_borderIndexCount;
+    GLsizei m_dynamic_indexCount;
+    GLsizei m_dynamic_borderIndexCount;
 
     QMatrix4x4 m_projectionMatrix = QMatrix4x4();
     GLuint defaultFBO = 0;
 
-    QList<Mesh*> meshList;
-    QList<OpenGLMaterial*> materialList;
+    std::vector<float> materials;
     QList<Texture*> textureList;
     Mesh* combinedMesh = nullptr; // need to delete it with view only!!
 
@@ -108,6 +149,10 @@ private:
     void ensurePickFBO();
 
     void BindBuffers();
+
+    void InitializeHandles();
+    void InitializeStaticBuffers(); // Initialize VBO + TBO
+    void InitializeDynamicBuffers(); // Initialize VBO + TBO
 };
 
 #endif // VIEW_H
