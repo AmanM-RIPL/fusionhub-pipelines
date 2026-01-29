@@ -57,16 +57,16 @@ Rectangle {
 
     Item {
         width: 200
-        height: 100
+        height: 80
         id:itemId
 
 
         Image{
             source: "qrc:/resources/images/backArrow.svg"
             anchors.left: parent.left
-            anchors.leftMargin: 100
+            anchors.leftMargin: 20
             anchors.top: parent.top
-            anchors.topMargin: 46
+            anchors.topMargin: 25
 
             MouseArea {
                 anchors.fill: parent
@@ -82,15 +82,15 @@ Rectangle {
 
         Text{
             id:idText
-            text: txtProjectName
+            text: "Calendar: " + txtProjectName
 
             color: "#000000"
             font.pixelSize: 44
             font.weight: 700
             anchors.left: parent.left
-            anchors.leftMargin: 149
+            anchors.leftMargin: 60
             anchors.top: parent.top
-            anchors.topMargin: 21
+            // anchors.topMargin: 21
         }
 
         CustomButton {
@@ -170,6 +170,8 @@ Rectangle {
         //height: 599
         height: 400
         radius: 8
+        border.color: "#E0E0E0"
+        border.width: 2
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: idApprovalRect.bottom
 
@@ -191,7 +193,7 @@ Rectangle {
                     id:idHeader
                     width: parent.width
                     height: 80
-                    color:  "#7676801F"
+                    color: "#E0E0E0" //"#7676801F"
                     radius: 8
 
                     ColumnLayout{
@@ -199,161 +201,175 @@ Rectangle {
                         height: parent.height
                         spacing: 0
 
-                    RowLayout {
-                        spacing: 5
+                        RowLayout {
+                            spacing: 5
 
+                            Rectangle {
+                                width: idMainRect.width - 350
+                                height: parent.height
+
+                                Layout.alignment: Qt.AlignTop
+                                Layout.topMargin: 2
+                                Layout.leftMargin: 20
+
+                                Row {
+                                    spacing: 5
+
+                                    Label {
+                                        text: "Select Task: "
+                                        //font.bold: true
+                                        color: "#000000"
+                                        font.pixelSize: 15
+                                        font.weight: 700
+                                        anchors.verticalCenter: parent.verticalCenter
+                                    }
+
+                                    ComboBox {
+                                        id: comboTaskId
+                                        height: 30
+                                        width: 150
+                                        model: taskNameModel
+                                        font.pixelSize: 15
+                                        font.weight: 700
+                                        currentIndex: 0
+
+                                        onCurrentIndexChanged:
+                                        {
+                                            showColor(year.currentText, month.currentIndex)
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Rectangle {
+                            //     //width: idMainRect.width - 320
+                            //     width: idMainRect.width - 450
+                            //     height: 40
+                            //     color:  "transparent"
+                            // }
+
+                            Button {
+                                id: idPrevMonthButton
+                                text: "< "//"Previous Month"
+                                font.pixelSize: 20
+                                font.weight: 700
+                                onClicked: {
+                                    if(month.currentIndex > 0){
+                                         --month.currentIndex;
+                                        idNextMonthButton.enabled = true;
+                                        idPrevMonthButton.enabled = true;
+                                    }
+                                    else{
+                                        if(year.currentIndex > 0)
+                                        {
+                                            --year.currentIndex;
+                                            month.currentIndex = 11;
+                                            idPrevMonthButton.enabled = true;
+                                            idNextMonthButton.enabled = true;
+                                        }
+                                        else
+                                        {
+                                            idPrevMonthButton.enabled = false;
+                                        }
+                                    }
+
+                                    showColor(year.currentText, month.currentIndex);
+                                }
+                            }
+                       /*
                         Label {
-                            text: "Select Task"
-                            //font.bold: true
-                            color: "#000000"
-                            font.pixelSize: 15
-                            font.weight: 700
+                            text: Qt.locale("en_US").standaloneMonthName(idMonthGrid.month) + " " + idMonthGrid.year
+                            font.bold: true
                         }
 
-                        ComboBox {
-                            id: comboTaskId
-                            height: 40
-                            width: 150
-                            model: taskNameModel
-                            font.pixelSize: 15
-                            font.weight: 700
-                            currentIndex: 0
+                        Button {
+                            text: "Next Month"
+                            onClicked: {
+                                if(month.currentIndex < 11){
+                                  ++month.currentIndex;
+                                }
+                                else{
+                                    ++year.currentIndex;
+                                    month.currentIndex = 0;
+                                }
+                            }
+                        }*/
 
-                            onCurrentIndexChanged:
-                            {
-                                showColor(year.currentText, month.currentIndex)
+                            ComboBox {
+                                id: month
+                                height: 40
+                                width: 150
+                                model: monthModel
+                                font.pixelSize: 20
+                                font.weight: 700
+                                currentIndex: 0
+
+                                onCurrentIndexChanged:
+                                {
+                                     showColor(year.currentText, month.currentIndex)
+                                }
+                            }
+
+                            ComboBox {
+                                id: year
+                                height: 40
+                                width: 150
+                                model: yearModel
+                                font.pixelSize: 20
+                                font.weight: 700
+                                currentIndex: 0
+
+                                onCurrentIndexChanged:
+                                {
+                                     showColor(year.currentText, month.currentIndex)
+                                }
+
+                            }
+
+                            Button {
+                                id:idNextMonthButton
+                                text:" >" //"Next Month"
+                                font.pixelSize: 20
+                                font.weight: 700
+                                onClicked: {
+                                    if(month.currentIndex < 11){
+                                        ++month.currentIndex;
+                                        idNextMonthButton.enabled = true;
+                                        idPrevMonthButton.enabled = true;
+                                    }
+                                    else{
+                                        if(year.currentIndex < yearModel.count - 1)
+                                        {
+                                            ++year.currentIndex;
+                                            month.currentIndex = 0;
+                                            idNextMonthButton.enabled = true;
+                                            idPrevMonthButton.enabled = true;
+                                        }
+                                        else
+                                        {
+                                            idNextMonthButton.enabled = false;
+                                        }
+                                    }
+
+                                    showColor(year.currentText, month.currentIndex)
+
+                                }
                             }
                         }
 
                         Rectangle {
-                            //width: idMainRect.width - 320
-                            width: idMainRect.width - 450
-                            height: 40
-                            color:  "transparent"
-                        }
-
-                        Button {
-                            id: idPrevMonthButton
-                            text: "< "//"Previous Month"
-                            font.pixelSize: 20
-                            font.weight: 700
-                            onClicked: {
-                                if(month.currentIndex > 0){
-                                     --month.currentIndex;
-                                    idNextMonthButton.enabled = true;
-                                    idPrevMonthButton.enabled = true;
-                                }
-                                else{
-                                    if(year.currentIndex > 0)
-                                    {
-                                        --year.currentIndex;
-                                        month.currentIndex = 11;
-                                        idPrevMonthButton.enabled = true;
-                                        idNextMonthButton.enabled = true;
-                                    }
-                                    else
-                                    {
-                                        idPrevMonthButton.enabled = false;
-                                    }
-                                }
-
-                                showColor(year.currentText, month.currentIndex);
-                            }
-                        }
-                   /*
-                    Label {
-                        text: Qt.locale("en_US").standaloneMonthName(idMonthGrid.month) + " " + idMonthGrid.year
-                        font.bold: true
-                    }
-
-                    Button {
-                        text: "Next Month"
-                        onClicked: {
-                            if(month.currentIndex < 11){
-                              ++month.currentIndex;
-                            }
-                            else{
-                                ++year.currentIndex;
-                                month.currentIndex = 0;
-                            }
-                        }
-                    }*/
-
-                        ComboBox {
-                            id: month
-                            height: 40
-                            width: 150
-                            model: monthModel
-                            font.pixelSize: 20
-                            font.weight: 700
-                            currentIndex: 0
-
-                            onCurrentIndexChanged:
-                            {
-                                 showColor(year.currentText, month.currentIndex)
-                            }
-                        }
-
-                        ComboBox {
-                            id: year
-                            height: 40
-                            width: 150
-                            model: yearModel
-                            font.pixelSize: 20
-                            font.weight: 700
-                            currentIndex: 0
-
-                            onCurrentIndexChanged:
-                            {
-                                 showColor(year.currentText, month.currentIndex)
-                            }
-
-                        }
-
-                        Button {
-                            id:idNextMonthButton
-                            text:" >" //"Next Month"
-                            font.pixelSize: 20
-                            font.weight: 700
-                            onClicked: {
-                                if(month.currentIndex < 11){
-                                    ++month.currentIndex;
-                                    idNextMonthButton.enabled = true;
-                                    idPrevMonthButton.enabled = true;
-                                }
-                                else{
-                                    if(year.currentIndex < yearModel.count - 1)
-                                    {
-                                        ++year.currentIndex;
-                                        month.currentIndex = 0;
-                                        idNextMonthButton.enabled = true;
-                                        idPrevMonthButton.enabled = true;
-                                    }
-                                    else
-                                    {
-                                        idNextMonthButton.enabled = false;
-                                    }
-                                }
-
-                                showColor(year.currentText, month.currentIndex)
-
-                            }
-                        }
-                    }
-
-                    Rectangle {
-                        id:idDayOfWeeksRow
-                        width: parent.width
-                        height: 40
-                        color: "transparent"// "#7676801F"
-
-                        DayOfWeekRow {
+                            id:idDayOfWeeksRow
                             width: parent.width
-                            font.pixelSize: 30
-                            font.weight: 700
-                            topPadding: 1
+                            height: 40
+                            color: "transparent"// "#7676801F"
+
+                            DayOfWeekRow {
+                                width: parent.width
+                                font.pixelSize: 30
+                                font.weight: 700
+                                topPadding: 1
+                            }
                         }
-                    }
                     }
                 }
 
@@ -367,13 +383,15 @@ Rectangle {
                     MonthGrid {                        
                         id:idMonthGrid
                         width: parent.width
-                        height:300
-                        topPadding: 2
+                        height: 400
+                        // topPadding: 2
                         month: month.currentIndex
                         year: yearModel.get(year.currentIndex).text
                         locale: Qt.locale("en_US")
                         font.pixelSize: 25
                         font.weight: 700
+                        spacing: 0
+
 
                         /*onClicked: (date) => {
                             selectedDate = date;
@@ -382,16 +400,18 @@ Rectangle {
                         delegate:Item {
                             width: idMonthGrid.cellWidth
                             height: idMonthGrid.cellHeight
+
                             property bool isInCurrentMonth: model.month === idMonthGrid.month
+
                             Rectangle {                                    
-                                width: parent.width + 8
-                                height: parent.height/2
+                                width: parent.width
+                                height: parent.height
 
                                 // property bool isSelected: (model.year === selectedDate.getFullYear() &&
                                 //                             model.month === selectedDate.getMonth() &&
                                 //                             model.day === selectedDate.getDate())
 
-                                border.color: getDateColor(model.date)
+                                border.color: "#E0E0E0" //getDateColor(model.date)
                                 color: getDateColor(model.date)
                                 Label {
                                     text: model.day.toString()

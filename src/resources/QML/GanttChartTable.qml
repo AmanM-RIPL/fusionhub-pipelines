@@ -64,9 +64,12 @@ Column {
         ListView {
             id: listView
             anchors.fill: parent
+            anchors.margins: 1
             model: tableRoot.model
             clip: true
-            focus: true            
+            focus: true
+
+
             delegate: Column {
                 //padding: 10
                 property var rowData: modelData

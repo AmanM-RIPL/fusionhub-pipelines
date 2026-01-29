@@ -380,15 +380,15 @@ Rectangle {
 
    Item {
         width: 100
-        height: 100
+        height: 80
         id:itemId
 
         Image{
             source: "qrc:/resources/images/backArrow.svg"
             anchors.left: parent.left
-            anchors.leftMargin: 100
+            anchors.leftMargin: 20
             anchors.top: parent.top
-            anchors.topMargin: 46
+            anchors.topMargin: 25
 
             MouseArea {
                 anchors.fill: parent
@@ -402,16 +402,17 @@ Rectangle {
         }
 
         Text{
-            text: txtProjectName
+            text: "Gantt: " + txtProjectName
             color: "#000000"
             font.pixelSize: 44
             font.weight: 700
             anchors.left: parent.left
-            anchors.leftMargin: 149
+            anchors.leftMargin: 60
             anchors.top: parent.top
-            anchors.topMargin: 21
+            // anchors.topMargin: 21
         }
     }//End of Item
+
 
     Row {
         spacing: 20
@@ -447,6 +448,7 @@ Rectangle {
             }
         }
     }
+
 
     Rectangle{
         width: 1300//1236
@@ -508,24 +510,25 @@ Rectangle {
                 spacing: 3
 
                 Rectangle{//LeftSide
+                    id: leftSideRectangle
                     width: parent.width/2-1
                     height: parent.height
                     color: "#EDF1F4"//"green"
                     Column{
                         //FHTable {
                           GanttTaskListTable{
-                            height: 250//300
+                            height: leftSideRectangle.height //250
                             leftPadding: 2                            
-                            headerHeight:102
-                            headerFontPixelSize:20
+                            headerHeight: 50
+                            headerFontPixelSize: 10
                             model:task_month_paramList
 
                             columns: [
-                                { label: "ID", width: 50, key: "id"},
-                                { label: "Task", width: 256, key: "taskName" },
-                                { label: "Duration\n(In Days)", width: 110, key: "days" },
-                                { label: "Start", width: 110, key: "startDate" },
-                                { label: "End", width: 110, key: "endDate" },
+                                { label: "ID", width: 50, key: "id", characterLength: 5 },
+                                { label: "Task", width: 256, key: "taskName", characterLength: 15 },
+                                { label: "Duration\n(In Days)", width: 110, key: "days", characterLength: 5 },
+                                { label: "Start", width: 110, key: "startDate", characterLength: 15 },
+                                { label: "End", width: 110, key: "endDate", characterLength: 15 },
                             ]
                         }
                     }
@@ -533,6 +536,7 @@ Rectangle {
 
 
                 Rectangle{//RightSide
+                    id: rightSideRectangle
                     width: parent.width/2-1
                     height: parent.height
                     //spacing: 3
@@ -546,13 +550,13 @@ Rectangle {
                         Rectangle{
                             id:yearId
                             width: parent.width
-                            height: 50//parent.height/2
+                            height: 25//parent.height/2
                             color: "lightgray"//"gray"
 
                             Text{
                                 text: startYear_endYearText(startYear, endYear)//"Year: " + startYear.toString() + " - to - " + endYear.toString()
                                 color: "#000000"
-                                font.pixelSize: 20
+                                font.pixelSize: 10
                                 font.weight: 700
                                 anchors.left: parent.left
                                 anchors.top: parent.top
@@ -592,11 +596,11 @@ Rectangle {
                                         Column{
                                            // FHTable {
                                             GanttChartTable{
-                                                height: 250//300
+                                                height: rightSideRectangle.height//300
                                                 leftPadding: 2
                                                 //removeRow: false
-                                                headerHeight:50
-                                                headerFontPixelSize:20
+                                                headerHeight:25
+                                                headerFontPixelSize:10
                                                 model: task_month_paramList //monthParamList
 
                                                 columns: generateGanttColumns(startYear, endYear, monthScale)

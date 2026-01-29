@@ -255,39 +255,39 @@ Rectangle {
     Item {
         id:itemId
         width: 100
-        height: 100
+        height: 80
 
 
-    Image{
-        source: "qrc:/resources/images/backArrow.svg"
-        anchors.left: parent.left
-        anchors.leftMargin: 100
-        anchors.top: parent.top
-        anchors.topMargin: 46
+        Image{
+            source: "qrc:/resources/images/backArrow.svg"
+            anchors.left: parent.left
+            anchors.leftMargin: 20
+            anchors.top: parent.top
+            anchors.topMargin: 25
 
-        MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
-            hoverEnabled: true
-            onClicked: {
-                baseLayout.visible = false
-                WelcomePage.visible = true
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
+                onClicked: {
+                    baseLayout.visible = false
+                    WelcomePage.visible = true
+                }
             }
         }
-    }
 
-    Text{
-        //text: "PROJ-0001: Sample House"
-        text: txtProjectName
-        color: "#000000"
-        font.pixelSize: 44
-        font.weight: 700
-        anchors.left: parent.left
-        anchors.leftMargin: 149
-        anchors.top: parent.top
-        anchors.topMargin: 21
+        Text{
+            //text: "PROJ-0001: Sample House"
+            text: "Task Board: " + txtProjectName
+            color: "#000000"
+            font.pixelSize: 44
+            font.weight: 700
+            anchors.left: parent.left
+            anchors.leftMargin: 60
+            anchors.top: parent.top
+            // anchors.topMargin: 21
+        }
     }
-   }
 
 
     Rectangle{
