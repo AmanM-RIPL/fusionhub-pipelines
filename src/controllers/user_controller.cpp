@@ -26,24 +26,24 @@ UserController::UserController(QObject *parent)
     connect(network, &NetworkManager::loginFailed,
             this, &UserController::onNetworkLoginFailed);
 
-    BackgroundThreadManager::instance()->runBackgroundTaskForDraftDataSync();
+  //  BackgroundThreadManager::instance()->runBackgroundTaskForDraftDataSync();
 }
 
 void UserController::startBackgroundSync()
 {
-    if (!g_timer)
-    {
-        g_timer = new QTimer(this);
-        connect(g_timer, &QTimer::timeout,
-                BackgroundThreadManager::instance(),
-                &BackgroundThreadManager::runBackgroundTaskForDraftDataSync);
+    if (g_timer)
+        return;
 
-        g_timer->start(1000);
-        qDebug() << "Timer created and started";
-    }
-    else if (!g_timer->isActive()) {
-        g_timer->start(1000);
-    }
+    qDebug() << "Creating background sync timer";
+
+    g_timer = new QTimer(this);
+    g_timer->setInterval(4000);
+
+    connect(g_timer, &QTimer::timeout,
+            BackgroundThreadManager::instance(),
+            &BackgroundThreadManager::runBackgroundTaskForDraftDataSync);
+
+    g_timer->start();
 }
 
 void UserController::logout()
@@ -95,7 +95,7 @@ void UserController::onNetworkLoginSuccess(const QJsonObject& userData)
     if (userData.contains("mobile")) {
         gUser->setUserMobile1(userData["mobile"].toString());
     }
-
+    startBackgroundSync();
     // Emit success signal to QML
     emit loginSuccess(userData);
 }

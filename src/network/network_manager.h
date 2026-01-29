@@ -12,6 +12,7 @@ class NetworkManager : public QObject {
 
 public:
     static NetworkManager* getInstance();
+    Q_INVOKABLE void sendDraftToServer(const QJsonObject& payload);
 
     // Getters
     QString getStoredToken() const;
