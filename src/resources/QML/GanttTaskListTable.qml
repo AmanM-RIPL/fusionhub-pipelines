@@ -10,9 +10,9 @@ Column {
     id: tableRoot
 
     property var model
-    property var columns // array of { label, key, width }
+    property var columns // array of { label, key, width, characterLength }
     property int headerHeight: 30
-    property int headerFontPixelSize: 12
+    property int headerFontPixelSize: 20
     property bool isTextVisible: true
     property bool isRectVisible: false
 
@@ -64,15 +64,16 @@ Column {
         ListView {
             id: listView
             anchors.fill: parent
+            anchors.margins: 1
             model: tableRoot.model
             clip: true
             focus: true
 
-            /*
-            ScrollBar.vertical: ScrollBar {
-                        policy: ScrollBar.AlwaysOn
-            }
-            */
+
+            // ScrollBar.vertical: ScrollBar {
+            //             policy: ScrollBar.AlwaysOn
+            // }
+
 
             delegate: Column {
                 //padding: 10
@@ -89,7 +90,7 @@ Column {
                             width: modelData.width
                             height: 30
                             Text {
-                                text: rowData[modelData.key] !== undefined ? rowData[modelData.key] : ""
+                                text: getAbridgedText(rowData[modelData.key] !== undefined ? rowData[modelData.key] : "", modelData.characterLength)
                                 font.pixelSize: 15
                                 anchors.centerIn: parent
                             }
@@ -104,6 +105,18 @@ Column {
                 }
             }
         }
+    }
+
+
+    function getAbridgedText(text, characterLength) {
+        const textAsString = text.toString();
+
+        if (textAsString.length > characterLength)
+        {
+            return textAsString.slice(0, characterLength) + "...";
+        }
+
+        return textAsString;
     }
 }
 
