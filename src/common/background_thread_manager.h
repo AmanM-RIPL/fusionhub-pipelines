@@ -2,25 +2,27 @@
 #define BACKGROUND_THREAD_MANAGER_H
 
 #include <QObject>
-#include <QtConcurrent>
+#include <QMutex>
 
 class BackgroundThreadManager : public QObject
 {
     Q_OBJECT
+
 public:
-    explicit BackgroundThreadManager(QObject *parent = nullptr);
-
-    static BackgroundThreadManager* instance()
-    {
-        static BackgroundThreadManager _instance;
-        return &_instance;
-    }
-
-// signals:
-//     void runBackgroundTaskForDraftDataSync();
+    static BackgroundThreadManager* instance();
 
 public slots:
+    // This will be called by QTimer every second
     void runBackgroundTaskForDraftDataSync();
+
+private:
+    explicit BackgroundThreadManager(QObject *parent = nullptr);
+    BackgroundThreadManager(const BackgroundThreadManager&) = delete;
+    BackgroundThreadManager& operator=(const BackgroundThreadManager&) = delete;
+
+private:
+    static BackgroundThreadManager* m_instance;
+    static QMutex m_mutex;
 };
 
 #endif // BACKGROUND_THREAD_MANAGER_H

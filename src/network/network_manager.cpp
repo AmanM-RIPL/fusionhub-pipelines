@@ -130,3 +130,39 @@ void NetworkManager::parseLoginResponse(const QJsonDocument& jsonDoc)
     // Emit success signal
     emit loginDone();
 }
+
+
+void NetworkManager::sendDraftToServer(const QJsonObject& payload)
+{
+    QUrl url("http://127.0.0.1:8080/api/v1/default/draft-entity");
+    QNetworkRequest request(url);
+
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    if (!m_authToken.isEmpty()) {
+        request.setRawHeader(
+            "Authorization",
+            QByteArray("Bearer ") + m_authToken.toUtf8()
+            );
+    }
+
+    QByteArray data = QJsonDocument(payload).toJson();
+
+    qDebug() << "Sending payload:\n"
+             << QJsonDocument(payload).toJson(QJsonDocument::Indented);
+
+    QNetworkReply* reply = m_manager->post(request, data);
+
+    connect(reply, &QNetworkReply::finished, this, [reply]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            qWarning() << "Error sending draft:"
+                       << reply->errorString();
+            qWarning() << "Server response:"
+                       << reply->readAll();
+        } else {
+            qDebug() << "Draft sent successfully:"
+                     << reply->readAll();
+        }
+        reply->deleteLater();
+    });
+}
