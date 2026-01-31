@@ -18,7 +18,6 @@ NetworkManager::NetworkManager(QObject* parent)
 
 NetworkManager::~NetworkManager()
 {
-    // QObject parent handles cleanup
 }
 
 QString NetworkManager::getStoredToken() const
@@ -56,7 +55,6 @@ void NetworkManager::loginAPI(const QString& username, const QString& password)
     }
     emit loginInProgress();
 
-    // API URL
     QUrl url("http://127.0.0.1:8080/api/v1/auth/login");
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -165,4 +163,41 @@ void NetworkManager::sendDraftToServer(const QJsonObject& payload)
         }
         reply->deleteLater();
     });
+}
+
+void NetworkManager::requestChangeLogSync()
+{
+    QUrl url("http://127.0.0.1:8080/api/v1/default/change-log");
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    if (!m_authToken.isEmpty()) {
+        request.setRawHeader(
+            "Authorization",
+            QByteArray("Bearer ") + m_authToken.toUtf8()
+            );
+    }
+    QNetworkReply* reply = m_manager->get(request);
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        onChangeLogSyncFinished(reply);
+    });
+}
+
+void NetworkManager::onChangeLogSyncFinished(QNetworkReply* reply)
+{
+    QByteArray rawData = reply->readAll();
+    if (reply->error() != QNetworkReply::NoError) {
+        qWarning() << "Changelog error:" << reply->errorString();
+        qWarning() << "Server response:" << rawData;
+        reply->deleteLater();
+        return;
+    }
+    QJsonDocument doc = QJsonDocument::fromJson(rawData);
+    // qDebug() << "Changelog response:\n"
+    //          << doc.toJson(QJsonDocument::Indented);
+    if (doc.isArray()) {
+        emit changeLogSyncReceived(doc.array());
+    } else {
+        qWarning() << "Unexpected format (expected JSON array)";
+    }
+    reply->deleteLater();
 }

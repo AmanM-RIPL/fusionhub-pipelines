@@ -14,11 +14,14 @@ public:
 public slots:
     // This will be called by QTimer every second
     void runBackgroundTaskForDraftDataSync();
+    void runBackgroundTaskForChangeLogSync();
 
 private:
     explicit BackgroundThreadManager(QObject *parent = nullptr);
     BackgroundThreadManager(const BackgroundThreadManager&) = delete;
     BackgroundThreadManager& operator=(const BackgroundThreadManager&) = delete;
+    
+    void onChangeLogSyncReceived(const QJsonArray& changeLogs);
 
 private:
     static BackgroundThreadManager* m_instance;
