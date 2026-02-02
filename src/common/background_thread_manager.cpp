@@ -2,6 +2,7 @@
 #include "network/network_manager.h"
 #include <QDebug>
 #include "common/repository_locator.h"
+#include "controllers/material_controller.h"
 
 BackgroundThreadManager* BackgroundThreadManager::m_instance = nullptr;
 
@@ -83,15 +84,8 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
             QString category = schema["category"].toString();
             int unitOfMeasurementId = schema["unit_of_measurement_id"].toInt();
 
-            auto* materialRepo = RepositoryLocator::instance().materialRepository();
-
-            Material material;
-            material.setGlobalId("123");
-            material.setMaterialName(name);
-            material.setCategory(category);
-            material.setUnitOfMeasurementId(unitOfMeasurementId);
-
-            materialRepo->saveQML(&material);
+            MaterialController materialController;
+            materialController.approvedCreate(name, category, unitOfMeasurementId);
 
             qDebug() << " Material Created:" << name << category << unitOfMeasurementId;
         }
@@ -99,13 +93,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
         //     QString workOrderNo = schema["workOrderNo"].toString();
         //     QString description = schema["description"].toString();
 
-        //     auto* workOrderRepo = RepositoryLocator::instance().workOrderRepository();
-
-        //     WorkOrder workOrder;
-        //     workOrder.setGlobalId("123");
-        //     workOrder.setWorkOrderNo(workOrderNo);
-        //     workOrder.setDescription(description);
-        //     workOrderRepo->saveQML(&workOrder);
 
         //     qDebug() << "WorkOrder Created:" << workOrderNo;
     }
