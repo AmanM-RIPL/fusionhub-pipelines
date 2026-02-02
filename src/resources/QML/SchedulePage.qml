@@ -24,7 +24,8 @@ Rectangle {
 
     property var monthModel: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-    property var  task_month_paramList: []
+    property var task_month_paramList: []
+    property var date_task_num_mapping: ({}) // { date: Date() numOfTasks: number } if numOfTasks > 4 then we show 'More' button
 
     property var taskModel: []
     property var taskNameModel: []
@@ -34,22 +35,26 @@ Rectangle {
     property var colorMap: ({})
 
 
-    TaskController{
-        id:taskController
+    TaskController {
+        id: taskController
     }
 
 
     ListModel {
-            id: yearModel
-        }    
+        id: yearModel
+    }
 
 
     ListModel {
-            id: highlightedDatesModel
-            /*
-            ListElement { year: 2025; month: 0; day: 3; color: "red" }
-            */
-        }
+        id: highlightedDatesModel
+        /*
+        ListElement { year: 2025; month: 0; day: 3; color: "red" }
+        */
+    }
+
+    ListModel {
+        id: taskToRenderModel
+    }
 
     /**********New Task Popup Start*****************/
 
@@ -158,13 +163,14 @@ Rectangle {
 
                 loadAllTasks();
                 showColor(year.currentText, month.currentIndex)
+                generateTaskToRenderList(year.currentText, month.currentIndex);
             }
         }
     }
     }
 
 
-    Rectangle{
+    Rectangle {
         id:idMainRect
         width: 1300//1236
         //height: 599
@@ -236,6 +242,7 @@ Rectangle {
                                         onCurrentIndexChanged:
                                         {
                                             showColor(year.currentText, month.currentIndex)
+                                            generateTaskToRenderList(year.currentText, month.currentIndex);
                                         }
                                     }
                                 }
@@ -274,6 +281,7 @@ Rectangle {
                                     }
 
                                     showColor(year.currentText, month.currentIndex);
+                                    generateTaskToRenderList(year.currentText, month.currentIndex);
                                 }
                             }
                        /*
@@ -307,6 +315,7 @@ Rectangle {
                                 onCurrentIndexChanged:
                                 {
                                      showColor(year.currentText, month.currentIndex)
+                                    generateTaskToRenderList(year.currentText, month.currentIndex);
                                 }
                             }
 
@@ -322,6 +331,7 @@ Rectangle {
                                 onCurrentIndexChanged:
                                 {
                                      showColor(year.currentText, month.currentIndex)
+                                    generateTaskToRenderList(year.currentText, month.currentIndex);
                                 }
 
                             }
@@ -352,6 +362,7 @@ Rectangle {
                                     }
 
                                     showColor(year.currentText, month.currentIndex)
+                                    generateTaskToRenderList(year.currentText, month.currentIndex);
 
                                 }
                             }
@@ -412,7 +423,7 @@ Rectangle {
                                 //                             model.day === selectedDate.getDate())
 
                                 border.color: "#E0E0E0" //getDateColor(model.date)
-                                color: getDateColor(model.date)
+                                color: "white" //getDateColor(model.date)
                                 Label {
                                     text: model.day.toString()
                                     anchors.centerIn: parent
@@ -442,21 +453,54 @@ Rectangle {
 
 
                             showColor(year.currentText, month.currentIndex);
+                            generateTaskToRenderList(year.currentText, month.currentIndex);
 
                         }
-                    }                    
+                    }
+
+                    Item {
+                        id: monthGridOverlay
+                        anchors.fill: idMonthGrid
+                        z: 10
+
+                        Repeater {
+                            model: taskToRenderModel
+
+                            delegate: Rectangle {
+                                height: heightModel
+                                radius: 3
+                                color: "#4285F4"
+
+                                x: xModel
+                                y: yModel
+                                width: widthModel
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: textModel
+                                    color: "white"
+                                    font.pixelSize: 12
+                                }
+                            }
+
+                            Component.onCompleted: {
+                                console.log("Renders");
+                            }
+                        }
+                    }
                 }
             }
         }
 
         Component.onCompleted: {
-             loadSampleYears();
+            loadSampleYears();
 
 
             if(schedule_root.visible)
             {
                 loadAllTasks();
                 showColor(year.currentText, month.currentIndex)
+                generateTaskToRenderList(year.currentText, month.currentIndex);
             }
         }
         onVisibleChanged: {
@@ -464,6 +508,7 @@ Rectangle {
             {
                 loadAllTasks();               
                 showColor(year.currentText, month.currentIndex);
+                generateTaskToRenderList(year.currentText, month.currentIndex);
             }
         }
     }
@@ -546,7 +591,7 @@ Rectangle {
         }
         else if(approvedNo === 1)
         {
-             task_month_paramList = taskController.getTaskList(false);
+            task_month_paramList = taskController.getTaskList(false);
             console.log("approvedNo:", approvedNo)
         }
         else
@@ -595,5 +640,114 @@ Rectangle {
         }
 
         updateColorMap();
+    }
+
+    function generateTaskToRenderList(selectedYear, selectedMonth) {
+        // initializing
+        date_task_num_mapping = {};
+        taskToRenderModel.clear();
+
+        // console.log(JSON.stringify(task_month_paramList));
+
+        for (const task of task_month_paramList) {
+            const startDate = new Date(task.startYear, task.startMonth - 1, task.startDay);
+            const endDate = new Date(task.endYear, task.endMonth - 1, task.endDay);
+
+            const viewMonthStart = new Date(selectedYear, selectedMonth, 1);
+            let monthStartOffset = viewMonthStart.getDay();
+            const viewMonthEnd = new Date(selectedYear, selectedMonth + 1, 0); // Day 0 is last day of prev month
+
+            if (endDate >= viewMonthStart && startDate <= viewMonthEnd) {
+                // update date_task_num_mapping
+                const startDateRendering = viewMonthStart > startDate ? viewMonthStart : startDate;
+                const endDateRendering = viewMonthEnd < endDate ? viewMonthEnd : endDate;
+                const startDateIndex = numOfDaysBetweenDates(startDateRendering, viewMonthStart) + monthStartOffset;
+                const endDateIndex = numOfDaysBetweenDates(endDateRendering, viewMonthStart) + monthStartOffset;
+                let render_task = false;
+
+                for (let d = new Date(startDateRendering); d <= endDateRendering; d.setDate(d.getDate() + 1)) {
+                    const currentDate = new Date(d);
+
+                    if (date_task_num_mapping[currentDate] === undefined) {
+                        date_task_num_mapping[currentDate] = 1;
+                        render_task = true;
+                    } else if (date_task_num_mapping[currentDate] < 3) {
+                        date_task_num_mapping[currentDate] = date_task_num_mapping[currentDate] + 1;
+                        render_task = true;
+                    } else {
+                        date_task_num_mapping[currentDate] = date_task_num_mapping[currentDate] + 1;
+                        render_task = false;
+                    }
+                }
+
+                if (render_task) {
+                    const startRow = Math.floor(startDateIndex / 7);
+                    const endRow = Math.floor(endDateIndex / 7);
+                    const startColumn = startDateIndex % 7;
+                    const endColumn = endDateIndex % 7;
+                    const cellWidth = idMonthGrid.width / 7;
+                    const cellHeight = idMonthGrid.height / 6;
+
+                    if (startRow === endRow) {
+                        taskToRenderModel.append({
+                            textModel: task.taskName,
+                            xModel: idRect.x + (startColumn * cellWidth),
+                            yModel: idRect.y + (startRow * cellHeight),
+                            heightModel: 10,
+                            widthModel: (endColumn - startColumn + 1) * cellWidth
+                        });
+                    } else {
+                        const numOfRowsToRender = endRow - startRow + 1; // +1 is required to account for the start row too
+
+                        for (let i = 0; i < numOfRowsToRender; i++) {
+                            if (i === 0) {
+                                taskToRenderModel.append({
+                                    textModel: task.taskName,
+                                    xModel: idRect.x + (startColumn * cellWidth),
+                                    yModel: idRect.y + (startRow * cellHeight),
+                                    heightModel: 10,
+                                    widthModel: (7 - startColumn) * cellWidth
+                                });
+                            }
+                            else if (i === numOfRowsToRender - 1) {
+                                taskToRenderModel.append({
+                                    textModel: task.taskName,
+                                    xModel: idRect.x,
+                                    yModel: idRect.y + (endRow * cellHeight),
+                                    heightModel: 10,
+                                    widthModel: (endColumn) * cellWidth
+                                });
+                            } else {
+                                taskToRenderModel.append({
+                                    textModel: task.taskName,
+                                    xModel: idRect.x,
+                                    yModel: idRect.y + (i * cellHeight),
+                                    heightModel: 10,
+                                    widthModel: 7 * cellWidth
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // logModel(taskToRenderModel);
+    }
+
+    function numOfDaysBetweenDates(date1, date2) {
+        const millisecondsDiff = Math.abs(date2.getTime() - date1.getTime());
+
+        const daysDiff = Math.round(
+          millisecondsDiff / (1000 * 24 * 60 * 60)
+        );
+
+        return daysDiff;
+    }
+
+    function logModel(model) {
+        for (var i = 0; i < model.count; i++) {
+            console.log("Item " + i + ":", JSON.stringify(model.get(i)))
+        }
     }
 }

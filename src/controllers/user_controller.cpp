@@ -31,19 +31,19 @@ UserController::UserController(QObject *parent)
 
 void UserController::startBackgroundSync()
 {
-    if (g_timer)
-        return;
+    // if (g_timer)
+    //     return;
 
-    qDebug() << "Creating background sync timer";
+    // qDebug() << "Creating background sync timer";
 
-    g_timer = new QTimer(this);
-    g_timer->setInterval(4000);
+    // g_timer = new QTimer(this);
+    // g_timer->setInterval(4000);
 
-    connect(g_timer, &QTimer::timeout,
-            BackgroundThreadManager::instance(),
-            &BackgroundThreadManager::runBackgroundTaskForDraftDataSync);
+    // connect(g_timer, &QTimer::timeout,
+    //         BackgroundThreadManager::instance(),
+    //         &BackgroundThreadManager::runBackgroundTaskForDraftDataSync);
 
-    g_timer->start();
+    // g_timer->start();
 }
 
 void UserController::logout()
