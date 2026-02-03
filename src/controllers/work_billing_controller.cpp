@@ -15,18 +15,6 @@ WorkBillingController::WorkBillingController(QObject *parent)
 
 void WorkBillingController::create(const QString &workBillingName, const int workOrderId) const
 {
-    // WorkBilling workOrde
-
-    // qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
-    // workBilling.setId(id_in_milliseconds);
-    // workBilling.setGlobalId("123");
-    // workBilling.setApprovalStatus(true);
-    // workBilling.setDescription(workBillingName);
-    // workBilling.setWorkOrderId(workOrderId);
-
-    // m_workBillingRepository->saveQML(&workBilling);
-
-    /***********Start of DraftEntity******************/
 
     QJsonObject jsonObject;
     jsonObject["description"] = workBillingName;
@@ -65,6 +53,21 @@ void WorkBillingController::create(const QString &workBillingName, const int wor
     draftEntity.setChangeHistory(changeHistory);
 
     m_draftEntityRepository->saveQML(&draftEntity);
+}
+
+void WorkBillingController::approvedCreate(const QString &workBillingName, const int workOrderId) const
+{
+    WorkBilling workBilling;
+
+    qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+    workBilling.setId(id_in_milliseconds);
+    workBilling.setGlobalId("123");
+    workBilling.setApprovalStatus(true);
+    workBilling.setWorkBillingName(workBillingName);
+    workBilling.setWorkOrderId(workOrderId);
+
+    m_workBillingRepository->saveQML(&workBilling);
+
 }
 
 std::vector<WorkBilling*> WorkBillingController::getWorkBillingList(bool isApproved) const

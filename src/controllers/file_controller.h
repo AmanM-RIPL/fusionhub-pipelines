@@ -11,6 +11,8 @@ class FileController: public QObject
 public:
     explicit FileController(QObject *parent = nullptr);
     Q_INVOKABLE void create(const QString &description, const QString &fileUrl, const QString &fileLocalPath) const;
+    Q_INVOKABLE void approvedCreate(const QString &description, const QString &fileUrl, const QString &fileLocalPath) const;
+
     Q_INVOKABLE std::vector<File*> getFileList(bool isApproved = false) const;
     Q_INVOKABLE QString copyFileToFusionHub(const QString &sourcePath) const;
 

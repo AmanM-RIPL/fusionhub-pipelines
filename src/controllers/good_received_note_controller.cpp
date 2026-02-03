@@ -69,6 +69,21 @@ void GoodReceivedNoteController::create(const int &purchaseOrderLineId, const in
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+void GoodReceivedNoteController::approvedCreate(const int &purchaseOrderLineId, const int &quantity ) const
+{
+    GoodReceivedNote goodReceivedNote;
+
+    qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+    goodReceivedNote.setId(id_in_milliseconds);
+    goodReceivedNote.setGlobalId("123");
+    goodReceivedNote.setApprovalStatus(true);
+    goodReceivedNote.setQuantity(quantity);
+    goodReceivedNote.setPurchaseOrderLineId(purchaseOrderLineId);
+
+    m_goodReceivedNoteRepository->saveQML(&goodReceivedNote);
+
+}
+
 void GoodReceivedNoteController::update(int id, const int &purchaseOrderLineId, const int &quantity ) const
 {
     // GoodReceivedNote goodReceivedNote;

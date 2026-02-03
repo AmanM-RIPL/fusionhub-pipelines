@@ -56,6 +56,21 @@ void FileController::create(const QString &description, const QString &fileUrl, 
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+void FileController::approvedCreate(const QString &description, const QString &fileUrl, const QString &fileLocalPath) const
+{
+    File file;
+
+    file.setId(0);
+    file.setGlobalId("123");
+    file.setApprovalStatus(true);
+
+    file.setDescription(description);
+    file.setFileUrl(fileUrl);
+    file.setFileLocalPath(fileLocalPath);
+
+    m_fileRepository->saveQML(&file);
+}
+
 std::vector<File*> FileController::getFileList(bool isApproved) const
 {
     qDebug() << "IsApproved: " << isApproved;

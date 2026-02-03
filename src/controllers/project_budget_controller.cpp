@@ -15,19 +15,6 @@ ProjectBudgetController::ProjectBudgetController(QObject *parent)
 
 void ProjectBudgetController::create(const QString &name, const int &budgetHeadId) const
 {
-    // ProjectBudget projectBudget;
-
-    // qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
-    // projectBudget.setId(id_in_milliseconds);
-    // projectBudget.setGlobalId("123");
-    // projectBudget.setApprovalStatus(true);
-    // projectBudget.setDollarValue(name);
-    // projectBudget.setBudgetHeadId(budgetHeadId);
-
-    // m_projectBudgetRepository->saveQML(&projectBudget);
-
-    /***********Start of DraftEntity******************/
-
     QJsonObject jsonObject;
     jsonObject["dollarValue"] = name;
     jsonObject["budgetHeadId"] = budgetHeadId;
@@ -67,6 +54,20 @@ void ProjectBudgetController::create(const QString &name, const int &budgetHeadI
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+void ProjectBudgetController::approvedCreate(const int &budgetHeadId, const QString &value) const
+{
+    ProjectBudget projectBudget;
+
+    qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+    projectBudget.setId(id_in_milliseconds);
+    projectBudget.setGlobalId("123");
+    projectBudget.setApprovalStatus(true);
+    projectBudget.setDollarValue(value);
+    projectBudget.setBudgetHeadId(budgetHeadId);
+
+    m_projectBudgetRepository->saveQML(&projectBudget);
+
+}
 
 void ProjectBudgetController::update(int id, const QString &name, const int &budgetHeadId) const
 {

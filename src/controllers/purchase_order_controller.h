@@ -11,6 +11,7 @@ class PurchaseOrderController: public QObject
 public:
     explicit PurchaseOrderController(QObject *parent = nullptr);
     Q_INVOKABLE void create(int vendorId) const;
+    Q_INVOKABLE void approvedCreate(int vendorId) const;
     Q_INVOKABLE std::vector<PurchaseOrder*> getPurchaseOrderList(bool isApproved = false) const;
 
 private:
