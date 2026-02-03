@@ -186,7 +186,7 @@ void DraftEntityRepository::bindEntityToQuery(QSqlQuery& query, const DraftEntit
 }
 
 QString DraftEntityRepository::getInsertQuery() const {
-    return "INSERT INTO DraftEntity (tenant, project, entity, createdOn, createdByUser, entitySchema, nextApprovingUser, associatedApprovedEntity , changeHistory) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    return "INSERT INTO DraftEntity (tenant, project, entity, createdOn, createdByUser, entitySchema, nextApprovingUser, approvalStatus, associatedApprovedEntity, changeHistory) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 }
 QString DraftEntityRepository::getUpdateQuery() const {
     return "UPDATE DraftEntity SET  entitySchema = ? WHERE id = ?";
