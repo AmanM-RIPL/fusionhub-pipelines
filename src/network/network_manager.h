@@ -6,6 +6,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QJsonArray>
+#include <QDebug>
 
 class NetworkManager : public QObject {
     Q_OBJECT
@@ -34,12 +35,15 @@ signals:
 private slots:
     void onChangeLogSyncFinished(QNetworkReply* reply);
 
+
+
 private:
     explicit NetworkManager(QObject* parent = nullptr);
     ~NetworkManager();
     // Response handlers
     void handleLoginResponse(QNetworkReply* reply);
     void parseLoginResponse(const QJsonDocument& jsonDoc);
+
     QNetworkAccessManager* m_manager;
     QString m_authToken;
     QJsonObject m_lastUserData;

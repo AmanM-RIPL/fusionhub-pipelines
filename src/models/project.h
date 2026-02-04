@@ -24,6 +24,7 @@ class Project: public QObject
      Q_PROPERTY(bool isBlocked READ getIsBlocked  WRITE setIsBlocked NOTIFY IsBlockedChanged)
      //Q_PROPERTY(QString lastSyncedOn READ getLastSyncedOn  WRITE setLastSyncedOn NOTIFY lastSyncedOnChanged)
      Q_PROPERTY(int lastSyncedOn READ getLastSyncedOn  WRITE setLastSyncedOn NOTIFY lastSyncedOnChanged)
+     Q_PROPERTY(int lastChangeLogId READ getLastChangeLogId  WRITE setLastChangeLogId NOTIFY lastChangeLogIdChanged)
 
 
 public:
@@ -32,7 +33,7 @@ public:
 
     Project(int id, const QString& globalId, bool approvalStatus,
          const QString& projectName, const QString& customerName, const QString& contactName, const QString& phoneNumber,
-            const QString& emailId, const QString& totalDollarValue, const QString& description, bool isBlocked, int lastSyncedOn,  QObject* parent = nullptr);
+            const QString& emailId, const QString& totalDollarValue, const QString& description, bool isBlocked, int lastSyncedOn,int lastChangeLogId,  QObject* parent = nullptr);
 
     int getId() const { return id; }
     QString getGlobalId() const { return globalId; }
@@ -46,7 +47,7 @@ public:
     QString getDescription() const { return description; }
     bool getIsBlocked() const { return isBlocked; }
     int getLastSyncedOn() const { return lastSyncedOn; }
-
+    int getLastChangeLogId() const { return lastChangeLogId; }
 
     void setId(int id) { this->id = id; }
     void setGlobalId(const QString& globalId) { this->globalId = globalId; }
@@ -60,6 +61,7 @@ public:
     void setDescription(const QString& description) { this->description = description; }
     void setIsBlocked(const bool isBlocked) { this->isBlocked = isBlocked; }    
     void setLastSyncedOn(const int lastSyncedOn) { this->lastSyncedOn = lastSyncedOn; }
+    void setLastChangeLogId(const int lastChangeLogId) { this->lastChangeLogId = lastChangeLogId; }
 
     signals:
     void ProjectNameChanged();
@@ -71,6 +73,7 @@ public:
     void DescriptionChanged();
     void IsBlockedChanged();
     void lastSyncedOnChanged();
+    void lastChangeLogIdChanged();
 
 private:
     int id = 0;
@@ -85,6 +88,7 @@ private:
     QString description;
     bool isBlocked = false;
     int lastSyncedOn;
+    int lastChangeLogId;
 };
 Q_DECLARE_METATYPE(Project)
 

@@ -729,31 +729,3 @@ int main(int argc, char *argv[])
 
     return result;
 }
-
-/*
-#include <QTimer>
-#include <QtConcurrent>
-
-// 1. The heavy function you want to run every 5 minutes
-void backgroundTask() {
-    qDebug() << "Executing recurring task on thread:" << QThread::currentThread();
-    // Your processing logic here...
-}
-
-// 2. Setting up the periodic trigger
-void MyClass::setupRecurringTask() {
-    QTimer *timer = new QTimer(this);
-
-    // Connect the timer to a lambda that launches the background thread
-    connect(timer, &QTimer::timeout, this, []() {
-        QtConcurrent::run(backgroundTask);
-    });
-
-    // Start timer with a 5-minute interval (300,000 milliseconds)
-    timer->start(5 * 60 * 1000);
-
-    // Optional: Trigger immediately once before waiting 5 minutes
-    QtConcurrent::run(backgroundTask);
-}
-
- */

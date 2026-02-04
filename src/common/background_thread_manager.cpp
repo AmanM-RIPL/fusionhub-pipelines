@@ -99,8 +99,9 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
         QString entity = obj["entity"].toString();
         QJsonObject changeHistory = obj["changeHistory"].toObject();
         QString changeType = changeHistory["changeType"].toString();
-
+        qDebug() << "Created entity name: " << entity;
         QJsonObject schema = obj["entitySchema"].toObject();
+
         if (entity == "UnitOfMeasurement") {
             QString name = schema["uom_name"].toString();
             QString type = schema["unit_type"].toString();
@@ -111,8 +112,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
 
             UnitOfMeasurementController controller;
             controller.approvedCreate(name, type, sqm, cbm, meter, kg);
-
-            qDebug() << "UOM Created:" << name;
         }
 
         else if (entity == "Vendor") {
@@ -124,8 +123,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
 
             VendorController controller;
             controller.approvedCreate(name, address, contactPerson, mobile, email);
-
-            qDebug() << "Vendor Created:" << name;
         }
 
         else if (entity == "Material") {
@@ -135,8 +132,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
 
             MaterialController materialController;
             materialController.approvedCreate(name, category, unitOfMeasurementId);
-
-            qDebug() << "Material Created:" << name << category << unitOfMeasurementId;
         }
 
         else if (entity == "BudgetHead") {
@@ -144,8 +139,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
 
             BudgetHeadController controller;
             controller.approvedCreate(description);
-
-            qDebug() << "BudgetHead Created:" << description;
         }
 
         else if (entity == "ScheduleSetup") {
@@ -156,8 +149,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
 
             ScheduleSetupController controller;
             controller.approvedCreate(name, description, costParam, resourceParam);
-
-            qDebug() << "ScheduleSetup Created:" << name;
         }
 
         else if (entity == "Task") {
@@ -172,8 +163,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
             TaskController controller;
             controller.approvedCreate(name, description, bimElement,
                                       startDate, endDate, pid, status);
-
-            qDebug() << "Task Created:" << name;
         }
         else if (entity == "File") {
             QString description = schema["description"].toString();
@@ -182,16 +171,12 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
 
             FileController controller;
             controller.approvedCreate(description, url, localPath);
-
-            qDebug() << "File Created:" << description;
         }
         else if (entity == "ScheduleOfRates") {
             QString name = schema["schedule_of_rates_name"].toString();
 
             ScheduleOfRatesController controller;
             controller.approvedCreate(name);
-
-            qDebug() << "ScheduleOfRates Created:" << name;
         }
 
         else if (entity == "ScheduleOfRatesLine") {
@@ -202,8 +187,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
 
             ScheduleOfRatesLineController controller;
             controller.approvedCreate(setupId, sorId, cost, resource);
-
-            qDebug() << "ScheduleOfRatesLine Created";
         }
 
         else if (entity == "BillOfQuantity") {
@@ -212,8 +195,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
 
             BillOfQuantityController controller;
             controller.approvedCreate(sorId, description);
-
-            qDebug() << "BOQ Created";
         }
 
         else if (entity == "BillOfQuantityLine") {
@@ -224,8 +205,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
 
             BillOfQuantityLineController controller;
             controller.approvedCreate(boqId, description, value, bimElementId);
-
-            qDebug() << "BOQ Line Created";
         }
 
         else if (entity == "ProjectBudget") {
@@ -234,8 +213,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
 
             ProjectBudgetController controller;
             controller.approvedCreate(budgetHeadId, value);
-
-            qDebug() << "ProjectBudget Created";
         }
 
         else if (entity == "WorkOrder") {
@@ -244,8 +221,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
 
             WorkOrderController controller;
             controller.approvedCreate(vendorId, workOrderName);
-
-            qDebug() << "WorkOrder Created " << workOrderName;
         }
 
         else if (entity == "WorkOrderLine") {
@@ -260,8 +235,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
             WorkOrderLineController controller;
             controller.approvedCreate(workOrderId, description, value,
                                       tax, withholding, taskId, retention);
-
-            qDebug() << "WorkOrderLine Created";
         }
 
         else if (entity == "WorkBilling") {
@@ -269,8 +242,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
             QString workBillingName = "workBillingName";
             WorkBillingController controller;
             controller.approvedCreate(workBillingName, workOrderId);
-
-            qDebug() << "WorkBilling Created";
         }
 
         else if (entity == "WorkBillingLine") {
@@ -282,8 +253,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
 
             WorkBillingLineController controller;
             controller.approvedCreate(lineId, value, tax, withholding, retention);
-
-            qDebug() << "WorkBillingLine Created";
         }
 
         else if (entity == "PurchaseOrder") {
@@ -291,8 +260,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
 
             PurchaseOrderController controller;
             controller.approvedCreate(vendorId);
-
-            qDebug() << "PurchaseOrder Created";
         }
 
         else if (entity == "PurchaseOrderLine") {
@@ -306,8 +273,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
 
             PurchaseOrderLineController controller;
             controller.approvedCreate(poId, materialId, qty, uomId, value, tax, withholding);
-
-            qDebug() << "PurchaseOrderLine Created";
         }
 
         else if (entity == "GoodReceivedNote") {
@@ -316,8 +281,6 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
 
             GoodReceivedNoteController controller;
             controller.approvedCreate(purchaseOrderLineId, quantity);
-
-            qDebug() << "GRN Created";
         }
 
         else if (entity == "MaterialIndent") {
@@ -327,10 +290,8 @@ void BackgroundThreadManager::onChangeLogSyncReceived(const QJsonArray &arr)
 
             MaterialIndentController controller;
             controller.approvedCreate(quantity, materialId, taskId);
-
-            qDebug() << "MaterialIndent Created" << quantity;
+            // qDebug() << "WorkOrder Created " << quantity;
         }
-
 
     }
 

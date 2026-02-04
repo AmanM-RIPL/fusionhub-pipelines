@@ -53,6 +53,7 @@ void ProjectController::create(const QString &projectName, const QString &custom
     project.setDescription(description);
     project.setIsBlocked(false);
     project.setLastSyncedOn(milliseconds);
+    project.setLastChangeLogId(1);
 
     if(m_projectRepository->save(project)){
         qDebug()<<"Data Saved";
@@ -115,3 +116,15 @@ void ProjectController::updateLastSyncedOn(int lastSyncedOn)const
 {
     m_projectRepository->updateLastSyncedOn(gProjectId, lastSyncedOn);
 }
+
+int ProjectController::getLastChangeLogId()const
+{
+    int lastChangeLogId = m_projectRepository->getLastChangeLogId(gProjectId);
+    return lastChangeLogId;
+}
+
+void ProjectController::updateLastChangeLogId(int lastChangeLogId)const
+{
+    m_projectRepository->updateLastChangeLogId(gProjectId, lastChangeLogId);
+}
+

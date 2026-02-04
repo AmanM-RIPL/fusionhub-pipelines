@@ -29,6 +29,9 @@ public:
    int getLastSyncedOn(int projectId);
    void updateLastSyncedOn(int projectId, int lastSyncedOn);
 
+   int getLastChangeLogId(int projectId);
+   void updateLastChangeLogId(int projectId, int lastChangeLogId);
+
 protected:
     QString getTableName() const override;
     std::unique_ptr<Project> mapFromQuery(const QSqlQuery& query) const override;
