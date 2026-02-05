@@ -59,6 +59,22 @@ void ScheduleOfRatesController::create(const QString &name, const QVariant &pram
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+
+void ScheduleOfRatesController::approvedCreate(const QString &name) const
+{
+    ScheduleOfRates scheduleOfRates;
+
+    scheduleOfRates.setId(0);
+    scheduleOfRates.setGlobalId("123");
+    scheduleOfRates.setApprovalStatus(true);
+
+    scheduleOfRates.setScheduleOfRatesName(name);
+
+    m_scheduleOfRatesRepository->saveQML(&scheduleOfRates);
+
+
+}
+
 std::vector<ScheduleOfRates*> ScheduleOfRatesController::getScheduleOfRatesList(bool isApproved) const
 {
     qDebug()<<"IsApproved: "<< isApproved;

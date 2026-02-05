@@ -65,6 +65,26 @@ void PurchaseOrderLineController::create(const int &vendorId, const QVariantList
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+void PurchaseOrderLineController::approvedCreate(int purchaseOrderId,int materialId,double quantity,int unitOfMeasurementId,double dollarValue, double taxAmount,double taxWithholding) const
+{
+    PurchaseOrderLine purchaseOrderLine;
+
+    purchaseOrderLine.setId(0);
+    purchaseOrderLine.setGlobalId("123");
+    purchaseOrderLine.setApprovalStatus(true);
+
+    purchaseOrderLine.setPurchaseOrderId(purchaseOrderId);
+    purchaseOrderLine.setMaterialId(materialId);
+    purchaseOrderLine.setQuantity(quantity);
+    purchaseOrderLine.setUnitOfMeasurementId(unitOfMeasurementId);
+    purchaseOrderLine.setAmount(dollarValue);
+    purchaseOrderLine.setTaxAmount(taxAmount);
+    purchaseOrderLine.setTaxWithHolding(taxWithholding);
+
+    m_purchaseOrderLineRepository->saveQML(&purchaseOrderLine);
+}
+
+
 void PurchaseOrderLineController::update(int id, const int &vendorId, const QVariantList &purchaseOrderLine) const
 {
     QJsonObject jsonObject;

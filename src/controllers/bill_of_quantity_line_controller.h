@@ -13,6 +13,8 @@ class BillOfQuantityLineController: public QObject
 public:
     explicit BillOfQuantityLineController(QObject *parent = nullptr);
     Q_INVOKABLE void create(const QString &name, const int &billOfQuantityId , const int &bimElementId ) const;
+
+    Q_INVOKABLE void approvedCreate(const int &boqId, const QString &description, const int &value, const int &bimElementId) const;
     Q_INVOKABLE std::vector<BillOfQuantityLine*> getBillOfQuantityLineList(bool isApproved = false) const;
 
     Q_INVOKABLE std::vector<BillOfQuantity*> getBOQList() const;

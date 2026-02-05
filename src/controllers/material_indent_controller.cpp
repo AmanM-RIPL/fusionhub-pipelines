@@ -71,6 +71,22 @@ void MaterialIndentController::create(const double &quantity, const int &materia
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+void MaterialIndentController::approvedCreate(const double &quantity, const int &materialId, const int &taskId) const
+{
+    MaterialIndent materialIndent;
+
+    qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+    materialIndent.setId(id_in_milliseconds);
+    materialIndent.setGlobalId("123");
+    materialIndent.setApprovalStatus(true);
+    materialIndent.setQuantity(quantity);
+    materialIndent.setMaterialId(materialId);
+    materialIndent.setTaskId(taskId);
+
+    m_materialIndentRepository->saveQML(&materialIndent);
+
+}
+
 void MaterialIndentController::update(int id, const double &quantity, const int &materialId, const int &taskId) const
 {
     // MaterialIndent materialIndent;

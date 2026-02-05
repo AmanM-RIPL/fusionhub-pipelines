@@ -14,14 +14,6 @@ BudgetHeadController::BudgetHeadController(QObject *parent)
 
 void BudgetHeadController::create(const QString &description) const
 {
-    BudgetHead budgetHead;
-
-    budgetHead.setId(0);
-    budgetHead.setGlobalId("123");
-    budgetHead.setApprovalStatus(true);
-    budgetHead.setDescription(description);
-
-    m_budgetHeadRepository->saveQML(&budgetHead);
 
     /***********Start of DraftEntity******************/
 
@@ -68,6 +60,18 @@ void BudgetHeadController::create(const QString &description) const
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+void BudgetHeadController::approvedCreate(const QString &description) const
+{
+    BudgetHead budgetHead;
+
+    budgetHead.setId(0);
+    budgetHead.setGlobalId("123");
+    budgetHead.setApprovalStatus(true);
+    budgetHead.setDescription(description);
+
+    m_budgetHeadRepository->saveQML(&budgetHead);
+
+}
 
 void BudgetHeadController::update(int id, const QString &description) const
 {

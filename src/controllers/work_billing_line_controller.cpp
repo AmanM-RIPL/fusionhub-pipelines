@@ -67,6 +67,22 @@ void WorkBillingLineController::create(const int &workOrderId, const QString &de
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+void WorkBillingLineController::approvedCreate(int workOrderLineId, double dollarValue, double taxAmount, double taxWithholdingAmount, double retentionAmount) const
+{
+    WorkBillingLine workBillingLine;
+
+    workBillingLine.setId(0);
+    workBillingLine.setGlobalId("123");
+    workBillingLine.setApprovalStatus(true);
+
+    workBillingLine.setWorkOrderLineId(workOrderLineId);
+    workBillingLine.setAmount(dollarValue);
+    workBillingLine.setTaxAmount(taxAmount);
+    workBillingLine.setTaxWithHolding(taxWithholdingAmount);
+    workBillingLine.setRetentionAmount(retentionAmount);
+
+    m_workBillingLineRepository->saveQML(&workBillingLine);
+}
 
 void WorkBillingLineController::update(int id, const int &workOrderId, const QString &description, const QVariantList &workBillingLine) const
 {

@@ -11,6 +11,8 @@ class ScheduleOfRatesController: public QObject
 public:
     explicit ScheduleOfRatesController(QObject *parent = nullptr);
     Q_INVOKABLE void create(const QString &name, const QVariant &costValueParameter) const;
+
+    Q_INVOKABLE void approvedCreate(const QString &name) const;
     Q_INVOKABLE std::vector<ScheduleOfRates*> getScheduleOfRatesList(bool isApproved = false) const;
 
 private:

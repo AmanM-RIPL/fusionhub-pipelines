@@ -14,6 +14,8 @@ public:
     explicit GoodReceivedNoteController(QObject *parent = nullptr);
     Q_INVOKABLE void create(const int &quantity, const int &purchaseOrderLineId) const;
 
+    Q_INVOKABLE void approvedCreate(const int &purchaseOrderLineId, const int &quantity) const;
+
     Q_INVOKABLE void update(int id, const int &quantity, const int &purchaseOrderLineId) const;
 
     Q_INVOKABLE std::vector<GoodReceivedNote*> getGoodReceivedNoteList(bool isApproved = false) const;

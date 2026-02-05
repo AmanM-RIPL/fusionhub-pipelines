@@ -15,6 +15,9 @@ public:
     Q_INVOKABLE void create(const QString& uomName, const QString& unitType,
                             const double& conversionToSqm, const double& conversionToCubicMeter,
                             const double& conversionToMeter, const double& conversionToKilogram) const;
+    Q_INVOKABLE void approvedCreate(const QString& uomName, const QString& unitType,
+                                    const double& conversionToSqm, const double& conversionToCubicMeter,
+                                    const double& conversionToMeter, const double& conversionToKilogram) const;
 
     Q_INVOKABLE void update(int id, const QString& uomName, const QString& unitType,
                             const double& conversionToSqm, const double& conversionToCubicMeter,

@@ -67,6 +67,29 @@ void UnitOfMeasurementController::create(const QString& uomName, const QString& 
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+
+
+void UnitOfMeasurementController::approvedCreate(const QString& uomName, const QString& unitType,
+                                         const double& conversionToSqm, const double& conversionToCubicMeter,
+                                         const double& conversionToMeter, const double& conversionToKilogram) const
+{
+
+    UnitOfMeasurement uom;
+    qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+    uom.setId(id_in_milliseconds);
+    uom.setGlobalId("123");
+    uom.setApprovalStatus(true);
+    uom.setConversionToCubicMeter(conversionToCubicMeter);
+    uom.setConversionToKilogram(conversionToKilogram);
+    uom.setConversionToMeter(conversionToMeter);
+    uom.setConversionToSqm(conversionToSqm);
+    uom.setUnitType(unitType);
+    uom.setUomName(uomName);
+
+    m_unitOfMeasurementRepository->saveQML(&uom);
+
+}
+
 void UnitOfMeasurementController::update( int id, const QString& uomName, const QString& unitType,
                                          const double& conversionToSqm, const double& conversionToCubicMeter,
                                          const double& conversionToMeter, const double& conversionToKilogram) const

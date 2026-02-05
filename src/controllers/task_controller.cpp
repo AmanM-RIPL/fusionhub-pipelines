@@ -81,6 +81,24 @@ void TaskController::create(const QString &name, const QString &description, con
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+void TaskController::approvedCreate(const QString &name, const QString &description, const QString &bimElement, const QString &startDate , const QString &endDate, const long long pid, const QString &status) const
+{
+    Task task;
+
+    qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+    task.setId(id_in_milliseconds);
+    task.setGlobalId("123");
+    task.setApprovalStatus(true);
+    task.setTaskName(name);
+    task.setDescription(description);
+    task.setBimElement(bimElement);
+    task.setStartDate(startDate);
+    task.setEndDate(endDate);
+    task.setParentId(pid);
+
+    m_taskRepository->saveQML(&task);
+}
+
 void TaskController::update(const QString &taskName ,const QString &description, const QString &bimElement ,const QString &startDate ,const QString &endDate, const long long pid, const long long task_id, const int draftId, const QString &status) const
 {
 

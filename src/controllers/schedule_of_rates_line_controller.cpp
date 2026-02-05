@@ -67,6 +67,23 @@ void ScheduleOfRatesLineController::create(const int &scheduleSetupId, const int
 
 }
 
+void ScheduleOfRatesLineController::approvedCreate(int scheduleSetupId,int scheduleOfRatesId,const QString &cost,const QString &resource) const
+{
+    ScheduleOfRatesLine line;
+
+    line.setId(0);
+    line.setGlobalId("123");
+    line.setApprovalStatus(true);
+
+    line.setScheduleSetupId(scheduleSetupId);
+    line.setScheduleOfRatesId(scheduleOfRatesId);
+    line.setCostParam(cost);
+    line.setResourceParam(resource);
+
+    m_scheduleOfRatesLineRepository->saveQML(&line);
+}
+
+
 void ScheduleOfRatesLineController::update(int id, const int &scheduleSetupId, const int &scheduleOfRatesId, const QVariantList &scheduleOfRatesLine) const
 {
     QJsonObject jsonObject;

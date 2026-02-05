@@ -22,6 +22,8 @@ public:
     Q_INVOKABLE int getLastSyncedOn()const;
     Q_INVOKABLE void updateLastSyncedOn(int lastSyncedOn)const;
 
+    Q_INVOKABLE int getLastChangeLogId()const;
+    Q_INVOKABLE void updateLastChangeLogId(int lastChangeLogId)const;
 
 
 private:

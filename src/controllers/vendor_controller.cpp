@@ -82,6 +82,26 @@ void VendorController::create(const QString &vendorName, const QString &vendorAd
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+
+void VendorController::approvedCreate(const QString &vendorName, const QString &vendorAddress, const QString &vendorContactPerson,
+                              const QString &vendorMobile, const QString &vendorEmail) const
+{
+    Vendor vendor;
+    //qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+
+    vendor.setId(0);
+    vendor.setGlobalId("123");
+    vendor.setApprovalStatus(true);
+    vendor.setVendorName(vendorName);
+    vendor.setVendorAddress(vendorAddress);
+    vendor.setVendorContactPerson(vendorContactPerson);
+    vendor.setVendorMobile(vendorMobile);
+    vendor.setVendorEmail(vendorEmail);
+
+    m_vendorRepository->saveQML(&vendor);
+
+}
+
 void VendorController::update(int id, const QString &vendorName, const QString &vendorAddress, const QString &vendorContactPerson,
                               const QString &vendorMobile, const QString &vendorEmail) const
 {

@@ -12,6 +12,7 @@ public:
     explicit PurchaseOrderLineController(QObject *parent = nullptr);
 
     Q_INVOKABLE void create(const int &vendorId, const QVariantList &purchaseOrderLine) const;
+    Q_INVOKABLE void approvedCreate(int purchaseOrderId,int materialId,double quantity,int unitOfMeasurementId,double dollarValue, double taxAmount,double taxWithholding) const;
     Q_INVOKABLE void update(int id, const int &vendorId, const QVariantList &purchaseOrderLine) const;
 
     Q_INVOKABLE std::vector<PurchaseOrderLine*> getPurchaseOrderLineList(bool isApproved = false) const;

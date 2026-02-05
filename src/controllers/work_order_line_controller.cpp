@@ -64,6 +64,25 @@ void WorkOrderLineController::create(const int &vendorId, const QString &descrip
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+void WorkOrderLineController::approvedCreate(int workOrderId,const QString &description, double dollarValue,double taxAmount, double taxWithholdingAmount,int taskId,double retentionAmount) const
+{
+    WorkOrderLine workOrderLine;
+
+    workOrderLine.setId(0);
+    workOrderLine.setGlobalId("123");
+    workOrderLine.setApprovalStatus(true);
+
+    workOrderLine.setWorkOrderId(workOrderId);
+    workOrderLine.setDescription(description);
+    workOrderLine.setAmount(dollarValue);
+    workOrderLine.setTaxAmount(taxAmount);
+    workOrderLine.setTaxWithHolding(taxWithholdingAmount);
+    workOrderLine.setTaskId(taskId);
+    workOrderLine.setRetentionAmount(retentionAmount);
+
+    m_workOrderLineRepository->saveQML(&workOrderLine);
+}
+
 void WorkOrderLineController::update(int id, const int &vendorId, const QString &description, const QVariantList &workOrderLineData) const
 {
     QJsonObject jsonObject;

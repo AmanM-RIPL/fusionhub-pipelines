@@ -16,6 +16,8 @@ public:
 
     Q_INVOKABLE void create(const int &workOrderId, const QString &description, const QVariantList &workBillingLine) const;
 
+    Q_INVOKABLE void approvedCreate(int workOrderLineId, double dollarValue, double taxAmount, double taxWithholdingAmount, double retentionAmount) const;
+
     Q_INVOKABLE void update(int id, const int &workOrderId,const QString &description,const QVariantList &workBillingLineData) const;
 
     Q_INVOKABLE std::vector<WorkBillingLine*> getWorkBillingLineList(bool isApproved = false) const;

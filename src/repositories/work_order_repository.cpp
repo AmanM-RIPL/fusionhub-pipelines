@@ -45,10 +45,11 @@ void WorkOrderRepository::bindEntityToQuery(QSqlQuery& query, const WorkOrder& e
     query.addBindValue(entity.getGlobalId());
     query.addBindValue(entity.getApprovalStatus());
     query.addBindValue(entity.getWorkOrderName());
+    query.addBindValue(entity.getVendorId());
 }
 QString WorkOrderRepository::getInsertQuery() const {
-    return "INSERT INTO WorkOrder (global_id, approval_status, description) "
-           "VALUES (?, ?, ?)";
+    return "INSERT INTO WorkOrder (global_id, approval_status, vendor_id, description) "
+           "VALUES (?, ?, ?, ?)";
 }
 QString WorkOrderRepository::getUpdateQuery() const {
     return "UPDATE WorkOrder SET global_id = ?, approval_status = ?, description = ? WHERE id = ?";
