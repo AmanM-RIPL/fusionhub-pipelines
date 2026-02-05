@@ -73,6 +73,45 @@ int ProjectRepository::getLastSyncedOn(int projectId)
      return lastSyncedOn;
 }
 
+int ProjectRepository::getLastChangeLogId(int projectId)
+{
+    int lastChangeLogId = 0;
+
+    QDir dir;
+    if (!dir.mkpath(gEnvironmentPath)) {
+        qDebug() << "Failed to update lastSyncedOn in project folder:" << gEnvironmentPath;
+        return false;
+    }
+    QString filePath = gEnvironmentPath + "\\" + "main.json";
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Failed to open file:" << file.errorString();
+        return 0;
+    }
+
+    QByteArray rawData = file.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(rawData);
+
+    if (!doc.isArray()) {
+        qDebug() << "JSON is not an array!";
+        file.close();
+        return 0;
+    }
+    QJsonArray jsonArray = doc.array();
+    for (int i = 0; i < jsonArray.size(); ++i) {
+        QJsonObject rootObj = jsonArray[i].toObject();
+        if (rootObj["id"].toInt() == projectId) {
+            lastChangeLogId = rootObj["lastChangeLogId"].toInt();
+            break;
+        }
+    }
+
+    file.close();
+
+    return lastChangeLogId;
+}
+
 void ProjectRepository::updateLastSyncedOn(int projectId, int lastSynced)
 {
     QDir dir;
@@ -111,6 +150,43 @@ void ProjectRepository::updateLastSyncedOn(int projectId, int lastSynced)
     file.close();
 }
 
+void ProjectRepository::updateLastChangeLogId(int projectId, int lastChangeLogId)
+{
+    QDir dir;
+    if (!dir.mkpath(gEnvironmentPath)) {
+        qDebug() << "Failed to update lastSyncedOn in project folder:" << gEnvironmentPath;
+        return;
+    }
+    QString filePath = gEnvironmentPath + "\\" + "main.json";
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadWrite | QIODevice::Text)) {
+        qDebug() << "Failed to open file:" << file.errorString();
+        return;
+    }
+
+    QByteArray rawData = file.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(rawData);
+
+    if (!doc.isArray()) {
+        qDebug() << "JSON is not an array!";
+        file.close();
+        return;
+    }
+    QJsonArray jsonArray = doc.array();
+    for (int i = 0; i < jsonArray.size(); ++i) {
+        QJsonObject rootObj = jsonArray[i].toObject();
+        if (rootObj["id"].toInt() == projectId) {
+            rootObj["lastChangeLogId"] = lastChangeLogId;
+            jsonArray.replace(i, rootObj);
+            break;
+        }
+    }
+
+    file.resize(0);
+    file.write(QJsonDocument(jsonArray).toJson());
+    file.close();
+}
 
 QString ProjectRepository::getProjectListAsJsonString(bool isBlocked)
 {

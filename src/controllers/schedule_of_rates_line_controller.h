@@ -13,6 +13,7 @@ public:
     explicit ScheduleOfRatesLineController(QObject *parent = nullptr);
 
     Q_INVOKABLE void create(const int &scheduleSetupId, const int &scheduleOfRateId, const QVariantList &scheduleOfRatesLine) const;
+    Q_INVOKABLE void approvedCreate(int scheduleSetupId,int scheduleOfRatesId,const QString &cost,const QString &resource) const;
     Q_INVOKABLE void update(int id, const int &scheduleSetupId, const int &scheduleOfRateId, const QVariantList &scheduleOfRatesLine) const;
 
     Q_INVOKABLE std::vector<ScheduleOfRatesLine*> getScheduleOfRatesLineList(bool isApproved = false) const;

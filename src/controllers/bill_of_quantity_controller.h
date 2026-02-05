@@ -12,6 +12,8 @@ class BillOfQuantityController: public QObject
 public:
     explicit BillOfQuantityController(QObject *parent = nullptr);
     Q_INVOKABLE void create(const QString &description , const int &scheduleOfRatesId) const;
+    Q_INVOKABLE void approvedCreate(const int sorId, QString &description) const;
+
     Q_INVOKABLE std::vector<BillOfQuantity*> getBillOfQuantityList(bool isApproved = false) const;
     Q_INVOKABLE std::vector<ScheduleOfRates*> getScheduleOfRatesList() const;
 

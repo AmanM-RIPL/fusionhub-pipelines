@@ -163,6 +163,21 @@ void BillOfQuantityController::create(const QString &description, const int &sch
 
 }
 
+void BillOfQuantityController::approvedCreate( const int sorId, QString &description) const
+{
+    BillOfQuantity billOfQuantity;
+
+    qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+    billOfQuantity.setId(id_in_milliseconds);
+    billOfQuantity.setGlobalId("123");
+    billOfQuantity.setApprovalStatus(true);
+    billOfQuantity.setDescription(description);
+    billOfQuantity.setScheduleOfRatesId(sorId);
+
+    m_billOfQuantityRepository->saveQML(&billOfQuantity);
+
+}
+
 std::vector<BillOfQuantity*> BillOfQuantityController::getBillOfQuantityList(bool isApproved) const
 {
     qDebug()<<"IsApproved: "<< isApproved;

@@ -16,19 +16,6 @@ WorkOrderController::WorkOrderController(QObject *parent)
 
 void WorkOrderController::create(const QString &workOrderName, const int vendorId) const
 {
-    // WorkOrder workOrde
-
-    // qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
-    // workOrder.setId(id_in_milliseconds);
-    // workOrder.setGlobalId("123");
-    // workOrder.setApprovalStatus(true);
-    // workOrder.setDescription(workOrderName);
-    // workOrder.setVendorId(vendorId);
-
-    // m_workOrderRepository->saveQML(&workOrder);
-
-    /***********Start of DraftEntity******************/
-
     QJsonObject jsonObject;
     jsonObject["workOrderName"] = workOrderName;
     jsonObject["vendorId"] = vendorId;
@@ -66,6 +53,22 @@ void WorkOrderController::create(const QString &workOrderName, const int vendorI
     draftEntity.setChangeHistory(changeHistory);
 
     m_draftEntityRepository->saveQML(&draftEntity);
+}
+
+
+void WorkOrderController::approvedCreate(const int vendorId, const QString &workOrderName) const
+{
+    WorkOrder workOrder;
+
+    qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+
+    workOrder.setId(id_in_milliseconds);
+    workOrder.setGlobalId("123");
+    workOrder.setApprovalStatus(true);
+    workOrder.setVendorId(vendorId);
+    workOrder.setWorkOrderName(workOrderName);
+    m_workOrderRepository->saveQML(&workOrder);
+
 }
 
 std::vector<WorkOrder*> WorkOrderController::getWorkOrderList(bool isApproved) const

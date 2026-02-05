@@ -15,6 +15,9 @@ public:
     explicit WorkBillingController(QObject *parent = nullptr);
 
     Q_INVOKABLE void create(const QString &WorkBillingName, const int WorkOrderId ) const;
+    Q_INVOKABLE void approvedCreate(const QString &WorkBillingName, const int WorkOrderId) const;
+
+
     Q_INVOKABLE std::vector<WorkBilling*> getWorkBillingList(bool isApproved = false) const;
 
 signals:

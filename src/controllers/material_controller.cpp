@@ -12,6 +12,22 @@ MaterialController::MaterialController(QObject *parent)
     m_draftEntityRepository(RepositoryLocator::instance().draftEntityRepository())
 {}
 
+void MaterialController::approvedCreate(const QString &name, const QString &category, const int &unitOfMeasurementId) const
+{
+    Material material;
+
+   // qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+   // material.setId(id_in_milliseconds);
+    material.setGlobalId("123");
+  //  material.setApprovalStatus(true);
+    material.setMaterialName(name);
+    material.setCategory(category);
+    material.setUnitOfMeasurementId(unitOfMeasurementId);
+
+    m_materialRepository->saveQML(&material);
+
+}
+
 void MaterialController::create(const QString &name, const QString &category, const int &unitOfMeasurementId) const
 {
     // Material material;

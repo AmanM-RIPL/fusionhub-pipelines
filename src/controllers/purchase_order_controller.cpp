@@ -15,18 +15,6 @@ PurchaseOrderController::PurchaseOrderController(QObject *parent)
 
 void PurchaseOrderController::create( const int vendorId) const
 {
-    // PurchaseOrder workOrde
-
-    // qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
-    // purchaseOrder.setId(id_in_milliseconds);
-    // purchaseOrder.setGlobalId("123");
-    // purchaseOrder.setApprovalStatus(true);
-    // purchaseOrder.setDescription(purchaseOrderName);
-    // purchaseOrder.setWorkOrderId(workOrderId);
-
-    // m_purchaseOrderRepository->saveQML(&purchaseOrder);
-
-    /***********Start of DraftEntity******************/
 
     QJsonObject jsonObject;
     jsonObject["vendorId"] = vendorId;
@@ -65,6 +53,23 @@ void PurchaseOrderController::create( const int vendorId) const
 
     m_draftEntityRepository->saveQML(&draftEntity);
 }
+
+
+void PurchaseOrderController::approvedCreate( const int vendorId) const
+{
+    PurchaseOrder purchaseOrder;
+
+    qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+
+    purchaseOrder.setId(id_in_milliseconds);
+    purchaseOrder.setGlobalId("123");
+    purchaseOrder.setApprovalStatus(true);
+   // purchaseOrder.setDescription(purchaseOrderName);
+    purchaseOrder.setVendorId(vendorId);
+
+    m_purchaseOrderRepository->saveQML(&purchaseOrder);
+
+   }
 
 std::vector<PurchaseOrder*> PurchaseOrderController::getPurchaseOrderList(bool isApproved) const
 {

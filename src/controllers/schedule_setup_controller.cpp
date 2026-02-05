@@ -95,6 +95,22 @@ void ScheduleSetupController::create(const QString &scheduleSetupName, const QSt
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+void ScheduleSetupController::approvedCreate(const QString &scheduleSetupName,const QString &description,const QString &costParameter,const QString &resourceParameter) const
+{
+    ScheduleSetup scheduleSetup;
+
+    scheduleSetup.setId(0);
+    scheduleSetup.setGlobalId("123");
+    scheduleSetup.setApprovalStatus(true);
+
+    scheduleSetup.setScheduleSetupName(scheduleSetupName);
+    scheduleSetup.setDescription(description);
+    scheduleSetup.setCostParameter(costParameter);
+    scheduleSetup.setResourceParameter(resourceParameter);
+
+    m_scheduleSetupRepository->saveQML(&scheduleSetup);
+}
+
 std::vector<ScheduleSetup*> ScheduleSetupController::getSetupList(bool isApproved) const
 {
     qDebug()<<"IsApproved: "<< isApproved;

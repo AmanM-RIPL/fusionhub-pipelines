@@ -74,6 +74,24 @@ void BillOfQuantityLineController::create(const QString &description, const int 
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
+
+void BillOfQuantityLineController::approvedCreate(const int &boqId, const QString &description, const int &value, const int &bimElementId) const
+{
+    BillOfQuantityLine billOfQuantityLine;
+
+    qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+    billOfQuantityLine.setId(id_in_milliseconds);
+    billOfQuantityLine.setGlobalId("123");
+    billOfQuantityLine.setApprovalStatus(true);
+    billOfQuantityLine.setBillOfQuantityLineName(description);
+   // billOfQuantityLine.setBillOfQuantityLineName(value);
+    billOfQuantityLine.setBillOfQuantityId(boqId);
+    billOfQuantityLine.setBimElementId(bimElementId);
+
+    m_billOfQuantityLineRepository->saveQML(&billOfQuantityLine);
+
+}
+
 std::vector<BillOfQuantityLine*> BillOfQuantityLineController::getBillOfQuantityLineList(bool isApproved) const
 {
     qDebug()<<"IsApproved: "<< isApproved;

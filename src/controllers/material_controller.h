@@ -10,7 +10,10 @@ class MaterialController: public QObject
     Q_OBJECT
 public:
     explicit MaterialController(QObject *parent = nullptr);
+
     Q_INVOKABLE void create(const QString &name, const QString &catergory, const int &UnitOfMeasurementId) const;
+
+    Q_INVOKABLE void approvedCreate(const QString &name, const QString &catergory, const int &UnitOfMeasurementId) const;
 
     Q_INVOKABLE void update(int id, const QString &name, const QString &catergory, const int &UnitOfMeasurementId) const;
 

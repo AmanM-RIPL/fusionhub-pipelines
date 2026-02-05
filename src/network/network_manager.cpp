@@ -1,4 +1,5 @@
 #include "network_manager.h"
+#include "controllers/project_controller.h"
 #include <QDebug>
 
 // Static singleton instance
@@ -12,13 +13,13 @@ NetworkManager::NetworkManager(QObject* parent)
     : QObject(parent),
     m_authToken(""),
     m_lastStatusCode(0)
+
 {
     m_manager = new QNetworkAccessManager(this);
 }
 
 NetworkManager::~NetworkManager()
 {
-    // QObject parent handles cleanup
 }
 
 QString NetworkManager::getStoredToken() const
@@ -56,7 +57,6 @@ void NetworkManager::loginAPI(const QString& username, const QString& password)
     }
     emit loginInProgress();
 
-    // API URL
     QUrl url("http://127.0.0.1:8080/api/v1/auth/login");
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -131,7 +131,6 @@ void NetworkManager::parseLoginResponse(const QJsonDocument& jsonDoc)
     emit loginDone();
 }
 
-
 void NetworkManager::sendDraftToServer(const QJsonObject& payload)
 {
     QUrl url("http://127.0.0.1:8080/api/v1/default/draft-entity");
@@ -166,3 +165,64 @@ void NetworkManager::sendDraftToServer(const QJsonObject& payload)
         reply->deleteLater();
     });
 }
+
+void NetworkManager::requestChangeLogSync()
+{
+    ProjectController projectController;
+    int lastChangeLogId= projectController.getLastChangeLogId();
+
+    QString urlString = "http://127.0.0.1:8080/api/v1/default/change-log";
+
+    if (lastChangeLogId > 0) {
+        urlString += "/since/" + QString::number(lastChangeLogId);
+    }
+
+    QUrl url(urlString);
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    if (!m_authToken.isEmpty()) {
+        request.setRawHeader(
+            "Authorization",
+            QByteArray("Bearer ") + m_authToken.toUtf8()
+            );
+    }
+
+    QNetworkReply* reply = m_manager->get(request);
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        onChangeLogSyncFinished(reply);
+    });
+}
+
+void NetworkManager::onChangeLogSyncFinished(QNetworkReply* reply)
+{
+    QByteArray rawData = reply->readAll();
+    if (reply->error() != QNetworkReply::NoError) {
+        qWarning() << "Changelog error:" << reply->errorString();
+        reply->deleteLater();
+        return;
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(rawData);
+
+    if (doc.isArray()) {
+        QJsonArray changelogs = doc.array();
+
+        if (!changelogs.isEmpty()) {
+            QJsonObject lastItem = changelogs.last().toObject();
+
+            if (lastItem.contains("id")) {
+
+                int lastChangeLogId = lastItem["id"].toInt();
+                ProjectController projectController;
+                projectController.updateLastChangeLogId(lastChangeLogId);
+                qDebug() << "lastChangeLogId Updated" ;
+            }
+        }
+
+        emit changeLogSyncReceived(changelogs);
+    }
+
+    reply->deleteLater();
+}
+
