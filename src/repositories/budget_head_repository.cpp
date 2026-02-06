@@ -79,7 +79,7 @@ std::unique_ptr<BudgetHead> BudgetHeadRepository::mapFromQuery(const QSqlQuery& 
     auto budgetHead = std::make_unique<BudgetHead>();
     budgetHead->setId(query.value("id").toInt());
     budgetHead->setGlobalId(query.value("global_id").toString());
-    budgetHead->setApprovalStatus(query.value("approval_status").toBool());
+    budgetHead->setApprovalStatus(query.value("approval_status").toString());
     budgetHead->setDescription(query.value("description").toString());
 
     return budgetHead;
@@ -89,7 +89,7 @@ BudgetHead* BudgetHeadRepository::mapFromQueryQML(const QSqlQuery& query, QObjec
     auto budgetHead = new BudgetHead(parent);
     budgetHead->setId(query.value("id").toInt());
     budgetHead->setGlobalId(query.value("global_id").toString());
-    budgetHead->setApprovalStatus(query.value("approval_status").toBool());
+    budgetHead->setApprovalStatus(query.value("approval_status").toString());
     budgetHead->setDescription(query.value("description").toString());
 
     return budgetHead;

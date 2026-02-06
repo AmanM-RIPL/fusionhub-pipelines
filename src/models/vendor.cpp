@@ -1,6 +1,6 @@
 #include "models/vendor.h"
 
-Vendor::Vendor(int id, const QString& globalId, bool approvalStatus,
+Vendor::Vendor(int id, const QString& globalId, const QString& approvalStatus,
                const QString& vendorName, const QString& vendorAddress,
                const QString& vendorContactPerson, const QString& vendorMobile,
                const QString& vendorEmail, QObject* parent)

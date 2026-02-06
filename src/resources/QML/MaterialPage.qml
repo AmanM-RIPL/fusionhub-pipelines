@@ -47,6 +47,10 @@ Column {
         id: materialController
     }
 
+    UserController {
+        id: userController
+    }
+
     UnitOfMeasurementController {
         id: unitOfMeasurementController
     }
@@ -663,8 +667,7 @@ Column {
                 }
             }
             materials[i].unitName = unitName
-
-            if (materials[i].nextApprovingUser === 2 ) {
+            if (materials[i].nextApprovingUser === userController.getCurrentId() ) {
                         materials[i].displayStatus = "Pending"
                     } else {
                         materials[i].displayStatus = materials[i].approvalStatus

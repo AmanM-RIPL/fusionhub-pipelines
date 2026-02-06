@@ -18,27 +18,10 @@ VendorController::VendorController(QObject *parent)
 void VendorController::create(const QString &vendorName, const QString &vendorAddress, const QString &vendorContactPerson,
                               const QString &vendorMobile, const QString &vendorEmail) const
 {
-    // Vendor vendor;
-    // //qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
-
-    // vendor.setId(0);
-    // vendor.setGlobalId("123");
-    // vendor.setApprovalStatus(true);
-    // vendor.setVendorName(vendorName);
-    // vendor.setVendorAddress(vendorAddress);
-    // vendor.setVendorContactPerson(vendorContactPerson);
-    // vendor.setVendorMobile(vendorMobile);
-    // vendor.setVendorEmail(vendorEmail);
-
-    // m_vendorRepository->saveQML(&vendor);
-
-
-    /***********Start of DraftEntity******************/
-
     QJsonObject jsonObject;
     //jsonObject["id"] = 0;
     //jsonObject["globalId"] = "123";
-    //jsonObject["approvalStatus"] = true;
+    //jsonObject["approvalStatus"] = "Pending";
     jsonObject["vendorName"] = vendorName;
     jsonObject["vendorAddress"] = vendorAddress;
     jsonObject["vendorMobile"] = vendorMobile;
@@ -53,7 +36,7 @@ void VendorController::create(const QString &vendorName, const QString &vendorAd
     QString isoDateTimeString = currentDateTimeUtc.toString(Qt::ISODateWithMs);
 
     QJsonObject jsonObjectChangeHistory;
-    //jsonObjectChangeHistory["user"] = gUser->getUserId();
+  //  jsonObjectChangeHistory["user"] = gUser->getUserId();
     jsonObjectChangeHistory["user"] = gUser->getId();
     jsonObjectChangeHistory["timestamp"] =  isoDateTimeString;
     jsonObjectChangeHistory["changeType"] =  "create";
@@ -74,7 +57,7 @@ void VendorController::create(const QString &vendorName, const QString &vendorAd
     draftEntity.setEntity("Vendor");
     //draftEntity.setCreatedByUser(gUser->getUserId());
     draftEntity.setCreatedByUser(gUser->getId());
-    draftEntity.setNextApprovingUser(0);
+    draftEntity.setNextApprovingUser(gUser->getId());
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);
     draftEntity.setChangeHistory(changeHistory);
@@ -91,7 +74,7 @@ void VendorController::approvedCreate(const QString &vendorName, const QString &
 
     vendor.setId(0);
     vendor.setGlobalId("123");
-    vendor.setApprovalStatus(true);
+   // vendor.setApprovalStatus("Pending");
     vendor.setVendorName(vendorName);
     vendor.setVendorAddress(vendorAddress);
     vendor.setVendorContactPerson(vendorContactPerson);
@@ -159,6 +142,9 @@ std::vector<Vendor*> VendorController::getVendorList(bool isApproved) const
         for(int i = 0; i < draftEntitys.size(); i++)
         {
             int draftId = draftEntitys[i]->getId();
+            QString approvalStatus = draftEntitys[i]->getApprovalStatus();
+            int nextApprovingUser = draftEntitys[i]->getNextApprovingUser();
+            int createdByUser = draftEntitys[i]->getCreatedByUser();
             QString  jsonString = draftEntitys[i]->getEntitySchema();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
             if (!jsonDoc.isNull() && jsonDoc.isObject())
@@ -167,7 +153,9 @@ std::vector<Vendor*> VendorController::getVendorList(bool isApproved) const
                 QJsonObject jsonObj = jsonDoc.object();
                 vendor->setId(draftId);
                 vendor->setGlobalId("123");
-                vendor->setApprovalStatus(true);
+                vendor->setApprovalStatus(approvalStatus);
+                vendor->setCreatedByUser(createdByUser);
+                vendor->setNextApprovingUser(nextApprovingUser);
                 vendor->setVendorName(jsonObj["vendorName"].toString());
                 vendor->setVendorAddress(jsonObj["vendorAddress"].toString());
                 vendor->setVendorContactPerson(jsonObj["vendorContactPerson"].toString());
@@ -180,4 +168,5 @@ std::vector<Vendor*> VendorController::getVendorList(bool isApproved) const
         return vendors;
     }
 }
+
 

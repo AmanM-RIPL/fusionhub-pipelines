@@ -31,6 +31,11 @@ QJsonObject NetworkManager::getLastUserData() const
 {
     return m_lastUserData;
 }
+int NetworkManager::getUserId() const
+{
+    return m_userId;
+}
+
 
 int NetworkManager::getLastStatusCode() const
 {
@@ -113,6 +118,7 @@ void NetworkManager::handleLoginResponse(QNetworkReply* reply)
 void NetworkManager::parseLoginResponse(const QJsonDocument& jsonDoc)
 {
     QJsonObject root = jsonDoc.object();
+
     QString token = root.value("token").toString();
     if (token.isEmpty()) {
         emit loginFailed("Token missing in response");
@@ -120,13 +126,14 @@ void NetworkManager::parseLoginResponse(const QJsonDocument& jsonDoc)
     }
     m_authToken = token;
 
+    m_userId = root.value("id").toInt();
+
+    emit userIdChanged();
+
     // Store full user data
     QJsonObject userData = root;
     m_lastUserData = userData;
-
     qDebug() << "Login successful. Token stored:" << m_authToken << "";
-    qDebug() << "User data:" << m_lastUserData;
-
     // Emit success signal
     emit loginDone();
 }
