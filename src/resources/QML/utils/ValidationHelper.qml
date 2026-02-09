@@ -91,6 +91,20 @@ QtObject {
         return validationResult(true)
     }
 
+    function validatePositiveDouble(value) {
+        if (value === "" || value === null || value === undefined) {
+            return validationResult(true)  // Optional field
+        }
+        var num = parseFloat(value)
+        if (isNaN(num)) {
+            return validationResult(false, "Must be a valid number")
+        }
+        if (num < 0) {
+            return validationResult(false, "Number must be positive or zero")
+        }
+        return validationResult(true)
+    }
+
     function validateInteger(value) {
         var num = parseFloat(value)
         if (isNaN(num) || !Number.isInteger(num)) {

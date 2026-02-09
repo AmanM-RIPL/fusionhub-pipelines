@@ -10,7 +10,7 @@ class UnitOfMeasurement: public QObject
     Q_OBJECT
 
     Q_PROPERTY(int id READ getId CONSTANT)
-    Q_PROPERTY(bool approvalStatus READ getApprovalStatus WRITE setApprovalStatus NOTIFY approvalStatusChanged)
+    Q_PROPERTY(QString approvalStatus READ getApprovalStatus WRITE setApprovalStatus NOTIFY approvalStatusChanged)
     Q_PROPERTY(QString globalId READ getGlobalId WRITE setGlobalId NOTIFY globalIdChanged)
     Q_PROPERTY(QString uomName READ getUomName WRITE setUomName NOTIFY uomNameChanged)
     Q_PROPERTY(QString unitType READ getUnitType WRITE setUnitType NOTIFY unitTypeChanged)
@@ -18,33 +18,41 @@ class UnitOfMeasurement: public QObject
     Q_PROPERTY(double conversionToCubicMeter READ getConversionToCubicMeter WRITE setConversionToCubicMeter NOTIFY conversionToCubicMeterChanged)
     Q_PROPERTY(double conversionToMeter READ getConversionToMeter WRITE setConversionToMeter NOTIFY conversionToMeterChanged)
     Q_PROPERTY(double conversionToKilogram READ getConversionToKilogram WRITE setConversionToKilogram NOTIFY conversionToKilogramChanged)
+    Q_PROPERTY(int nextApprovingUser READ getNextApprovingUser WRITE setNextApprovingUser NOTIFY nextApprovingUserChanged)
+    Q_PROPERTY(int createdByUser READ getCreatedByUser WRITE setCreatedByUser NOTIFY createdByUserChanged)
+
 
 public:
     explicit UnitOfMeasurement(QObject* parent = nullptr): QObject(parent) {}
-    UnitOfMeasurement(int id, const QString& globalId, bool approvalStatus,
+    UnitOfMeasurement(int id, const QString& globalId, const QString& approvalStatus,
                      const QString& uomName, const QString& unitType,
                      double conversionToSqm = 0.0, double conversionToCubicMeter = 0.0,
-                     double conversionToMeter = 0.0, double conversionToKilogram = 0.0, QObject* parent = nullptr);
-    
+                     double conversionToMeter = 0.0, double conversionToKilogram = 0.0, int nextApprovingUser = 0 , int createdByUser = 0, QObject* parent = nullptr);
+
     int getId() const { return id; }
     QString getGlobalId() const { return globalId; }
-    bool getApprovalStatus() const { return approvalStatus; }
+    QString getApprovalStatus() const { return approvalStatus; }
     QString getUomName() const { return uomName; }
     QString getUnitType() const { return unitType; }
     double getConversionToSqm() const { return conversionToSqm; }
     double getConversionToCubicMeter() const { return conversionToCubicMeter; }
     double getConversionToMeter() const { return conversionToMeter; }
     double getConversionToKilogram() const { return conversionToKilogram; }
-    
+    int getNextApprovingUser() const { return nextApprovingUser; }
+    int getCreatedByUser() const { return createdByUser; }
+
     void setId(int id) { this->id = id; }
     void setGlobalId(const QString& globalId) { this->globalId = globalId; }
-    void setApprovalStatus(bool status) { this->approvalStatus = status; }
+    void setApprovalStatus(const QString& status) { this->approvalStatus = status; }
     void setUomName(const QString& uomName) { this->uomName = uomName; }
     void setUnitType(const QString& unitType) { this->unitType = unitType; }
     void setConversionToSqm(double conversion) { this->conversionToSqm = conversion; }
     void setConversionToCubicMeter(double conversion) { this->conversionToCubicMeter = conversion; }
     void setConversionToMeter(double conversion) { this->conversionToMeter = conversion; }
     void setConversionToKilogram(double conversion) { this->conversionToKilogram = conversion; }
+    void setNextApprovingUser(int nextApprovingUser) { this->nextApprovingUser = nextApprovingUser; }
+    void setCreatedByUser(int createdByUser) { this->createdByUser = createdByUser; }
+
 
 signals:
     void globalIdChanged();
@@ -55,18 +63,22 @@ signals:
     void conversionToCubicMeterChanged();
     void conversionToMeterChanged();
     void conversionToKilogramChanged();
+    void nextApprovingUserChanged();
+    void createdByUserChanged();
 
 
 private:
     int id = 0;
     QString globalId;
-    bool approvalStatus = true;
+    QString approvalStatus;
     QString uomName;
     QString unitType;
     double conversionToSqm = 0.0;
     double conversionToCubicMeter = 0.0;
     double conversionToMeter = 0.0;
     double conversionToKilogram = 0.0;
+    int nextApprovingUser = 0;
+    int createdByUser = 0;
 };
 
 Q_DECLARE_METATYPE(UnitOfMeasurement)
