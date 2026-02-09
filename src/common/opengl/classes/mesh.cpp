@@ -11,14 +11,11 @@ void Mesh::Initialize(
     const std::vector<int>& vertices_materialIndex,
     const std::vector<int>& vertices_textureIndex,
 
-    const std::vector<EdgeIndex>& edge_indices,
-    const std::vector<float>& edge_width,
-    const std::vector<float>& edge_dashLength,
-    const std::vector<float>& edge_gapLength,
-    const std::vector<int>& edge_dash,
-    const std::vector<int>& edge_materialIndex,
+    const std::vector<EdgeDataInt>& edge_data_int,
+    const std::vector<EdgeDataFloat>& edge_data_float,
 
-    const std::vector<unsigned int>& indices
+    const std::vector<unsigned int>& indices,
+    const std::vector<int>& edge_indices
 )
 {
     m_verticies_position = vertices_position;
@@ -27,14 +24,11 @@ void Mesh::Initialize(
     m_verticies_materialIndex = vertices_materialIndex;
     m_verticies_textureIndex = vertices_textureIndex;
 
-    m_edge_indices = edge_indices;
-    m_edge_width = edge_width;
-    m_edge_dashLength = edge_dashLength;
-    m_edge_gapLength = edge_gapLength;
-    m_edge_dash = edge_dash;
-    m_edge_materialIndex = edge_materialIndex;
+    m_edge_data_int = edge_data_int;
+    m_edge_data_float = edge_data_float;
 
     m_indices = indices;
+    m_edge_indices = edge_indices;
 
     m_modelMatrix = QMatrix4x4();
 
@@ -65,18 +59,16 @@ void Mesh::AppendGeometry(
     const std::vector<int>& vertices_materialIndex,
     const std::vector<int>& vertices_textureIndex,
 
-    const std::vector<EdgeIndex>& edge_indices,
-    const std::vector<float>& edge_width,
-    const std::vector<float>& edge_dashLength,
-    const std::vector<float>& edge_gapLength,
-    const std::vector<int>& edge_dash,
-    const std::vector<int>& edge_materialIndex,
+    const std::vector<EdgeDataInt>& edge_data_int,
+    const std::vector<EdgeDataFloat>& edge_data_float,
 
-    const std::vector<unsigned int>& indices
+    const std::vector<unsigned int>& indices,
+    const std::vector<int>& edge_indices
 )
 {
     // need before new vertices are inserted
     int numOfVertices = m_verticies_position.size();
+    int numOfEdges = m_edge_data_int.size();
 
     m_verticies_position.insert(m_verticies_position.end(), vertices_position.begin(),  vertices_position.end());
     m_verticies_normal.insert(m_verticies_normal.end(), vertices_normal.begin(),  vertices_normal.end());
@@ -89,16 +81,23 @@ void Mesh::AppendGeometry(
         m_indices.push_back(index + numOfVertices);
     }
 
-    for (const EdgeIndex& index: edge_indices)
+    for (const int& index: edge_indices)
     {
-        m_edge_indices.push_back({ index[0] + numOfVertices, index[1] + numOfVertices });
+        m_edge_indices.push_back({ index[0] + numOfEdges, index[1] + numOfEdges });
     }
 
-    m_edge_width.insert(m_edge_width.end(), edge_width.begin(), edge_width.end());
-    m_edge_dashLength.insert(m_edge_dashLength.end(), edge_dashLength.begin(), edge_dashLength.end());
-    m_edge_gapLength.insert(m_edge_gapLength.end(), edge_gapLength.begin(), edge_gapLength.end());
-    m_edge_dash.insert(m_edge_dash.end(), edge_dash.begin(), edge_dash.end());
-    m_edge_materialIndex.insert(m_edge_materialIndex.end(), edge_materialIndex.begin(), edge_materialIndex.end());
+    for (const EdgeDataInt& edgeData: edge_data_int)
+    {
+        EdgeDataInt edgeDataNew;
+        edgeDataNew.start_vertex = edgeData.start_vertex + numOfVertices;
+        edgeDataNew.end_vertex = edgeData.end_vertex + numOfVertices;
+        edgeDataNew.material_index = edgeData.material_index;
+        edgeDataNew.dash = edgeData.dash;
+
+        m_edge_data_int.push_back(edgeDataNew);
+    }
+
+    m_edge_data_float.insert(m_edge_data_float.end(), edge_data_float.begin(), edge_data_float.end());
 }
 
 void Mesh::Copy(Mesh *mesh)
@@ -109,13 +108,10 @@ void Mesh::Copy(Mesh *mesh)
         m_verticies_textureuv,
         m_verticies_materialIndex,
         m_verticies_textureIndex,
-        m_edge_indices,
-        m_edge_width,
-        m_edge_dashLength,
-        m_edge_gapLength,
-        m_edge_dash,
-        m_edge_materialIndex,
-        m_indices
+        m_edge_data_int,
+        m_edge_data_float,
+        m_indices,
+        m_edge_indices
     );
 }
 
@@ -127,14 +123,11 @@ void Mesh::Combine(Mesh *combinedMesh, QList<Mesh *> meshList)
     std::vector<int> verticies_materialIndex;
     std::vector<int> verticies_textureIndex;
 
-    std::vector<EdgeIndex> edge_indices;
-    std::vector<float> edge_width;
-    std::vector<float> edge_dashLength;
-    std::vector<float> edge_gapLength;
-    std::vector<int> edge_dash;
-    std::vector<int> edge_materialIndex;
+    std::vector<EdgeDataInt> edge_data_int;
+    std::vector<EdgeDataFloat> edge_data_float;
 
     std::vector<unsigned int> indices;
+    std::vector<int> edge_indices;
     std::vector<std::array<float, 4>> pickColor_array;
 
     std::vector<int> model_matrix_indices;
@@ -145,6 +138,7 @@ void Mesh::Combine(Mesh *combinedMesh, QList<Mesh *> meshList)
 
     unsigned int numOfVertices = 0;
     unsigned int numOfIndices = 0;
+    unsigned int numOfEdgeIndices = 0;
     unsigned int numOfEdges = 0;
 
     for (Mesh* mesh: meshList)
@@ -194,28 +188,28 @@ void Mesh::Combine(Mesh *combinedMesh, QList<Mesh *> meshList)
         }
         indices.insert(indices.end(), meshIndices.begin(), meshIndices.end());
 
-        std::vector<EdgeIndex> meshEdgeIndices = mesh->getEdgeIndices();
-        for (EdgeIndex& index: meshEdgeIndices)
+        std::vector<int> meshEdgeIndices = mesh->getEdgeIndices();
+        for (int& index: meshEdgeIndices)
         {
-            index[0] += numOfVertices;
-            index[1] += numOfVertices;
+            index += numOfEdges;
         }
         edge_indices.insert(edge_indices.end(), meshEdgeIndices.begin(), meshEdgeIndices.end());
 
-        std::vector<float> meshEdgeWidth = mesh->getEdgeWidth();
-        std::vector<float> meshEdgeDashLength = mesh->getEdgeDashLength();
-        std::vector<float> meshEdgeGapLength = mesh->getEdgeGapLength();
-        std::vector<int> meshEdgeDash = mesh->getEdgeDash();
-        std::vector<int> meshEdgeMaterialIndex = mesh->getEdgeMaterialIndex();
-        edge_width.insert(edge_width.end(), meshEdgeWidth.begin(),  meshEdgeWidth.end());
-        edge_dashLength.insert(edge_dashLength.end(), meshEdgeDashLength.begin(),  meshEdgeDashLength.end());
-        edge_gapLength.insert(edge_gapLength.end(), meshEdgeGapLength.begin(),  meshEdgeGapLength.end());
-        edge_dash.insert(edge_dash.end(), meshEdgeDash.begin(),  meshEdgeDash.end());
-        edge_materialIndex.insert(edge_materialIndex.end(), meshEdgeMaterialIndex.begin(),  meshEdgeMaterialIndex.end());
+        std::vector<EdgeDataInt> meshEdgeDataInt = mesh->getEdgeDataInt();
+        for (EdgeDataInt& edgeData: meshEdgeDataInt)
+        {
+            edgeData.start_vertex += numOfVertices;
+            edgeData.end_vertex += numOfVertices;
+        }
+        edge_data_int.insert(edge_data_int.end(), meshEdgeDataInt.begin(), meshEdgeDataInt.end());
+
+        std::vector<EdgeDataFloat> meshEdgeDataFloat = mesh->getEdgeDataFloat();
+        edge_data_float.insert(edge_data_float.end(), meshEdgeDataFloat.begin(),  meshEdgeDataFloat.end());
 
         numOfVertices += mesh->getNumOfVertices();
         numOfIndices += mesh->getNumOfIndices();
         numOfEdges += mesh->getNumOfEdges();
+        numOfEdgeIndices += mesh->getNumOfEdgeIndices();
     }
 
 
@@ -225,13 +219,10 @@ void Mesh::Combine(Mesh *combinedMesh, QList<Mesh *> meshList)
         verticies_textureuv,
         verticies_materialIndex,
         verticies_textureIndex,
-        edge_indices,
-        edge_width,
-        edge_dashLength,
-        edge_gapLength,
-        edge_dash,
-        edge_materialIndex,
-        indices
+        edge_data_int,
+        edge_data_float,
+        indices,
+        edge_indices
     );
     combinedMesh->SetModelMatricies(model_matrix);
     combinedMesh->SetModelMatrixIndices(model_matrix_indices);
@@ -262,17 +253,29 @@ void Mesh::GenerateBaseSurface(Mesh *mesh)
     std::vector<int> verticies_textureIndex = {-1,-1,-1,-1};
 
     std::vector<unsigned int> indices = {0,2,1, 0,3,2}; // winding order as face culling is switched on
-    std::vector<EdgeIndex> edge_indices = {
-        {0,1},
-        {1,2},
-        {2,3},
-        {3,0}
+    std::vector<int> edge_indices = {0,1,2,3};
+
+    EdgeDataInt edgeDataInt1 = {0,1,2,0}; // 2 for black
+    EdgeDataInt edgeDataInt2 = {1,2,2,0};
+    EdgeDataInt edgeDataInt3 = {2,3,2,0};
+    EdgeDataInt edgeDataInt4 = {3,0,2,0};
+    std::vector<EdgeDataInt> edge_data_int = {
+        edgeDataInt1,
+        edgeDataInt2,
+        edgeDataInt3,
+        edgeDataInt4
     };
-    std::vector<float> edge_width = {1.0f, 1.0f, 1.0f, 1.0f};
-    std::vector<float> edge_dashLength = {1.0f, 1.0f, 1.0f, 1.0f};
-    std::vector<float> edge_gapLength = {1.0f, 1.0f, 1.0f, 1.0f};
-    std::vector<int> edge_dash = {0, 0, 0, 0};
-    std::vector<int> edge_materialIndex = {2, 2, 2, 2}; // 2 for black
+
+    EdgeDataFloat edgeDataFloat1 = {1.0f, 1.0f, 1.0f, 0.0f}; // last 0.0f is for padding
+    EdgeDataFloat edgeDataFloat2 = {1.0f, 1.0f, 1.0f, 0.0f};
+    EdgeDataFloat edgeDataFloat3 = {1.0f, 1.0f, 1.0f, 0.0f};
+    EdgeDataFloat edgeDataFloat4 = {1.0f, 1.0f, 1.0f, 0.0f};
+    std::vector<EdgeDataFloat> edge_data_float = {
+        edgeDataFloat1,
+        edgeDataFloat2,
+        edgeDataFloat3,
+        edgeDataFloat4,
+    };
 
     mesh->Initialize(
         verticies_position,
@@ -280,13 +283,10 @@ void Mesh::GenerateBaseSurface(Mesh *mesh)
         verticies_textureuv,
         verticies_materialIndex,
         verticies_textureIndex,
-        edge_indices,
-        edge_width,
-        edge_dashLength,
-        edge_gapLength,
-        edge_dash,
-        edge_materialIndex,
-        indices
+        edge_data_int,
+        edge_data_float,
+        indices,
+        edge_indices
     );
 }
 
@@ -320,34 +320,19 @@ std::vector<unsigned int> Mesh::getIndices()
     return m_indices;
 }
 
-std::vector<EdgeIndex> Mesh::getEdgeIndices()
+std::vector<int> Mesh::getEdgeIndices()
 {
     return m_edge_indices;
 }
 
-std::vector<float> Mesh::getEdgeWidth()
+std::vector<EdgeDataInt> Mesh::getEdgeDataInt()
 {
-    return m_edge_width;
+    return m_edge_data_int;
 }
 
-std::vector<float> Mesh::getEdgeDashLength()
+std::vector<EdgeDataFloat> Mesh::getEdgeDataFloat()
 {
-    return m_edge_dashLength;
-}
-
-std::vector<float> Mesh::getEdgeGapLength()
-{
-    return m_edge_gapLength;
-}
-
-std::vector<int> Mesh::getEdgeDash()
-{
-    return m_edge_dash;
-}
-
-std::vector<int> Mesh::getEdgeMaterialIndex()
-{
-    return m_edge_materialIndex;
+    return m_edge_data_float;
 }
 
 Position *Mesh::getVerticiesPositionData()
@@ -385,39 +370,19 @@ unsigned int *Mesh::getIndicesData()
     return m_indices.data();
 }
 
-EdgeIndex *Mesh::getEdgeIndicesData()
+int *Mesh::getEdgeIndicesData()
 {
     return m_edge_indices.data();
 }
 
-float *Mesh::getEdgeWidthData()
+EdgeDataInt *Mesh::getEdgeDataIntData()
 {
-    return m_edge_width.data();
+    return m_edge_data_int.data();
 }
 
-float *Mesh::getEdgeDashLengthData()
+EdgeDataFloat *Mesh::getEdgeDataFloatData()
 {
-    return m_edge_dashLength.data();
-}
-
-float *Mesh::getEdgeGapLengthData()
-{
-    return m_edge_gapLength.data();
-}
-
-int *Mesh::getEdgeDashData()
-{
-    return m_edge_dash.data();
-}
-
-int *Mesh::getEdgeMaterialIndexData()
-{
-    return m_edge_materialIndex.data();
-}
-
-int *Mesh::getModelMatrixIndicesData()
-{
-    return m_model_matrix_indices.data();
+    return m_edge_data_float.data();
 }
 
 std::array<float, 4> *Mesh::getPickColorData()
@@ -433,6 +398,11 @@ unsigned int Mesh::getNumOfVertices()
 unsigned int Mesh::getNumOfIndices()
 {
     return m_indices.size();
+}
+
+unsigned int Mesh::getNumOfEdgeIndices()
+{
+    return m_edge_indices.size();
 }
 
 unsigned int Mesh::getNumOfEdges()
