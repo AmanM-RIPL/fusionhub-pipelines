@@ -29,15 +29,12 @@ void View::LoadStaticMeshData(QList<Mesh*>& meshList)
     int* vertices_textureIndex = combinedMesh->getVerticiesTextureIndexData();
 
     std::array<float, 4> corners = {-1.0f, 1.0f, -1.0f, 1.0f};
-    EdgeIndex* edge_indices = combinedMesh->getEdgeIndicesData();
-    float* edge_width = combinedMesh->getEdgeWidthData();
-    float* edge_dashLength = combinedMesh->getEdgeDashLengthData();
-    float* edge_gapLength = combinedMesh->getEdgeGapLengthData();
-    int* edge_dash = combinedMesh->getEdgeDashData();
-    int* edge_materialIndex = combinedMesh->getEdgeMaterialIndexData();
+    EdgeDataInt* edge_data_int = combinedMesh->getEdgeDataIntData();
+    EdgeDataFloat* edge_data_float = combinedMesh->getEdgeDataFloatData();
 
     float* modelMatrices = combinedMesh->getModelMatriciesData();
     unsigned int* indices = combinedMesh->getIndicesData();
+    int* edge_indices = combinedMesh->getEdgeIndicesData();
 
     int* modelMatrixIndices = combinedMesh->getModelMatrixIndicesData();
     std::array<float, 4>* pickColors = combinedMesh->getPickColorData();
@@ -45,6 +42,7 @@ void View::LoadStaticMeshData(QList<Mesh*>& meshList)
     unsigned int numOfVertices = combinedMesh->getNumOfVertices();
     unsigned int numOfIndices = combinedMesh->getNumOfIndices();
     unsigned int numOfEdges = combinedMesh->getNumOfEdges();
+    unsigned int numOfEdgeIndices = combinedMesh->getNumOfEdgeIndices();
     unsigned int numOfModelMatrices = combinedMesh->getNumOfModelMatricies();
     unsigned int numOfModelMatrixIndices = combinedMesh->getNumOfModelMatrixIndices();
 
@@ -60,11 +58,12 @@ void View::LoadStaticMeshData(QList<Mesh*>& meshList)
 
     // Initializing the vao, vbo, and ibo
     m_static_indexCount = numOfIndices;
-    m_static_borderIndexCount = numOfEdges;
+    m_static_borderIndexCount = numOfEdgeIndices;
 
     int numOfVerticesDefault = 100000;
     int numOfIndicesDefault = 100000;
     int numOfEdgesDefault = 100000;
+    int numOfEdgeIndicesDefault = 100000;
     int numOfModelMatricesDefault = 1000;
     int numOfModelMatrixIndicesDefault = 100000;
 
@@ -160,43 +159,29 @@ void View::LoadStaticMeshData(QList<Mesh*>& meshList)
         // Buffer Orphaning
         //VBO
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_indices_vbo);
-        this->glBufferData(GL_ARRAY_BUFFER, sizeof(EdgeIndex) * numOfEdgesDefault, NULL, GL_STATIC_DRAW);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgeIndicesDefault, NULL, GL_STATIC_DRAW);
 
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_width_vbo);
-        this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STATIC_DRAW);
+        // TBO for Edge Data Int
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_static_edge_data_int_vbo);
+        this->glBufferData(GL_TEXTURE_BUFFER, numOfEdgesDefault * sizeof(EdgeDataInt), NULL, GL_STATIC_DRAW);
 
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_materialIndex_vbo);
-        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgesDefault, NULL, GL_STATIC_DRAW);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_dashLength_vbo);
-        this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STATIC_DRAW);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_gapLength_vbo);
-        this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STATIC_DRAW);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_dash_vbo);
-        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgesDefault, NULL, GL_STATIC_DRAW);
+        // TBO for Edge Data Float
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_static_edge_data_float_vbo);
+        this->glBufferData(GL_TEXTURE_BUFFER, numOfEdgesDefault * sizeof(EdgeDataFloat), NULL, GL_STATIC_DRAW);
 
 
         // Reloading Data
         //VBO
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_indices_vbo);
-            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(EdgeIndex) * numOfEdges, edge_indices);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfEdgeIndices, edge_indices);
 
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_width_vbo);
-            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * numOfEdges, edge_width);
+        // TBO for Edge Data Int
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_static_edge_data_int_vbo);
+            this->glBufferSubData(GL_TEXTURE_BUFFER, 0, numOfEdges * sizeof(EdgeDataInt), edge_data_int);
 
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_materialIndex_vbo);
-            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfEdges, edge_materialIndex);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_dashLength_vbo);
-            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * numOfEdges, edge_dashLength);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_gapLength_vbo);
-            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * numOfEdges, edge_gapLength);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_dash_vbo);
-            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfEdges, edge_dash);
+        // TBO for Edge Data Float
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_static_edge_data_float_vbo);
+        this->glBufferSubData(GL_TEXTURE_BUFFER, 0, numOfEdges * sizeof(EdgeDataFloat), edge_data_float);
     this->glBindVertexArray(0);
 }
 
@@ -205,6 +190,7 @@ void View::LoadDynamicMeshData(Mesh* mesh)
     int numOfVerticesDefault = 100000;
     int numOfIndicesDefault = 100000;
     int numOfEdgesDefault = 100000;
+    int numOfEdgeIndicesDefault = 100000;
     int numOfModelMatricesDefault = 1000;
     int numOfModelMatrixIndicesDefault = 100000;
 
@@ -247,22 +233,15 @@ void View::LoadDynamicMeshData(Mesh* mesh)
             // Buffer Orphaning
             //VBO
             this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_indices_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(EdgeIndex) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
-
-            this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_width_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
-
-            this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_materialIndex_vbo);
             this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
 
-            this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_dashLength_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
+            // TBO for Edge Data Int
+            this->glBindBuffer(GL_TEXTURE_BUFFER, m_dynamic_edge_data_int_vbo);
+            this->glBufferData(GL_TEXTURE_BUFFER, numOfEdgesDefault * sizeof(EdgeDataInt), NULL, GL_STREAM_DRAW);
 
-            this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_gapLength_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
-
-            this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_dash_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
+            // TBO for Edge Data Float
+            this->glBindBuffer(GL_TEXTURE_BUFFER, m_dynamic_edge_data_float_vbo);
+            this->glBufferData(GL_TEXTURE_BUFFER, numOfEdgesDefault * sizeof(EdgeDataFloat), NULL, GL_STREAM_DRAW);
         this->glBindVertexArray(0);
 
         return;
@@ -277,27 +256,25 @@ void View::LoadDynamicMeshData(Mesh* mesh)
     int* vertices_materialIndex = mesh->getVerticiesMaterialIndexData();
     int* vertices_textureIndex = mesh->getVerticiesTextureIndexData();
 
-    EdgeIndex* edge_indices = mesh->getEdgeIndicesData();
-    float* edge_width = mesh->getEdgeWidthData();
-    float* edge_dashLength = mesh->getEdgeDashLengthData();
-    float* edge_gapLength = mesh->getEdgeGapLengthData();
-    int* edge_dash = mesh->getEdgeDashData();
-    int* edge_materialIndex = mesh->getEdgeMaterialIndexData();
+    EdgeDataInt* edge_data_int = mesh->getEdgeDataIntData();
+    EdgeDataFloat* edge_data_float = mesh->getEdgeDataFloatData();
 
     float* modelMatrices = mesh->getModelMatriciesData();
     unsigned int* indices = mesh->getIndicesData();
+    int* edge_indices = mesh->getEdgeIndicesData();
 
     int* modelMatrixIndices = mesh->getModelMatrixIndicesData();
 
     unsigned int numOfVertices = mesh->getNumOfVertices();
     unsigned int numOfIndices = mesh->getNumOfIndices();
     unsigned int numOfEdges = mesh->getNumOfEdges();
+    unsigned int numOfEdgeIndices = mesh->getNumOfEdgeIndices();
     unsigned int numOfModelMatrices = mesh->getNumOfModelMatricies();
     unsigned int numOfModelMatrixIndices = mesh->getNumOfModelMatrixIndices();
 
     // Initializing the vao, vbo, and ibo
     m_dynamic_indexCount = numOfIndices;
-    m_dynamic_borderIndexCount = numOfEdges;
+    m_dynamic_borderIndexCount = numOfEdgeIndices;
 
     // for (int i = 0; i < numOfVertices; i++)
     // {
@@ -381,42 +358,29 @@ void View::LoadDynamicMeshData(Mesh* mesh)
         // Buffer Orphaning
         //VBO
         this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_indices_vbo);
-        this->glBufferData(GL_ARRAY_BUFFER, sizeof(EdgeIndex) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgeIndicesDefault, NULL, GL_STREAM_DRAW);
 
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_width_vbo);
-        this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
+        // TBO for Edge Data Int
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_dynamic_edge_data_int_vbo);
+        this->glBufferData(GL_TEXTURE_BUFFER, numOfEdgesDefault * sizeof(EdgeDataInt), NULL, GL_STREAM_DRAW);
 
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_materialIndex_vbo);
-        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
+        // TBO for Edge Data Float
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_dynamic_edge_data_float_vbo);
+        this->glBufferData(GL_TEXTURE_BUFFER, numOfEdgesDefault * sizeof(EdgeDataFloat), NULL, GL_STREAM_DRAW);
 
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_dashLength_vbo);
-        this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_gapLength_vbo);
-        this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_dash_vbo);
-        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgesDefault, NULL, GL_STREAM_DRAW);
 
         // Reloading data
         //VBO
         this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_indices_vbo);
-        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(EdgeIndex) * numOfEdges, edge_indices);
+        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfEdgeIndices, edge_indices);
 
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_width_vbo);
-        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * numOfEdges, edge_width);
+        // TBO for Edge Data Int
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_dynamic_edge_data_int_vbo);
+        this->glBufferSubData(GL_TEXTURE_BUFFER, 0, numOfEdges * sizeof(EdgeDataInt), edge_data_int);
 
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_materialIndex_vbo);
-        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfEdges, edge_materialIndex);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_dashLength_vbo);
-        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * numOfEdges, edge_dashLength);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_gapLength_vbo);
-        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * numOfEdges, edge_gapLength);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_dash_vbo);
-        this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfEdges, edge_dash);
+        // TBO for Edge Data Float
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_dynamic_edge_data_float_vbo);
+        this->glBufferSubData(GL_TEXTURE_BUFFER, 0, numOfEdges * sizeof(EdgeDataFloat), edge_data_float);
     this->glBindVertexArray(0);
 }
 
@@ -464,6 +428,14 @@ void View::Render()
     // For Model Matrix Indices
     this->glActiveTexture(GL_TEXTURE4);
     this->glBindTexture(GL_TEXTURE_BUFFER, m_static_matrixIndexTexture);
+
+    // For Edge Data Int
+    this->glActiveTexture(GL_TEXTURE8);
+    this->glBindTexture(GL_TEXTURE_BUFFER, m_static_edgeDataIntTexture);
+
+    // For Edge Data Float
+    this->glActiveTexture(GL_TEXTURE9);
+    this->glBindTexture(GL_TEXTURE_BUFFER, m_static_edgeDataFloatTexture);
 
 
     // For texture arrays
@@ -536,6 +508,14 @@ void View::Render()
     this->glActiveTexture(GL_TEXTURE4);
     this->glBindTexture(GL_TEXTURE_BUFFER, m_static_matrixIndexTexture);
 
+    // For Edge Data Int
+    this->glActiveTexture(GL_TEXTURE8);
+    this->glBindTexture(GL_TEXTURE_BUFFER, m_static_edgeDataIntTexture);
+
+    // For Edge Data Float
+    this->glActiveTexture(GL_TEXTURE9);
+    this->glBindTexture(GL_TEXTURE_BUFFER, m_static_edgeDataFloatTexture);
+
 
 
 
@@ -550,6 +530,12 @@ void View::Render()
 
     // For Material List
     this->glUniform1i(edgeShader->getMaterialBufferId(), 1);
+
+    // For Edge Data Int
+    this->glUniform1i(edgeShader->getEdgeDataIntId(), 8);
+
+    // For Edge Data Float
+    this->glUniform1i(edgeShader->getEdgeDataFloatId(), 9);
 
     this->glUniform3f(edgeShader->getLightPositionId(), 20.0f, 0.0f, 0.0f);
     this->glUniform3f(edgeShader->getLightAmbientId(), 1.0f, 1.0f, 1.0f); // 0.2f, 0.2f, 0.2f
@@ -570,6 +556,12 @@ void View::Render()
 
     // For Model Matrix Indices
     this->glUniform1i(edgeShader->getModelMatrixIndexBufferId(), 7);
+
+    // For Edge Data Int
+    this->glUniform1i(edgeShader->getEdgeDataIntId(), 10);
+
+    // For Edge Data Float
+    this->glUniform1i(edgeShader->getEdgeDataFloatId(), 11);
 
     this->glBindVertexArray(m_dynamic_edge_vao);
         this->glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, m_dynamic_borderIndexCount);
@@ -854,18 +846,18 @@ void View::InitializeHandles()
 
     this->glGenBuffers(1, &m_static_corner_vbo);
     this->glGenBuffers(1, &m_static_edge_indices_vbo);
-    this->glGenBuffers(1, &m_static_edge_width_vbo);
-    this->glGenBuffers(1, &m_static_edge_dashLength_vbo);
-    this->glGenBuffers(1, &m_static_edge_gapLength_vbo);
-    this->glGenBuffers(1, &m_static_edge_dash_vbo);
-    this->glGenBuffers(1, &m_static_edge_materialIndex_vbo);
+    this->glGenBuffers(1, &m_static_edge_data_int_vbo);
+    this->glGenBuffers(1, &m_static_edge_data_float_vbo);
 
     this->glGenBuffers(1, &m_static_border_ibo);
     this->glGenBuffers(1, &m_static_matrix_tbo);
     this->glGenBuffers(1, &m_static_model_matrix_vbo);
+
     this->glGenTextures(1, &m_static_matrixTexture);
     this->glGenTextures(1, &m_static_verticesTexture);
     this->glGenTextures(1, &m_static_matrixIndexTexture);
+    this->glGenTextures(1, &m_static_edgeDataIntTexture);
+    this->glGenTextures(1, &m_static_edgeDataFloatTexture);
 
     /*
         Dynmic VBOs and IBOs
@@ -882,18 +874,18 @@ void View::InitializeHandles()
 
     this->glGenBuffers(1, &m_dynamic_corner_vbo);
     this->glGenBuffers(1, &m_dynamic_edge_indices_vbo);
-    this->glGenBuffers(1, &m_dynamic_edge_width_vbo);
-    this->glGenBuffers(1, &m_dynamic_edge_dashLength_vbo);
-    this->glGenBuffers(1, &m_dynamic_edge_gapLength_vbo);
-    this->glGenBuffers(1, &m_dynamic_edge_dash_vbo);
-    this->glGenBuffers(1, &m_dynamic_edge_materialIndex_vbo);
+    this->glGenBuffers(1, &m_dynamic_edge_data_int_vbo);
+    this->glGenBuffers(1, &m_dynamic_edge_data_float_vbo);
 
     this->glGenBuffers(1, &m_dynamic_border_ibo);
     this->glGenBuffers(1, &m_dynamic_matrix_tbo);
     this->glGenBuffers(1, &m_dynamic_model_matrix_vbo);
+
     this->glGenTextures(1, &m_dynamic_matrixTexture);
     this->glGenTextures(1, &m_dynamic_verticesTexture);
     this->glGenTextures(1, &m_dynamic_matrixIndexTexture);
+    this->glGenTextures(1, &m_dynamic_edgeDataIntTexture);
+    this->glGenTextures(1, &m_dynamic_edgeDataFloatTexture);
 
     /*
         Texture Buffers
@@ -909,6 +901,7 @@ void View::InitializeStaticBuffers()
     int numOfVertices = 100000;
     int numOfIndices = 100000;
     int numOfEdges = 100000;
+    int numOfEdgeIndices = 100000;
     int numOfModelMatrices = 1000;
     int numOfModelMatrixIndices = 100000;
     std::array<float, 4> corners = {-1.0f, 1.0f, -1.0f, 1.0f};
@@ -998,46 +991,11 @@ void View::InitializeStaticBuffers()
             this->glEnableVertexAttribArray(0);
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_indices_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(EdgeIndex) * numOfEdges, NULL, GL_STATIC_DRAW);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgeIndices, NULL, GL_STATIC_DRAW);
             // edges
-            this->glVertexAttribIPointer(1, 2, GL_INT, sizeof(EdgeIndex), (void*)0);
+            this->glVertexAttribIPointer(1, 2, GL_INT, sizeof(int), (void*)0);
             this->glEnableVertexAttribArray(1);
             this->glVertexAttribDivisor(1, 1);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_width_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdges, NULL, GL_STATIC_DRAW);
-            // edge width
-            this->glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-            this->glEnableVertexAttribArray(2);
-            this->glVertexAttribDivisor(2, 1);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_materialIndex_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdges, NULL, GL_STATIC_DRAW);
-            // edge material index
-            this->glVertexAttribIPointer(3, 1, GL_INT, sizeof(int), (void*)0);
-            this->glEnableVertexAttribArray(3);
-            this->glVertexAttribDivisor(3, 1);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_dashLength_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdges, NULL, GL_STATIC_DRAW);
-            // edge dash length
-            this->glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-            this->glEnableVertexAttribArray(4);
-            this->glVertexAttribDivisor(4, 1);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_gapLength_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdges, NULL, GL_STATIC_DRAW);
-            // edge gap length
-            this->glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-            this->glEnableVertexAttribArray(5);
-            this->glVertexAttribDivisor(5, 1);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_dash_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdges, NULL, GL_STATIC_DRAW);
-            // edge dash
-            this->glVertexAttribIPointer(6, 1, GL_INT, sizeof(int), (void*)0);
-            this->glEnableVertexAttribArray(6);
-            this->glVertexAttribDivisor(6, 1);
 
 
         // TBO for Vertices
@@ -1049,6 +1007,24 @@ void View::InitializeStaticBuffers()
         this->glBindTexture(GL_TEXTURE_BUFFER, m_static_matrixIndexTexture);
             this->glTexBuffer(GL_TEXTURE_BUFFER, GL_R32I, m_static_model_matrix_vbo);
             this->glBindTexture(GL_TEXTURE_BUFFER, 0);
+
+        // TBO for Edge Data Int
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_static_edge_data_int_vbo);
+            this->glBufferData(GL_TEXTURE_BUFFER, numOfEdges * sizeof(EdgeDataInt), NULL, GL_STATIC_DRAW);
+        this->glBindBuffer(GL_TEXTURE_BUFFER, 0);
+
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_static_edgeDataIntTexture);
+            this->glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32I, m_static_edge_data_int_vbo);
+        this->glBindTexture(GL_TEXTURE_BUFFER, 0);
+
+        // TBO for Edge Data Float
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_static_edge_data_float_vbo);
+            this->glBufferData(GL_TEXTURE_BUFFER, numOfEdges * sizeof(EdgeDataFloat), NULL, GL_STATIC_DRAW);
+        this->glBindBuffer(GL_TEXTURE_BUFFER, 0);
+
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_static_edgeDataFloatTexture);
+            this->glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, m_static_edge_data_float_vbo);
+        this->glBindTexture(GL_TEXTURE_BUFFER, 0);
     this->glBindVertexArray(0);
 
 
@@ -1072,6 +1048,14 @@ void View::InitializeStaticBuffers()
     // For Model Matrix Indices
     this->glActiveTexture(GL_TEXTURE4);
         this->glBindTexture(GL_TEXTURE_BUFFER, m_static_matrixIndexTexture);
+
+    // For Edge Data Int
+    this->glActiveTexture(GL_TEXTURE8);
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_static_edgeDataIntTexture);
+
+    // For Edge Data Float
+    this->glActiveTexture(GL_TEXTURE9);
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_static_edgeDataFloatTexture);
 }
 
 void View::InitializeDynamicBuffers()
@@ -1080,6 +1064,7 @@ void View::InitializeDynamicBuffers()
     int numOfVertices = 100000;
     int numOfIndices = 100000;
     int numOfEdges = 100000;
+    int numOfEdgeIndices = 100000;
     int numOfModelMatrices = 1000;
     int numOfModelMatrixIndices = 100000;
     std::array<float, 4> corners = {-1.0f, 1.0f, -1.0f, 1.0f};
@@ -1159,46 +1144,11 @@ void View::InitializeDynamicBuffers()
             this->glEnableVertexAttribArray(0);
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_indices_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(EdgeIndex) * numOfEdges, NULL, GL_STREAM_DRAW);
+            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgeIndices, NULL, GL_STREAM_DRAW);
             // edges
-            this->glVertexAttribIPointer(1, 2, GL_INT, sizeof(EdgeIndex), (void*)0);
+            this->glVertexAttribIPointer(1, 2, GL_INT, sizeof(int), (void*)0);
             this->glEnableVertexAttribArray(1);
             this->glVertexAttribDivisor(1, 1);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_width_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdges, NULL, GL_STREAM_DRAW);
-            // edge width
-            this->glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-            this->glEnableVertexAttribArray(2);
-            this->glVertexAttribDivisor(2, 1);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_materialIndex_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdges, NULL, GL_STREAM_DRAW);
-            // edge material index
-            this->glVertexAttribIPointer(3, 1, GL_INT, sizeof(int), (void*)0);
-            this->glEnableVertexAttribArray(3);
-            this->glVertexAttribDivisor(3, 1);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_dashLength_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdges, NULL, GL_STREAM_DRAW);
-            // edge dash length
-            this->glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-            this->glEnableVertexAttribArray(4);
-            this->glVertexAttribDivisor(4, 1);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_gapLength_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numOfEdges, NULL, GL_STREAM_DRAW);
-            // edge gap length
-            this->glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-            this->glEnableVertexAttribArray(5);
-            this->glVertexAttribDivisor(5, 1);
-
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_dynamic_edge_dash_vbo);
-            this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdges, NULL, GL_STREAM_DRAW);
-            // edge dash
-            this->glVertexAttribIPointer(6, 1, GL_INT, sizeof(int), (void*)0);
-            this->glEnableVertexAttribArray(6);
-            this->glVertexAttribDivisor(6, 1);
 
 
         // TBO for Vertices
@@ -1209,6 +1159,24 @@ void View::InitializeDynamicBuffers()
         // TBO for Matrix Index
         this->glBindTexture(GL_TEXTURE_BUFFER, m_dynamic_matrixIndexTexture);
             this->glTexBuffer(GL_TEXTURE_BUFFER, GL_R32I, m_dynamic_model_matrix_vbo);
+        this->glBindTexture(GL_TEXTURE_BUFFER, 0);
+
+        // TBO for Edge Data Int
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_dynamic_edge_data_int_vbo);
+            this->glBufferData(GL_TEXTURE_BUFFER, numOfEdges * sizeof(EdgeDataInt), NULL, GL_STREAM_DRAW);
+        this->glBindBuffer(GL_TEXTURE_BUFFER, 0);
+
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_dynamic_edgeDataIntTexture);
+            this->glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, m_dynamic_edge_data_int_vbo);
+        this->glBindTexture(GL_TEXTURE_BUFFER, 0);
+
+        // TBO for Edge Data Float
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_dynamic_edge_data_float_vbo);
+            this->glBufferData(GL_TEXTURE_BUFFER, numOfEdges * sizeof(EdgeDataFloat), NULL, GL_STREAM_DRAW);
+        this->glBindBuffer(GL_TEXTURE_BUFFER, 0);
+
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_dynamic_edgeDataFloatTexture);
+            this->glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, m_dynamic_edge_data_float_vbo);
         this->glBindTexture(GL_TEXTURE_BUFFER, 0);
     this->glBindVertexArray(0);
 
@@ -1226,6 +1194,14 @@ void View::InitializeDynamicBuffers()
     // For Model Matrix Indices
     this->glActiveTexture(GL_TEXTURE7);
         this->glBindTexture(GL_TEXTURE_BUFFER, m_dynamic_matrixIndexTexture);
+
+    // For Edge Data Int
+    this->glActiveTexture(GL_TEXTURE10);
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_dynamic_edgeDataIntTexture);
+
+    // For Edge Data Float
+    this->glActiveTexture(GL_TEXTURE11);
+        this->glBindTexture(GL_TEXTURE_BUFFER, m_dynamic_edgeDataFloatTexture);
 }
 
 View::~View()
@@ -1242,19 +1218,19 @@ View::~View()
 
     this->glDeleteBuffers(1, &m_static_corner_vbo);
     this->glDeleteBuffers(1, &m_static_edge_indices_vbo);
-    this->glDeleteBuffers(1, &m_static_edge_width_vbo);
-    this->glDeleteBuffers(1, &m_static_edge_dashLength_vbo);
-    this->glDeleteBuffers(1, &m_static_edge_gapLength_vbo);
-    this->glDeleteBuffers(1, &m_static_edge_dash_vbo);
-    this->glDeleteBuffers(1, &m_static_edge_materialIndex_vbo);
+    this->glDeleteBuffers(1, &m_static_edge_data_int_vbo);
+    this->glDeleteBuffers(1, &m_static_edge_data_float_vbo);
 
     this->glDeleteBuffers(1, &m_static_ibo);
     this->glDeleteBuffers(1, &m_static_border_ibo);
     this->glDeleteBuffers(1, &m_static_matrix_tbo);
+    this->glDeleteBuffers(1, &m_static_model_matrix_vbo);
+
     this->glDeleteTextures(1, &m_static_matrixTexture);
     this->glDeleteTextures(1, &m_static_verticesTexture);
     this->glDeleteTextures(1, &m_static_matrixIndexTexture);
-    this->glDeleteBuffers(1, &m_static_model_matrix_vbo);
+    this->glDeleteTextures(1, &m_static_edgeDataIntTexture);
+    this->glDeleteTextures(1, &m_static_edgeDataFloatTexture);
 
 
     /*
@@ -1268,19 +1244,19 @@ View::~View()
 
     this->glDeleteBuffers(1, &m_dynamic_corner_vbo);
     this->glDeleteBuffers(1, &m_dynamic_edge_indices_vbo);
-    this->glDeleteBuffers(1, &m_dynamic_edge_width_vbo);
-    this->glDeleteBuffers(1, &m_dynamic_edge_dashLength_vbo);
-    this->glDeleteBuffers(1, &m_dynamic_edge_gapLength_vbo);
-    this->glDeleteBuffers(1, &m_dynamic_edge_dash_vbo);
-    this->glDeleteBuffers(1, &m_dynamic_edge_materialIndex_vbo);
+    this->glDeleteBuffers(1, &m_dynamic_edge_data_int_vbo);
+    this->glDeleteBuffers(1, &m_dynamic_edge_data_float_vbo);
 
     this->glDeleteBuffers(1, &m_dynamic_ibo);
     this->glDeleteBuffers(1, &m_dynamic_border_ibo);
     this->glDeleteBuffers(1, &m_dynamic_matrix_tbo);
+    this->glDeleteBuffers(1, &m_dynamic_model_matrix_vbo);
+
     this->glDeleteTextures(1, &m_dynamic_matrixTexture);
     this->glDeleteTextures(1, &m_dynamic_verticesTexture);
     this->glDeleteTextures(1, &m_dynamic_matrixIndexTexture);
-    this->glDeleteBuffers(1, &m_dynamic_model_matrix_vbo);
+    this->glDeleteTextures(1, &m_dynamic_edgeDataIntTexture);
+    this->glDeleteTextures(1, &m_dynamic_edgeDataFloatTexture);
 
     /*
         Textures

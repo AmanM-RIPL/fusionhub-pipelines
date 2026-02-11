@@ -83,7 +83,7 @@ void Mesh::AppendGeometry(
 
     for (const int& index: edge_indices)
     {
-        m_edge_indices.push_back({ index[0] + numOfEdges, index[1] + numOfEdges });
+        m_edge_indices.push_back(index + numOfEdges );
     }
 
     for (const EdgeDataInt& edgeData: edge_data_int)
@@ -368,6 +368,11 @@ float *Mesh::getModelMatriciesData()
 unsigned int *Mesh::getIndicesData()
 {
     return m_indices.data();
+}
+
+int *Mesh::getModelMatrixIndicesData()
+{
+    return m_model_matrix_indices.data();
 }
 
 int *Mesh::getEdgeIndicesData()

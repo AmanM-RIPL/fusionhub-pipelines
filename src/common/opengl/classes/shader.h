@@ -45,6 +45,8 @@ public:
     GLuint getViewPortId();
     GLuint getVerticesId();
     GLuint getModelMatrixIndexBufferId();
+    GLuint getEdgeDataIntId();
+    GLuint getEdgeDataFloatId();
 
     void SetShaderType(ShaderType value);
 
@@ -54,7 +56,8 @@ private:
         m_pickColorId, m_viewPositionId,
         m_lightPositionId, m_lightAmbientId, m_lightDiffuseId, m_lightSpecularId,
         m_modelMatrixBufferId, m_materialBufferId,
-        m_viewportId, m_verticesId, m_modelMatrixIndexBufferId; // for edge shader only
+        m_viewportId, m_verticesId, m_modelMatrixIndexBufferId, // for edge shader only
+        m_edge_data_intId, m_edge_data_floatId; // for edge shader only
 
     GLuint m_textureArrayId;
     int m_textureCount = 1;

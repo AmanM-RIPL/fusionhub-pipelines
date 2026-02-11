@@ -66,20 +66,20 @@ private:
 
     GLuint m_static_corner_vbo = 0;
     GLuint m_static_edge_indices_vbo = 0;
-    GLuint m_static_edge_width_vbo = 0;
-    GLuint m_static_edge_dashLength_vbo = 0;
-    GLuint m_static_edge_gapLength_vbo = 0;
-    GLuint m_static_edge_dash_vbo = 0;
-    GLuint m_static_edge_materialIndex_vbo = 0;
+    GLuint m_static_edge_data_int_vbo = 0;
+    GLuint m_static_edge_data_float_vbo = 0;
 
     GLuint m_static_ibo = 0;
     GLuint m_static_border_ibo = 0;
 
     GLuint m_static_matrix_tbo = 0;
     GLuint m_static_model_matrix_vbo = 0;
+
     GLuint m_static_matrixTexture = 0;
     GLuint m_static_verticesTexture = 0;
     GLuint m_static_matrixIndexTexture = 0;
+    GLuint m_static_edgeDataIntTexture = 0;
+    GLuint m_static_edgeDataFloatTexture = 0;
 
 
     /*
@@ -93,11 +93,8 @@ private:
 
     GLuint m_dynamic_corner_vbo = 0;
     GLuint m_dynamic_edge_indices_vbo = 0;
-    GLuint m_dynamic_edge_width_vbo = 0;
-    GLuint m_dynamic_edge_dashLength_vbo = 0;
-    GLuint m_dynamic_edge_gapLength_vbo = 0;
-    GLuint m_dynamic_edge_dash_vbo = 0;
-    GLuint m_dynamic_edge_materialIndex_vbo = 0;
+    GLuint m_dynamic_edge_data_int_vbo = 0;
+    GLuint m_dynamic_edge_data_float_vbo = 0;
 
 
     GLuint m_dynamic_ibo = 0;
@@ -105,9 +102,12 @@ private:
 
     GLuint m_dynamic_matrix_tbo = 0;
     GLuint m_dynamic_model_matrix_vbo = 0;
+
     GLuint m_dynamic_matrixTexture = 0;
     GLuint m_dynamic_verticesTexture = 0;
     GLuint m_dynamic_matrixIndexTexture = 0;
+    GLuint m_dynamic_edgeDataIntTexture = 0;
+    GLuint m_dynamic_edgeDataFloatTexture = 0;
 
     /*
         Texture Buffer Objects (Common)

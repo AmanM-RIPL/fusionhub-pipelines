@@ -20,7 +20,7 @@
 using Position = std::array<float, 4>;
 using Normal = std::array<float, 3>;
 using TextureUV = std::array<float, 2>;
-using EdgeIndex = std::array<int, 2>; // EdgeIndex is of the format {0, 1} which means edge b/w 0th Position and 1st Position
+// using EdgeIndex = std::array<int, 2>; // EdgeIndex is of the format {0, 1} which means edge b/w 0th Position and 1st Position
 
 struct EdgeDataInt
 {
