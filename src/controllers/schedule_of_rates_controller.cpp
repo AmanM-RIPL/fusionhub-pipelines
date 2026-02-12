@@ -51,7 +51,7 @@ void ScheduleOfRatesController::create(const QString &name, const QVariant &pram
     draftEntity.setProject(gProjectId);
     draftEntity.setEntity("ScheduleOfRates");
     draftEntity.setCreatedByUser(gUser->getId());
-    draftEntity.setNextApprovingUser(0);
+    draftEntity.setNextApprovingUser(gUser->getId());
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);
     draftEntity.setChangeHistory(changeHistory);
@@ -66,7 +66,7 @@ void ScheduleOfRatesController::approvedCreate(const QString &name) const
 
     scheduleOfRates.setId(0);
     scheduleOfRates.setGlobalId("123");
-    scheduleOfRates.setApprovalStatus(true);
+    // setApprovalStatus(true);
 
     scheduleOfRates.setScheduleOfRatesName(name);
 
@@ -89,15 +89,21 @@ std::vector<ScheduleOfRates*> ScheduleOfRatesController::getScheduleOfRatesList(
         std::vector<ScheduleOfRates*> scheduleOfRatess;
         for(int i = 0; i < draftEntitys.size(); i++)
         {
+            int draftId = draftEntitys[i]->getId();
             QString  jsonString = draftEntitys[i]->getEntitySchema();
+            QString approvalStatus = draftEntitys[i]->getApprovalStatus();
+            int nextApprovingUser = draftEntitys[i]->getNextApprovingUser();
+            int createdByUser = draftEntitys[i]->getCreatedByUser();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
             if (!jsonDoc.isNull() && jsonDoc.isObject())
             {
                 auto scheduleOfRates = new ScheduleOfRates();
                 QJsonObject jsonObj = jsonDoc.object();
-                scheduleOfRates->setId(i + 1);
+                scheduleOfRates->setId(draftId);
                 scheduleOfRates->setGlobalId("123");
-                scheduleOfRates->setApprovalStatus(true);
+                scheduleOfRates->setApprovalStatus(approvalStatus);
+                scheduleOfRates->setCreatedByUser(createdByUser);
+                scheduleOfRates->setNextApprovingUser(nextApprovingUser);
 
                 scheduleOfRates->setScheduleOfRatesName(jsonObj["scheduleOfRatesName"].toString());
                 scheduleOfRatess.push_back(scheduleOfRates);

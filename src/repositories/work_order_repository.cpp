@@ -35,7 +35,7 @@ WorkOrder* WorkOrderRepository::mapFromQueryQML(const QSqlQuery& query, QObject*
     auto workOrder = new WorkOrder(parent);
     workOrder->setId(query.value("id").toInt());
     workOrder->setGlobalId(query.value("global_id").toString());
-    workOrder->setApprovalStatus(query.value("approval_status").toBool());
+    workOrder->setApprovalStatus(query.value("approval_status").toString());
     workOrder->setWorkOrderName(query.value("description").toString());
     workOrder->setVendorId(query.value("vendor_id").toInt());
 

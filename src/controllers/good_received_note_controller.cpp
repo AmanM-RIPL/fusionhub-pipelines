@@ -15,19 +15,6 @@ GoodReceivedNoteController::GoodReceivedNoteController(QObject *parent)
 
 void GoodReceivedNoteController::create(const int &purchaseOrderLineId, const int &quantity ) const
 {
-    // GoodReceivedNote goodReceivedNote;
-
-    // qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
-    // goodReceivedNote.setId(id_in_milliseconds);
-    // goodReceivedNote.setGlobalId("123");
-    // goodReceivedNote.setApprovalStatus(true);
-    // goodReceivedNote.setQuantity(quantity);
-    // goodReceivedNote.setPurchaseOrderLineId(purchaseOrderLineId);
-
-    // m_goodReceivedNoteRepository->saveQML(&goodReceivedNote);
-
-    /***********Start of DraftEntity******************/
-
     QJsonObject jsonObject;
     jsonObject["quantity"] = quantity;
     jsonObject["purchaseOrderLineId"] = purchaseOrderLineId;
@@ -61,7 +48,7 @@ void GoodReceivedNoteController::create(const int &purchaseOrderLineId, const in
     draftEntity.setEntity("GoodReceivedNote");
     //draftEntity.setCreatedByUser(gUser->getUserId());
     draftEntity.setCreatedByUser(gUser->getId());
-    draftEntity.setNextApprovingUser(0);
+    draftEntity.setNextApprovingUser(gUser->getId());
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);
     draftEntity.setChangeHistory(changeHistory);
@@ -76,7 +63,7 @@ void GoodReceivedNoteController::approvedCreate(const int &purchaseOrderLineId, 
     qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
     goodReceivedNote.setId(id_in_milliseconds);
     goodReceivedNote.setGlobalId("123");
-    goodReceivedNote.setApprovalStatus(true);
+    //goodReceivedNote.setApprovalStatus();
     goodReceivedNote.setQuantity(quantity);
     goodReceivedNote.setPurchaseOrderLineId(purchaseOrderLineId);
 
@@ -86,19 +73,6 @@ void GoodReceivedNoteController::approvedCreate(const int &purchaseOrderLineId, 
 
 void GoodReceivedNoteController::update(int id, const int &purchaseOrderLineId, const int &quantity ) const
 {
-    // GoodReceivedNote goodReceivedNote;
-
-    // qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
-    // goodReceivedNote.setId(id_in_milliseconds);
-    // goodReceivedNote.setGlobalId("123");
-    // goodReceivedNote.setApprovalStatus(true);
-    // goodReceivedNote.setQuantity(quantity);
-    // goodReceivedNote.setPurchaseOrderLineId(purchaseOrderLineId);
-
-    // m_goodReceivedNoteRepository->saveQML(&goodReceivedNote);
-
-    /***********Start of DraftEntity******************/
-
     QJsonObject jsonObject;
     jsonObject["id"] = id;
     jsonObject["quantity"] = quantity;
@@ -160,6 +134,9 @@ std::vector<GoodReceivedNote*> GoodReceivedNoteController::getGoodReceivedNoteLi
         for(int i = 0; i < draftEntities.size(); i++)
         {
             int draftId = draftEntities[i]->getId();
+            QString approvalStatus = draftEntities[i]->getApprovalStatus();
+            int nextApprovingUser = draftEntities[i]->getNextApprovingUser();
+            int createdByUser = draftEntities[i]->getCreatedByUser();
             QString  jsonString = draftEntities[i]->getEntitySchema();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
 
@@ -175,6 +152,9 @@ std::vector<GoodReceivedNote*> GoodReceivedNoteController::getGoodReceivedNoteLi
                 goodReceivedNote->setQuantity(quantity);
                 goodReceivedNote->setId(draftId);
                 goodReceivedNote->setGlobalId("123");
+                goodReceivedNote->setApprovalStatus(approvalStatus);
+                goodReceivedNote->setCreatedByUser(createdByUser);
+                goodReceivedNote->setNextApprovingUser(nextApprovingUser);
 
                 foreach(const PurchaseOrderLine *po, vecPurchaseOrderLine)
                 {

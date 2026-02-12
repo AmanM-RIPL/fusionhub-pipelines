@@ -43,7 +43,7 @@ DraftEntityController::DraftEntityController(QObject *parent)
         m_draftEntityRepository->approveQML(&draftEntity);
     }
 
-    void DraftEntityController::cancel(int id, const QString &cancellationReason) const
+    void DraftEntityController::cancel(int id, const QString &reason) const
     {
         DraftEntity draftEntity;
         draftEntity.setId(id);
@@ -57,8 +57,8 @@ DraftEntityController::DraftEntityController(QObject *parent)
         QJsonObject jsonObjectChangeHistory;
         jsonObjectChangeHistory["user"] = gUser->getId();
         jsonObjectChangeHistory["timestamp"] = isoDateTimeString;
-        jsonObjectChangeHistory["changeType"] = "cancel";
-        jsonObjectChangeHistory["approvalHistory"] = cancellationReason;
+        jsonObjectChangeHistory["changeType"] = "Cancel";
+        jsonObjectChangeHistory["approvalHistory"] = reason;
 
         QJsonDocument jsonDocChangeHistory(jsonObjectChangeHistory);
         QString changeHistory = jsonDocChangeHistory.toJson(QJsonDocument::Indented);
@@ -67,7 +67,7 @@ DraftEntityController::DraftEntityController(QObject *parent)
 
         draftEntity.setChangeHistory(changeHistory);
         draftEntity.setCreatedOn(cancelledOn);
-        draftEntity.setApprovalStatus("cancelled");  // Update status to cancelled
+        draftEntity.setApprovalStatus("Cancelled");  // Update status to cancelled
         // draftEntity.setCancelledByUser(gUser->getId());
 
         m_draftEntityRepository->cancelQML(&draftEntity);

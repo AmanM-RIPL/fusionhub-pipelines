@@ -62,7 +62,7 @@ void WorkBillingController::approvedCreate(const QString &workBillingName, const
     qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
     workBilling.setId(id_in_milliseconds);
     workBilling.setGlobalId("123");
-    workBilling.setApprovalStatus(true);
+   // workBilling.setApprovalStatus(true);
     workBilling.setWorkBillingName(workBillingName);
     workBilling.setWorkOrderId(workOrderId);
 
@@ -119,6 +119,9 @@ std::vector<WorkBilling*> WorkBillingController::getWorkBillingList(bool isAppro
         {
             QString  jsonString = draftEntitys[i]->getEntitySchema();
             int draftId = draftEntitys[i]->getId();
+            QString approvalStatus = draftEntitys[i]->getApprovalStatus();
+            int nextApprovingUser = draftEntitys[i]->getNextApprovingUser();
+            int createdByUser = draftEntitys[i]->getCreatedByUser();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
             if (!jsonDoc.isNull() && jsonDoc.isObject())
             {
@@ -126,7 +129,9 @@ std::vector<WorkBilling*> WorkBillingController::getWorkBillingList(bool isAppro
                 QJsonObject jsonObj = jsonDoc.object();
                 workBilling->setId(draftId);
                 workBilling->setGlobalId("123");
-                workBilling->setApprovalStatus(true);
+                workBilling->setApprovalStatus(approvalStatus);
+                workBilling->setCreatedByUser(createdByUser);
+                workBilling->setNextApprovingUser(nextApprovingUser);
                 workBilling->setWorkOrderId(jsonObj["workOrderId"].toInt());
 
                 int workOrderId = workBilling->getWorkOrderId();

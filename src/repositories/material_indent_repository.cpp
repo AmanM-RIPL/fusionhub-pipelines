@@ -42,7 +42,7 @@ MaterialIndent* MaterialIndentRepository::mapFromQueryQML(const QSqlQuery& query
     auto materialIndent = new MaterialIndent(parent);
     materialIndent->setId(query.value("id").toInt());
     materialIndent->setGlobalId(query.value("global_id").toString());
-    materialIndent->setApprovalStatus(query.value("approval_status").toBool());
+    materialIndent->setApprovalStatus(query.value("approval_status").toString());
     materialIndent->setQuantity(query.value("total_quantity").toDouble());
     materialIndent->setMaterialId(query.value("material_id").toInt());
     materialIndent->setTaskId(query.value("task_id").toInt());

@@ -92,9 +92,12 @@ QtObject {
     }
 
     function validatePositiveDouble(value) {
+        // if (value === "" || value === null || value === undefined) {
+        //     return validationResult(true)
+        // }
         if (value === "" || value === null || value === undefined) {
-            return validationResult(true)  // Optional field
-        }
+                return validationResult(false, "Must be not empty")
+            }
         var num = parseFloat(value)
         if (isNaN(num)) {
             return validationResult(false, "Must be a valid number")
@@ -105,9 +108,17 @@ QtObject {
         return validationResult(true)
     }
 
+    // function validateInteger(value) {
+    //     if (!/^-?\d+$/.test(value)) {
+    //         return validationResult(false, "Must be an integer")
+    //     }
+
+    //     return validationResult(true)
+    // }
+
     function validateInteger(value) {
-        var num = parseFloat(value)
-        if (isNaN(num) || !Number.isInteger(num)) {
+        const num = Number(value)
+        if (!Number.isInteger(num) || String(num) !== value) {
             return validationResult(false, "Must be an integer")
         }
         return validationResult(true)
