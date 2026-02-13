@@ -115,6 +115,25 @@ void Mesh::Copy(Mesh *mesh)
     );
 }
 
+void Mesh::OffsetVerticesAndEdges(int numOfVertices, int numOfEdges)
+{
+    for (unsigned int& index: m_indices)
+    {
+        index = index + numOfVertices;
+    }
+
+    for (int& index: m_edge_indices)
+    {
+        index = index + numOfEdges;
+    }
+
+    for (EdgeDataInt& edgeData: m_edge_data_int)
+    {
+        edgeData.start_vertex = edgeData.start_vertex + numOfVertices;
+        edgeData.end_vertex = edgeData.end_vertex + numOfVertices;
+    }
+}
+
 void Mesh::Combine(Mesh *combinedMesh, QList<Mesh *> meshList)
 {
     std::vector<Position> verticies_position;

@@ -73,6 +73,7 @@ public:
     );
 
     void Copy(Mesh* mesh);
+    void OffsetVerticesAndEdges(int numOfVertices, int numOfEdges);
 
     static void Combine(Mesh* combinedMesh, QList<Mesh*> meshList);
     static void GenerateBaseSurface(Mesh* mesh);
@@ -153,7 +154,6 @@ private:
     unsigned int m_numOfIndices;
     unsigned int m_numOfEdgeIndices;
     unsigned int m_numOfModelMatrices;
-
 
     unsigned int m_bimElementId = 1; // default value is 1
     QMatrix4x4 m_modelMatrix; // this is for the individual mesh
