@@ -31,7 +31,7 @@ ScheduleSetup* ScheduleSetupRepository::mapFromQueryQML(const QSqlQuery& query, 
     auto scheduleSetup = new ScheduleSetup(parent);
     scheduleSetup->setId(query.value("id").toInt());
     scheduleSetup->setGlobalId(query.value("global_id").toString());
-    scheduleSetup->setApprovalStatus(query.value("approval_status").toBool());
+    scheduleSetup->setApprovalStatus(query.value("approval_status").toString());
     scheduleSetup->setScheduleSetupName(query.value("schedule_setup_name").toString());
     scheduleSetup->setDescription(query.value("description").toString());
     scheduleSetup->setCostParameter(query.value("cost_parameter").toString());

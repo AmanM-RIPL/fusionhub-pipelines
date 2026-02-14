@@ -15,11 +15,12 @@ class ScheduleOfRates: public QObject
     Q_PROPERTY(int createdByUser READ getCreatedByUser WRITE setCreatedByUser NOTIFY createdByUserChanged)
     Q_PROPERTY(QString globalId READ getGlobalId WRITE setGlobalId NOTIFY globalIdChanged)
     Q_PROPERTY(QString scheduleOfRatesName READ getScheduleOfRatesName WRITE setScheduleOfRatesName NOTIFY scheduleOfRatesNameChanged)
+    Q_PROPERTY(QList<QObject*> scheduleOfRatesLines READ getScheduleOfRatesLines WRITE setScheduleOfRatesLines NOTIFY scheduleOfRatesLinesChanged)
 
 public:
     explicit ScheduleOfRates(QObject* parent = nullptr): QObject(parent) {}
     ScheduleOfRates(int id, const QString& globalId, const QString& approvalStatus, int nextApprovingUser, int createdByUser,
-             const QString& scheduleOfRatesName, QObject* parent = nullptr);
+             const QString& scheduleOfRatesName,const QList<QObject*>& scheduleOfRatesLines, QObject* parent = nullptr);
 
     int getId() const { return id; }
     QString getGlobalId() const { return globalId; }
@@ -27,6 +28,8 @@ public:
     int getNextApprovingUser() const { return nextApprovingUser; }
     int getCreatedByUser() const { return createdByUser; }
     QString getScheduleOfRatesName() const { return scheduleOfRatesName; }
+    QList<QObject*> getScheduleOfRatesLines() const { return scheduleOfRatesLines; }
+
 
     void setId(int id) { this->id = id; }
     void setGlobalId(const QString& globalId) { this->globalId = globalId; }
@@ -34,6 +37,7 @@ public:
     void setNextApprovingUser(int nextApprovingUser) { this->nextApprovingUser = nextApprovingUser; }
     void setCreatedByUser(int createdByUser) { this->createdByUser = createdByUser; }
     void setScheduleOfRatesName(const QString& scheduleOfRatesName) { this->scheduleOfRatesName = scheduleOfRatesName; }
+    void setScheduleOfRatesLines(const QList<QObject*>& scheduleOfRatesLines) { this->scheduleOfRatesLines = scheduleOfRatesLines; }
 
 signals:
     void globalIdChanged();
@@ -41,6 +45,7 @@ signals:
     void nextApprovingUserChanged();
     void createdByUserChanged();
     void scheduleOfRatesNameChanged();
+    void scheduleOfRatesLinesChanged();
 
 
 private:
@@ -50,6 +55,7 @@ private:
     int nextApprovingUser = 0;
     int createdByUser = 0;
     QString scheduleOfRatesName;
+    QList<QObject*> scheduleOfRatesLines;
 };
 
 Q_DECLARE_METATYPE(ScheduleOfRates)

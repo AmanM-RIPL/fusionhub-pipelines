@@ -990,6 +990,8 @@ Column {
 
     // Fill edit popup with selected data
     function fillPopup() {
+
+        console.log("selectedData===",JSON.stringify(selectedData))
         if (!selectedData)
             return
 
@@ -1003,8 +1005,10 @@ Column {
         // Load data map for the selected schedule of rates
         if (selectedData.dataMap) {
             dataMap = selectedData.dataMap
+            console.log("dataMap==",JSON.stringify(dataMap))
             var key = Object.keys(dataMap)[0]
             if (key) {
+                console.log("dataList==",JSON.stringify(dataList))
                 dataList = dataMap[key] || []
             }
         }
