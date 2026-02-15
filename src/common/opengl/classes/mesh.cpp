@@ -115,7 +115,7 @@ void Mesh::Copy(Mesh *mesh)
     );
 }
 
-void Mesh::OffsetVerticesAndEdges(int numOfVertices, int numOfEdges)
+void Mesh::OffsetMeshData(int numOfVertices, int numOfEdges, int numOfModelMatrices)
 {
     for (unsigned int& index: m_indices)
     {
@@ -132,6 +132,24 @@ void Mesh::OffsetVerticesAndEdges(int numOfVertices, int numOfEdges)
         edgeData.start_vertex = edgeData.start_vertex + numOfVertices;
         edgeData.end_vertex = edgeData.end_vertex + numOfVertices;
     }
+
+    std::vector<int> model_matrix_indices;
+    std::vector<std::array<float, 4>> pickColor_array;
+
+    int modelMatrixIndex = m_modelMatrix.isIdentity() ? 0 : numOfModelMatrices;
+
+    unsigned char r,g,b;
+    encodeIdToColor(getBIMElementId(), r,g,b);
+    std::array<float, 4> pickColor = { r/255.0f, g/255.0f, b/255.0f, 1.0f };
+
+    for (Position meshVertex: m_verticies_position)
+    {
+        model_matrix_indices.push_back(modelMatrixIndex);
+        pickColor_array.push_back(pickColor);
+    }
+
+    SetModelMatrixIndices(model_matrix_indices);
+    SetPickColorArray(pickColor_array);
 }
 
 void Mesh::Combine(Mesh *combinedMesh, QList<Mesh *> meshList)
@@ -337,6 +355,16 @@ std::vector<int> Mesh::getVerticiesTextureIndex()
 std::vector<unsigned int> Mesh::getIndices()
 {
     return m_indices;
+}
+
+std::vector<int> Mesh::getModelMatrixIndices()
+{
+    return m_model_matrix_indices;
+}
+
+std::vector<std::array<float, 4> > Mesh::getPickColorArray()
+{
+    return m_pickColor_array;
 }
 
 std::vector<int> Mesh::getEdgeIndices()

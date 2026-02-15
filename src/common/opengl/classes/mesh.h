@@ -73,7 +73,7 @@ public:
     );
 
     void Copy(Mesh* mesh);
-    void OffsetVerticesAndEdges(int numOfVertices, int numOfEdges);
+    void OffsetMeshData(int numOfVertices, int numOfEdges, int numOfModelMatrices);
 
     static void Combine(Mesh* combinedMesh, QList<Mesh*> meshList);
     static void GenerateBaseSurface(Mesh* mesh);
@@ -89,6 +89,8 @@ public:
 
     std::vector<int> getEdgeIndices();
     std::vector<unsigned int> getIndices();
+    std::vector<int> getModelMatrixIndices();
+    std::vector<std::array<float, 4>> getPickColorArray();
 
 
     Position* getVerticiesPositionData();

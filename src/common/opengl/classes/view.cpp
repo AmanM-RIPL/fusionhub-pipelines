@@ -16,35 +16,35 @@ void View::Initialize()
     InitializeDynamicBuffers();
 }
 
-void View::LoadStaticMeshData(QList<Mesh*>& meshList)
+void View::LoadStaticMeshData(MeshMap* meshMap)
 {
     delete combinedMesh;
-    combinedMesh = new Mesh();
-    Mesh::Combine(combinedMesh, meshList);
+    combinedMesh = new CombinedMesh();
+    meshMap->SyncDataWithOpenGL(combinedMesh);
 
-    Position* vertices_position = combinedMesh->getVerticiesPositionData();
-    Normal* vertices_normal = combinedMesh->getVerticiesNormalData();
-    TextureUV* vertices_textureuv = combinedMesh->getVerticiesTextureUVData();
-    int* vertices_materialIndex = combinedMesh->getVerticiesMaterialIndexData();
-    int* vertices_textureIndex = combinedMesh->getVerticiesTextureIndexData();
+    std::vector<Position>& vertices_position = combinedMesh->m_verticies_position;
+    std::vector<Normal>& vertices_normal = combinedMesh->m_verticies_normal;
+    std::vector<TextureUV>& vertices_textureuv = combinedMesh->m_verticies_textureuv;
+    std::vector<int>& vertices_materialIndex = combinedMesh->m_verticies_materialIndex;
+    std::vector<int>& vertices_textureIndex = combinedMesh->m_verticies_textureIndex;
 
     std::array<float, 4> corners = {-1.0f, 1.0f, -1.0f, 1.0f};
-    EdgeDataInt* edge_data_int = combinedMesh->getEdgeDataIntData();
-    EdgeDataFloat* edge_data_float = combinedMesh->getEdgeDataFloatData();
+    std::vector<EdgeDataInt>& edge_data_int = combinedMesh->m_edge_data_int;
+    std::vector<EdgeDataFloat>& edge_data_float = combinedMesh->m_edge_data_float;
 
-    float* modelMatrices = combinedMesh->getModelMatriciesData();
-    unsigned int* indices = combinedMesh->getIndicesData();
-    int* edge_indices = combinedMesh->getEdgeIndicesData();
+    std::vector<float>& modelMatrices = combinedMesh->m_model_matrix;
 
-    int* modelMatrixIndices = combinedMesh->getModelMatrixIndicesData();
-    std::array<float, 4>* pickColors = combinedMesh->getPickColorData();
+    std::vector<int>& modelMatrixIndices = combinedMesh->m_model_matrix_indices;
+    std::vector<std::array<float, 4>>& pickColors = combinedMesh->m_pickColor_array;
 
-    unsigned int numOfVertices = combinedMesh->getNumOfVertices();
-    unsigned int numOfIndices = combinedMesh->getNumOfIndices();
-    unsigned int numOfEdges = combinedMesh->getNumOfEdges();
-    unsigned int numOfEdgeIndices = combinedMesh->getNumOfEdgeIndices();
-    unsigned int numOfModelMatrices = combinedMesh->getNumOfModelMatricies();
-    unsigned int numOfModelMatrixIndices = combinedMesh->getNumOfModelMatrixIndices();
+    unsigned int numOfVertices = combinedMesh->m_numOfVertices;
+    unsigned int numOfEdges = combinedMesh->m_numOfEdges;
+    unsigned int numOfModelMatrices = combinedMesh->m_numOfModelMatrices;
+    unsigned int numOfModelMatrixIndices = numOfVertices;
+
+    unsigned int verticesOffset = combinedMesh->m_verticesOffset;
+    unsigned int edgesOffset = combinedMesh->m_edgesOffset;
+    unsigned int modelMatricesOffset = combinedMesh->m_modelMatricesOffset;
 
     // for (int i = 0; i < numOfModelMatrixIndices; i++)
     // {
@@ -56,14 +56,8 @@ void View::LoadStaticMeshData(QList<Mesh*>& meshList)
     //     qInfo() << "Edges: " << edge_indices[i][0] << ", " << edge_indices[i][1];
     // }
 
-    // Initializing the vao, vbo, and ibo
-    m_static_indexCount = numOfIndices;
-    m_static_borderIndexCount = numOfEdgeIndices;
-
     int numOfVerticesDefault = 100000;
-    int numOfIndicesDefault = 100000;
     int numOfEdgesDefault = 100000;
-    int numOfEdgeIndicesDefault = 100000;
     int numOfModelMatricesDefault = 1000;
     int numOfModelMatrixIndicesDefault = 100000;
 
@@ -106,8 +100,8 @@ void View::LoadStaticMeshData(QList<Mesh*>& meshList)
 
 
         //TRIANGLE IBO
-        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
-        this->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * numOfIndicesDefault, NULL, GL_STATIC_DRAW);
+        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
+        // this->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * numOfIndicesDefault, NULL, GL_STATIC_DRAW);
 
         // TBO for Model Matrix
         this->glBindBuffer(GL_TEXTURE_BUFFER, m_static_matrix_tbo);
@@ -118,31 +112,31 @@ void View::LoadStaticMeshData(QList<Mesh*>& meshList)
         // Reloading Data
         //VBO
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_position_vbo);
-            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Position) * numOfVertices, vertices_position);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Position) * numOfVertices, vertices_position.data());
 
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_normal_vbo);
-            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Normal) * numOfVertices, vertices_normal);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Normal) * numOfVertices, vertices_normal.data());
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_textureuv_vbo);
-            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(TextureUV) * numOfVertices, vertices_textureuv);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(TextureUV) * numOfVertices, vertices_textureuv.data());
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_materialIndex_vbo);
-            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfVertices, vertices_materialIndex);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfVertices, vertices_materialIndex.data());
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_textureIndex_vbo);
-            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfVertices, vertices_textureIndex);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfVertices, vertices_textureIndex.data());
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_static_model_matrix_vbo);
-            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfModelMatrixIndices, modelMatrixIndices);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfModelMatrixIndices, modelMatrixIndices.data());
 
         this->glBindBuffer(GL_ARRAY_BUFFER, m_pick_color_vbo);
-            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(std::array<float, 4>) * numOfVertices, pickColors);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(std::array<float, 4>) * numOfVertices, pickColors.data());
 
 
         //TRIANGLE IBO
-        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
-            this->glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(unsigned int) * numOfIndices, indices);
+        // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
+        //     this->glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(unsigned int) * numOfIndices, indices);
 
         // //LINE IBO
         // this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_border_ibo);
@@ -150,7 +144,7 @@ void View::LoadStaticMeshData(QList<Mesh*>& meshList)
 
         // TBO for Model Matrix
         this->glBindBuffer(GL_TEXTURE_BUFFER, m_static_matrix_tbo);
-            this->glBufferSubData(GL_TEXTURE_BUFFER, 0, numOfModelMatrices * sizeof(float), modelMatrices);
+            this->glBufferSubData(GL_TEXTURE_BUFFER, 0, numOfModelMatrices * sizeof(float), modelMatrices.data());
 
     this->glBindVertexArray(0);
 
@@ -158,8 +152,8 @@ void View::LoadStaticMeshData(QList<Mesh*>& meshList)
     this->glBindVertexArray(m_edge_vao);
         // Buffer Orphaning
         //VBO
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_indices_vbo);
-        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgeIndicesDefault, NULL, GL_STATIC_DRAW);
+        // this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_indices_vbo);
+        // this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgeIndicesDefault, NULL, GL_STATIC_DRAW);
 
         // TBO for Edge Data Int
         this->glBindBuffer(GL_TEXTURE_BUFFER, m_static_edge_data_int_vbo);
@@ -172,16 +166,196 @@ void View::LoadStaticMeshData(QList<Mesh*>& meshList)
 
         // Reloading Data
         //VBO
-        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_indices_vbo);
-            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfEdgeIndices, edge_indices);
+        // this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_indices_vbo);
+        //     this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfEdgeIndices, edge_indices);
 
         // TBO for Edge Data Int
         this->glBindBuffer(GL_TEXTURE_BUFFER, m_static_edge_data_int_vbo);
-            this->glBufferSubData(GL_TEXTURE_BUFFER, 0, numOfEdges * sizeof(EdgeDataInt), edge_data_int);
+            this->glBufferSubData(GL_TEXTURE_BUFFER, 0, numOfEdges * sizeof(EdgeDataInt), edge_data_int.data());
 
         // TBO for Edge Data Float
         this->glBindBuffer(GL_TEXTURE_BUFFER, m_static_edge_data_float_vbo);
-        this->glBufferSubData(GL_TEXTURE_BUFFER, 0, numOfEdges * sizeof(EdgeDataFloat), edge_data_float);
+        this->glBufferSubData(GL_TEXTURE_BUFFER, 0, numOfEdges * sizeof(EdgeDataFloat), edge_data_float.data());
+    this->glBindVertexArray(0);
+
+
+    // update last sync index in MeshMap
+    meshMap->MeshMapHasSynced();
+}
+
+void View::AppendToStaticMeshData(MeshMap* meshMap)
+{
+    delete combinedMesh;
+    combinedMesh = new CombinedMesh();
+    meshMap->SyncDataWithOpenGL(combinedMesh);
+
+    std::vector<Position>& vertices_position = combinedMesh->m_verticies_position;
+    std::vector<Normal>& vertices_normal = combinedMesh->m_verticies_normal;
+    std::vector<TextureUV>& vertices_textureuv = combinedMesh->m_verticies_textureuv;
+    std::vector<int>& vertices_materialIndex = combinedMesh->m_verticies_materialIndex;
+    std::vector<int>& vertices_textureIndex = combinedMesh->m_verticies_textureIndex;
+
+    std::array<float, 4> corners = {-1.0f, 1.0f, -1.0f, 1.0f};
+    std::vector<EdgeDataInt>& edge_data_int = combinedMesh->m_edge_data_int;
+    std::vector<EdgeDataFloat>& edge_data_float = combinedMesh->m_edge_data_float;
+
+    std::vector<float>& modelMatrices = combinedMesh->m_model_matrix;
+
+    std::vector<int>& modelMatrixIndices = combinedMesh->m_model_matrix_indices;
+    std::vector<std::array<float, 4>>& pickColors = combinedMesh->m_pickColor_array;
+
+    unsigned int numOfVertices = combinedMesh->m_numOfVertices;
+    unsigned int numOfEdges = combinedMesh->m_numOfEdges;
+    unsigned int numOfModelMatrices = combinedMesh->m_numOfModelMatrices;
+    unsigned int numOfModelMatrixIndices = numOfVertices;
+
+    unsigned int verticesOffset = combinedMesh->m_verticesOffset;
+    unsigned int edgesOffset = combinedMesh->m_edgesOffset;
+    unsigned int modelMatricesOffset = combinedMesh->m_modelMatricesOffset;
+
+    // for (int i = 0; i < numOfModelMatrixIndices; i++)
+    // {
+    //     qInfo() << "Model Matrix Index: " << modelMatrixIndices[i];
+    // }
+
+    // for (int i = 0; i < numOfEdges; i++)
+    // {
+    //     qInfo() << "Edges: " << edge_indices[i][0] << ", " << edge_indices[i][1];
+    // }
+
+    // for (int i = 0; i < numOfVertices; i++)
+    // {
+    //     Position pos = vertices_position[i];
+    //     qInfo() << "Position: (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")";
+    // }
+
+    // for (int i = 0; i < numOfEdges; i++)
+    // {
+    //     EdgeIndex edge = edge_indices[i];
+    //     qInfo() << "Edge: (" << edge[0] << ", " << edge[1] << ")";
+    // }
+
+    // VAO for Mesh + Mesh Color Picking
+    this->glBindVertexArray(m_vao);
+        // Reloading Data
+        //VBO
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_position_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, sizeof(Position) * verticesOffset, sizeof(Position) * numOfVertices, vertices_position.data());
+
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_normal_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, sizeof(Normal) * verticesOffset, sizeof(Normal) * numOfVertices, vertices_normal.data());
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_textureuv_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, sizeof(TextureUV) * verticesOffset, sizeof(TextureUV) * numOfVertices, vertices_textureuv.data());
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_materialIndex_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, sizeof(int) * verticesOffset, sizeof(int) * numOfVertices, vertices_materialIndex.data());
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_textureIndex_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, sizeof(int) * verticesOffset, sizeof(int) * numOfVertices, vertices_textureIndex.data());
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_model_matrix_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, sizeof(int) * verticesOffset, sizeof(int) * numOfModelMatrixIndices, modelMatrixIndices.data());
+
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_pick_color_vbo);
+        this->glBufferSubData(GL_ARRAY_BUFFER, sizeof(std::array<float, 4>) * verticesOffset, sizeof(std::array<float, 4>) * numOfVertices, pickColors.data());
+
+        // TBO for Model Matrix
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_static_matrix_tbo);
+        this->glBufferSubData(GL_TEXTURE_BUFFER, sizeof(float) * modelMatricesOffset, numOfModelMatrices * sizeof(float), modelMatrices.data());
+
+    this->glBindVertexArray(0);
+
+    // VAO for edge
+    this->glBindVertexArray(m_edge_vao);
+        // Reloading Data
+
+        // TBO for Edge Data Int
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_static_edge_data_int_vbo);
+        this->glBufferSubData(GL_TEXTURE_BUFFER, edgesOffset * sizeof(EdgeDataInt), numOfEdges * sizeof(EdgeDataInt), edge_data_int.data());
+
+        // TBO for Edge Data Float
+        this->glBindBuffer(GL_TEXTURE_BUFFER, m_static_edge_data_float_vbo);
+        this->glBufferSubData(GL_TEXTURE_BUFFER, edgesOffset * sizeof(EdgeDataInt), numOfEdges * sizeof(EdgeDataFloat), edge_data_float.data());
+    this->glBindVertexArray(0);
+
+
+    // update last sync index in MeshMap
+    meshMap->MeshMapHasSynced();
+}
+
+
+void View::LoadStaticIndicesData(MeshMap* meshMap, ViewType view_type)
+{
+    delete combinedIndices;
+    combinedIndices = new CombinedIndices();
+    meshMap->SyncIndicesWithOpenGL(combinedIndices, view_type);
+
+    std::vector<unsigned int>& indices = combinedIndices->m_indices;
+    std::vector<int>& edge_indices = combinedIndices->m_edge_indices;
+
+    unsigned int numOfIndices = combinedIndices->m_numOfIndices;
+    unsigned int numOfEdgeIndices = combinedIndices->m_numOfEdgeIndices;
+
+    // for (int i = 0; i < numOfModelMatrixIndices; i++)
+    // {
+    //     qInfo() << "Model Matrix Index: " << modelMatrixIndices[i];
+    // }
+
+    // for (int i = 0; i < numOfEdges; i++)
+    // {
+    //     qInfo() << "Edges: " << edge_indices[i][0] << ", " << edge_indices[i][1];
+    // }
+
+    // Initializing the vao, vbo, and ibo
+    m_static_indexCount = numOfIndices;
+    m_static_borderIndexCount = numOfEdgeIndices;
+
+    int numOfIndicesDefault = 100000;
+    int numOfEdgeIndicesDefault = 100000;
+
+    // for (int i = 0; i < numOfVertices; i++)
+    // {
+    //     Position pos = vertices_position[i];
+    //     qInfo() << "Position: (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")";
+    // }
+
+    // for (int i = 0; i < numOfEdges; i++)
+    // {
+    //     EdgeIndex edge = edge_indices[i];
+    //     qInfo() << "Edge: (" << edge[0] << ", " << edge[1] << ")";
+    // }
+
+    // VAO for Mesh + Mesh Color Picking
+    this->glBindVertexArray(m_vao);
+        // Buffer Orphaning
+
+        //TRIANGLE IBO
+        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
+        this->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * numOfIndicesDefault, NULL, GL_STATIC_DRAW);
+
+
+        // Reloading Data
+
+        //TRIANGLE IBO
+        this->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_static_ibo);
+            this->glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(unsigned int) * numOfIndices, indices.data());
+
+    this->glBindVertexArray(0);
+
+    // VAO for edge
+    this->glBindVertexArray(m_edge_vao);
+        // Buffer Orphaning
+        //VBO
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_indices_vbo);
+        this->glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numOfEdgeIndicesDefault, NULL, GL_STATIC_DRAW);
+
+
+        // Reloading Data
+        //VBO
+        this->glBindBuffer(GL_ARRAY_BUFFER, m_static_edge_indices_vbo);
+            this->glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(int) * numOfEdgeIndices, edge_indices.data());
     this->glBindVertexArray(0);
 }
 
@@ -1275,4 +1449,5 @@ View::~View()
     this->glDeleteVertexArrays(1, &m_dynamic_edge_vao);
 
     delete combinedMesh;
+    delete combinedIndices;
 }

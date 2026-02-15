@@ -77,6 +77,9 @@ MyGLRenderer::MyGLRenderer()
     // m_mesh->Initialize(verticies, indices, 24, 12);
     // mesh->Copy(m_mesh);
 
+    // initialize MeshMap
+    m_mesh_map = new MeshMap();
+
     // initialize Camera
     m_camera = new Camera();
     m_camera->Initialize(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 0.0f, 1.0f), QVector3D(0.0f, -10.0f, 10.0f), 5.0f, 0.5f);
@@ -128,6 +131,7 @@ MyGLRenderer::~MyGLRenderer()
     //     this->glDeleteRenderbuffers(1, &m_pickDepthBuf);
     // }
 
+    delete m_mesh_map;
     delete editableMesh;
     delete m_camera;
     delete m_shader;
@@ -146,12 +150,6 @@ MyGLRenderer::~MyGLRenderer()
         delete texture;
     }
     m_textureList.clear();
-
-    for (Mesh* mesh: m_meshList)
-    {
-        delete mesh;
-    }
-    m_meshList.clear();
 }
 
 void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
@@ -327,44 +325,8 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         {
             GeometryServiceFactory::updateGeometry(clickedPoint, glItem->editableBimElement, hostElement);
 
-            // //removing old geometry
-            // for (Mesh* mesh: m_meshList)
-            // {
-            //     delete mesh;
-            // }
-            // m_meshList.clear();
-            // m_view->DeleteAllMesh();
-
-            // for (BIMElement* bimElement: glItem->bimElementList)
-            // {
-            //     // adding new geometry
-            //     Mesh* mesh = new Mesh();
-            //     m_meshList.append(mesh);
-            //     // m_view->AddMesh(mesh);
-
-            //     if (glItem->m_viewType == "ModelView")
-            //     {
-            //         GeometryServiceFactory::generateMesh3D(bimElement, mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
-            //     }
-            //     else if (glItem->m_viewType == "PlanView")
-            //     {
-            //         GeometryServiceFactory::generateMesh2D(bimElement, mesh);
-            //     }
-            // }
-
-            // if (glItem->m_viewType == "ModelView")
-            // {
-            //     Mesh* mesh = new Mesh();
-            //     m_meshList.append(mesh);
-            //     // m_view->AddMesh(mesh);
-
-            //     Mesh::GenerateBaseSurface(mesh);
-            // }
-
             // generating mesh for Editable BIMElement
             Mesh* mesh = new Mesh();
-            // m_meshList.append(mesh);
-            // // m_view->AddMesh(mesh);
 
             if (glItem->m_viewType == "ModelView")
             {
@@ -375,9 +337,6 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
                 GeometryServiceFactory::generateMesh2D(glItem->editableBimElement, mesh);
             }
 
-
-            // m_view->BindMeshWithOpenGL();
-            // m_view->LoadStaticMeshData(m_meshList);
             m_view->LoadDynamicMeshData(mesh);
 
             delete mesh;
@@ -407,8 +366,6 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         {
             // generating mesh for Editable BIMElement
             Mesh* mesh = new Mesh();
-            // m_meshList.append(mesh);
-            // m_view->AddMesh(mesh);
 
             if (glItem->m_viewType == "PlanView")
             {
@@ -431,33 +388,29 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
     if (!meshInitialized)
     {
+        // mesh for base surface in model view
+        Mesh* base_surface_mesh = m_mesh_map->GenerateMesh();
+        Mesh::GenerateBaseSurface(base_surface_mesh);
+        m_mesh_map->AddMesh(base_surface_mesh, nullptr, ViewType::MODEL);
+
         for (BIMElement* bimElement: glItem->bimElementList)
         {
-            Mesh* mesh = new Mesh();
-            m_meshList.append(mesh);
-            // m_view->AddMesh(mesh);
+            // mesh for plan view
+            Mesh* plan_mesh = m_mesh_map->GenerateMesh();
+            GeometryServiceFactory::generateMesh2D(bimElement, plan_mesh);
+            m_mesh_map->AddMesh(plan_mesh, bimElement, ViewType::PLAN);
 
-            if (glItem->m_viewType == "ModelView")
-            {
-                GeometryServiceFactory::generateMesh3D(bimElement, mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
-            }
-            else if (glItem->m_viewType == "PlanView")
-            {
-                GeometryServiceFactory::generateMesh2D(bimElement, mesh);
-            }
-        }
-
-        if (glItem->m_viewType == "ModelView")
-        {
-            Mesh* mesh = new Mesh();
-            m_meshList.append(mesh);
-            // m_view->AddMesh(mesh);
-
-            Mesh::GenerateBaseSurface(mesh);
+            // mesh for model view
+            Mesh* model_mesh = m_mesh_map->GenerateMesh();
+            GeometryServiceFactory::generateMesh3D(bimElement, model_mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
+            m_mesh_map->AddMesh(model_mesh, bimElement, ViewType::MODEL);
         }
 
         m_view->Initialize();
-        m_view->LoadStaticMeshData(m_meshList);
+        m_view->LoadStaticMeshData(m_mesh_map);
+
+        ViewType view_type = glItem->m_viewType == "PlanView" ? ViewType::PLAN : ViewType::MODEL;
+        m_view->LoadStaticIndicesData(m_mesh_map, view_type);
 
         meshInitialized = true;
         m_viewType = glItem->m_viewType;
@@ -465,54 +418,42 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
     if (m_viewType != glItem->m_viewType)
     {
-        // removing old geometry
-        for (Mesh* mesh: m_meshList)
-        {
-            delete mesh;
-        }
-        m_meshList.clear();
-        m_view->DeleteAllMesh();
-
-        for (BIMElement* bimElement: glItem->bimElementList)
-        {
-            // adding new geometry
-            Mesh* mesh = new Mesh();
-            m_meshList.append(mesh);
-            // m_view->AddMesh(mesh);
-
-            if (glItem->m_viewType == "ModelView")
-            {
-                GeometryServiceFactory::generateMesh3D(bimElement, mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
-            }
-            else if (glItem->m_viewType == "PlanView")
-            {
-                GeometryServiceFactory::generateMesh2D(bimElement, mesh);
-            }
-        }
-
-        if (glItem->m_viewType == "ModelView")
-        {
-            Mesh* mesh = new Mesh();
-            m_meshList.append(mesh);
-            // m_view->AddMesh(mesh);
-
-            Mesh::GenerateBaseSurface(mesh);
-        }
-
-        m_view->LoadStaticMeshData(m_meshList);
-
         m_viewType = glItem->m_viewType;
 
         if (glItem->m_viewType == "ModelView")
         {
+            m_view->LoadStaticIndicesData(m_mesh_map, ViewType::MODEL);
             m_camera->SetCameraParameters(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 0.0f, 1.0f), QVector3D(0.0f, -10.0f, 10.0f), 5.0f, 0.5f);
         }
         else
         {
+            m_view->LoadStaticIndicesData(m_mesh_map, ViewType::PLAN);
             m_camera->SetCameraParameters(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 1.0f, 0.0f), QVector3D(0.0f, 0.0f, 20.0f), 5.0f, 0.5f);
         }
     }
 
+    if (glItem->bimElementToSync != nullptr)
+    {
+        // mesh for plan view
+        Mesh* plan_mesh = m_mesh_map->GenerateMesh();
+        GeometryServiceFactory::generateMesh2D(glItem->bimElementToSync, plan_mesh);
+        m_mesh_map->AddMesh(plan_mesh, glItem->bimElementToSync, ViewType::PLAN);
+
+        // mesh for model view
+        Mesh* model_mesh = m_mesh_map->GenerateMesh();
+        GeometryServiceFactory::generateMesh3D(glItem->bimElementToSync, model_mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
+        m_mesh_map->AddMesh(model_mesh, glItem->bimElementToSync, ViewType::MODEL);
+
+        m_view->AppendToStaticMeshData(m_mesh_map);
+
+        ViewType view_type = glItem->m_viewType == "PlanView" ? ViewType::PLAN : ViewType::MODEL;
+        m_view->LoadStaticIndicesData(m_mesh_map, view_type);
+
+        m_viewType = glItem->m_viewType;
+
+        // remove bim element from bim element to sync
+        glItem->bimElementToSync = nullptr;
+    }
 }
 
 void MyGLRenderer::update() {
@@ -1207,6 +1148,7 @@ void MyGLItem::updateEditableBimElement(QVariant bimElement)
 void MyGLItem::saveEditableBimElement()
 {
     bimElementList.append(editableBimElement);
+    bimElementToSync = editableBimElement;
 
     // send signal to QML to stop showing helper points
     m_middlePointValue.clear();

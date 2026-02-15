@@ -57,6 +57,7 @@
 #include "Ge/GeTrMeshSimplification.h"
 
 #include "common/opengl/classes/mesh.h"
+#include "common/opengl/classes/mesh_map.h"
 #include "common/opengl/classes/camera.h"
 #include "common/opengl/classes/shader.h"
 #include "common/opengl/classes/view.h"
@@ -123,6 +124,7 @@ public:
 
     QList<BIMElement*> bimElementList;
     BIMElement* editableBimElement = nullptr;
+    BIMElement* bimElementToSync = nullptr; // if not nullptr then we need to use MeshMap.AddMesh();
 
 public slots:
     void cameraMoveUp();
@@ -190,7 +192,7 @@ private:
     bool projectionMatrixInitialized = false;
     bool middlePointRecorded = false;
 
-    QList<Mesh*> m_meshList;
+    MeshMap* m_mesh_map = nullptr;
     Mesh* editableMesh = nullptr;
     Camera* m_camera = nullptr;
     Shader* m_shader = nullptr;

@@ -13,6 +13,7 @@
 #include "shader.h"
 #include "opengl_material.h"
 #include "texture.h"
+#include "mesh_map.h"
 
 class View : public QObject, protected QOpenGLFunctions_3_3_Core
 {
@@ -24,7 +25,9 @@ public:
     void Initialize();
     void Render();
 
-    void LoadStaticMeshData(QList<Mesh*>& meshList);
+    void LoadStaticMeshData(MeshMap* meshMap);
+    void AppendToStaticMeshData(MeshMap* meshMap);
+    void LoadStaticIndicesData(MeshMap* meshMap, ViewType view_type);
     void LoadDynamicMeshData(Mesh* mesh);
     // void UpdateTransformations(); // Update Camera, Light, View, Projection UBO
     // void UpdateStaticMeshData(Mesh* mesh, int meshIndex);
@@ -134,7 +137,8 @@ private:
 
     std::vector<float> materials;
     QList<Texture*> textureList;
-    Mesh* combinedMesh = nullptr; // need to delete it with view only!!
+    CombinedMesh* combinedMesh = nullptr; // need to delete it with view only!!
+    CombinedIndices* combinedIndices = nullptr; // need to delete it with view only!!
 
     int viewportWidth = 0;
     int viewportHeight = 0;

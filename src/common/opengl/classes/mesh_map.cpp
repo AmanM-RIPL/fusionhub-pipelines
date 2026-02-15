@@ -40,25 +40,31 @@ void MeshMap::AddMesh(Mesh *mesh, BIMElement *bim_element, ViewType view_type)
     m_mesh_list.push_back(mesh);
 
     //2. Add to respective map
+    int bimElementId = bim_element == nullptr ? 0 : bim_element->getId();
+
     if (view_type == ViewType::PLAN)
     {
-        m_mesh_map_plan[bim_element->getId()] = mesh;
+        m_mesh_map_plan[bimElementId] = mesh;
     }
     else
     {
-        m_mesh_map_model[bim_element->getId()] = mesh;
+        m_mesh_map_model[bimElementId] = mesh;
     }
 
     //3. Update mesh's indices and edge_indices based on
     //   global indices in MeshMap
-    mesh->OffsetVerticesAndEdges(m_numOfVertices, m_numOfEdges);
+    mesh->OffsetMeshData(m_numOfVertices, m_numOfEdges, m_numOfModelMatrices);
 
     //4. Update indices
     m_numOfVertices = m_numOfVertices + mesh->getNumOfVertices();
-    m_numOfIndices = m_numOfIndices + mesh->getNumOfIndices();
     m_numOfEdges = m_numOfEdges + mesh->getNumOfEdges();
-    m_numOfEdgeIndices = m_numOfEdgeIndices + mesh->getNumOfEdgeIndices();
-    m_numOfModelMatrices = m_numOfModelMatrices + mesh->getNumOfModelMatricies();
+
+    QMatrix4x4 modelMatrix = mesh->getModelMatrix();
+
+    if (!modelMatrix.isIdentity())
+    {
+        m_numOfModelMatrices = m_numOfModelMatrices + 16; // every mesh has only one model matrix of 4x4 floats
+    }
 
     //5. Delete Mesh* from m_generated_mesh_set
     m_generated_mesh_set.erase(mesh);
@@ -75,27 +81,25 @@ void MeshMap::SyncDataWithOpenGL(CombinedMesh *combinedMesh)
     std::vector<EdgeDataInt> edge_data_int;
     std::vector<EdgeDataFloat> edge_data_float;
 
-    std::vector<unsigned int> indices;
-    std::vector<int> edge_indices;
+    // std::vector<unsigned int> indices;
+    // std::vector<int> edge_indices;
     std::vector<std::array<float, 4>> pickColor_array;
 
     std::vector<int> model_matrix_indices;
     std::vector<QMatrix4x4> model_matrix = {};
-    QMatrix4x4 firstModelMatrix;
-    firstModelMatrix.setToIdentity();
-    model_matrix.push_back(firstModelMatrix);
 
-    unsigned int numOfVertices = 0;
-    unsigned int numOfIndices = 0;
-    unsigned int numOfEdgeIndices = 0;
-    unsigned int numOfEdges = 0;
-
-    for (Mesh* mesh: meshList)
+    // for the first sync we always send the identity matrix once
+    if (m_last_sync_index == -1)
     {
-        // needed for color picking
-        unsigned char r,g,b;
-        encodeIdToColor(mesh->getBIMElementId(), r,g,b);
-        std::array<float, 4> pickColor = { r/255.0f, g/255.0f, b/255.0f, 1.0f };
+        QMatrix4x4 firstModelMatrix;
+        firstModelMatrix.setToIdentity();
+        model_matrix.push_back(firstModelMatrix);
+    }
+
+    // m_last_sync_index + 1 because we have already sent data till m_last_sync_index
+    for (int i = m_last_sync_index + 1; i < m_mesh_list.size(); i++)
+    {
+        Mesh* mesh = m_mesh_list[i];
 
         std::vector<Position> meshVerticiesPosition = mesh->getVerticiesPosition();
         std::vector<Normal> meshVerticiesNormal = mesh->getVerticiesNormal();
@@ -109,55 +113,90 @@ void MeshMap::SyncDataWithOpenGL(CombinedMesh *combinedMesh)
         verticies_materialIndex.insert(verticies_materialIndex.end(), meshVerticiesMaterialIndex.begin(),  meshVerticiesMaterialIndex.end());
         verticies_textureIndex.insert(verticies_textureIndex.end(), meshVerticiesTextureIndex.begin(),  meshVerticiesTextureIndex.end());
 
-        unsigned int modelIndex = 0; // 0 for identity matrix
         QMatrix4x4 meshModelMatrix = mesh->getModelMatrix();
 
         if (!meshModelMatrix.isIdentity())
         {
-
-            // qInfo() << meshModelMatrix(0,0) << ", " << meshModelMatrix(0,1) << ", " << meshModelMatrix(0,2) << ", " << meshModelMatrix(0,3);
-            // qInfo() << meshModelMatrix(1,0) << ", " << meshModelMatrix(1,1) << ", " << meshModelMatrix(1,2) << ", " << meshModelMatrix(1,3);
-            // qInfo() << meshModelMatrix(2,0) << ", " << meshModelMatrix(2,1) << ", " << meshModelMatrix(2,2) << ", " << meshModelMatrix(2,3);
-            // qInfo() << meshModelMatrix(3,0) << ", " << meshModelMatrix(3,1) << ", " << meshModelMatrix(3,2) << ", " << meshModelMatrix(3,3);
-
             model_matrix.push_back(meshModelMatrix);
-            modelIndex = model_matrix.size() - 1; // identity at index 0
         }
 
-        for (Position meshVertex: meshVerticiesPosition)
-        {
-            model_matrix_indices.push_back(modelIndex);
-            pickColor_array.push_back(pickColor);
-        }
+        // std::vector<unsigned int> meshIndices = mesh->getIndices();
+        // indices.insert(indices.end(), meshIndices.begin(), meshIndices.end());
 
-        std::vector<unsigned int> meshIndices = mesh->getIndices();
-        for (unsigned int& index: meshIndices)
-        {
-            index += numOfVertices;
-        }
-        indices.insert(indices.end(), meshIndices.begin(), meshIndices.end());
-
-        std::vector<int> meshEdgeIndices = mesh->getEdgeIndices();
-        for (int& index: meshEdgeIndices)
-        {
-            index += numOfEdges;
-        }
-        edge_indices.insert(edge_indices.end(), meshEdgeIndices.begin(), meshEdgeIndices.end());
+        // std::vector<int> meshEdgeIndices = mesh->getEdgeIndices();
+        // edge_indices.insert(edge_indices.end(), meshEdgeIndices.begin(), meshEdgeIndices.end());
 
         std::vector<EdgeDataInt> meshEdgeDataInt = mesh->getEdgeDataInt();
-        for (EdgeDataInt& edgeData: meshEdgeDataInt)
-        {
-            edgeData.start_vertex += numOfVertices;
-            edgeData.end_vertex += numOfVertices;
-        }
         edge_data_int.insert(edge_data_int.end(), meshEdgeDataInt.begin(), meshEdgeDataInt.end());
 
         std::vector<EdgeDataFloat> meshEdgeDataFloat = mesh->getEdgeDataFloat();
         edge_data_float.insert(edge_data_float.end(), meshEdgeDataFloat.begin(),  meshEdgeDataFloat.end());
 
-        numOfVertices += mesh->getNumOfVertices();
-        numOfIndices += mesh->getNumOfIndices();
-        numOfEdges += mesh->getNumOfEdges();
-        numOfEdgeIndices += mesh->getNumOfEdgeIndices();
+        std::vector<int> meshModelMatrixIndices = mesh->getModelMatrixIndices();
+        model_matrix_indices.insert(model_matrix_indices.end(), meshModelMatrixIndices.begin(), meshModelMatrixIndices.end());
+
+        std::vector<std::array<float, 4>> meshPickColorArray = mesh->getPickColorArray();
+        pickColor_array.insert(pickColor_array.end(), meshPickColorArray.begin(), meshPickColorArray.end());
     }
+
+    // Adding data to combined mesh
+    combinedMesh->m_verticies_position = verticies_position;
+    combinedMesh->m_verticies_normal = verticies_normal;
+    combinedMesh->m_verticies_textureuv = verticies_textureuv;
+    combinedMesh->m_verticies_materialIndex = verticies_materialIndex;
+    combinedMesh->m_verticies_textureIndex = verticies_textureIndex;
+
+    // need to convert std::vector<QMatrix4x4> to std::vector<float> for opengl
+    combinedMesh->m_model_matrix.reserve(model_matrix.size() * 16);
+    for (int i = 0; i < model_matrix.size(); ++i) {
+        const float* dense = model_matrix[i].constData();  // 16 floats
+        combinedMesh->m_model_matrix.insert(combinedMesh->m_model_matrix.end(), dense, dense + 16);
+    }
+
+    combinedMesh->m_model_matrix_indices = model_matrix_indices;
+    combinedMesh->m_pickColor_array = pickColor_array;
+
+    combinedMesh->m_edge_data_int = edge_data_int;
+    combinedMesh->m_edge_data_float = edge_data_float;
+
+    combinedMesh->m_numOfVertices = m_numOfVertices - m_last_sync_numOfVertices;
+    combinedMesh->m_numOfEdges = m_numOfEdges - m_last_sync_numOfEdges;
+    combinedMesh->m_numOfModelMatrices = m_numOfModelMatrices - m_last_sync_numOfModelMatrices;
+
+    combinedMesh->m_verticesOffset = m_last_sync_numOfVertices;
+    combinedMesh->m_edgesOffset = m_last_sync_numOfEdges;
+    combinedMesh->m_modelMatricesOffset = m_last_sync_numOfModelMatrices;
+}
+
+void MeshMap::SyncIndicesWithOpenGL(CombinedIndices *combinedIndices, ViewType view_type)
+{
+    std::vector<unsigned int> indices;
+    std::vector<int> edge_indices;
+
+    auto meshMap = view_type == ViewType::PLAN ? m_mesh_map_plan : m_mesh_map_model;
+
+    for (auto& meshMapItem: meshMap)
+    {
+        Mesh* mesh = meshMapItem.second;
+        std::vector<unsigned int> meshIndices = mesh->getIndices();
+        indices.insert(indices.end(), meshIndices.begin(), meshIndices.end());
+
+        std::vector<int> meshEdgeIndices = mesh->getEdgeIndices();
+        edge_indices.insert(edge_indices.end(), meshEdgeIndices.begin(), meshEdgeIndices.end());
+    }
+
+    // Adding data to combined mesh
+    combinedIndices->m_indices = indices;
+    combinedIndices->m_edge_indices = edge_indices;
+    combinedIndices->m_numOfIndices = indices.size();
+    combinedIndices->m_numOfEdgeIndices = edge_indices.size();
+}
+
+void MeshMap::MeshMapHasSynced()
+{
+    m_last_sync_index = m_mesh_list.size() - 1; // m_last_sync_index = -1 means no sync has happened
+
+    m_last_sync_numOfVertices = m_numOfVertices;
+    m_last_sync_numOfEdges = m_numOfEdges;
+    m_last_sync_numOfModelMatrices = m_numOfModelMatrices;
 }
