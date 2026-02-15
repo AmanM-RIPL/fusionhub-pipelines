@@ -289,6 +289,7 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/network/network_manager.cpp
     src/network/network_manager.h
     src/common/helper_point.h
+    src/common/opengl/classes/mesh_map.h src/common/opengl/classes/mesh_map.cpp
     src/controllers/draft_entity_controller.h src/controllers/draft_entity_controller.cpp
 )
 

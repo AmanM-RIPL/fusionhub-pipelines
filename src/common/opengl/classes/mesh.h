@@ -20,7 +20,23 @@
 using Position = std::array<float, 4>;
 using Normal = std::array<float, 3>;
 using TextureUV = std::array<float, 2>;
-using EdgeIndex = std::array<int, 2>; // EdgeIndex is of the format {0, 1} which means edge b/w 0th Position and 1st Position
+// using EdgeIndex = std::array<int, 2>; // EdgeIndex is of the format {0, 1} which means edge b/w 0th Position and 1st Position
+
+struct EdgeDataInt
+{
+    int start_vertex;
+    int end_vertex;
+    int material_index;
+    int dash;
+};
+
+struct EdgeDataFloat
+{
+    float width;
+    float dash_length;
+    float gap_length;
+    float padding; // always set to 0.0f needed as TBO is of type vec4
+};
 
 class Mesh : public QObject
 {
@@ -35,14 +51,11 @@ public:
         const std::vector<int>& vertices_materialIndex,
         const std::vector<int>& vertices_textureIndex,
 
-        const std::vector<EdgeIndex>& edge_indices,
-        const std::vector<float>& edge_width,
-        const std::vector<float>& edge_dashLength,
-        const std::vector<float>& edge_gapLength,
-        const std::vector<int>& edge_dash,
-        const std::vector<int>& edge_materialIndex,
+        const std::vector<EdgeDataInt>& edge_data_int,
+        const std::vector<EdgeDataFloat>& edge_data_float,
 
-        const std::vector<unsigned int>& indices
+        const std::vector<unsigned int>& indices,
+        const std::vector<int>& edge_indices
     );
 
     void AppendGeometry(
@@ -52,17 +65,15 @@ public:
         const std::vector<int>& vertices_materialIndex,
         const std::vector<int>& vertices_textureIndex,
 
-        const std::vector<EdgeIndex>& edge_indices,
-        const std::vector<float>& edge_width,
-        const std::vector<float>& edge_dashLength,
-        const std::vector<float>& edge_gapLength,
-        const std::vector<int>& edge_dash,
-        const std::vector<int>& edge_materialIndex,
+        const std::vector<EdgeDataInt>& edge_data_int,
+        const std::vector<EdgeDataFloat>& edge_data_float,
 
-        const std::vector<unsigned int>& indices
+        const std::vector<unsigned int>& indices,
+        const std::vector<int>& edge_indices
     );
 
     void Copy(Mesh* mesh);
+    void OffsetMeshData(int numOfVertices, int numOfEdges, int numOfModelMatrices);
 
     static void Combine(Mesh* combinedMesh, QList<Mesh*> meshList);
     static void GenerateBaseSurface(Mesh* mesh);
@@ -73,14 +84,13 @@ public:
     std::vector<int> getVerticiesMaterialIndex();
     std::vector<int> getVerticiesTextureIndex();
 
-    std::vector<EdgeIndex> getEdgeIndices();
-    std::vector<float> getEdgeWidth();
-    std::vector<float> getEdgeDashLength();
-    std::vector<float> getEdgeGapLength();
-    std::vector<int> getEdgeDash();
-    std::vector<int> getEdgeMaterialIndex();
+    std::vector<EdgeDataInt> getEdgeDataInt();
+    std::vector<EdgeDataFloat> getEdgeDataFloat();
 
+    std::vector<int> getEdgeIndices();
     std::vector<unsigned int> getIndices();
+    std::vector<int> getModelMatrixIndices();
+    std::vector<std::array<float, 4>> getPickColorArray();
 
 
     Position* getVerticiesPositionData();
@@ -89,14 +99,11 @@ public:
     int* getVerticiesMaterialIndexData();
     int* getVerticiesTextureIndexData();
 
-    EdgeIndex* getEdgeIndicesData();
-    float* getEdgeWidthData();
-    float* getEdgeDashLengthData();
-    float* getEdgeGapLengthData();
-    int* getEdgeDashData();
-    int* getEdgeMaterialIndexData();
+    EdgeDataInt* getEdgeDataIntData();
+    EdgeDataFloat* getEdgeDataFloatData();
 
     float* getModelMatriciesData();
+    int* getEdgeIndicesData();
     unsigned int* getIndicesData();
     int* getModelMatrixIndicesData();
     std::array<float, 4>* getPickColorData();
@@ -105,6 +112,7 @@ public:
     unsigned int getNumOfVertices();
     unsigned int getNumOfIndices();
     unsigned int getNumOfEdges();
+    unsigned int getNumOfEdgeIndices();
     unsigned int getNumOfModelMatricies();
     unsigned int getNumOfModelMatrixIndices();
 
@@ -132,15 +140,12 @@ private:
     std::vector<int> m_verticies_textureIndex;
 
     // Edge Attributes
-    std::vector<EdgeIndex> m_edge_indices;
-    std::vector<float> m_edge_width;
-    std::vector<float> m_edge_dashLength;
-    std::vector<float> m_edge_gapLength;
-    std::vector<int> m_edge_dash; // to show dashes or not
-    std::vector<int> m_edge_materialIndex;
+    std::vector<EdgeDataInt> m_edge_data_int;
+    std::vector<EdgeDataFloat> m_edge_data_float;
 
     // Indices for IBO
     std::vector<unsigned int> m_indices;
+    std::vector<int> m_edge_indices;
     std::vector<int> m_model_matrix_indices;
 
     std::vector<float> m_model_matrix; // this is for the combined mesh
@@ -149,8 +154,8 @@ private:
     unsigned int m_numOfVertices;
     unsigned int m_numOfEdges;
     unsigned int m_numOfIndices;
+    unsigned int m_numOfEdgeIndices;
     unsigned int m_numOfModelMatrices;
-
 
     unsigned int m_bimElementId = 1; // default value is 1
     QMatrix4x4 m_modelMatrix; // this is for the individual mesh

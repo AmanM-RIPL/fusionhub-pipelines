@@ -334,12 +334,9 @@ void OpenglHelper::getMeshGeometry(
     std::vector<int>& vertices_materialIndex,
     std::vector<int>& vertices_textureIndex,
     std::vector<uint32_t>& meshIndices,
-    std::vector<EdgeIndex>& edge_indices,
-    std::vector<float>& edge_width,
-    std::vector<float>& edge_dashLength,
-    std::vector<float>& edge_gapLength,
-    std::vector<int>& edge_dash,
-    std::vector<int>& edge_materialIndex,
+    std::vector<int>& edge_indices,
+    std::vector<EdgeDataInt>& edge_data_int,
+    std::vector<EdgeDataFloat>& edge_data_float,
     int textureIndex,
     int materialIndex,
     int scalingFactor,
@@ -404,15 +401,22 @@ void OpenglHelper::getMeshGeometry(
                         endPointIndex = pointArray.size() - 1;
                     }
 
-                    edge_indices.push_back({
-                        static_cast<int>(startPointIndex),
-                        static_cast<int>(endPointIndex)
-                    });
-                    edge_width.push_back(edgeWidth);
-                    edge_dashLength.push_back(edgeDashLength);
-                    edge_gapLength.push_back(edgeGapLength);
-                    edge_dash.push_back(edgeDash);
-                    edge_materialIndex.push_back(edgeMaterialIndex);
+                    edge_indices.push_back(edge_indices.size());
+                    EdgeDataInt ei;
+                    EdgeDataFloat ef;
+
+                    ei.material_index = edgeMaterialIndex;
+                    ei.dash = edgeDash;
+                    ef.width = edgeWidth;
+                    ef.dash_length = edgeDashLength;
+                    ef.gap_length = edgeGapLength;
+                    ef.padding = 0.0f;
+
+                    ei.start_vertex = static_cast<int>(startPointIndex);
+                    ei.end_vertex = static_cast<int>(endPointIndex);
+
+                    edge_data_int.push_back(ei);
+                    edge_data_float.push_back(ef);
 
                     // get two dimensional point on the Face Plane
                     OdGeVector3d vecOnPlane = edge->startPoint() - origin;
@@ -452,7 +456,7 @@ void OpenglHelper::getMeshGeometry(
         {
             OdGePoint3dArray facePointArray = {};
             std::vector<std::array<float, 2>> faceTextureArray = {};
-            std::vector<EdgeIndex> faceBorderIndices = {};
+            std::vector<std::array<int, 2>> faceBorderIndices = {};
             std::vector<std::vector<Point>> earcutPolygon = {};
 
             // Face Plane Coordinate System
@@ -511,18 +515,24 @@ void OpenglHelper::getMeshGeometry(
                 meshIndices.push_back(startingPointArrayIndex + index);
             }
 
-            for (EdgeIndex faceBorderIndex: faceBorderIndices)
-            {
-                edge_indices.push_back({
-                    startingPointArrayIndex + faceBorderIndex[0],
-                    startingPointArrayIndex + faceBorderIndex[1]
-                });
+            for (std::array<int, 2> faceBorderIndex: faceBorderIndices)
+            {   
+                edge_indices.push_back(edge_indices.size());
+                EdgeDataInt ei;
+                EdgeDataFloat ef;
 
-                edge_width.push_back(edgeWidth);
-                edge_dashLength.push_back(edgeDashLength);
-                edge_gapLength.push_back(edgeGapLength);
-                edge_dash.push_back(edgeDash);
-                edge_materialIndex.push_back(edgeMaterialIndex);
+                ei.material_index = edgeMaterialIndex;
+                ei.dash = edgeDash;
+                ef.width = edgeWidth;
+                ef.dash_length = edgeDashLength;
+                ef.gap_length = edgeGapLength;
+                ef.padding = 0.0f;
+
+                ei.start_vertex = static_cast<int>(startingPointArrayIndex + faceBorderIndex[0]);
+                ei.end_vertex = static_cast<int>(startingPointArrayIndex + faceBorderIndex[1]);
+
+                edge_data_int.push_back(ei);
+                edge_data_float.push_back(ef);
             }
 
             // add face points to pointArray
@@ -616,12 +626,9 @@ void OpenglHelper::getMeshGeometry(
     std::vector<int>& vertices_materialIndex,
     std::vector<int>& vertices_textureIndex,
     std::vector<uint32_t>& meshIndices,
-    std::vector<EdgeIndex>& edge_indices,
-    std::vector<float>& edge_width,
-    std::vector<float>& edge_dashLength,
-    std::vector<float>& edge_gapLength,
-    std::vector<int>& edge_dash,
-    std::vector<int>& edge_materialIndex,
+    std::vector<int>& edge_indices,
+    std::vector<EdgeDataInt>& edge_data_int,
+    std::vector<EdgeDataFloat>& edge_data_float,
     int textureIndex,
     int materialIndex,
     int scalingFactor,
@@ -755,12 +762,9 @@ void OpenglHelper::getMeshGeometry(
     std::vector<int>& vertices_materialIndex,
     std::vector<int>& vertices_textureIndex,
     std::vector<uint32_t>& meshIndices,
-    std::vector<EdgeIndex>& edge_indices,
-    std::vector<float>& edge_width,
-    std::vector<float>& edge_dashLength,
-    std::vector<float>& edge_gapLength,
-    std::vector<int>& edge_dash,
-    std::vector<int>& edge_materialIndex,
+    std::vector<int>& edge_indices,
+    std::vector<EdgeDataInt>& edge_data_int,
+    std::vector<EdgeDataFloat>& edge_data_float,
     int textureIndex,
     int materialIndex,
     int scalingFactor,
@@ -895,12 +899,9 @@ void OpenglHelper::getMeshGeometry(
     std::vector<int>& vertices_materialIndex,
     std::vector<int>& vertices_textureIndex,
     std::vector<uint32_t>& meshIndices,
-    std::vector<EdgeIndex>& edge_indices,
-    std::vector<float>& edge_width,
-    std::vector<float>& edge_dashLength,
-    std::vector<float>& edge_gapLength,
-    std::vector<int>& edge_dash,
-    std::vector<int>& edge_materialIndex,
+    std::vector<int>& edge_indices,
+    std::vector<EdgeDataInt>& edge_data_int,
+    std::vector<EdgeDataFloat>& edge_data_float,
     int textureIndex,
     int materialIndex,
     int scalingFactor,

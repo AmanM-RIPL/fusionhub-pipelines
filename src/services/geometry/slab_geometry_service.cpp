@@ -16,7 +16,7 @@ void SlabGeometryService::generateMesh2D(BIMElement* slabElement, Mesh* mesh)
 
     if (referenceLine.size() < 3)
     {
-        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
+        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {});
         return;
     }
 
@@ -72,28 +72,35 @@ void SlabGeometryService::generateMesh2D(BIMElement* slabElement, Mesh* mesh)
         // verticesVector.push_back(1.0f); // n.z
     }
 
-    std::vector<EdgeIndex> edge_indices = {};
-    std::vector<float> edge_width = {};
-    std::vector<float> edge_dashLength = {};
-    std::vector<float> edge_gapLength = {};
-    std::vector<int> edge_dash = {};
-    std::vector<int> edge_materialIndex = {};
+    std::vector<int> edge_indices = {};
+    std::vector<EdgeDataInt> edge_data_int = {};
+    std::vector<EdgeDataFloat> edge_data_float = {};
     for (int i = 0; i < referenceLine.size(); i++)
     {
-        edge_width.push_back(1.0f);
-        edge_dashLength.push_back(1.0f);
-        edge_gapLength.push_back(1.0f);
-        edge_dash.push_back(0);
-        edge_materialIndex.push_back(OpenGLMaterial::BLACK);
+        EdgeDataInt ei;
+        EdgeDataFloat ef;
+
+        ei.material_index = OpenGLMaterial::BLACK;
+        ei.dash = 0;
+        ef.width = 1.0f;
+        ef.dash_length = 1.0f;
+        ef.gap_length = 1.0f;
+        ef.padding = 0.0f;
 
         if (i == referenceLine.size() - 1)
         {
-            edge_indices.push_back({i, 0});
+            ei.start_vertex = i;
+            ei.end_vertex = 0;
         }
         else
         {
-            edge_indices.push_back({i, i + 1});
+            ei.start_vertex = i;
+            ei.end_vertex = i + 1;
         }
+
+        edge_data_int.push_back(ei);
+        edge_data_float.push_back(ef);
+        edge_indices.push_back(i);
     }
 
     // // Allocate memory for the new array using std::unique_ptr for safety.
@@ -109,14 +116,11 @@ void SlabGeometryService::generateMesh2D(BIMElement* slabElement, Mesh* mesh)
         vertices_textureuv,
         vertices_materialIndex,
         vertices_textureIndex,
-        edge_indices,
-        edge_width,
-        edge_dashLength,
-        edge_gapLength,
-        edge_dash,
-        edge_materialIndex,
-        indices
-        );
+        edge_data_int,
+        edge_data_float,
+        indices,
+        edge_indices
+    );
     mesh->setBIMElementId(slabElement->getId());
 
 
@@ -148,7 +152,7 @@ void SlabGeometryService::generateMesh3D(BIMElement* slabElement, Mesh* mesh)
 
     if (referenceLine.size() < 3)
     {
-        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
+        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {});
         return;
     }
 
@@ -195,12 +199,9 @@ void SlabGeometryService::generateMesh3D(BIMElement* slabElement, Mesh* mesh)
     std::vector<TextureUV> vertices_textureuv = {};
     std::vector<int> vertices_materialIndex = {};
     std::vector<int> vertices_textureIndex = {};
-    std::vector<EdgeIndex> edge_indices = {};
-    std::vector<float> edge_width = {};
-    std::vector<float> edge_dashLength = {};
-    std::vector<float> edge_gapLength = {};
-    std::vector<int> edge_dash = {};
-    std::vector<int> edge_materialIndex = {};
+    std::vector<int> edge_indices = {};
+    std::vector<EdgeDataInt> edge_data_int = {};
+    std::vector<EdgeDataFloat> edge_data_float = {};
     int textureIndex = Texture::BRICK; // if less than zero then we don't need to worry about textures
     int materialIndex = OpenGLMaterial::IVORY;
     float edgeWidth = 1.0f;
@@ -219,11 +220,8 @@ void SlabGeometryService::generateMesh3D(BIMElement* slabElement, Mesh* mesh)
         vertices_textureIndex,
         meshIndices,
         edge_indices,
-        edge_width,
-        edge_dashLength,
-        edge_gapLength,
-        edge_dash,
-        edge_materialIndex,
+        edge_data_int,
+        edge_data_float,
         textureIndex,
         materialIndex,
         scalingFactor,
@@ -240,13 +238,10 @@ void SlabGeometryService::generateMesh3D(BIMElement* slabElement, Mesh* mesh)
         vertices_textureuv,
         vertices_materialIndex,
         vertices_textureIndex,
-        edge_indices,
-        edge_width,
-        edge_dashLength,
-        edge_gapLength,
-        edge_dash,
-        edge_materialIndex,
-        meshIndices
+        edge_data_int,
+        edge_data_float,
+        meshIndices,
+        edge_indices
     );
     mesh->setBIMElementId(slabElement->getId());
 }
@@ -307,7 +302,7 @@ void SlabGeometryService::generateWIPMesh2D(BIMElement *slabElement, Mesh *mesh,
     // if reference line is only one point then we don't need to render
     if (referenceLine.size() < 1)
     {
-        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
+        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {});
         return;
     }
 
@@ -395,28 +390,35 @@ void SlabGeometryService::generateWIPMesh2D(BIMElement *slabElement, Mesh *mesh,
         // verticesVector.push_back(1.0f); // n.z
     }
 
-    std::vector<EdgeIndex> edge_indices = {};
-    std::vector<float> edge_width = {};
-    std::vector<float> edge_dashLength = {};
-    std::vector<float> edge_gapLength = {};
-    std::vector<int> edge_dash = {};
-    std::vector<int> edge_materialIndex = {};
+    std::vector<int> edge_indices = {};
+    std::vector<EdgeDataInt> edge_data_int = {};
+    std::vector<EdgeDataFloat> edge_data_float = {};
     for (int i = 0; i < referenceLine.size(); i++)
     {
-        edge_width.push_back(1.0f);
-        edge_dashLength.push_back(1.0f);
-        edge_gapLength.push_back(1.0f);
-        edge_dash.push_back(0);
-        edge_materialIndex.push_back(OpenGLMaterial::BLACK);
+        EdgeDataInt ei;
+        EdgeDataFloat ef;
+
+        ei.material_index = OpenGLMaterial::BLACK;
+        ei.dash = 0;
+        ef.width = 1.0f;
+        ef.dash_length = 1.0f;
+        ef.gap_length = 1.0f;
+        ef.padding = 0.0f;
 
         if (i == referenceLine.size() - 1)
         {
-            edge_indices.push_back({i, 0});
+            ei.start_vertex = i;
+            ei.end_vertex = 0;
         }
         else
         {
-            edge_indices.push_back({i, i + 1});
+            ei.start_vertex = i;
+            ei.end_vertex = i + 1;
         }
+
+        edge_data_int.push_back(ei);
+        edge_data_float.push_back(ef);
+        edge_indices.push_back(i);
     }
 
 
@@ -449,12 +451,23 @@ void SlabGeometryService::generateWIPMesh2D(BIMElement *slabElement, Mesh *mesh,
     {
         int first_point = referenceLine.size() + i;
         int second_point = referenceLine.size() + i + 1;
-        edge_indices.push_back({first_point, second_point });
-        edge_width.push_back(2.0f);
-        edge_dashLength.push_back(5.0f);
-        edge_gapLength.push_back(5.0f);
-        edge_dash.push_back(1);
-        edge_materialIndex.push_back(OpenGLMaterial::BLACK);
+
+        EdgeDataInt ei;
+        EdgeDataFloat ef;
+
+        ei.material_index = OpenGLMaterial::BLACK;
+        ei.dash = 1;
+        ef.width = 2.0f;
+        ef.dash_length = 5.0f;
+        ef.gap_length = 5.0f;
+        ef.padding = 0.0f;
+
+        ei.start_vertex = first_point;
+        ei.end_vertex = second_point;
+
+        edge_data_int.push_back(ei);
+        edge_data_float.push_back(ef);
+        edge_indices.push_back(edge_indices.size());
     }
 
 
@@ -528,12 +541,23 @@ void SlabGeometryService::generateWIPMesh2D(BIMElement *slabElement, Mesh *mesh,
             // 4 is added to account for length helper point
             int first_point = referenceLine.size() + 4 + i;
             int second_point = referenceLine.size() + 4 + i + 1;
-            edge_indices.push_back({first_point, second_point });
-            edge_width.push_back(2.0f);
-            edge_dashLength.push_back(5.0f);
-            edge_gapLength.push_back(5.0f);
-            edge_dash.push_back(1);
-            edge_materialIndex.push_back(OpenGLMaterial::BLACK);
+
+            EdgeDataInt ei;
+            EdgeDataFloat ef;
+
+            ei.material_index = OpenGLMaterial::BLACK;
+            ei.dash = 1;
+            ef.width = 2.0f;
+            ef.dash_length = 5.0f;
+            ef.gap_length = 5.0f;
+            ef.padding = 0.0f;
+
+            ei.start_vertex = first_point;
+            ei.end_vertex = second_point;
+
+            edge_data_int.push_back(ei);
+            edge_data_float.push_back(ef);
+            edge_indices.push_back(edge_indices.size());
         }
     }
 
@@ -550,14 +574,11 @@ void SlabGeometryService::generateWIPMesh2D(BIMElement *slabElement, Mesh *mesh,
         vertices_textureuv,
         vertices_materialIndex,
         vertices_textureIndex,
-        edge_indices,
-        edge_width,
-        edge_dashLength,
-        edge_gapLength,
-        edge_dash,
-        edge_materialIndex,
-        indices
-        );
+        edge_data_int,
+        edge_data_float,
+        indices,
+        edge_indices
+    );
     mesh->setBIMElementId(slabElement->getId());
 
 

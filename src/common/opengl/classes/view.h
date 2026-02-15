@@ -13,6 +13,7 @@
 #include "shader.h"
 #include "opengl_material.h"
 #include "texture.h"
+#include "mesh_map.h"
 
 class View : public QObject, protected QOpenGLFunctions_3_3_Core
 {
@@ -24,7 +25,9 @@ public:
     void Initialize();
     void Render();
 
-    void LoadStaticMeshData(QList<Mesh*>& meshList);
+    void LoadStaticMeshData(MeshMap* meshMap);
+    void AppendToStaticMeshData(MeshMap* meshMap);
+    void LoadStaticIndicesData(MeshMap* meshMap, ViewType view_type);
     void LoadDynamicMeshData(Mesh* mesh);
     // void UpdateTransformations(); // Update Camera, Light, View, Projection UBO
     // void UpdateStaticMeshData(Mesh* mesh, int meshIndex);
@@ -66,20 +69,20 @@ private:
 
     GLuint m_static_corner_vbo = 0;
     GLuint m_static_edge_indices_vbo = 0;
-    GLuint m_static_edge_width_vbo = 0;
-    GLuint m_static_edge_dashLength_vbo = 0;
-    GLuint m_static_edge_gapLength_vbo = 0;
-    GLuint m_static_edge_dash_vbo = 0;
-    GLuint m_static_edge_materialIndex_vbo = 0;
+    GLuint m_static_edge_data_int_vbo = 0;
+    GLuint m_static_edge_data_float_vbo = 0;
 
     GLuint m_static_ibo = 0;
     GLuint m_static_border_ibo = 0;
 
     GLuint m_static_matrix_tbo = 0;
     GLuint m_static_model_matrix_vbo = 0;
+
     GLuint m_static_matrixTexture = 0;
     GLuint m_static_verticesTexture = 0;
     GLuint m_static_matrixIndexTexture = 0;
+    GLuint m_static_edgeDataIntTexture = 0;
+    GLuint m_static_edgeDataFloatTexture = 0;
 
 
     /*
@@ -93,11 +96,8 @@ private:
 
     GLuint m_dynamic_corner_vbo = 0;
     GLuint m_dynamic_edge_indices_vbo = 0;
-    GLuint m_dynamic_edge_width_vbo = 0;
-    GLuint m_dynamic_edge_dashLength_vbo = 0;
-    GLuint m_dynamic_edge_gapLength_vbo = 0;
-    GLuint m_dynamic_edge_dash_vbo = 0;
-    GLuint m_dynamic_edge_materialIndex_vbo = 0;
+    GLuint m_dynamic_edge_data_int_vbo = 0;
+    GLuint m_dynamic_edge_data_float_vbo = 0;
 
 
     GLuint m_dynamic_ibo = 0;
@@ -105,9 +105,12 @@ private:
 
     GLuint m_dynamic_matrix_tbo = 0;
     GLuint m_dynamic_model_matrix_vbo = 0;
+
     GLuint m_dynamic_matrixTexture = 0;
     GLuint m_dynamic_verticesTexture = 0;
     GLuint m_dynamic_matrixIndexTexture = 0;
+    GLuint m_dynamic_edgeDataIntTexture = 0;
+    GLuint m_dynamic_edgeDataFloatTexture = 0;
 
     /*
         Texture Buffer Objects (Common)
@@ -134,7 +137,8 @@ private:
 
     std::vector<float> materials;
     QList<Texture*> textureList;
-    Mesh* combinedMesh = nullptr; // need to delete it with view only!!
+    CombinedMesh* combinedMesh = nullptr; // need to delete it with view only!!
+    CombinedIndices* combinedIndices = nullptr; // need to delete it with view only!!
 
     int viewportWidth = 0;
     int viewportHeight = 0;

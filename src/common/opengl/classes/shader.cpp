@@ -130,6 +130,9 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 
         m_modelMatrixIndexBufferId = this->glGetUniformLocation(shaderID, "modelMatrixIndexBuffer");
 
+        m_edge_data_intId = this->glGetUniformLocation(shaderID, "edgeDataInt");
+        m_edge_data_floatId = this->glGetUniformLocation(shaderID, "edgeDataFloat");
+
         m_lightPositionId = this->glGetUniformLocation(shaderID, "light.position");
         m_lightAmbientId = this->glGetUniformLocation(shaderID, "light.ambient");
         m_lightDiffuseId = this->glGetUniformLocation(shaderID, "light.diffuse");
@@ -235,6 +238,16 @@ GLuint Shader::getVerticesId()
 GLuint Shader::getModelMatrixIndexBufferId()
 {
     return m_modelMatrixIndexBufferId;
+}
+
+GLuint Shader::getEdgeDataIntId()
+{
+    return m_edge_data_intId;
+}
+
+GLuint Shader::getEdgeDataFloatId()
+{
+    return m_edge_data_floatId;
 }
 
 void Shader::SetShaderType(ShaderType value)

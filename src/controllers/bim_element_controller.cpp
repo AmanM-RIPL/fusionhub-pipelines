@@ -9,8 +9,8 @@ BIMElementController::BIMElementController(QObject *parent)
 BIMElement* BIMElementController::create(const QString &type, const QString &name, int level, int host_id)
 {
     // VVIMP: CHANGE THIS BEFORE COMMITTING
-    // 3 has been added as BIMELement Id just to check if the door works
-    BIMElement* bimElement = new BIMElement(3, "1", false, type, name, level, host_id, this);
+    // 4 has been added as BIMELement Id just to check if the door works
+    BIMElement* bimElement = new BIMElement(4, "1", false, type, name, level, host_id, this);
     bool result = m_bimElementRepository->saveQML(bimElement);
 
     if (result)
