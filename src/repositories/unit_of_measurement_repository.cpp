@@ -141,7 +141,7 @@ std::unique_ptr<UnitOfMeasurement> UnitOfMeasurementRepository::mapFromQuery(con
     auto unit = std::make_unique<UnitOfMeasurement>();
     unit->setId(query.value("id").toInt());
     unit->setGlobalId(query.value("global_id").toString());
-    unit->setApprovalStatus(query.value("approval_status").toBool());
+    unit->setApprovalStatus(query.value("approval_status").toString());
     unit->setUomName(query.value("uom_name").toString());
     unit->setUnitType(query.value("unit_type").toString());
     unit->setConversionToSqm(query.value("conversion_to_sqm").toDouble());
@@ -169,7 +169,7 @@ UnitOfMeasurement* UnitOfMeasurementRepository::mapFromQueryQML(const QSqlQuery&
     auto unit = new UnitOfMeasurement(parent);
     unit->setId(query.value("id").toInt());
     unit->setGlobalId(query.value("global_id").toString());
-    unit->setApprovalStatus(query.value("approval_status").toBool());
+    unit->setApprovalStatus(query.value("approval_status").toString());
     unit->setUomName(query.value("uom_name").toString());
     unit->setUnitType(query.value("unit_type").toString());
     unit->setConversionToSqm(query.value("conversion_to_sqm").toDouble());

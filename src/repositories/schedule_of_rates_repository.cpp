@@ -35,7 +35,7 @@ ScheduleOfRates* ScheduleOfRatesRepository::mapFromQueryQML(const QSqlQuery& que
     auto scheduleOfRates = new ScheduleOfRates(parent);
     scheduleOfRates->setId(query.value("id").toInt());
     scheduleOfRates->setGlobalId(query.value("global_id").toString());
-    scheduleOfRates->setApprovalStatus(query.value("approval_status").toBool());
+    scheduleOfRates->setApprovalStatus(query.value("approval_status").toString());
     scheduleOfRates->setScheduleOfRatesName(query.value("schedule_of_rates_name").toString());
 
     return scheduleOfRates;

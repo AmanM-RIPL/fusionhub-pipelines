@@ -17,6 +17,9 @@ public:
     //                        const QString &resourceParameter) const;
     Q_INVOKABLE void create(const QString &scheduleName, const QString &description, const QVariant &costParameter,
                             const QVariant &resourceParameter) const;
+
+    Q_INVOKABLE void update(int id, const QJsonObject &updatedData) const;
+
     Q_INVOKABLE void approvedCreate(const QString &scheduleSetupName,const QString &description,const QString &costParameter,const QString &resourceParameter) const;
 
     Q_INVOKABLE std::vector<ScheduleSetup*> getSetupList(bool isApproved = false) const;

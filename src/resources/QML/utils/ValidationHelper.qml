@@ -91,9 +91,34 @@ QtObject {
         return validationResult(true)
     }
 
-    function validateInteger(value) {
+    function validatePositiveDouble(value) {
+        // if (value === "" || value === null || value === undefined) {
+        //     return validationResult(true)
+        // }
+        if (value === "" || value === null || value === undefined) {
+                return validationResult(false, "Must be not empty")
+            }
         var num = parseFloat(value)
-        if (isNaN(num) || !Number.isInteger(num)) {
+        if (isNaN(num)) {
+            return validationResult(false, "Must be a valid number")
+        }
+        if (num < 0) {
+            return validationResult(false, "Number must be positive or zero")
+        }
+        return validationResult(true)
+    }
+
+    // function validateInteger(value) {
+    //     if (!/^-?\d+$/.test(value)) {
+    //         return validationResult(false, "Must be an integer")
+    //     }
+
+    //     return validationResult(true)
+    // }
+
+    function validateInteger(value) {
+        const num = Number(value)
+        if (!Number.isInteger(num) || String(num) !== value) {
             return validationResult(false, "Must be an integer")
         }
         return validationResult(true)

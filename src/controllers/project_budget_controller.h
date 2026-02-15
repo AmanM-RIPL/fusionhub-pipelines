@@ -10,11 +10,11 @@ class ProjectBudgetController: public QObject
     Q_OBJECT
 public:
     explicit ProjectBudgetController(QObject *parent = nullptr);
-    Q_INVOKABLE void create(const QString &name, const int &BudgetHeadId) const;
+    Q_INVOKABLE void create(const int &BudgetHeadId, const QString &name) const;
 
     Q_INVOKABLE void approvedCreate(const int &budgetHeadId, const QString &value) const;
 
-    Q_INVOKABLE void update(int id, const QString &name, const int &BudgetHeadId) const;
+    Q_INVOKABLE void update(int id,const int &BudgetHeadId, const QString &name ) const;
 
     Q_INVOKABLE std::vector<ProjectBudget*> getProjectBudgetList(bool isApproved = false) const;
 

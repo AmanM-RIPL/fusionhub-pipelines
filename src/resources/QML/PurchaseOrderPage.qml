@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import com.fh.models 1.0
 import com.fh.controllers
+import "utils"
 
 Column {
     id: purchaseOrderRoot
@@ -28,6 +29,22 @@ Column {
     property var selectedData: null
     property string popupMode: "view"
     property bool isApproved: false
+    property bool canApproveReject: false
+
+    // Properties - Validation errors
+    property string vendorError: ""
+    property string lineItemsError: ""
+    property string cancellationReasonError: ""
+
+    // Properties - Form validity
+    property bool isCreateFormValid: false
+    property bool isEditFormValid: false
+
+    // Color Variables
+    property string mandatoryColor: "#D13438"  // Red
+    property string labelColor: "#323130"      // Dark Gray
+    property string successColor: "#28A745"    // Green
+    property string dangerColor: "#DC3545"     // Red
 
     // Controllers
     VendorController {
@@ -50,28 +67,42 @@ Column {
         id: purchaseOrderLineController
     }
 
+    UserController {
+        id: userController
+    }
+
+    DraftEntityController {
+        id: draftEntityController
+    }
+
+    // Validation Helper
+    ValidationHelper {
+        id: validator
+    }
+
     /* ---------- Create Popup ---------- */
     FHPopup {
         id: newPurchaseOrderPopup
-        popupWidth: 1000
+        popupWidth: 800
         popupHeight: 600
         title: "Create Purchase Order"
         parent: Overlay.overlay
+        buttonEnabled: purchaseOrderRoot.isCreateFormValid
 
         onAcceptCallback: function () {
-            if (purchaseOrderLineData.length > 0) {
+            if (validateForm(true)) {
                 purchaseOrderLineController.create(
                             vendorsFromCtrl[vendorCombo.currentIndex].id,
                             purchaseOrderLineData
                             )
-                // Reset
-                purchaseOrderLineData = []
+                resetForm(true)
+                showPurchaseOrderList()
+                close()
             }
-            close()
         }
 
         onCancelCallback: function () {
-            purchaseOrderLineData = []
+            resetForm(true)
             close()
         }
 
@@ -80,9 +111,7 @@ Column {
         }
 
         onOpened: {
-            // Load lists
-            purchaseOrderLineData = []
-
+            resetForm(true)
             if (purchaseOrderRoot.visible) {
                 vendorsFromCtrl = []
                 materialsFromCtrl = []
@@ -92,7 +121,6 @@ Column {
                 materialsFromCtrl = materialController.getMaterialList(true)
                 unitsOfMeasurementFromCtrl = unitOfMeasurementController.getUOMList(true)
 
-                // Clear current lists then populate
                 purchaseOrderRoot.vendorList = []
                 purchaseOrderRoot.materialList = []
                 purchaseOrderRoot.unitOfMeasurementList = []
@@ -117,82 +145,97 @@ Column {
             spacing: 10
 
             // -------- Vendor Selection --------
-            Row {
-                width: parent.width
-                spacing: 40
+            Text {
+                text: "Select Vendor <span style='color: " + purchaseOrderRoot.mandatoryColor + ";'>*</span>"
+                color: purchaseOrderRoot.labelColor
+                font.weight: 700
+                font.pixelSize: 14
+                font.family: "Segoe UI"
+                textFormat: Text.RichText
+                topPadding: 10
+            }
 
-                Column {
-                    spacing: 4
-                    Text {
-                        text: "Select Vendor"
-                        color: "#323130"
-                        font.weight: 700
-                        font.pixelSize: 14
+            CustomComboBox {
+                id: vendorCombo
+                width: parent.width
+                model: vendorList
+                currentIndex: -1
+                onCurrentIndexChanged: {
+                    if (currentIndex !== -1) {
+                        purchaseOrderRoot.vendorError = ""
+                    } else {
+                        purchaseOrderRoot.vendorError = "Please select a vendor"
                     }
-                    CustomComboBox {
-                        id: vendorCombo
-                        width: 600
-                        model: vendorList
-                        currentIndex: 0
-                    }
+                    checkCreateFormValidity()
                 }
+            }
+
+            Text {
+                text: purchaseOrderRoot.vendorError
+                color: purchaseOrderRoot.mandatoryColor
+                font.pixelSize: 12
+                visible: purchaseOrderRoot.vendorError !== ""
             }
 
             // -------- Purchase Order Line Items --------
             Text {
                 id: purchaseOrderLineLabel
-                text: "Purchase Order Items:"
-                color: "#323130"
+                text: "Purchase Order Items <span style='color: " + purchaseOrderRoot.mandatoryColor + ";'>*</span>"
+                color: purchaseOrderRoot.labelColor
                 font.weight: 700
                 font.pixelSize: 14
                 font.family: "Segoe UI"
+                textFormat: Text.RichText
                 topPadding: 10
             }
 
             Rectangle {
-                width: parent.width - 6
-                height: 420
+                width: parent.width
+                height: 350
                 color: "#EDF1F4"
+                border.color: "#D0D0D0"
+                border.width: 1
 
                 Column {
                     width: parent.width
+                    height: parent.height
 
                     FHTable{
                         id: popupTable
-                        width: parent.width - 4
-                        height: 300
+                        width: parent.width
+                        height: 250
                         leftPadding: 2
                         removeRow: true
                         model: purchaseOrderLineData
                         columns: [
                             {
                                 "label": "Material",
-                                "width": 180,
+                                "width": 150,
                                 "key": "material_name"
                             },
                             {
                                 "label": "Quantity",
-                                "width": 180,
+                                "width": 100,
                                 "key": "quantity"
                             },
                             {
                                 "label": "Unit",
-                                "width": 140,
+                                "width": 120,
                                 "key": "unit_name"
                             },
                             {
                                 "label": "Dollar Value",
-                                "width": 140,
+                                "width": 120,
                                 "key": "dollar_value"
                             },
                             {
                                 "label": "Tax Amount",
-                                "width": 140,
+                                "width": 120,
                                 "key": "tax_amount"
                             },
                             {
                                 "label": "Tax Withholding",
-                                "width": 140,
+                                "width": 120,
                                 "key": "tax_withholding"
                             }
                         ]
@@ -205,125 +248,150 @@ Column {
                                     }
                                 }
                                 purchaseOrderLineData = temp
+                                checkCreateFormValidity()
                             }
                         }
                     }
-                }
-            }
 
-            Rectangle {
-                width: parent.width - 8
-                height: 28
-                color: "white"
+                    Rectangle {
+                        width: parent.width
+                        height: 70
+                        color: "white"
+                        border.color: "#D0D0D0"
+                        border.width: 1
 
-                Row {
-                    width: parent.width - 8
-                    height: 28
-                    leftPadding: 2
-                    spacing: 6
+                        Column {
+                            width: parent.width
+                            height: parent.height
+                            spacing: 4
+                            topPadding: 4
 
-                    CustomComboBox {
-                        id: materialCombo
-                        width: 150
-                        height: 24
-                        model: purchaseOrderRoot.materialList
-                        currentIndex: 0
-                    }
+                            // Input fields for new line item
+                            Row {
+                                width: parent.width - 4
+                                height: 28
+                                leftPadding: 2
+                                spacing: 6
 
-                    CustomTextBox {
-                        id: quantityTextBox
-                        placeholderText: "Quantity"
-                        text: ""
-                        color: "#323130"
-                        width: 150
-                        height: 24
-                        topPadding: 1
-                    }
-
-                    CustomComboBox {
-                        id: unitCombo
-                        width: 150
-                        height: 24
-                        model: purchaseOrderRoot.unitOfMeasurementList
-                        currentIndex: 0
-                    }
-
-                    CustomTextBox {
-                        id: dollarValueTextBox
-                        placeholderText: "Dollar Value"
-                        text: ""
-                        color: "#323130"
-                        width: 150
-                        height: 24
-                        topPadding: 1
-                    }
-
-                    CustomTextBox {
-                        id: taxAmountTextBox
-                        placeholderText: "Tax Amount"
-                        text: ""
-                        color: "#323130"
-                        width: 150
-                        height: 24
-                        topPadding: 1
-                    }
-
-                    CustomTextBox {
-                        id: taxWithholdingTextBox
-                        placeholderText: "Tax Withholding"
-                        text: ""
-                        color: "#323130"
-                        width: 120
-                        height: 24
-                        topPadding: 1
-                    }
-
-                    CustomButton {
-                        color: "transparent"
-                        width: 24
-                        height: 24
-                        border.color: "#8080808C"
-                        btnSource: "qrc:/resources/images/add.svg"
-                        btnName: ""
-                        btnNameColor: "blue"
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-
-                            onEntered: parent.color = "#f2f2f2"
-                            onExited: parent.color = "transparent"
-
-                            onClicked: {
-                                var newElements = {
-                                    "material_id": String(materialsFromCtrl[materialCombo.currentIndex].id),
-                                    "material_name": materialCombo.currentValue,
-                                    "quantity": quantityTextBox.text,
-                                    "unit_of_measurement_id": String(unitsOfMeasurementFromCtrl[unitCombo.currentIndex].id),
-                                    "unit_name": unitCombo.currentValue,
-                                    "dollar_value": dollarValueTextBox.text,
-                                    "tax_amount": taxAmountTextBox.text,
-                                    "tax_withholding": taxWithholdingTextBox.text
+                                CustomComboBox {
+                                    id: materialCombo
+                                    width: 140
+                                    height: 24
+                                    model: purchaseOrderRoot.materialList
+                                    currentIndex: 0
                                 }
 
-                                // Append to purchaseOrderLineData
-                                purchaseOrderLineData = purchaseOrderLineData.concat(newElements)
+                                CustomTextBox {
+                                    id: quantityTextBox
+                                    placeholderText: "Qty"
+                                    text: ""
+                                    color: purchaseOrderRoot.labelColor
+                                    width: 100
+                                    height: 24
+                                    topPadding: 1
+                                }
 
-                                // Clear the inputs
-                                quantityTextBox.text = ""
-                                dollarValueTextBox.text = ""
-                                taxAmountTextBox.text = ""
-                                taxWithholdingTextBox.text = ""
+                                CustomComboBox {
+                                    id: unitCombo
+                                    width: 110
+                                    height: 24
+                                    model: purchaseOrderRoot.unitOfMeasurementList
+                                    currentIndex: 0
+                                }
+
+                                CustomTextBox {
+                                    id: dollarValueTextBox
+                                    placeholderText: "Value"
+                                    text: ""
+                                    color: purchaseOrderRoot.labelColor
+                                    width: 100
+                                    height: 24
+                                    topPadding: 1
+                                }
+
+                                CustomTextBox {
+                                    id: taxAmountTextBox
+                                    placeholderText: "Tax"
+                                    text: ""
+                                    color: purchaseOrderRoot.labelColor
+                                    width: 100
+                                    height: 24
+                                    topPadding: 1
+                                }
+
+                                CustomTextBox {
+                                    id: taxWithholdingTextBox
+                                    placeholderText: "Withholding"
+                                    text: ""
+                                    color: purchaseOrderRoot.labelColor
+                                    width: 100
+                                    height: 24
+                                    topPadding: 1
+                                }
+
+                                CustomButton {
+                                    color: "transparent"
+                                    width: 24
+                                    height: 24
+                                    border.color: "#8080808C"
+                                    btnSource: "qrc:/resources/images/add.svg"
+                                    btnName: ""
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        hoverEnabled: true
+
+                                        onEntered: parent.color = "#f2f2f2"
+                                        onExited: parent.color = "transparent"
+
+                                        onClicked: {
+                                            // Validate line item
+                                            if (materialCombo.currentIndex < 0 ||
+                                                quantityTextBox.text === "" ||
+                                                dollarValueTextBox.text === "") {
+                                                purchaseOrderRoot.lineItemsError =
+                                                    "Please fill in all required fields: Material, Quantity, and Dollar Value"
+                                                return
+                                            }
+
+                                            purchaseOrderRoot.lineItemsError = ""
+
+                                            var newElements = {
+                                                "material_id": String(materialsFromCtrl[materialCombo.currentIndex].id),
+                                                "material_name": materialCombo.currentValue,
+                                                "quantity": quantityTextBox.text,
+                                                "unit_of_measurement_id": String(unitsOfMeasurementFromCtrl[unitCombo.currentIndex].id),
+                                                "unit_name": unitCombo.currentValue,
+                                                "dollar_value": dollarValueTextBox.text,
+                                                "tax_amount": taxAmountTextBox.text,
+                                                "tax_withholding": taxWithholdingTextBox.text
+                                            }
+
+                                            purchaseOrderLineData = purchaseOrderLineData.concat(newElements)
+
+                                            // Clear the inputs
+                                            quantityTextBox.text = ""
+                                            dollarValueTextBox.text = ""
+                                            taxAmountTextBox.text = ""
+                                            taxWithholdingTextBox.text = ""
+
+                                            checkCreateFormValidity()
+                                        }
+                                    }
+                                }
+                            }
+
+                            Text {
+                                text: purchaseOrderRoot.lineItemsError
+                                color: purchaseOrderRoot.mandatoryColor
+                                font.pixelSize: 11
+                                visible: purchaseOrderRoot.lineItemsError !== ""
+                                leftPadding: 2
                             }
                         }
                     }
                 }
-            }
-
-            Item {
-                width: 1
-                height: 20
             }
         }
     }
@@ -331,71 +399,52 @@ Column {
     /* ---------- View / Edit Popup ---------- */
     FHPopup {
         id: viewEditPopup
-        popupWidth: 1000
+        popupWidth: 800
         popupHeight: 600
         title: popupMode === "view" ? "View Purchase Order" : "Edit Purchase Order"
-
         showAcceptButton: popupMode === "edit"
         buttonName: popupMode === "edit" ? "Update" : ""
         buttonSource: popupMode === "edit" ? "qrc:/resources/images/editWhite_icon.png" : ""
+        buttonEnabled: popupMode === "edit" ? purchaseOrderRoot.isEditFormValid : true
+
+        property bool canApproveReject: selectedData && (selectedData.nextApprovingUser === selectedData.createdByUser)
 
         onAcceptCallback: function () {
-            if (popupMode === "edit" && selectedData) {
-                if (purchaseOrderLineDataEdit.length > 0) {
-                    purchaseOrderLineController.update(
-                                selectedData.id,
-                                vendorsFromCtrl[vendorComboEdit.currentIndex].id,
-                                purchaseOrderLineDataEdit
-                                )
-                    // Reset
-                    purchaseOrderLineDataEdit = []
-                    vendorComboEdit.currentIndex = -1
-                }
+            if (popupMode === "edit" && selectedData && validateForm(false)) {
+                purchaseOrderLineController.update(
+                            selectedData.id,
+                            vendorsFromCtrl[vendorComboEdit.currentIndex].id,
+                            purchaseOrderLineDataEdit
+                            )
+                resetForm(false)
                 showPurchaseOrderList()
+                close()
+            } else if (popupMode === "view") {
+                if (selectedData) {
+                    draftEntityController.approve(selectedData.id)
+                    resetForm(false)
+                    showPurchaseOrderList()
+                    close()
+                }
             }
         }
 
         onCancelCallback: function () {
-            purchaseOrderLineDataEdit = []
+            resetForm(false)
+            close()
         }
 
         onOpened: {
-            // Load lists from controllers
-            purchaseOrderLineDataEdit = []
-
-            vendorsFromCtrl = []
-            materialsFromCtrl = []
-            unitsOfMeasurementFromCtrl = []
-
-            vendorsFromCtrl = vendorController.getVendorList(true)
-            materialsFromCtrl = materialController.getMaterialList(true)
-            unitsOfMeasurementFromCtrl = unitOfMeasurementController.getUOMList(true)
-
-            // Clear and populate lists
-            var tempVendorList = []
-            var tempMaterialList = []
-            var tempUnitList = []
-
-            for (var i = 0; i < vendorsFromCtrl.length; i++) {
-                tempVendorList = tempVendorList.concat(vendorsFromCtrl[i].vendorName)
-            }
-
-            for (var j = 0; j < materialsFromCtrl.length; j++) {
-                tempMaterialList = tempMaterialList.concat(materialsFromCtrl[j].materialName)
-            }
-
-            for (var k = 0; k < unitsOfMeasurementFromCtrl.length; k++) {
-                tempUnitList = tempUnitList.concat(unitsOfMeasurementFromCtrl[k].uomName)
-            }
-
-            purchaseOrderRoot.vendorList = tempVendorList
-            purchaseOrderRoot.materialList = tempMaterialList
-            purchaseOrderRoot.unitOfMeasurementList = tempUnitList
-
-            // Fill popup with selected data
+            resetForm(false)
             if (selectedData) {
+                purchaseOrderRoot.canApproveReject = selectedData && (selectedData.nextApprovingUser === selectedData.createdByUser)
                 fillPopup()
             }
+        }
+
+        onClosed: {
+            purchaseOrderRoot.cancellationReasonError = ""
+            cancellationReasonTextBox.text = ""
         }
 
         Column {
@@ -403,33 +452,40 @@ Column {
             spacing: 10
 
             // -------- Vendor Selection --------
-            Row {
-                width: parent.width
-                spacing: 40
+            Text {
+                text: "Select Vendor"
+                color: purchaseOrderRoot.labelColor
+                font.weight: 700
+                font.pixelSize: 14
+                font.family: "Segoe UI"
+                topPadding: 10
+            }
 
-                Column {
-                    spacing: 4
-                    Text {
-                        text: "Select Vendor"
-                        color: "#323130"
-                        font.weight: 700
-                        font.pixelSize: 14
-                    }
-                    CustomComboBox {
-                        id: vendorComboEdit
-                        width: 500
-                        model: vendorList
-                        currentIndex: 0
-                        enabled: popupMode === "edit"
+            CustomComboBox {
+                id: vendorComboEdit
+                width: parent.width
+                model: vendorList
+                currentIndex: 0
+                enabled: popupMode === "edit"
+                onCurrentIndexChanged: {
+                    if (popupMode === "edit") {
+                        checkEditFormValidity()
                     }
                 }
+            }
+
+            Text {
+                text: purchaseOrderRoot.vendorError
+                color: purchaseOrderRoot.mandatoryColor
+                font.pixelSize: 12
+                visible: purchaseOrderRoot.vendorError !== "" && popupMode === "edit"
             }
 
             // -------- Purchase Order Line Items --------
             Text {
                 id: purchaseOrderLineLabelEdit
-                text: "Purchase Order Items:"
-                color: "#323130"
+                text: "Purchase Order Items"
+                color: purchaseOrderRoot.labelColor
                 font.weight: 700
                 font.pixelSize: 14
                 font.family: "Segoe UI"
@@ -437,34 +493,37 @@ Column {
             }
 
             Rectangle {
-                width: parent.width - 6
-                height: 420
+                width: parent.width
+                height: 350
                 color: "#EDF1F4"
+                border.color: "#D0D0D0"
+                border.width: 1
 
                 Column {
                     width: parent.width
+                    height: parent.height
 
                     FHTable {
                         id: popupTableEdit
-                        width: parent.width - 4
-                        height: 300
+                        width: parent.width
+                        height: 250
                         leftPadding: 2
                         removeRow: popupMode === "edit"
                         model: purchaseOrderLineDataEdit
                         columns: [
                             {
                                 "label": "Material",
-                                "width": 200,
+                                "width": 150,
                                 "key": "material_name"
                             },
                             {
                                 "label": "Quantity",
-                                "width": 130,
+                                "width": 100,
                                 "key": "quantity"
                             },
                             {
                                 "label": "Unit",
-                                "width": 200,
+                                "width": 120,
                                 "key": "unit_name"
                             },
                             {
@@ -474,12 +533,12 @@ Column {
                             },
                             {
                                 "label": "Tax Amount",
-                                "width": 130,
+                                "width": 120,
                                 "key": "tax_amount"
                             },
                             {
                                 "label": "Tax Withholding",
-                                "width": 150,
+                                "width": 120,
                                 "key": "tax_withholding"
                             }
                         ]
@@ -492,126 +551,244 @@ Column {
                                     }
                                 }
                                 purchaseOrderLineDataEdit = temp
+                                checkEditFormValidity()
                             }
                         }
                     }
-                }
-            }
 
-            Rectangle {
-                width: parent.width - 8
-                height: 28
-                color: "white"
-                visible: popupMode === "edit"
+                    Rectangle {
+                        width: parent.width
+                        height: 80
+                        color: "white"
+                        border.color: "#D0D0D0"
+                        border.width: 1
+                        visible: popupMode === "edit"
 
-                Row {
-                    width: parent.width - 8
-                    height: 28
-                    leftPadding: 2
-                    spacing: 6
+                        Column {
+                            width: parent.width
+                            height: parent.height
+                            spacing: 4
+                            topPadding: 4
 
-                    CustomComboBox {
-                        id: materialComboEdit
-                        width: 150
-                        height: 24
-                        model: purchaseOrderRoot.materialList
-                        currentIndex: 0
-                    }
+                            Row {
+                                width: parent.width - 4
+                                height: 28
+                                leftPadding: 2
+                                spacing: 6
 
-                    CustomTextBox {
-                        id: quantityTextBoxEdit
-                        placeholderText: "Quantity"
-                        text: ""
-                        color: "#323130"
-                        width: 150
-                        height: 24
-                        topPadding: 1
-                    }
-
-                    CustomComboBox {
-                        id: unitComboEdit
-                        width: 150
-                        height: 24
-                        model: purchaseOrderRoot.unitOfMeasurementList
-                        currentIndex: 0
-                    }
-
-                    CustomTextBox {
-                        id: dollarValueTextBoxEdit
-                        placeholderText: "Amount"
-                        text: ""
-                        color: "#323130"
-                        width: 150
-                        height: 24
-                        topPadding: 1
-                    }
-
-                    CustomTextBox {
-                        id: taxAmountTextBoxEdit
-                        placeholderText: "Tax Amount"
-                        text: ""
-                        color: "#323130"
-                        width: 150
-                        height: 24
-                        topPadding: 1
-                    }
-
-                    CustomTextBox {
-                        id: taxWithholdingTextBoxEdit
-                        placeholderText: "Tax Withholding"
-                        text: ""
-                        color: "#323130"
-                        width: 120
-                        height: 24
-                        topPadding: 1
-                    }
-
-                    CustomButton {
-                        color: "transparent"
-                        width: 24
-                        height: 24
-                        border.color: "#8080808C"
-                        btnSource: "qrc:/resources/images/add.svg"
-                        btnName: ""
-                        btnNameColor: "blue"
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-
-                            onEntered: parent.color = "#f2f2f2"
-                            onExited: parent.color = "transparent"
-
-                            onClicked: {
-                                var newElements = {
-                                    "material_id": String(materialsFromCtrl[materialComboEdit.currentIndex].id),
-                                    "material_name": materialComboEdit.currentValue,
-                                    "quantity": quantityTextBoxEdit.text,
-                                    "unit_of_measurement_id": String(unitsOfMeasurementFromCtrl[unitComboEdit.currentIndex].id),
-                                    "unit_name": unitComboEdit.currentValue,
-                                    "dollar_value": dollarValueTextBoxEdit.text,
-                                    "tax_amount": taxAmountTextBoxEdit.text,
-                                    "tax_withholding": taxWithholdingTextBoxEdit.text
+                                CustomComboBox {
+                                    id: materialComboEdit
+                                    width: 140
+                                    height: 24
+                                    model: purchaseOrderRoot.materialList
+                                    currentIndex: 0
                                 }
 
-                                // Append to purchaseOrderLineDataEdit
-                                purchaseOrderLineDataEdit = purchaseOrderLineDataEdit.concat(newElements)
+                                CustomTextBox {
+                                    id: quantityTextBoxEdit
+                                    placeholderText: "Qty"
+                                    text: ""
+                                    color: purchaseOrderRoot.labelColor
+                                    width: 100
+                                    height: 24
+                                    topPadding: 1
+                                }
 
-                                // Clear inputs
-                                quantityTextBoxEdit.text = ""
-                                dollarValueTextBoxEdit.text = ""
-                                taxAmountTextBoxEdit.text = ""
-                                taxWithholdingTextBoxEdit.text = ""
+                                CustomComboBox {
+                                    id: unitComboEdit
+                                    width: 110
+                                    height: 24
+                                    model: purchaseOrderRoot.unitOfMeasurementList
+                                    currentIndex: 0
+                                }
+
+                                CustomTextBox {
+                                    id: dollarValueTextBoxEdit
+                                    placeholderText: "Value"
+                                    text: ""
+                                    color: purchaseOrderRoot.labelColor
+                                    width: 100
+                                    height: 24
+                                    topPadding: 1
+                                }
+
+                                CustomTextBox {
+                                    id: taxAmountTextBoxEdit
+                                    placeholderText: "Tax"
+                                    text: ""
+                                    color: purchaseOrderRoot.labelColor
+                                    width: 100
+                                    height: 24
+                                    topPadding: 1
+                                }
+
+                                CustomTextBox {
+                                    id: taxWithholdingTextBoxEdit
+                                    placeholderText: "Withholding"
+                                    text: ""
+                                    color: purchaseOrderRoot.labelColor
+                                    width: 100
+                                    height: 24
+                                    topPadding: 1
+                                }
+
+                                CustomButton {
+                                    color: "transparent"
+                                    width: 24
+                                    height: 24
+                                    border.color: "#8080808C"
+                                    btnSource: "qrc:/resources/images/add.svg"
+                                    btnName: ""
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        hoverEnabled: true
+
+                                        onEntered: parent.color = "#f2f2f2"
+                                        onExited: parent.color = "transparent"
+
+                                        onClicked: {
+                                            if (materialComboEdit.currentIndex < 0 ||
+                                                quantityTextBoxEdit.text === "" ||
+                                                dollarValueTextBoxEdit.text === "") {
+                                                purchaseOrderRoot.lineItemsError =
+                                                    "Please fill in all required fields: Material, Quantity, and Dollar Value"
+                                                return
+                                            }
+
+                                            purchaseOrderRoot.lineItemsError = ""
+
+                                            var newElements = {
+                                                "material_id": String(materialsFromCtrl[materialComboEdit.currentIndex].id),
+                                                "material_name": materialComboEdit.currentValue,
+                                                "quantity": quantityTextBoxEdit.text,
+                                                "unit_of_measurement_id": String(unitsOfMeasurementFromCtrl[unitComboEdit.currentIndex].id),
+                                                "unit_name": unitComboEdit.currentValue,
+                                                "dollar_value": dollarValueTextBoxEdit.text,
+                                                "tax_amount": taxAmountTextBoxEdit.text,
+                                                "tax_withholding": taxWithholdingTextBoxEdit.text
+                                            }
+
+                                            purchaseOrderLineDataEdit = purchaseOrderLineDataEdit.concat(newElements)
+
+                                            quantityTextBoxEdit.text = ""
+                                            dollarValueTextBoxEdit.text = ""
+                                            taxAmountTextBoxEdit.text = ""
+                                            taxWithholdingTextBoxEdit.text = ""
+
+                                            checkEditFormValidity()
+                                        }
+                                    }
+                                }
+                            }
+
+                            Text {
+                                text: purchaseOrderRoot.lineItemsError
+                                color: purchaseOrderRoot.mandatoryColor
+                                font.pixelSize: 11
+                                visible: purchaseOrderRoot.lineItemsError !== ""
+                                leftPadding: 2
                             }
                         }
                     }
                 }
             }
 
-            Item {
-                width: 1
-                height: 20
+            // Cancellation Reason
+            Text {
+                text: "Cancellation Reason"
+                color: purchaseOrderRoot.labelColor
+                font.weight: 700
+                font.pixelSize: 14
+                font.family: "Segoe UI"
+                topPadding: 10
+                visible: popupMode === "view" && canApproveReject
+            }
+
+            CustomTextBox {
+                id: cancellationReasonTextBox
+                placeholderText: "Enter cancellation reason"
+                text: ""
+                color: purchaseOrderRoot.labelColor
+                width: parent.width
+                height: 60
+                visible: popupMode === "view" && canApproveReject
+                wrapMode: TextEdit.Wrap
+                onTextChanged: {
+                    if (text.trim() !== "") {
+                        purchaseOrderRoot.cancellationReasonError = ""
+                    }
+                }
+            }
+
+            Text {
+                text: purchaseOrderRoot.cancellationReasonError
+                color: purchaseOrderRoot.mandatoryColor
+                font.pixelSize: 12
+                visible: purchaseOrderRoot.cancellationReasonError !== "" && popupMode === "view" && canApproveReject
+            }
+
+            // Buttons Row - Approve and Reject
+            Row {
+                width: parent.width
+                spacing: 10
+                topPadding: 20
+                bottomPadding: 20
+                visible: popupMode === "view" && canApproveReject
+                layoutDirection: Qt.RightToLeft
+
+                MouseArea {
+                    width: 100
+                    height: 34
+                    onClicked: {
+                        if (selectedData) {
+                            draftEntityController.approve(selectedData.id)
+                            resetForm(false)
+                            showPurchaseOrderList()
+                            viewEditPopup.close()
+                        }
+                    }
+                    CustomButton {
+                        width: parent.width
+                        height: parent.height
+                        btnName: "Approve"
+                        btnNameColor: "#FFFFFF"
+                        btnNamePixelSize: 13
+                        btnNameFontFamily: "Segoe UI"
+                        color: purchaseOrderRoot.successColor
+                    }
+                }
+
+                MouseArea {
+                    width: 100
+                    height: 34
+                    onClicked: {
+                        let reason = cancellationReasonTextBox.text.trim()
+                        let reasonValidation = validator.validateNotEmpty(reason)
+                        if (!reasonValidation.isValid) {
+                            purchaseOrderRoot.cancellationReasonError = reasonValidation.message
+                            return
+                        }
+
+                        if (selectedData) {
+                            console.log("Cancelling PO ID: " + selectedData.id + " Reason: " + reason)
+                            draftEntityController.cancel(selectedData.id, reason)
+                            resetForm(false)
+                            showPurchaseOrderList()
+                            viewEditPopup.close()
+                        }
+                    }
+                    CustomButton {
+                        width: parent.width
+                        height: parent.height
+                        btnName: "Reject"
+                        btnNameColor: "#FFFFFF"
+                        btnNamePixelSize: 13
+                        btnNameFontFamily: "Segoe UI"
+                        color: purchaseOrderRoot.dangerColor
+                    }
+                }
             }
         }
     }
@@ -662,7 +839,7 @@ Column {
             Text {
                 id: approvalTypeLabel
                 text: "Choose Approval Type"
-                color: "#323130"
+                color: purchaseOrderRoot.labelColor
                 font.weight: 700
                 font.pixelSize: 14
                 font.family: "Segoe UI"
@@ -680,7 +857,7 @@ Column {
                     text: approvalTypeComboBox.displayText
                     leftPadding: 10
                     verticalAlignment: Text.AlignVCenter
-                    color: "#323130"
+                    color: purchaseOrderRoot.labelColor
                     font.pixelSize: 14
                 }
 
@@ -707,13 +884,18 @@ Column {
         columns: [
             {
                 "label": "Id",
-                "width": 600,
+                "width": 500,
                 "key": "id"
             },
             {
                 "label": "Vendor",
-                "width": 700,
+                "width": 600,
                 "key": "vendorName"
+            },
+            {
+                "label": "Status",
+                "width": 200,
+                "key": "displayStatus"
             }
         ]
 
@@ -736,16 +918,121 @@ Column {
     Component.onCompleted: showPurchaseOrderList()
     onVisibleChanged: showPurchaseOrderList()
 
-    // -------- Functions --------
+    // ========== VALIDATION FUNCTIONS ==========
+
+    // Check if create form is valid
+    function checkCreateFormValidity() {
+        let vendorValidation = validator.validateComboBoxSelection(vendorCombo.currentIndex, "vendor")
+        let lineItemsValidation = purchaseOrderLineData.length > 0
+
+        if (!vendorValidation.isValid) {
+            purchaseOrderRoot.vendorError = vendorValidation.message
+        } else {
+            purchaseOrderRoot.vendorError = ""
+        }
+
+        if (!lineItemsValidation) {
+            purchaseOrderRoot.lineItemsError = "At least one line item is required"
+        } else {
+            purchaseOrderRoot.lineItemsError = ""
+        }
+
+        purchaseOrderRoot.isCreateFormValid = vendorValidation.isValid && lineItemsValidation
+    }
+
+    // Check if edit form is valid
+    function checkEditFormValidity() {
+        let vendorValidation = validator.validateComboBoxSelection(vendorComboEdit.currentIndex, "vendor")
+        let lineItemsValidation = purchaseOrderLineDataEdit.length > 0
+
+        if (!vendorValidation.isValid) {
+            purchaseOrderRoot.vendorError = vendorValidation.message
+        } else {
+            purchaseOrderRoot.vendorError = ""
+        }
+
+        if (!lineItemsValidation) {
+            purchaseOrderRoot.lineItemsError = "At least one line item is required"
+        } else {
+            purchaseOrderRoot.lineItemsError = ""
+        }
+
+        purchaseOrderRoot.isEditFormValid = vendorValidation.isValid && lineItemsValidation
+    }
+
+    // Main validation function
+    function validateForm(isCreate) {
+        let vendorCombo_ref = isCreate ? vendorCombo : vendorComboEdit
+
+        clearValidationErrors()
+
+        let vendorValidation = validator.validateComboBoxSelection(vendorCombo_ref.currentIndex, "vendor")
+        if (!vendorValidation.isValid) {
+            purchaseOrderRoot.vendorError = vendorValidation.message
+            return false
+        }
+
+        let lineItemsData = isCreate ? purchaseOrderLineData : purchaseOrderLineDataEdit
+        if (lineItemsData.length === 0) {
+            purchaseOrderRoot.lineItemsError = "At least one line item is required"
+            return false
+        }
+
+        return true
+    }
+
+    function clearValidationErrors() {
+        purchaseOrderRoot.vendorError = ""
+        purchaseOrderRoot.lineItemsError = ""
+        purchaseOrderRoot.cancellationReasonError = ""
+    }
+
+    function resetForm(isCreate) {
+        if (isCreate) {
+            vendorCombo.currentIndex = -1
+            purchaseOrderLineData = []
+            quantityTextBox.text = ""
+            dollarValueTextBox.text = ""
+            taxAmountTextBox.text = ""
+            taxWithholdingTextBox.text = ""
+            purchaseOrderRoot.isCreateFormValid = false
+        } else {
+            vendorComboEdit.currentIndex = 0
+            purchaseOrderLineDataEdit = []
+            quantityTextBoxEdit.text = ""
+            dollarValueTextBoxEdit.text = ""
+            taxAmountTextBoxEdit.text = ""
+            taxWithholdingTextBoxEdit.text = ""
+            purchaseOrderRoot.isEditFormValid = false
+            cancellationReasonTextBox.text = ""
+            purchaseOrderRoot.cancellationReasonError = ""
+        }
+        clearValidationErrors()
+    }
+
+    // ========== DATA LOADING FUNCTIONS ==========
+
+    // Load and display purchase orders list
     function showPurchaseOrderList() {
         purchaseOrderRoot.purchaseOrderList = []
 
         if (!purchaseOrderRoot.visible)
             return
 
-        purchaseOrderRoot.purchaseOrderList = purchaseOrderController.getPurchaseOrderList(isApproved)
+        var pos = purchaseOrderController.getPurchaseOrderList(isApproved)
+
+        for (var i = 0; i < pos.length; i++) {
+            if (pos[i].nextApprovingUser === userController.getCurrentId()) {
+                pos[i].displayStatus = "Pending"
+            } else {
+                pos[i].displayStatus = pos[i].approvalStatus
+            }
+        }
+
+        purchaseOrderRoot.purchaseOrderList = pos
     }
 
+    // Fill edit popup with selected data
     function fillPopup() {
         if (!selectedData)
             return
@@ -779,5 +1066,7 @@ Column {
         }
 
         purchaseOrderLineDataEdit = tempLines
+
+        checkEditFormValidity()
     }
 }

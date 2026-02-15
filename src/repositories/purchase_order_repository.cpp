@@ -47,7 +47,7 @@ PurchaseOrder* PurchaseOrderRepository::mapFromQueryQML(const QSqlQuery& query, 
 
     po->setId(query.value("id").toInt());
     po->setGlobalId(query.value("global_id").toString());
-    po->setApprovalStatus(query.value("approval_status").toBool());
+    po->setApprovalStatus(query.value("approval_status").toString());
     po->setVendorId(query.value("vendor_id").toInt());
     // po->setMaterialId(query.value("material_id").toInt());
     // po->setUnitOfMeasurementId(query.value("unit_of_measurement_id").toInt());

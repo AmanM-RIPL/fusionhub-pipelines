@@ -1,4 +1,5 @@
 #include "schedule_of_rates_controller.h"
+#include "schedule_of_rates_line_controller.h"
 #include "common/repository_locator.h"
 #include <QDir>
 
@@ -14,7 +15,6 @@ ScheduleOfRatesController::ScheduleOfRatesController(QObject *parent)
 
 void ScheduleOfRatesController::create(const QString &name, const QVariant &pramMainMap) const
 {
-    // ScheduleOfRates scheduleOfRates;
 
     /***********Start of DraftEntity******************/
 
@@ -51,7 +51,7 @@ void ScheduleOfRatesController::create(const QString &name, const QVariant &pram
     draftEntity.setProject(gProjectId);
     draftEntity.setEntity("ScheduleOfRates");
     draftEntity.setCreatedByUser(gUser->getId());
-    draftEntity.setNextApprovingUser(0);
+    draftEntity.setNextApprovingUser(gUser->getId());
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);
     draftEntity.setChangeHistory(changeHistory);
@@ -66,7 +66,7 @@ void ScheduleOfRatesController::approvedCreate(const QString &name) const
 
     scheduleOfRates.setId(0);
     scheduleOfRates.setGlobalId("123");
-    scheduleOfRates.setApprovalStatus(true);
+    // setApprovalStatus(true);
 
     scheduleOfRates.setScheduleOfRatesName(name);
 
@@ -81,30 +81,82 @@ std::vector<ScheduleOfRates*> ScheduleOfRatesController::getScheduleOfRatesList(
 
     if(isApproved){
 
-           qDebug()<<"Check: "<< m_scheduleOfRatesRepository->findAllQML();
+          // qDebug()<<"Check: "<< m_scheduleOfRatesRepository->findAllQML();
         return m_scheduleOfRatesRepository->findAllQML();
     }
-    else{
-        std::vector<DraftEntity*>  draftEntitys  =  m_draftEntityRepository->findAllQML("ScheduleOfRates");
-        std::vector<ScheduleOfRates*> scheduleOfRatess;
-        for(int i = 0; i < draftEntitys.size(); i++)
-        {
-            QString  jsonString = draftEntitys[i]->getEntitySchema();
-            QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
-            if (!jsonDoc.isNull() && jsonDoc.isObject())
-            {
-                auto scheduleOfRates = new ScheduleOfRates();
-                QJsonObject jsonObj = jsonDoc.object();
-                scheduleOfRates->setId(i + 1);
-                scheduleOfRates->setGlobalId("123");
-                scheduleOfRates->setApprovalStatus(true);
+    else {
+        std::vector<DraftEntity*> draftEntitys =
+            m_draftEntityRepository->findAllQML("ScheduleOfRates");
 
+        std::vector<ScheduleOfRates*> scheduleOfRatess;
+
+        for (int i = 0; i < draftEntitys.size(); i++) {
+
+            int draftId = draftEntitys[i]->getId();
+            QString jsonString = draftEntitys[i]->getEntitySchema();
+            QString approvalStatus = draftEntitys[i]->getApprovalStatus();
+            int nextApprovingUser = draftEntitys[i]->getNextApprovingUser();
+            int createdByUser = draftEntitys[i]->getCreatedByUser();
+
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
+
+            if (!jsonDoc.isNull() && jsonDoc.isObject()) {
+
+                QJsonObject jsonObj = jsonDoc.object();
+
+                auto scheduleOfRates = new ScheduleOfRates();
+
+                scheduleOfRates->setId(draftId);
+                scheduleOfRates->setGlobalId("123");
+                scheduleOfRates->setApprovalStatus(approvalStatus);
+                scheduleOfRates->setCreatedByUser(createdByUser);
+                scheduleOfRates->setNextApprovingUser(nextApprovingUser);
+
+                // ===== Main Name =====
                 scheduleOfRates->setScheduleOfRatesName(jsonObj["scheduleOfRatesName"].toString());
+
+                // ===== Schedule Of Rates Line Array =====
+                QJsonArray lineArray = jsonObj["scheduleOfRatesLine"].toArray();
+
+                QList<QObject*> lines;
+
+                for (int j = 0; j < lineArray.size(); j++) {
+
+                    QJsonObject lineObj = lineArray[j].toObject();
+
+                    int scheduleSetupId = lineObj["scheduleSetupId"].toString().toInt();
+
+                    QJsonArray dataArray = lineObj["data"].toArray();
+
+
+                    for (int k = 0; k < dataArray.size(); k++) {
+
+                        QJsonObject dataObj = dataArray[k].toObject();
+
+                        auto* line = new ScheduleOfRatesLine();
+
+                        // line->setId(0); // draft child row
+                        // line->setScheduleOfRatesId(draftId);
+                        line->setScheduleSetupId(scheduleSetupId);
+
+                        line->setCostParam(dataObj["cost"].toString());
+                        line->setResourceParam(dataObj["value"].toString());
+
+
+
+                        lines.push_back(line);
+                    }
+                }
+
+                scheduleOfRates->setScheduleOfRatesLines(lines);
+
                 scheduleOfRatess.push_back(scheduleOfRates);
             }
         }
+
         return scheduleOfRatess;
     }
+
 }
 
 QJsonDocument ScheduleOfRatesController::CreateJson(const QVariant &paramMap) const

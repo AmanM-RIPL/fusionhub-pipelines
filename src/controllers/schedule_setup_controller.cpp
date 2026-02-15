@@ -21,9 +21,6 @@ ScheduleSetupController::ScheduleSetupController(QObject *parent)
 void ScheduleSetupController::create(const QString &scheduleSetupName, const QString &description, const QVariant &costParameter,
                                      const QVariant &resourceParameter) const
 {
-
-
-
     //QString costParam =  CreateJson(costParameter);
     QJsonDocument costParamJsonDoc = CreateJson(costParameter);
     QString costParamJsonString = costParamJsonDoc.toJson(QJsonDocument::Indented);
@@ -35,17 +32,17 @@ void ScheduleSetupController::create(const QString &scheduleSetupName, const QSt
     qDebug() <<"Created resourceParam:" << resourceParamJsonDoc.object();
 
 
-    ScheduleSetup setup;
-    setup.setId(0);
-    setup.setGlobalId("123");
-    setup.setApprovalStatus(true);
-    setup.setScheduleSetupName(scheduleSetupName);
-    setup.setDescription(description);
-    setup.setCostParameter(costParamJsonString);
-    setup.setResourceParameter(resourceParamJsonString);
+    // ScheduleSetup setup;
+    // setup.setId(0);
+    // setup.setGlobalId("123");
+    // setup.setApprovalStatus(true);
+    // setup.setScheduleSetupName(scheduleSetupName);
+    // setup.setDescription(description);
+    // setup.setCostParameter(costParamJsonString);
+    // setup.setResourceParameter(resourceParamJsonString);
 
 
-    m_scheduleSetupRepository->saveQML(&setup);
+    // m_scheduleSetupRepository->saveQML(&setup);
 
 
     /***********Start of DraftEntity******************/
@@ -87,12 +84,65 @@ void ScheduleSetupController::create(const QString &scheduleSetupName, const QSt
     draftEntity.setEntity("ScheduleSetup");
     //draftEntity.setCreatedByUser(gUser->getUserId());
     draftEntity.setCreatedByUser(gUser->getId());
-    draftEntity.setNextApprovingUser(0);
+    draftEntity.setNextApprovingUser(gUser->getId());
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);
     draftEntity.setChangeHistory(changeHistory);
 
     m_draftEntityRepository->saveQML(&draftEntity);
+}
+
+void ScheduleSetupController::update(int id, const QJsonObject &updatedData) const
+{
+    qDebug() << "Updating ScheduleSetup Draft Entity ID:" << id;
+
+    // Create new entity schema with updated data
+    QJsonObject jsonObject;
+    jsonObject["scheduleSetupName"] = updatedData.value("scheduleSetupName").toString();
+    jsonObject["description"] = updatedData.value("description").toString();
+
+    // Handle cost parameters
+    QVariant costParamVariant = updatedData.value("vecCostParamDataDetails");
+    QJsonDocument costParamJsonDoc = CreateJson(costParamVariant);
+    jsonObject["costParam"] = costParamJsonDoc.object();
+
+    // Handle resource parameters
+    QVariant resourceParamVariant = updatedData.value("vecResourceParamDataDetails");
+    QJsonDocument resourceParamJsonDoc = CreateJson(resourceParamVariant);
+    jsonObject["resourceParam"] = resourceParamJsonDoc.object();
+
+    QJsonDocument jsonDoc(jsonObject);
+    QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
+    qDebug() << "ScheduleSetup:Updated EntitySchema: " << entitySchema;
+
+    // Create change history for update
+    QDateTime currentDateTimeUtc = QDateTime::currentDateTimeUtc();
+    QString isoDateTimeString = currentDateTimeUtc.toString(Qt::ISODateWithMs);
+    QJsonObject jsonObjectChangeHistory;
+    jsonObjectChangeHistory["user"] = gUser->getId();
+    jsonObjectChangeHistory["timestamp"] = isoDateTimeString;
+    jsonObjectChangeHistory["changeType"] = "update";
+    jsonObjectChangeHistory["description"] = "Updated By User";
+    jsonObjectChangeHistory["approvalHistory"] = "null";
+    QJsonDocument jsonDocChangeHistory(jsonObjectChangeHistory);
+    QString changeHistory = jsonDocChangeHistory.toJson(QJsonDocument::Indented);
+
+    QDate updatedOn = QDate::currentDate();
+
+    DraftEntity draftEntity;
+    draftEntity.setId(id);
+    draftEntity.setTenant(gTenantId);
+    draftEntity.setCreatedOn(updatedOn);
+    draftEntity.setProject(gProjectId);
+    draftEntity.setEntity("ScheduleSetup");
+    draftEntity.setCreatedByUser(gUser->getId());
+    draftEntity.setNextApprovingUser(0);
+    draftEntity.setEntitySchema(entitySchema);
+    draftEntity.setAssociatedApprovedEntity(0);
+    draftEntity.setChangeHistory(changeHistory);
+
+    m_draftEntityRepository->updateQML(&draftEntity);
+    qDebug() << "ScheduleSetup Draft Entity Updated Successfully";
 }
 
 void ScheduleSetupController::approvedCreate(const QString &scheduleSetupName,const QString &description,const QString &costParameter,const QString &resourceParameter) const
@@ -101,7 +151,7 @@ void ScheduleSetupController::approvedCreate(const QString &scheduleSetupName,co
 
     scheduleSetup.setId(0);
     scheduleSetup.setGlobalId("123");
-    scheduleSetup.setApprovalStatus(true);
+   // scheduleSetup.setApprovalStatus(true);
 
     scheduleSetup.setScheduleSetupName(scheduleSetupName);
     scheduleSetup.setDescription(description);
@@ -126,14 +176,20 @@ std::vector<ScheduleSetup*> ScheduleSetupController::getSetupList(bool isApprove
         for(int i = 0; i < draftEntitys.size(); i++)
         {
             QString  jsonString = draftEntitys[i]->getEntitySchema();
+            int draftId = draftEntitys[i]->getId();
+            QString approvalStatus = draftEntitys[i]->getApprovalStatus();
+            int nextApprovingUser = draftEntitys[i]->getNextApprovingUser();
+            int createdByUser = draftEntitys[i]->getCreatedByUser();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
             if (!jsonDoc.isNull() && jsonDoc.isObject())
             {
                 auto scheduleSetup = new ScheduleSetup();
                 QJsonObject jsonObj = jsonDoc.object();
-                scheduleSetup->setId(i + 1);
+                scheduleSetup->setId(draftId);
                 scheduleSetup->setGlobalId("123");
-                scheduleSetup->setApprovalStatus(true);
+                scheduleSetup->setApprovalStatus(approvalStatus);
+                scheduleSetup->setCreatedByUser(createdByUser);
+                scheduleSetup->setNextApprovingUser(nextApprovingUser);
                 scheduleSetup->setScheduleSetupName(jsonObj["scheduleSetupName"].toString());
                 scheduleSetup->setDescription(jsonObj["description"].toString());
                 //scheduleSetup->setCostParameter(jsonObj["costParam"].toString());

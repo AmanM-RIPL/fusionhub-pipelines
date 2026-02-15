@@ -52,7 +52,7 @@ void BudgetHeadController::create(const QString &description) const
     draftEntity.setEntity("BudgetHead");
     //draftEntity.setCreatedByUser(gUser->getUserId());
     draftEntity.setCreatedByUser(gUser->getId());
-    draftEntity.setNextApprovingUser(0);
+    draftEntity.setNextApprovingUser(gUser->getId());
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);
     draftEntity.setChangeHistory(changeHistory);
@@ -66,7 +66,6 @@ void BudgetHeadController::approvedCreate(const QString &description) const
 
     budgetHead.setId(0);
     budgetHead.setGlobalId("123");
-    budgetHead.setApprovalStatus(true);
     budgetHead.setDescription(description);
 
     m_budgetHeadRepository->saveQML(&budgetHead);
@@ -112,7 +111,6 @@ void BudgetHeadController::update(int id, const QString &description) const
 }
 std::vector<BudgetHead*> BudgetHeadController::getBudgetHeadList(bool isApproved) const
 {
-    qDebug()<<"IsApproved: "<< isApproved;
 
     if(isApproved){
         return m_budgetHeadRepository->findAllQML();
@@ -123,6 +121,9 @@ std::vector<BudgetHead*> BudgetHeadController::getBudgetHeadList(bool isApproved
         for(int i = 0; i < draftEntitys.size(); i++)
         {
              int draftId = draftEntitys[i]->getId();
+            QString approvalStatus = draftEntitys[i]->getApprovalStatus();
+            int nextApprovingUser = draftEntitys[i]->getNextApprovingUser();
+            int createdByUser = draftEntitys[i]->getCreatedByUser();
             QString  jsonString = draftEntitys[i]->getEntitySchema();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
             if (!jsonDoc.isNull() && jsonDoc.isObject())
@@ -131,7 +132,9 @@ std::vector<BudgetHead*> BudgetHeadController::getBudgetHeadList(bool isApproved
                 QJsonObject jsonObj = jsonDoc.object();
                 budgetHead->setId(draftId);
                 budgetHead->setGlobalId("123");
-                budgetHead->setApprovalStatus(true);
+                budgetHead->setApprovalStatus(approvalStatus);
+                budgetHead->setCreatedByUser(createdByUser);
+                budgetHead->setNextApprovingUser(nextApprovingUser);
                 budgetHead->setDescription(jsonObj["description"].toString());
                 budgetHeads.push_back(budgetHead);
             }

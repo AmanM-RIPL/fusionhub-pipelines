@@ -14,7 +14,6 @@ UserController::UserController(QObject *parent)
     : QObject(parent),
     m_userRepository(RepositoryLocator::instance().userRepository())
 {
-    // Connect NetworkManager signals to UserController slots
     NetworkManager* network = NetworkManager::getInstance();
 
     connect(network, &NetworkManager::loginDone,
@@ -25,8 +24,6 @@ UserController::UserController(QObject *parent)
 
     connect(network, &NetworkManager::loginFailed,
             this, &UserController::onNetworkLoginFailed);
-
-  //  BackgroundThreadManager::instance()->runBackgroundTaskForDraftDataSync();
 }
 
 void UserController::startBackgroundSync()
@@ -48,7 +45,7 @@ void UserController::startBackgroundSync()
 
 void UserController::logout()
 {
-     qDebug()<<"logout1";
+    qDebug()<<"logout1";
     if(g_timer)
     {
         qDebug()<<"logout2";
@@ -91,9 +88,7 @@ bool UserController::login(const QString& username, const QString& password)
 
 void UserController::onNetworkLoginSuccess(const QJsonObject& userData)
 {
-    qDebug() << "UserController: Login successful";
-
-    gUser->setUserId(userData["id"].toString());
+    gUser->setId(userData["id"].toInt());
     gUser->setUserName(userData["username"].toString());
     gUser->setToken(userData["token"].toString());
 

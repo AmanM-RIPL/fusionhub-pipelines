@@ -34,7 +34,7 @@ ProjectBudget* ProjectBudgetRepository::mapFromQueryQML(const QSqlQuery& query, 
     auto projectBudget = new ProjectBudget(parent);
     projectBudget->setId(query.value("id").toInt());
     projectBudget->setGlobalId(query.value("global_id").toString());
-    projectBudget->setApprovalStatus(query.value("approval_status").toBool());
+    projectBudget->setApprovalStatus(query.value("approval_status").toString());
     projectBudget->setDollarValue(query.value("dollar_value").toString());
     projectBudget->setBudgetHeadId(query.value("budget_head_id").toInt());
 

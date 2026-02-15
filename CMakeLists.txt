@@ -262,6 +262,7 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/controllers/file_controller.h src/controllers/file_controller.cpp
     src/controllers/purchase_order_controller.h src/controllers/purchase_order_controller.cpp
     src/controllers/good_received_note_controller.h src/controllers/good_received_note_controller.cpp
+    src/controllers/draft_entity_controller.h src/controllers/draft_entity_controller.cpp
 
     src/services/geometry/wall_geometry_service.h src/services/geometry/wall_geometry_service.cpp
     src/services/geometry/beam_geometry_service.h src/services/geometry/beam_geometry_service.cpp
@@ -289,6 +290,7 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/network/network_manager.h
     src/common/helper_point.h
     src/common/opengl/classes/mesh_map.h src/common/opengl/classes/mesh_map.cpp
+    src/controllers/draft_entity_controller.h src/controllers/draft_entity_controller.cpp
 )
 
 target_include_directories(FusionHubQt PRIVATE src)

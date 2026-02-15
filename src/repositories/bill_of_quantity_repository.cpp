@@ -35,7 +35,7 @@ BillOfQuantity* BillOfQuantityRepository::mapFromQueryQML(const QSqlQuery& query
     auto billOfQuantity = new BillOfQuantity(parent);
     billOfQuantity->setId(query.value("id").toInt());
     billOfQuantity->setGlobalId(query.value("global_id").toString());
-    billOfQuantity->setApprovalStatus(query.value("approval_status").toBool());
+    billOfQuantity->setApprovalStatus(query.value("approval_status").toString());
     billOfQuantity->setDescription(query.value("description").toString());
     billOfQuantity->setScheduleOfRatesId(query.value("schedule_of_rates_id").toInt());
 
