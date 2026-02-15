@@ -16,18 +16,6 @@ MaterialIndentController::MaterialIndentController(QObject *parent)
 
 void MaterialIndentController::create(const double &quantity, const int &materialId, const int &taskId) const
 {
-    // MaterialIndent materialIndent;
-
-    // qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
-    // materialIndent.setId(id_in_milliseconds);
-    // materialIndent.setGlobalId("123");
-    // materialIndent.setApprovalStatus(true);
-    // materialIndent.setQuantity(quantity);
-    // materialIndent.setMaterialId(materialId);
-    // materialIndent.setTaskId(taskId);
-
-    // m_materialIndentRepository->saveQML(&materialIndent);
-
     /***********Start of DraftEntity******************/
 
     QJsonObject jsonObject;
@@ -63,7 +51,7 @@ void MaterialIndentController::create(const double &quantity, const int &materia
     draftEntity.setProject(gProjectId);
     draftEntity.setEntity("MaterialIndent");
     draftEntity.setCreatedByUser(gUser->getId());
-    draftEntity.setNextApprovingUser(0);
+    draftEntity.setNextApprovingUser(gUser->getId());
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);
     draftEntity.setChangeHistory(changeHistory);
@@ -78,7 +66,6 @@ void MaterialIndentController::approvedCreate(const double &quantity, const int 
     qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
     materialIndent.setId(id_in_milliseconds);
     materialIndent.setGlobalId("123");
-    materialIndent.setApprovalStatus(true);
     materialIndent.setQuantity(quantity);
     materialIndent.setMaterialId(materialId);
     materialIndent.setTaskId(taskId);
@@ -89,19 +76,6 @@ void MaterialIndentController::approvedCreate(const double &quantity, const int 
 
 void MaterialIndentController::update(int id, const double &quantity, const int &materialId, const int &taskId) const
 {
-    // MaterialIndent materialIndent;
-
-    // qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
-    // materialIndent.setId(id_in_milliseconds);
-    // materialIndent.setGlobalId("123");
-    // materialIndent.setApprovalStatus(true);
-    // materialIndent.setQuantity(quantity);
-    // materialIndent.setMaterialId(materialId);
-    // materialIndent.setTaskId(taskId);
-
-    // m_materialIndentRepository->saveQML(&materialIndent);
-
-    /***********Start of DraftEntity******************/
 
     QJsonObject jsonObject;
     jsonObject["id"] = id;
@@ -206,6 +180,9 @@ std::vector<MaterialIndent*> MaterialIndentController::getMaterialIndentList(boo
         {
             QString jsonString = draftEntitys[i]->getEntitySchema();
             int draftId = draftEntitys[i]->getId();
+            QString approvalStatus = draftEntitys[i]->getApprovalStatus();
+            int nextApprovingUser = draftEntitys[i]->getNextApprovingUser();
+            int createdByUser = draftEntitys[i]->getCreatedByUser();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
 
             if (!jsonDoc.isNull() && jsonDoc.isObject())
@@ -215,7 +192,9 @@ std::vector<MaterialIndent*> MaterialIndentController::getMaterialIndentList(boo
 
                 materialIndent->setId(draftId);
                 materialIndent->setGlobalId("123");
-                materialIndent->setApprovalStatus(false);
+                materialIndent->setApprovalStatus(approvalStatus);
+                materialIndent->setCreatedByUser(createdByUser);
+                materialIndent->setNextApprovingUser(nextApprovingUser);
                 materialIndent->setQuantity(jsonObj["quantity"].toDouble());
                 materialIndent->setMaterialId(jsonObj["materialId"].toInt());
                 materialIndent->setTaskId(jsonObj["taskId"].toInt());

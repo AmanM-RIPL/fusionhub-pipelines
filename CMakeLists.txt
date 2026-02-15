@@ -84,6 +84,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 
 find_package(Qt6 REQUIRED COMPONENTS Concurrent)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 
 set(CMAKE_AUTOMOC ON)
@@ -261,6 +262,7 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/controllers/file_controller.h src/controllers/file_controller.cpp
     src/controllers/purchase_order_controller.h src/controllers/purchase_order_controller.cpp
     src/controllers/good_received_note_controller.h src/controllers/good_received_note_controller.cpp
+    src/controllers/draft_entity_controller.h src/controllers/draft_entity_controller.cpp
 
     src/services/geometry/wall_geometry_service.h src/services/geometry/wall_geometry_service.cpp
     src/services/geometry/beam_geometry_service.h src/services/geometry/beam_geometry_service.cpp
@@ -287,6 +289,7 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/network/network_manager.cpp
     src/network/network_manager.h
     src/common/helper_point.h
+    src/controllers/draft_entity_controller.h src/controllers/draft_entity_controller.cpp
 )
 
 target_include_directories(FusionHubQt PRIVATE src)
@@ -389,6 +392,7 @@ target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7
 
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Concurrent)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 #End
 

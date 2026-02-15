@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import com.fh.models 1.0
 import com.fh.controllers
+import "utils"
 
 Column {
     id: goodReceivedNoteRoot
@@ -21,6 +22,20 @@ Column {
     property var selectedData: null
     property string popupMode: "view"
     property bool isApproved: false
+    property bool canApproveReject: false
+
+    // Properties - Validation errors
+    property string poLineError: ""
+    property string amountReceivedError: ""
+    property string cancellationReasonError: ""
+
+    // Properties - Form validity
+    property bool isCreateFormValid: false
+    property bool isEditFormValid: false
+
+    // Color Variables
+    property string mandatoryColor: "#D13438"  // Red
+    property string labelColor: "#323130"      // Dark Gray
 
     // Controllers
     GoodReceivedNoteController {
@@ -35,30 +50,49 @@ Column {
         id: purchaseOrderController
     }
 
+    UserController {
+        id: userController
+    }
+
+    DraftEntityController {
+        id: draftEntityController
+    }
+
+    // Validation Helper
+    ValidationHelper {
+        id: validator
+    }
+
+    Timer {
+        id: amountValidationTimer
+        interval: 500
+        repeat: false
+        onTriggered: validateAmount()
+    }
+
     /* ---------- Create Popup ---------- */
     FHPopup {
         id: newGoodReceivedNotePopup
-        popupWidth: 500
-        popupHeight: 350
+        popupWidth: 600
+        popupHeight: 400
         title: "Create Good Received Note"
         parent: Overlay.overlay
+        buttonEnabled: goodReceivedNoteRoot.isCreateFormValid
 
         onAcceptCallback: function () {
-            if (purchaseOrderLineCombo.currentIndex >= 0 && amountReceivedTextBox.text !== "") {
+            if (validateForm(true)) {
                 goodReceivedNoteController.create(
                             purchaseOrderLinesFromCtrl[purchaseOrderLineCombo.currentIndex].id,
                             amountReceivedTextBox.text
                             )
-                // Reset
-                amountReceivedTextBox.text = ""
-                purchaseOrderLineCombo.currentIndex = 0
+                resetForm(true)
+                showGoodReceivedNoteList()
+                close()
             }
-            close()
         }
 
         onCancelCallback: function () {
-            amountReceivedTextBox.text = ""
-            purchaseOrderLineCombo.currentIndex = 0
+            resetForm(true)
             close()
         }
 
@@ -67,10 +101,7 @@ Column {
         }
 
         onOpened: {
-            // Load lists
-            amountReceivedTextBox.text = ""
-            purchaseOrderLineCombo.currentIndex = 0
-
+            resetForm(true)
             if (goodReceivedNoteRoot.visible) {
                 purchaseOrderLinesFromCtrl = []
                 purchaseOrdersFromCtrl = []
@@ -78,7 +109,6 @@ Column {
                 purchaseOrderLinesFromCtrl = purchaseOrderLineController.getPurchaseOrderLineList(true)
                 purchaseOrdersFromCtrl = purchaseOrderController.getPurchaseOrderList(true)
 
-                // Clear current list then populate
                 goodReceivedNoteRoot.purchaseOrderLineList = []
 
                 for (var i = 0; i < purchaseOrderLinesFromCtrl.length; i++) {
@@ -93,12 +123,12 @@ Column {
             spacing: 10
 
             Text {
-                id: purchaseOrderLineLabel
-                text: "Purchase Order Line"
-                color: "#323130"
+                text: "Purchase Order Line <span style='color: " + goodReceivedNoteRoot.mandatoryColor + ";'>*</span>"
+                color: goodReceivedNoteRoot.labelColor
                 font.weight: 700
                 font.pixelSize: 14
                 font.family: "Segoe UI"
+                textFormat: Text.RichText
                 topPadding: 10
             }
 
@@ -106,16 +136,31 @@ Column {
                 id: purchaseOrderLineCombo
                 width: parent.width
                 model: purchaseOrderLineList
-                currentIndex: 0
+                currentIndex: -1
+                onCurrentIndexChanged: {
+                    if (currentIndex !== -1) {
+                        goodReceivedNoteRoot.poLineError = ""
+                    } else {
+                        goodReceivedNoteRoot.poLineError = "Please select a purchase order line"
+                    }
+                    checkCreateFormValidity()
+                }
             }
 
             Text {
-                id: amountReceivedLabel
-                text: "Amount of Material Received"
-                color: "#323130"
+                text: goodReceivedNoteRoot.poLineError
+                color: goodReceivedNoteRoot.mandatoryColor
+                font.pixelSize: 12
+                visible: goodReceivedNoteRoot.poLineError !== ""
+            }
+
+            Text {
+                text: "Amount of Material Received <span style='color: " + goodReceivedNoteRoot.mandatoryColor + ";'>*</span>"
+                color: goodReceivedNoteRoot.labelColor
                 font.weight: 700
                 font.pixelSize: 14
                 font.family: "Segoe UI"
+                textFormat: Text.RichText
                 topPadding: 10
             }
 
@@ -123,9 +168,21 @@ Column {
                 id: amountReceivedTextBox
                 placeholderText: "Amount of Material Received"
                 text: ""
-                color: "#323130"
+                color: goodReceivedNoteRoot.labelColor
                 width: parent.width
                 height: 30
+                onTextChanged: {
+                    amountValidationTimer.stop()
+                    amountValidationTimer.start()
+                    checkCreateFormValidity()
+                }
+            }
+
+            Text {
+                text: goodReceivedNoteRoot.amountReceivedError
+                color: goodReceivedNoteRoot.mandatoryColor
+                font.pixelSize: 12
+                visible: goodReceivedNoteRoot.amountReceivedError !== ""
             }
         }
     }
@@ -133,57 +190,53 @@ Column {
     /* ---------- View / Edit Popup ---------- */
     FHPopup {
         id: viewEditPopup
-        popupWidth: 500
-        popupHeight: 350
+        popupWidth: 600
+        popupHeight: 550
         title: popupMode === "view" ? "View Good Received Note" : "Edit Good Received Note"
-
         showAcceptButton: popupMode === "edit"
         buttonName: popupMode === "edit" ? "Update" : ""
         buttonSource: popupMode === "edit" ? "qrc:/resources/images/editWhite_icon.png" : ""
+        buttonEnabled: popupMode === "edit" ? goodReceivedNoteRoot.isEditFormValid : true
+
+        property bool canApproveReject: selectedData && (selectedData.nextApprovingUser === selectedData.createdByUser)
 
         onAcceptCallback: function () {
-            if (popupMode === "edit" && selectedData) {
+            if (popupMode === "edit" && selectedData && validateForm(false)) {
                 goodReceivedNoteController.update(
                             selectedData.id,
                             purchaseOrderLinesFromCtrl[poLineComboEdit.currentIndex].id,
                             amountReceivedFieldEdit.text
                             )
-                // Reset
-                amountReceivedFieldEdit.text = ""
-                poLineComboEdit.currentIndex = 0
+                resetForm(false)
                 showGoodReceivedNoteList()
+                close()
+            } else if (popupMode === "view") {
+                if (selectedData) {
+                    console.log("Approving GRN ID: " + selectedData.id)
+                    draftEntityController.approve(selectedData.id)
+                    resetForm(false)
+                    showGoodReceivedNoteList()
+                    close()
+                }
             }
         }
 
         onCancelCallback: function () {
-            amountReceivedFieldEdit.text = ""
-            poLineComboEdit.currentIndex = 0
+            resetForm(false)
+            close()
         }
 
         onOpened: {
-            // Load lists from controllers
-            amountReceivedFieldEdit.text = ""
-
-            purchaseOrderLinesFromCtrl = []
-            purchaseOrdersFromCtrl = []
-
-            purchaseOrderLinesFromCtrl = purchaseOrderLineController.getPurchaseOrderLineList(true)
-            purchaseOrdersFromCtrl = purchaseOrderController.getPurchaseOrderList(true)
-
-            // Clear and populate purchase order line list
-            var tempPurchaseOrderLineList = []
-
-            for (var i = 0; i < purchaseOrderLinesFromCtrl.length; i++) {
-                tempPurchaseOrderLineList = tempPurchaseOrderLineList.concat(
-                            purchaseOrderLinesFromCtrl[i].id)
-            }
-
-            goodReceivedNoteRoot.purchaseOrderLineList = tempPurchaseOrderLineList
-
-            // Fill popup with selected data
+            resetForm(false)
             if (selectedData) {
+                goodReceivedNoteRoot.canApproveReject = selectedData && (selectedData.nextApprovingUser === selectedData.createdByUser)
                 fillPopup()
             }
+        }
+
+        onClosed: {
+            goodReceivedNoteRoot.cancellationReasonError = ""
+            cancellationReasonTextBox.text = ""
         }
 
         Column {
@@ -191,9 +244,8 @@ Column {
             spacing: 10
 
             Text {
-                id: purchaseOrderLineLabelEdit
                 text: "Purchase Order Line"
-                color: "#323130"
+                color: goodReceivedNoteRoot.labelColor
                 font.weight: 700
                 font.pixelSize: 14
                 font.family: "Segoe UI"
@@ -206,12 +258,23 @@ Column {
                 model: purchaseOrderLineList
                 currentIndex: 0
                 enabled: popupMode === "edit"
+                onCurrentIndexChanged: {
+                    if (popupMode === "edit") {
+                        checkEditFormValidity()
+                    }
+                }
             }
 
             Text {
-                id: amountReceivedLabelEdit
+                text: goodReceivedNoteRoot.poLineError
+                color: goodReceivedNoteRoot.mandatoryColor
+                font.pixelSize: 12
+                visible: goodReceivedNoteRoot.poLineError !== "" && popupMode === "edit"
+            }
+
+            Text {
                 text: "Amount of Material Received"
-                color: "#323130"
+                color: goodReceivedNoteRoot.labelColor
                 font.weight: 700
                 font.pixelSize: 14
                 font.family: "Segoe UI"
@@ -222,10 +285,120 @@ Column {
                 id: amountReceivedFieldEdit
                 placeholderText: "Amount of Material Received"
                 text: ""
-                color: "#323130"
+                color: goodReceivedNoteRoot.labelColor
                 width: parent.width
                 height: 30
                 enabled: popupMode === "edit"
+                onTextChanged: {
+                    if (popupMode === "edit") {
+                        amountValidationTimer.stop()
+                        amountValidationTimer.start()
+                        checkEditFormValidity()
+                    }
+                }
+            }
+
+            Text {
+                text: goodReceivedNoteRoot.amountReceivedError
+                color: goodReceivedNoteRoot.mandatoryColor
+                font.pixelSize: 12
+                visible: goodReceivedNoteRoot.amountReceivedError !== "" && popupMode === "edit"
+            }
+
+            // Cancellation Reason
+            Text {
+                text: "Cancellation Reason"
+                color: goodReceivedNoteRoot.labelColor
+                font.weight: 700
+                font.pixelSize: 14
+                font.family: "Segoe UI"
+                topPadding: 10
+                visible: popupMode === "view" && canApproveReject
+            }
+
+            CustomTextBox {
+                id: cancellationReasonTextBox
+                placeholderText: "Enter cancellation reason"
+                text: ""
+                color: goodReceivedNoteRoot.labelColor
+                width: parent.width
+                height: 60
+                visible: popupMode === "view" && canApproveReject
+                wrapMode: TextEdit.Wrap
+                onTextChanged: {
+                    if (text.trim() !== "") {
+                        goodReceivedNoteRoot.cancellationReasonError = ""
+                    }
+                }
+            }
+
+            Text {
+                text: goodReceivedNoteRoot.cancellationReasonError
+                color: goodReceivedNoteRoot.mandatoryColor
+                font.pixelSize: 12
+                visible: goodReceivedNoteRoot.cancellationReasonError !== "" && popupMode === "view" && canApproveReject
+            }
+
+            // Buttons Row - Approve and Reject
+            Row {
+                width: parent.width
+                spacing: 10
+                topPadding: 20
+                visible: popupMode === "view" && canApproveReject
+                layoutDirection: Qt.RightToLeft
+
+                MouseArea {
+                    width: 100
+                    height: 34
+                    onClicked: {
+                        if (selectedData) {
+                            console.log("Approving GRN ID: " + selectedData.id)
+                            draftEntityController.approve(selectedData.id)
+                            resetForm(false)
+                            showGoodReceivedNoteList()
+                            viewEditPopup.close()
+                        }
+                    }
+                    CustomButton {
+                        width: parent.width
+                        height: parent.height
+                        btnName: "Approve"
+                        btnNameColor: "#FFFFFF"
+                        btnNamePixelSize: 13
+                        btnNameFontFamily: "Segoe UI"
+                        color: "#28A745"
+                    }
+                }
+
+                MouseArea {
+                    width: 100
+                    height: 34
+                    onClicked: {
+                        let reason = cancellationReasonTextBox.text.trim()
+                        let reasonValidation = validator.validateNotEmpty(reason)
+                        if (!reasonValidation.isValid) {
+                            goodReceivedNoteRoot.cancellationReasonError = reasonValidation.message
+                            return
+                        }
+
+                        if (selectedData) {
+                            console.log("Cancelling GRN ID: " + selectedData.id + " Reason: " + reason)
+                            draftEntityController.cancel(selectedData.id, reason)
+                            resetForm(false)
+                            showGoodReceivedNoteList()
+                            viewEditPopup.close()
+                        }
+                    }
+                    CustomButton {
+                        width: parent.width
+                        height: parent.height
+                        btnName: "Reject"
+                        btnNameColor: "#FFFFFF"
+                        btnNamePixelSize: 13
+                        btnNameFontFamily: "Segoe UI"
+                        color: "#DC3545"
+                    }
+                }
             }
         }
     }
@@ -276,7 +449,7 @@ Column {
             Text {
                 id: approvalTypeLabel
                 text: "Choose Approval Type"
-                color: "#323130"
+                color: goodReceivedNoteRoot.labelColor
                 font.weight: 700
                 font.pixelSize: 14
                 font.family: "Segoe UI"
@@ -294,7 +467,7 @@ Column {
                     text: approvalTypeComboBox.displayText
                     leftPadding: 10
                     verticalAlignment: Text.AlignVCenter
-                    color: "#323130"
+                    color: goodReceivedNoteRoot.labelColor
                     font.pixelSize: 14
                 }
 
@@ -321,13 +494,23 @@ Column {
         columns: [
             {
                 "label": "Id",
-                "width": 650,
+                "width": 300,
                 "key": "id"
             },
             {
+                "label": "PO Line ID",
+                "width": 400,
+                "key": "purchaseOrderLineId"
+            },
+            {
                 "label": "Amount Received",
-                "width": 650,
+                "width": 400,
                 "key": "quantity"
+            },
+            {
+                "label": "Status",
+                "width": 200,
+                "key": "displayStatus"
             }
         ]
 
@@ -350,31 +533,141 @@ Column {
     Component.onCompleted: showGoodReceivedNoteList()
     onVisibleChanged: showGoodReceivedNoteList()
 
-    // -------- Functions --------
+    // ========== VALIDATION FUNCTIONS ==========
+
+    // Check if create form is valid
+    function checkCreateFormValidity() {
+        let poLineValidation = validator.validateComboBoxSelection(purchaseOrderLineCombo.currentIndex, "purchase order line")
+        let amountValidation = validator.validatePositiveDouble(amountReceivedTextBox.text)
+
+        if (!poLineValidation.isValid) {
+            goodReceivedNoteRoot.poLineError = poLineValidation.message
+        } else {
+            goodReceivedNoteRoot.poLineError = ""
+        }
+
+        if (!amountValidation.isValid) {
+            goodReceivedNoteRoot.amountReceivedError = amountValidation.message
+        } else {
+            goodReceivedNoteRoot.amountReceivedError = ""
+        }
+
+        goodReceivedNoteRoot.isCreateFormValid = poLineValidation.isValid && amountValidation.isValid
+    }
+
+    // Check if edit form is valid
+    function checkEditFormValidity() {
+        let poLineValidation = validator.validateComboBoxSelection(poLineComboEdit.currentIndex, "purchase order line")
+        let amountValidation = validator.validatePositiveDouble(amountReceivedFieldEdit.text)
+
+        if (!poLineValidation.isValid) {
+            goodReceivedNoteRoot.poLineError = poLineValidation.message
+        } else {
+            goodReceivedNoteRoot.poLineError = ""
+        }
+
+        if (!amountValidation.isValid) {
+            goodReceivedNoteRoot.amountReceivedError = amountValidation.message
+        } else {
+            goodReceivedNoteRoot.amountReceivedError = ""
+        }
+
+        goodReceivedNoteRoot.isEditFormValid = poLineValidation.isValid && amountValidation.isValid
+    }
+
+    // Main validation function
+    function validateForm(isCreate) {
+        let poLineCombo = isCreate ? purchaseOrderLineCombo : poLineComboEdit
+        let amountField = isCreate ? amountReceivedTextBox : amountReceivedFieldEdit
+
+        clearValidationErrors()
+
+        let poLineValidation = validator.validateComboBoxSelection(poLineCombo.currentIndex, "purchase order line")
+        if (!poLineValidation.isValid) {
+            goodReceivedNoteRoot.poLineError = poLineValidation.message
+            return false
+        }
+
+        let amountValidation = validator.validatePositiveDouble(amountField.text)
+        if (!amountValidation.isValid) {
+            goodReceivedNoteRoot.amountReceivedError = amountValidation.message
+            return false
+        }
+
+        return true
+    }
+
+    function validateAmount() {
+        let text = newGoodReceivedNotePopup.visible ? amountReceivedTextBox.text : amountReceivedFieldEdit.text
+        let validation = validator.validatePositiveDouble(text)
+
+        if (!validation.isValid) {
+            goodReceivedNoteRoot.amountReceivedError = validation.message
+        } else {
+            goodReceivedNoteRoot.amountReceivedError = ""
+        }
+    }
+
+    function clearValidationErrors() {
+        goodReceivedNoteRoot.poLineError = ""
+        goodReceivedNoteRoot.amountReceivedError = ""
+        goodReceivedNoteRoot.cancellationReasonError = ""
+    }
+
+    function resetForm(isCreate) {
+        if (isCreate) {
+            amountReceivedTextBox.text = ""
+            purchaseOrderLineCombo.currentIndex = -1
+            goodReceivedNoteRoot.isCreateFormValid = false
+        } else {
+            amountReceivedFieldEdit.text = ""
+            poLineComboEdit.currentIndex = 0
+            goodReceivedNoteRoot.isEditFormValid = false
+            cancellationReasonTextBox.text = ""
+            goodReceivedNoteRoot.cancellationReasonError = ""
+        }
+        clearValidationErrors()
+        amountValidationTimer.stop()
+    }
+
+    // ========== DATA LOADING FUNCTIONS ==========
+
+    // Load and display GRN list
     function showGoodReceivedNoteList() {
         goodReceivedNoteRoot.goodReceivedNoteList = []
 
         if (!goodReceivedNoteRoot.visible)
             return
 
-        goodReceivedNoteRoot.goodReceivedNoteList = goodReceivedNoteController.getGoodReceivedNoteList(isApproved)
+        var grns = goodReceivedNoteController.getGoodReceivedNoteList(isApproved)
+
+        for (var i = 0; i < grns.length; i++) {
+            if (grns[i].nextApprovingUser === userController.getCurrentId()) {
+                grns[i].displayStatus = "Pending"
+            } else {
+                grns[i].displayStatus = grns[i].approvalStatus
+            }
+        }
+
+        goodReceivedNoteRoot.goodReceivedNoteList = grns
     }
 
+    // Fill edit popup with selected data
     function fillPopup() {
         if (!selectedData)
             return
 
-        // Set amount of material received
         amountReceivedFieldEdit.text = selectedData.quantity !== null
                 ? String(selectedData.quantity)
                 : ""
 
-        // Find and set purchase order line
         for (var i = 0; i < purchaseOrderLinesFromCtrl.length; i++) {
             if (purchaseOrderLinesFromCtrl[i].id === selectedData.purchaseOrderLineId) {
                 poLineComboEdit.currentIndex = i
                 break
             }
         }
+
+        checkEditFormValidity()
     }
 }

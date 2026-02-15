@@ -13,7 +13,7 @@ ProjectBudgetController::ProjectBudgetController(QObject *parent)
     m_draftEntityRepository(RepositoryLocator::instance().draftEntityRepository())
 {}
 
-void ProjectBudgetController::create(const QString &name, const int &budgetHeadId) const
+void ProjectBudgetController::create(const int &budgetHeadId, const QString &name) const
 {
     QJsonObject jsonObject;
     jsonObject["dollarValue"] = name;
@@ -46,7 +46,7 @@ void ProjectBudgetController::create(const QString &name, const int &budgetHeadI
     draftEntity.setProject(gProjectId);
     draftEntity.setEntity("ProjectBudget");
     draftEntity.setCreatedByUser(gUser->getId());
-    draftEntity.setNextApprovingUser(0);
+    draftEntity.setNextApprovingUser(gUser->getId());
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);
     draftEntity.setChangeHistory(changeHistory);
@@ -61,7 +61,7 @@ void ProjectBudgetController::approvedCreate(const int &budgetHeadId, const QStr
     qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
     projectBudget.setId(id_in_milliseconds);
     projectBudget.setGlobalId("123");
-    projectBudget.setApprovalStatus(true);
+   // projectBudget.setApprovalStatus(true);
     projectBudget.setDollarValue(value);
     projectBudget.setBudgetHeadId(budgetHeadId);
 
@@ -69,7 +69,7 @@ void ProjectBudgetController::approvedCreate(const int &budgetHeadId, const QStr
 
 }
 
-void ProjectBudgetController::update(int id, const QString &name, const int &budgetHeadId) const
+void ProjectBudgetController::update(int id,const int &budgetHeadId, const QString &name ) const
 {
     QJsonObject jsonObject;
     jsonObject["dollarValue"] = name;
@@ -120,6 +120,9 @@ std::vector<ProjectBudget*> ProjectBudgetController::getProjectBudgetList(bool i
         for(int i = 0; i < draftEntitys.size(); i++)
         {
             int draftId = draftEntitys[i]->getId();
+            QString approvalStatus = draftEntitys[i]->getApprovalStatus();
+            int nextApprovingUser = draftEntitys[i]->getNextApprovingUser();
+            int createdByUser = draftEntitys[i]->getCreatedByUser();
             QString  jsonString = draftEntitys[i]->getEntitySchema();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
             if (!jsonDoc.isNull() && jsonDoc.isObject())
@@ -128,7 +131,9 @@ std::vector<ProjectBudget*> ProjectBudgetController::getProjectBudgetList(bool i
                 QJsonObject jsonObj = jsonDoc.object();
                 projectBudget->setId(draftId);
                 projectBudget->setGlobalId("123");
-                projectBudget->setApprovalStatus(true);
+                projectBudget->setApprovalStatus(approvalStatus);
+                projectBudget->setCreatedByUser(createdByUser);
+                projectBudget->setNextApprovingUser(nextApprovingUser);
 
                 projectBudget->setDollarValue(jsonObj["dollarValue"].toString());
                 projectBudget->setBudgetHeadId(jsonObj["budgetHeadId"].toInt());

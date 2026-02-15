@@ -82,7 +82,7 @@ bool UserRepository::update(const User& entity)
     QSqlQuery query(dbManager->getDatabase());
     query.prepare(getUpdateQuery());
     //bindEntityToQuery(query, entity);
-    //query.addBindValue(entity.getId());
+    query.addBindValue(entity.getId());
     query.addBindValue(entity.getUserFullName());
     query.addBindValue(entity.getUserMobile1());
     query.addBindValue(entity.getUserMobile2());

@@ -19,7 +19,6 @@ void PurchaseOrderController::create( const int vendorId) const
     QJsonObject jsonObject;
     jsonObject["vendorId"] = vendorId;
 
-
     QJsonDocument jsonDoc(jsonObject);
     QString entitySchema = jsonDoc.toJson(QJsonDocument::Indented);
     qDebug() << "PurchaseOrder::EntitySchema: " << entitySchema;
@@ -46,7 +45,7 @@ void PurchaseOrderController::create( const int vendorId) const
     draftEntity.setProject(gProjectId);
     draftEntity.setEntity("PurchaseOrder");
     draftEntity.setCreatedByUser(gUser->getId());
-    draftEntity.setNextApprovingUser(0);
+    draftEntity.setNextApprovingUser(gUser->getId());
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);
     draftEntity.setChangeHistory(changeHistory);
@@ -63,7 +62,7 @@ void PurchaseOrderController::approvedCreate( const int vendorId) const
 
     purchaseOrder.setId(id_in_milliseconds);
     purchaseOrder.setGlobalId("123");
-    purchaseOrder.setApprovalStatus(true);
+   // purchaseOrder.setApprovalStatus(true);
    // purchaseOrder.setDescription(purchaseOrderName);
     purchaseOrder.setVendorId(vendorId);
 
@@ -118,6 +117,10 @@ std::vector<PurchaseOrder*> PurchaseOrderController::getPurchaseOrderList(bool i
         {
             QString  jsonString = draftEntitys[i]->getEntitySchema();
             int draftId = draftEntitys[i]->getId();
+            QString approvalStatus = draftEntitys[i]->getApprovalStatus();
+            int nextApprovingUser = draftEntitys[i]->getNextApprovingUser();
+            int createdByUser = draftEntitys[i]->getCreatedByUser();
+
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
             if (!jsonDoc.isNull() && jsonDoc.isObject())
             {
@@ -125,14 +128,15 @@ std::vector<PurchaseOrder*> PurchaseOrderController::getPurchaseOrderList(bool i
                 QJsonObject jsonObj = jsonDoc.object();
                 purchaseOrder->setId(draftId);
                 purchaseOrder->setGlobalId("123");
-                purchaseOrder->setApprovalStatus(true);
+                purchaseOrder->setApprovalStatus(approvalStatus);
+                purchaseOrder->setCreatedByUser(createdByUser);
+                purchaseOrder->setNextApprovingUser(nextApprovingUser);
                 purchaseOrder->setVendorId(jsonObj["vendorId"].toInt());
 
                 int vendorId = purchaseOrder->getVendorId();
                 QString vendorName = "N/A";
                 foreach (const Vendor *vendor, vecVendor)
                 {
-                    qDebug()<<"woid:" <<vendor->getId();
                     if (vendor->getId() == vendorId)
                     {
                         vendorName = vendor->getVendorName();

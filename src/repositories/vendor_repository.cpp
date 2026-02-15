@@ -42,7 +42,7 @@ Vendor* VendorRepository::mapFromQueryQML(const QSqlQuery& query, QObject* paren
     auto vendor = new Vendor(parent);
     vendor->setId(query.value("id").toInt());
     vendor->setGlobalId(query.value("global_id").toString());
-    vendor->setApprovalStatus(query.value("approval_status").toBool());
+    vendor->setApprovalStatus(query.value("approval_status").toString());
     vendor->setVendorName(query.value("vendor_name").toString());
     vendor->setVendorAddress(query.value("vendor_address").toString());
     vendor->setVendorContactPerson(query.value("vendor_contact_person").toString());

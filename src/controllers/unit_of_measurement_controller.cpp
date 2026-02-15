@@ -17,21 +17,6 @@ void UnitOfMeasurementController::create(const QString& uomName, const QString& 
                                         const double& conversionToSqm, const double& conversionToCubicMeter,
                                         const double& conversionToMeter, const double& conversionToKilogram) const
 {
-
-    // UnitOfMeasurement uom;
-    // qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
-    // uom.setId(id_in_milliseconds);
-    // uom.setGlobalId("123");
-    // uom.setApprovalStatus(true);
-    // uom.setConversionToCubicMeter(conversionToCubicMeter);
-    // uom.setConversionToKilogram(conversionToKilogram);
-    // uom.setConversionToMeter(conversionToMeter);
-    // uom.setConversionToSqm(conversionToSqm);
-    // uom.setUnitType(unitType);
-    // uom.setUomName(uomName);
-
-    // m_unitOfMeasurementRepository->saveQML(&uom);
-
     /***********Start of DraftEntity******************/
 
     QJsonObject jsonObject;
@@ -59,7 +44,7 @@ void UnitOfMeasurementController::create(const QString& uomName, const QString& 
     draftEntity.setEntity("UnitOfMeasurement");
     //draftEntity.setCreatedByUser(gUser->getUserId());
     draftEntity.setCreatedByUser(gUser->getId());
-    draftEntity.setNextApprovingUser(0);
+    draftEntity.setNextApprovingUser(gUser->getId());
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);
     draftEntity.setChangeHistory("changeHistory");
@@ -78,7 +63,7 @@ void UnitOfMeasurementController::approvedCreate(const QString& uomName, const Q
     qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
     uom.setId(id_in_milliseconds);
     uom.setGlobalId("123");
-    uom.setApprovalStatus(true);
+    uom.setApprovalStatus("Approved");
     uom.setConversionToCubicMeter(conversionToCubicMeter);
     uom.setConversionToKilogram(conversionToKilogram);
     uom.setConversionToMeter(conversionToMeter);
@@ -122,7 +107,7 @@ void UnitOfMeasurementController::update( int id, const QString& uomName, const 
     draftEntity.setEntity("UnitOfMeasurement");
     //draftEntity.setCreatedByUser(gUser->getUserId());
     draftEntity.setCreatedByUser(gUser->getId());
-    draftEntity.setNextApprovingUser(0);
+    draftEntity.setNextApprovingUser(gUser->getId());
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);
     draftEntity.setChangeHistory("changeHistory");
@@ -144,6 +129,9 @@ std::vector<UnitOfMeasurement*> UnitOfMeasurementController::getUOMList(bool isA
         {
            // QString idStr = QString::number(draftEntitys[i]->getId());
             int idValue = draftEntitys[i]->getId();
+           QString approvalStatus = draftEntitys[i]->getApprovalStatus();
+           int nextApprovingUser = draftEntitys[i]->getNextApprovingUser();
+           int createdByUser = draftEntitys[i]->getCreatedByUser();
 
             QString  jsonString = draftEntitys[i]->getEntitySchema();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
@@ -154,7 +142,9 @@ std::vector<UnitOfMeasurement*> UnitOfMeasurementController::getUOMList(bool isA
                // uom->setId(i + 1);
                 uom->setId(idValue);
                 uom->setGlobalId("123");
-                uom->setApprovalStatus(true);
+                uom->setApprovalStatus(approvalStatus);
+                uom->setCreatedByUser(createdByUser);
+                uom->setNextApprovingUser(nextApprovingUser);
                 uom->setUomName(jsonObj["uomName"].toString());
                 uom->setUnitType(jsonObj["unitType"].toString());
                 uom->setConversionToSqm(jsonObj["conversionToSqm"].toDouble());

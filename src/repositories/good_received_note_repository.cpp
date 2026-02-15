@@ -41,7 +41,7 @@ GoodReceivedNote* GoodReceivedNoteRepository::mapFromQueryQML(const QSqlQuery& q
     auto goodReceivedNote = new GoodReceivedNote(parent);
     goodReceivedNote->setId(query.value("id").toInt());
     goodReceivedNote->setGlobalId(query.value("global_id").toString());
-    goodReceivedNote->setApprovalStatus(query.value("approval_status").toBool());
+    goodReceivedNote->setApprovalStatus(query.value("approval_status").toString());
     goodReceivedNote->setQuantity(query.value("amount_of_material_received").toInt());
     goodReceivedNote->setPurchaseOrderLineId(query.value("purchase_order_line_id").toInt());
 

@@ -35,7 +35,7 @@ WorkBilling* WorkBillingRepository::mapFromQueryQML(const QSqlQuery& query, QObj
     auto workBilling = new WorkBilling(parent);
     workBilling->setId(query.value("id").toInt());
     workBilling->setGlobalId(query.value("global_id").toString());
-    workBilling->setApprovalStatus(query.value("approval_status").toBool());
+    workBilling->setApprovalStatus(query.value("approval_status").toString());
     workBilling->setWorkBillingName(query.value("description").toString());
     workBilling->setWorkOrderId(query.value("work_order_id").toInt());
 

@@ -57,7 +57,7 @@ void PurchaseOrderLineController::create(const int &vendorId, const QVariantList
     draftEntity.setProject(gProjectId);
     draftEntity.setEntity("PurchaseOrder");
     draftEntity.setCreatedByUser(gUser->getId());
-    draftEntity.setNextApprovingUser(0);
+    draftEntity.setNextApprovingUser(gUser->getId());
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);
     draftEntity.setChangeHistory(changeHistory);

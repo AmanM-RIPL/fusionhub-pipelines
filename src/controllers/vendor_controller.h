@@ -19,7 +19,6 @@ public:
     Q_INVOKABLE void update(int id, const QString &vendorName, const QString &vendorAddress, const QString &vendorContactPerson,
                             const QString &vendorMobile, const QString &vendorEmail) const;
 
-
     Q_INVOKABLE std::vector<Vendor*> getVendorList(bool isApproved = false) const;
 
 private:

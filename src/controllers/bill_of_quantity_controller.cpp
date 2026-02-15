@@ -18,17 +18,6 @@ BillOfQuantityController::BillOfQuantityController(QObject *parent)
 
 void BillOfQuantityController::create(const QString &description, const int &scheduleOfRatesId) const
 {
-    // BillOfQuantity billOfQuantity;
-
-    // qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
-    // billOfQuantity.setId(id_in_milliseconds);
-    // billOfQuantity.setGlobalId("123");
-    // billOfQuantity.setApprovalStatus(true);
-    // billOfQuantity.setDescription(description);
-    // billOfQuantity.setScheduleOfRatesId(scheduleOfRatesId);
-
-    // m_billOfQuantityRepository->saveQML(&billOfQuantity);
-
     /***********Start of DraftEntity******************/
 
     QJsonObject jsonObject;
@@ -153,7 +142,7 @@ void BillOfQuantityController::create(const QString &description, const int &sch
     draftEntity.setProject(gProjectId);
     draftEntity.setEntity("BillOfQuantity");
     draftEntity.setCreatedByUser(gUser->getId());
-    draftEntity.setNextApprovingUser(0);
+    draftEntity.setNextApprovingUser(gUser->getId());
     draftEntity.setEntitySchema(entitySchema);
     draftEntity.setAssociatedApprovedEntity(0);
     draftEntity.setChangeHistory(changeHistory);
@@ -170,7 +159,7 @@ void BillOfQuantityController::approvedCreate( const int sorId, QString &descrip
     qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
     billOfQuantity.setId(id_in_milliseconds);
     billOfQuantity.setGlobalId("123");
-    billOfQuantity.setApprovalStatus(true);
+   // billOfQuantity.setApprovalStatus(true);
     billOfQuantity.setDescription(description);
     billOfQuantity.setScheduleOfRatesId(sorId);
 
@@ -190,15 +179,21 @@ std::vector<BillOfQuantity*> BillOfQuantityController::getBillOfQuantityList(boo
         std::vector<BillOfQuantity*> billOfQuantitys;
         for(int i = 0; i < draftEntitys.size(); i++)
         {
+            int draftId = draftEntitys[i]->getId();
             QString  jsonString = draftEntitys[i]->getEntitySchema();
+            QString approvalStatus = draftEntitys[i]->getApprovalStatus();
+            int nextApprovingUser = draftEntitys[i]->getNextApprovingUser();
+            int createdByUser = draftEntitys[i]->getCreatedByUser();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
             if (!jsonDoc.isNull() && jsonDoc.isObject())
             {
                 auto billOfQuantity = new BillOfQuantity();
                 QJsonObject jsonObj = jsonDoc.object();
-                billOfQuantity->setId(i + 1);
+                billOfQuantity->setId(draftId);
                 billOfQuantity->setGlobalId("123");
-                billOfQuantity->setApprovalStatus(true);
+                billOfQuantity->setApprovalStatus(approvalStatus);
+                billOfQuantity->setCreatedByUser(createdByUser);
+                billOfQuantity->setNextApprovingUser(nextApprovingUser);
 
                 billOfQuantity->setDescription(jsonObj["description"].toString());
                 billOfQuantity->setScheduleOfRatesId(jsonObj["schedule_of_rates_id"].toInt());

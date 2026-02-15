@@ -64,7 +64,7 @@ void WorkOrderController::approvedCreate(const int vendorId, const QString &work
 
     workOrder.setId(id_in_milliseconds);
     workOrder.setGlobalId("123");
-    workOrder.setApprovalStatus(true);
+   // workOrder.setApprovalStatus(true);
     workOrder.setVendorId(vendorId);
     workOrder.setWorkOrderName(workOrderName);
     m_workOrderRepository->saveQML(&workOrder);
@@ -120,6 +120,9 @@ std::vector<WorkOrder*> WorkOrderController::getWorkOrderList(bool isApproved) c
         {
             QString  jsonString = draftEntitys[i]->getEntitySchema();
             int draftId = draftEntitys[i]->getId();
+            QString approvalStatus = draftEntitys[i]->getApprovalStatus();
+            int nextApprovingUser = draftEntitys[i]->getNextApprovingUser();
+            int createdByUser = draftEntitys[i]->getCreatedByUser();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
             if (!jsonDoc.isNull() && jsonDoc.isObject())
             {
@@ -127,7 +130,9 @@ std::vector<WorkOrder*> WorkOrderController::getWorkOrderList(bool isApproved) c
                 QJsonObject jsonObj = jsonDoc.object();
                 workOrder->setId(draftId);
                 workOrder->setGlobalId("123");
-                workOrder->setApprovalStatus(true);
+                workOrder->setApprovalStatus(approvalStatus);
+                workOrder->setCreatedByUser(createdByUser);
+                workOrder->setNextApprovingUser(nextApprovingUser);
                 workOrder->setVendorId(jsonObj["vendorId"].toInt());
 
                 int vendorId = workOrder->getVendorId();
