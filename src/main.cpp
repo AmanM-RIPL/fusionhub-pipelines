@@ -15,6 +15,12 @@
 #include "Ge/GeVector3dArray.h"
 */
 
+// #include <iostream>
+
+ #ifndef SPA_NO_AUTO_LINK
+ #define SPA_NO_AUTO_LINK
+ #endif
+
 #include "common/myglitem.h"
 #include "common/ifcdetail.h"
 
@@ -76,6 +82,15 @@
 
 #include <iostream>
 
+
+#include "acis.hxx"
+#include "license.hxx"
+#include "spa_unlock_result.hxx"
+#include "spatial_license.h"
+#include "kernapi.hxx"
+
+const char* unlock_str = SPATIAL_LICENSE;
+
 // There has to be a better way???????????
 const OdString OdString::kEmpty;
 const OdDAIObjectId OdDAIObjectId::kNull;
@@ -93,9 +108,20 @@ QString gProjectName ="";
 QString gEnvironmentPath = "C:\\Users\\RIPL\\Documents\\FusionHubData";
 OdStaticRxObject<MyServices> svcs;
 
+
+void unlock_spatial_products()
+{
+   spa_unlock_result res = spa_unlock_products(unlock_str);
+
+   qDebug() << "SPATIAL License info:" << res.get_message_text();
+}
+
 int main(int argc, char *argv[])
 {
     //static OdStaticRxObject<MyServices> svcs;
+
+    api_start_modeller(0);
+    unlock_spatial_products();
 
     odrxInitialize(&svcs);
 
@@ -731,6 +757,8 @@ int main(int argc, char *argv[])
     odTvUninitialize();
     odIfcUninitialize();
     odrxUninitialize();
+
+    api_stop_modeller();
 
     return result;
 }
