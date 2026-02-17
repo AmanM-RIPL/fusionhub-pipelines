@@ -254,7 +254,7 @@ Column {
     FHPopup {
         id: viewEditPopup
         popupWidth: 600
-        popupHeight: 700
+        popupHeight: 680
         title: popupMode === "view" ? "View Unit Of Measurement" : "Edit Unit Of Measurement"
         showAcceptButton: popupMode === "edit"
         buttonName: popupMode === "edit" ? "Update" : ""
@@ -311,6 +311,7 @@ Column {
         Column {
             width: parent.width
             spacing: 10
+            bottomPadding: 20
 
             Text {
                 text: "UOM Name"

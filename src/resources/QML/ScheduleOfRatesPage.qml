@@ -62,6 +62,9 @@ Column {
     ValidationHelper {
         id: validator
     }
+    ListModel {
+            id: dataListModel
+        }
 
     Timer {
         id: costValueValidationTimer
@@ -81,6 +84,7 @@ Column {
         onRejected: {
             scheduleNameTextBox.text = ""
             dataList = []
+            dataListModel.clear()
             dataMap = ({})
         }
     }
@@ -990,29 +994,56 @@ Column {
 
     // Fill edit popup with selected data
     function fillPopup() {
+            if (!selectedData) return
 
-        console.log("selectedData===",JSON.stringify(selectedData))
-        if (!selectedData)
-            return
 
-        scheduleNameTextBoxEdit.text = selectedData.scheduleOfRatesName || ""
+            scheduleNameTextBoxEdit.text = selectedData.scheduleOfRatesName || ""
 
-        // Load schedule setups from controller if not already loaded
-        if (scheduleSetupList.length === 0 || scheduleSetupList[0] === "--") {
-            scheduleSetupList = scheduleSetupController.getSetupList(true)
-        }
-
-        // Load data map for the selected schedule of rates
-        if (selectedData.dataMap) {
-            dataMap = selectedData.dataMap
-            console.log("dataMap==",JSON.stringify(dataMap))
-            var key = Object.keys(dataMap)[0]
-            if (key) {
-                console.log("dataList==",JSON.stringify(dataList))
-                dataList = dataMap[key] || []
+            if (scheduleSetupList.length === 0 || scheduleSetupList[0] === "--") {
+                scheduleSetupList = scheduleSetupController.getSetupList(true)
             }
-        }
 
-        checkEditFormValidity()
-    }
+            dataListModel.clear()
+            dataList = []
+
+            if (selectedData.scheduleOfRatesLines && selectedData.scheduleOfRatesLines.length > 0) {
+
+                for (var i = 0; i < selectedData.scheduleOfRatesLines.length; i++) {
+                    var line = selectedData.scheduleOfRatesLines[i]
+                    var setup = null
+
+                    // Find schedule setup by ID
+                    for (var j = 0; j < scheduleSetupList.length; j++) {
+                        if (scheduleSetupList[j].id === line.scheduleSetupId) {
+                            setup = scheduleSetupList[j]
+                            break
+                        }
+                    }
+
+                    if (setup) {
+                        var item = {
+                            cost: line.costParam,
+                            value: line.resourceParam
+                        }
+
+                        // Append to ListModel
+                        dataListModel.append(item)
+                        dataList.push(item)
+
+                    }
+                }
+            }
+
+            // Set combo box to first schedule
+            if (selectedData.scheduleOfRatesLines && selectedData.scheduleOfRatesLines.length > 0) {
+                var firstLine = selectedData.scheduleOfRatesLines[0]
+                for (var k = 0; k < scheduleSetupList.length; k++) {
+                    if (scheduleSetupList[k].id === firstLine.scheduleSetupId) {
+                        scheduleNameComboBoxEdit.currentIndex = k
+                        break
+                    }
+                }
+            }
+            checkEditFormValidity()
+        }
 }

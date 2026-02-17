@@ -121,8 +121,8 @@ Column {
     /* ---------- View / Edit Popup ---------- */
     FHPopup {
         id: viewEditPopup
-        popupWidth: 500
-        popupHeight: 300
+        popupWidth: 700
+        popupHeight: 500
         title: popupMode === "view" ? "View Budget Head" : "Edit Budget Head"
 
         showAcceptButton: popupMode === "edit"
@@ -174,6 +174,7 @@ Column {
         Column {
             width: parent.width
             spacing: 10
+            bottomPadding: 20
 
             Text {
                 text: "Description"

@@ -326,6 +326,7 @@ Column {
         Column {
             width: parent.width
             spacing: 10
+            bottomPadding: 25
 
             Text {
                 text: "Vendor Name"

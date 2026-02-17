@@ -240,7 +240,7 @@ std::vector<ScheduleSetup*> ScheduleSetupController::getSetupList(bool isApprove
                     costDetails.push_back(info);
                 }
 
-                qDebug() << "costDetails.length:" << costDetails.size();
+               // qDebug() << "costDetails.length:" << costDetails.size();
                 scheduleSetups[i]->setCostParameterDataDetails(costDetails);
             }
         }
@@ -267,7 +267,7 @@ std::vector<ScheduleSetup*> ScheduleSetupController::getSetupList(bool isApprove
                     resourceDetails.push_back(info);
                 }
 
-                qDebug() << "resourceDetails.length:" << resourceDetails.size();
+                //qDebug() << "resourceDetails.length:" << resourceDetails.size();
                 scheduleSetups[i]->setResourceParameterDataDetails(resourceDetails);
             }
         }
