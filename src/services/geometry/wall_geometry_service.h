@@ -9,6 +9,25 @@
 #include "door_geometry_service.h"
 #include "window_geometry_service.h"
 
+// ACIS header files
+#include "acis.hxx"
+#include "kernapi.hxx"
+
+#include <boolapi.hxx>
+#include "api.hxx"
+#include "lists.hxx"
+#include "fileinfo.hxx"
+#include <cstrapi.hxx>
+#include "curdef.hxx"
+#include "straight.hxx"
+#include "sweepapi.hxx"
+#include "swp_opts.hxx"
+
+// for faceter
+#include "af_api.hxx"
+#include "fct_utl.hxx"
+#include "af_serializable_mesh.hxx"
+
 class WallGeometryService : public QObject
 {
     Q_OBJECT

@@ -32,6 +32,7 @@ void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat
 
 MyGLRenderer::MyGLRenderer()
 {
+    api_start_modeller(0);
     initializeOpenGLFunctions();
     // initGL();
     // initShaders();
@@ -150,6 +151,8 @@ MyGLRenderer::~MyGLRenderer()
         delete texture;
     }
     m_textureList.clear();
+
+    api_stop_modeller();
 }
 
 void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
