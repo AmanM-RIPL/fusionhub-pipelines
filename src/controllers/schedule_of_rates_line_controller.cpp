@@ -143,6 +143,28 @@ std::vector<ScheduleOfRatesLine*> ScheduleOfRatesLineController::getScheduleOfRa
     {
         return m_scheduleOfRatesLineRepository->findAllQML();
     }
+    else
+    {
+        ScheduleOfRatesController scheduleOfRatesController;
+        std::vector<ScheduleOfRates*> scheduleRateOfList = scheduleOfRatesController.getScheduleOfRatesList(false);
+        for(int i = 0; i < scheduleRateOfList.size(); i++)
+        {
+            ScheduleOfRates* rates = scheduleRateOfList[i];
+
+            QList<QObject*> lineList  = rates->getScheduleOfRatesLines();
+            for(int j = 0; j < lineList.size(); j++)
+            {
+                ScheduleOfRatesLine*  ratesline = new ScheduleOfRatesLine();
+                ratesline->setScheduleOfRatesId(rates->getId());
+
+                auto* lineData = qobject_cast<ScheduleOfRatesLine*>(lineList[j]);
+                ratesline->setScheduleSetupId(lineData->getScheduleSetupId());
+                ratesline->setCostParam(lineData->getCostParam());
+
+                scheduleOfRatesLines.push_back(ratesline);
+            }
+        }
+    }
 
     return scheduleOfRatesLines;
 }
