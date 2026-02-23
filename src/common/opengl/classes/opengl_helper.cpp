@@ -619,6 +619,112 @@ void OpenglHelper::getMeshGeometry(
 }
 
 void OpenglHelper::getMeshGeometry(
+    BODY *body,
+    std::vector<Position> &vertices_position,
+    std::vector<Normal> &vertices_normal,
+    std::vector<TextureUV> &vertices_textureuv,
+    std::vector<int> &vertices_materialIndex,
+    std::vector<int> &vertices_textureIndex,
+    std::vector<uint32_t> &meshIndices,
+    std::vector<int> &edge_indices,
+    std::vector<EdgeDataInt> &edge_data_int,
+    std::vector<EdgeDataFloat> &edge_data_float,
+    int textureIndex,
+    int materialIndex,
+    int scalingFactor,
+    float edgeWidth,
+    float edgeDashLength,
+    float edgeGapLength,
+    int edgeDash,
+    int edgeMaterialIndex
+)
+{
+    // facet code
+    api_facet_entity(body);
+
+    ENTITY_LIST faces;
+    api_get_faces(body, faces);
+
+    faces.init();
+    for (int i = 0; i < faces.iteration_count(); i++)
+    {
+        ENTITY* itr = faces.next();
+
+        std::vector<float> coords;
+        std::vector<int> triangles;
+        std::vector<float> normal_coords;
+
+        af_serializable_mesh* sm = GetSerializableMesh((FACE*)itr);
+        if (sm == NULL)
+        {
+            continue;
+        }
+
+        const int nv = sm->number_of_vertices();
+        int ntri = sm->number_of_polygons();
+
+        coords.resize(3 * nv);
+        sm->serialize_positions(coords.data());
+
+        bool const has_normals = sm->has_normals() == TRUE;
+        if (has_normals)
+        {
+            normal_coords.resize(3 * nv);
+        }
+        sm->serialize_normals(normal_coords.data());
+
+        triangles.resize(3 * ntri);
+        int ntri_actual = sm->serialize_triangles(triangles.data());
+        while (ntri_actual < ntri)
+        {
+            triangles.pop_back();
+            ntri_actual = static_cast<int>(triangles.size());
+        }
+
+        int numOfVertices = vertices_position.size();
+
+        for (int i = 0; i < coords.size(); i = i + 3)
+        {
+            qInfo() << "Coords: (" << coords[i] << ", " << coords[i + 1] << ", " << coords[i + 2] << ")";
+            vertices_position.push_back({ coords[i], coords[i + 1], coords[i + 2], 0.0f }); // position is vec4
+
+            vertices_textureuv.push_back({0.0f, 0.0f});
+            vertices_materialIndex.push_back(materialIndex);
+            vertices_textureIndex.push_back(textureIndex);
+        }
+
+        for (int i = 0; i < normal_coords.size(); i = i + 3)
+        {
+            qInfo() << "Normals: (" << normal_coords[i] << ", " << normal_coords[i + 1] << ", " << normal_coords[i + 2] << ")";
+            vertices_normal.push_back({ normal_coords[i], normal_coords[i + 1], normal_coords[i + 2] });
+        }
+
+        for (int i = 0; i < triangles.size(); i = i + 3)
+        {
+            qInfo() << "Triangles: (" << triangles[i] << ", " << triangles[i + 1] << ", " << triangles[i + 2] << ")";
+            meshIndices.push_back(triangles[i] + numOfVertices);
+            meshIndices.push_back(triangles[i + 1] + numOfVertices);
+            meshIndices.push_back(triangles[i + 2] + numOfVertices);
+        }
+
+        // calculate edge data
+        FACE* face_itr = (FACE*)itr;
+        LOOP* loop = face_itr->loop();
+        const LOOP* first_loop = loop;
+
+        do
+        {
+
+            loop = loop->next();
+        }
+        while (loop != first_loop);
+    }
+
+    // delete entity list
+    api_del_entity_list(faces);
+}
+
+void OpenglHelper::getMeshGeometry(
     const OdMdBody& body,
     std::vector<Position>& vertices_position,
     std::vector<Normal>& vertices_normal,
