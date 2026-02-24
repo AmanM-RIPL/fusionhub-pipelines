@@ -108,6 +108,7 @@ Column {
         Column {
             width: parent.width
             spacing: 10
+            bottomPadding: 25
 
             // Schedule Name
             Text {
@@ -195,7 +196,7 @@ Column {
                         columns: [
                             { label: "Cost Parameter Name", width: 210, key: "cost_param_name" },
                             { label: "Purchase Material", width: 210, key: "purchase_material" },
-                            { label: "Type of BIM Dimension", width: 210, key: "type_of_bim_dimension" }
+                            { label: "Type of BIM Dimension", width: 225, key: "type_of_bim_dimension" }
                         ]
 
                         onRemovedIndexChanged: {
@@ -336,7 +337,7 @@ Column {
                         model: resourceParameterList
                         columns: [
                             { label: "Resource Parameter Name", width: 325, key: "resource_param_name" },
-                            { label: "Type of BIM Dimension", width: 300, key: "type_of_bim_dimension" }
+                            { label: "Type of BIM Dimension", width: 320, key: "type_of_bim_dimension" }
                         ]
 
                         onRemovedIndexChanged: {
@@ -392,7 +393,7 @@ Column {
                     CustomComboBox {
                         id: typeOfBimDimensionForResourceParam
                         model: typeOfBimDimensionList
-                        width: 300
+                        width: 280
                         height: 24
                         currentIndex: 0
                     }
@@ -491,6 +492,7 @@ Column {
         Column {
             width: parent.width
             spacing: 10
+            bottomPadding: 25
 
             // Schedule Name
             Text {
@@ -561,13 +563,14 @@ Column {
                 font.weight: 700
                 font.pixelSize: 14
                 font.family: "Segoe UI"
+                textFormat: Text.RichText
                 topPadding: 10
             }
 
             // Cost Parameters Table
             Rectangle {
                 width: parent.width - 6
-                height: 140
+                height: 180
                 color: "#EDF1F4"
                 border.color: "#D0D0D0"
                 border.width: 1
@@ -582,7 +585,7 @@ Column {
                         columns: [
                             { label: "Cost Parameter Name", width: 210, key: "cost_param_name" },
                             { label: "Purchase Material", width: 210, key: "purchase_material" },
-                            { label: "Type of BIM Dimension", width: 210, key: "type_of_bim_dimension" }
+                            { label: "Type of BIM Dimension", width: 225, key: "type_of_bim_dimension" }
                         ]
 
                         onRemovedIndexChanged: {
@@ -692,7 +695,7 @@ Column {
                 font.weight: 700
                 font.pixelSize: 14
                 font.family: "Segoe UI"
-                topPadding: 10
+                topPadding: 25
             }
 
             // Resource Parameters Table
@@ -759,7 +762,7 @@ Column {
                     CustomComboBox {
                         id: typeOfBimDimensionForResourceParamEdit
                         model: typeOfBimDimensionList
-                        width: 280
+                        width: 300
                         height: 24
                         currentIndex: 0
                     }
@@ -813,7 +816,7 @@ Column {
                 font.weight: 700
                 font.pixelSize: 14
                 font.family: "Segoe UI"
-                topPadding: 25
+                topPadding: 50
                 visible: popupMode === "view" && scheduleSetupRoot.canApproveReject
             }
 

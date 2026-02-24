@@ -66,6 +66,9 @@ Column {
     ValidationHelper {
         id: validator
     }
+    ListModel {
+            id: dataListModel
+        }
 
     Timer {
         id: costValueValidationTimer
@@ -85,6 +88,7 @@ Column {
         onRejected: {
             scheduleNameTextBox.text = ""
             dataList = []
+            dataListModel.clear()
             dataMap = ({})
         }
     }
@@ -1035,6 +1039,7 @@ Column {
 
     // Fill edit popup with selected data
     function fillPopup() {
+            if (!selectedData) return
 
         //checkEditFormValidity()
 
