@@ -59,7 +59,6 @@ void ScheduleOfRatesController::create(const QString &name, const QVariant &pram
     m_draftEntityRepository->saveQML(&draftEntity);
 }
 
-
 void ScheduleOfRatesController::approvedCreate(const QString &name) const
 {
     ScheduleOfRates scheduleOfRates;
@@ -71,8 +70,6 @@ void ScheduleOfRatesController::approvedCreate(const QString &name) const
     scheduleOfRates.setScheduleOfRatesName(name);
 
     m_scheduleOfRatesRepository->saveQML(&scheduleOfRates);
-
-
 }
 
 std::vector<ScheduleOfRates*> ScheduleOfRatesController::getScheduleOfRatesList(bool isApproved) const
@@ -123,40 +120,25 @@ std::vector<ScheduleOfRates*> ScheduleOfRatesController::getScheduleOfRatesList(
                 for (int j = 0; j < lineArray.size(); j++) {
 
                     QJsonObject lineObj = lineArray[j].toObject();
+                    QJsonDocument doc(lineObj);
+                    QByteArray byteArray = doc.toJson();
+                    QString jsonStringCostParam = QString(byteArray);
 
                     int scheduleSetupId = lineObj["scheduleSetupId"].toString().toInt();
 
-                    QJsonArray dataArray = lineObj["data"].toArray();
+                    auto* line = new ScheduleOfRatesLine();
+                    line->setCostParam(jsonStringCostParam);
+                    line->setScheduleSetupId(scheduleSetupId);
 
-
-                    for (int k = 0; k < dataArray.size(); k++) {
-
-                        QJsonObject dataObj = dataArray[k].toObject();
-
-                        auto* line = new ScheduleOfRatesLine();
-
-                        // line->setId(0); // draft child row
-                        // line->setScheduleOfRatesId(draftId);
-                        line->setScheduleSetupId(scheduleSetupId);
-
-                        line->setCostParam(dataObj["cost"].toString());
-                        line->setResourceParam(dataObj["value"].toString());
-
-
-
-                        lines.push_back(line);
-                    }
+                    lines.push_back(line);
                 }
-
                 scheduleOfRates->setScheduleOfRatesLines(lines);
 
-                scheduleOfRatess.push_back(scheduleOfRates);
+               scheduleOfRatess.push_back(scheduleOfRates);
             }
         }
-
         return scheduleOfRatess;
     }
-
 }
 
 QJsonDocument ScheduleOfRatesController::CreateJson(const QVariant &paramMap) const
@@ -210,5 +192,3 @@ QJsonDocument ScheduleOfRatesController::CreateJson(const QVariant &paramMap) co
     QJsonDocument emptyDoc;
     return emptyDoc;
 }
-
-

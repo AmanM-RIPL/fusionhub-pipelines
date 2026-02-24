@@ -50,6 +50,10 @@ Column {
         id: scheduleOfRatesController
     }
 
+    ScheduleOfRatesLineController{
+        id: scheduleOfRatesLineController
+    }
+
     UserController {
         id: userController
     }
@@ -253,6 +257,7 @@ Column {
                         height: 130
                         leftPadding: 2
                         model: dataList
+                        removeRow: true;
                         columns: [
                             {
                                 "label": "Cost",
@@ -266,9 +271,25 @@ Column {
                             }
                         ]
 
-                        onRemoveRowChanged: {
-                            dataList.splice(removedIndex, 1)
-                            checkCreateFormValidity()
+                        // onRemoveRowChanged: {
+                        //     dataList.splice(removedIndex, 1)
+                        //     checkCreateFormValidity()
+                        // }
+
+                        onRemovedIndexChanged: {
+                            if (removedIndex >= 0 && removedIndex < dataList.length) {
+                                var temp = []
+                                for (var i = 0; i < dataList.length; i++) {
+                                    if (i !== removedIndex) {
+                                      temp =  temp.concat(dataList[i])
+                                    }
+                                }
+
+                                var key = scheduleNameComboBox.currentIndex;
+                                dataList = temp
+                                dataMap[key] = temp
+                                //checkCreateFormValidity()
+                            }
                         }
                     }
                 }
@@ -468,15 +489,17 @@ Column {
                     model: scheduleSetupList
                     textRole: "scheduleSetupName"
                     currentIndex: 0
-                    enabled: popupMode === "edit"
+                    //enabled: popupMode === "edit"
+                     enabled: true
 
                     onCurrentIndexChanged: {
-                        if (popupMode === "edit" && currentIndex >= 0) {
+                        if (scheduleSetupList.length>0 /*&& popupMode === "edit"*/ && currentIndex >= 0) {
                             var scheduleSetup = scheduleSetupList[currentIndex]
-                            dataMap.key = scheduleSetup.id
 
-                            if (dataMap[dataMap.key]) {
-                                dataList = dataMap[dataMap.key]
+                            var key = scheduleSetup.id
+
+                            if (dataMap[key]) {
+                                dataList = dataMap[key]
                             } else {
                                 dataList = []
                             }
@@ -500,6 +523,7 @@ Column {
                         height: 130
                         leftPadding: 2
                         model: dataList
+                        removeRow: popupMode === "edit"? true : false
                         columns: [
                             {
                                 "label": "Cost",
@@ -513,10 +537,31 @@ Column {
                             }
                         ]
 
-                        onRemoveRowChanged: {
-                            dataList.splice(removedIndex, 1)
-                            if (popupMode === "edit") {
-                                checkEditFormValidity()
+                        // onRemoveRowChanged: {
+                        //     dataList.splice(removedIndex, 1)
+                        //     if (popupMode === "edit") {
+                        //         console.log("onRemoveRowChanged")
+                        //         checkEditFormValidity()
+                        //     }
+                        // }
+
+                        onRemovedIndexChanged: {
+
+                            if (popupMode === "edit" && removedIndex >= 0 && removedIndex < dataList.length) {
+
+                                const updatedList = [...dataList];
+                                updatedList.splice(removedIndex, 1);
+                                dataList = updatedList;
+                                //dataMap[scheduleNameComboBox.currentIndex] = dataList
+                                // dataMap = {
+                                //   dataMap,           // Copy all existing keys
+                                //   [scheduleNameComboBox.currentIndex]: updatedList    // Overwrite the specific key with the new list
+                                // };
+
+                                console.log("removedIndex1:", removedIndex)
+
+                                console.log("onRemovedIndexChanged")
+                                //checkCreateFormValidity()
                             }
                         }
                     }
@@ -996,54 +1041,56 @@ Column {
     function fillPopup() {
             if (!selectedData) return
 
+        //checkEditFormValidity()
 
-            scheduleNameTextBoxEdit.text = selectedData.scheduleOfRatesName || ""
+         if (!selectedData)
+             return
 
-            if (scheduleSetupList.length === 0 || scheduleSetupList[0] === "--") {
-                scheduleSetupList = scheduleSetupController.getSetupList(true)
-            }
+        scheduleNameTextBoxEdit.text = selectedData.scheduleOfRatesName || ""
+        scheduleSetupList = scheduleSetupController.getSetupList(true)
+        var scheduleOfRatesLine = scheduleOfRatesLineController.getScheduleOfRatesLineList(isApproved)
+         //console.log("scheduleOfRatesLine==",JSON.stringify(scheduleOfRatesLine))
 
-            dataListModel.clear()
+        // var scheduleOfRates = scheduleOfRatesController.getScheduleOfRatesList(isApproved);
+        // console.log("scheduleOfRates==",JSON.stringify(scheduleOfRates))
+
+        for (var i = 0; i < scheduleOfRatesLine.length; i++) {
+            var line = scheduleOfRatesLine[i];
+
+            var rawParam = line.costParam;
             dataList = []
 
-            if (selectedData.scheduleOfRatesLines && selectedData.scheduleOfRatesLines.length > 0) {
+           if (String(selectedData.id || '').trim() === String(line.scheduleOfRatesId || '').trim())
+            {
+               //console.log("selectedData.id:", selectedData.id)
 
-                for (var i = 0; i < selectedData.scheduleOfRatesLines.length; i++) {
-                    var line = selectedData.scheduleOfRatesLines[i]
-                    var setup = null
+            var parsedParam = (typeof rawParam === "string") ? JSON.parse(rawParam) : rawParam;
+            var dataArray = parsedParam["data"] || [];
 
-                    // Find schedule setup by ID
-                    for (var j = 0; j < scheduleSetupList.length; j++) {
-                        if (scheduleSetupList[j].id === line.scheduleSetupId) {
-                            setup = scheduleSetupList[j]
-                            break
-                        }
-                    }
-
-                    if (setup) {
-                        var item = {
-                            cost: line.costParam,
-                            value: line.resourceParam
-                        }
-
-                        // Append to ListModel
-                        dataListModel.append(item)
-                        dataList.push(item)
-
-                    }
-                }
+            for (var j = 0; j < dataArray.length; j++) {
+                var item = dataArray[j];
+                var newElement = {
+                    "scheduleSetup": item.scheduleSetup,
+                    "cost": item.cost,
+                    "value": item.value,
+                    "uom": item.uom
+                };
+                dataList = dataList.concat(newElement);
             }
-
-            // Set combo box to first schedule
-            if (selectedData.scheduleOfRatesLines && selectedData.scheduleOfRatesLines.length > 0) {
-                var firstLine = selectedData.scheduleOfRatesLines[0]
-                for (var k = 0; k < scheduleSetupList.length; k++) {
-                    if (scheduleSetupList[k].id === firstLine.scheduleSetupId) {
-                        scheduleNameComboBoxEdit.currentIndex = k
-                        break
-                    }
-                }
+                dataMap[line.scheduleSetupId] = dataList;
             }
-            checkEditFormValidity()
         }
+         scheduleSetupList = scheduleSetupList.filter(item =>
+            Object.keys(dataMap).includes(item.id.toString())
+        );
+
+        var scheduleSetup = scheduleSetupList[scheduleNameComboBoxEdit.currentIndex]
+        dataMap.key = scheduleSetupList.length>0 ? scheduleSetup.id : -1
+
+        if (dataMap[dataMap.key]) {
+            dataList = dataMap[dataMap.key]
+        } else {
+            dataList = []
+        }
+    }
 }
