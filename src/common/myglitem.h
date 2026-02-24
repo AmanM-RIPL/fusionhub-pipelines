@@ -76,6 +76,30 @@
 #include "controllers/ifc_detail_controller.h"
 #include "services/geometry/geometry_service_factory.h"
 
+// ACIS header files
+#include "acis.hxx"
+#include "license.hxx"
+#include "spa_unlock_result.hxx"
+#include "spatial_license.h"
+#include "kernapi.hxx"
+
+#include <boolapi.hxx>
+#include "api.hxx"
+#include "lists.hxx"
+#include "fileinfo.hxx"
+#include <cstrapi.hxx>
+#include "curdef.hxx"
+#include "straight.hxx"
+#include "sweepapi.hxx"
+#include "swp_opts.hxx"
+
+// for faceter
+#include "af_api.hxx"
+#include "fct_utl.hxx"
+#include "af_serializable_mesh.hxx"
+
+extern void unlock_spatial_products();
+
 class MyApp : public ExSystemServices
 {
 protected:

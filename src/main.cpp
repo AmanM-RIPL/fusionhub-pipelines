@@ -21,6 +21,8 @@
  #define SPA_NO_AUTO_LINK
  #endif
 
+#define M_PI 3.14159265358979323846
+
 #include "common/myglitem.h"
 #include "common/ifcdetail.h"
 
@@ -90,6 +92,21 @@
 #include "spatial_license.h"
 #include "kernapi.hxx"
 
+#include <boolapi.hxx>
+#include "api.hxx"
+#include "lists.hxx"
+#include "fileinfo.hxx"
+#include <cstrapi.hxx>
+#include "curdef.hxx"
+#include "straight.hxx"
+#include "sweepapi.hxx"
+#include "swp_opts.hxx"
+
+// for faceter
+#include "af_api.hxx"
+#include "fct_utl.hxx"
+#include "af_serializable_mesh.hxx"
+
 const char* unlock_str = SPATIAL_LICENSE;
 
 // There has to be a better way???????????
@@ -121,8 +138,158 @@ int main(int argc, char *argv[])
 {
     //static OdStaticRxObject<MyServices> svcs;
 
-    api_start_modeller(0);
-    unlock_spatial_products();
+    // api_start_modeller(0);
+    // unlock_spatial_products();
+
+    // ENTITY_LIST ents;
+
+    // // Create the first solid block
+    // // BODY* block = nullptr;
+    // // api_solid_block(SPAposition(0, 0, 0), SPAposition(10, 10, 10), block);
+    // // ents.add(block);
+    // // qInfo() << "Created Block: " << block->size();
+
+    // // Create wire body
+    // BODY* wire_body = nullptr;
+
+    // EDGE* edge1 = nullptr;
+    // EDGE* edge2 = nullptr;
+    // EDGE* edge3 = nullptr;
+    // EDGE* edge4 = nullptr;
+
+    // api_curve_line(SPAposition(0,0,0), SPAposition(1,0,0), edge1);
+    // // api_curve_arc_3pt(SPAposition(0,0,0), SPAposition(0.5, -0.5, 0), SPAposition(1,0,0), false, edge1);
+    // api_curve_line(SPAposition(1,0,0), SPAposition(1,1,0), edge2);
+    // api_curve_line(SPAposition(1,1,0), SPAposition(0,1,0), edge3);
+    // api_curve_line(SPAposition(0,1,0), SPAposition(0,0,0), edge4);
+
+    // std::vector<EDGE*> edges = { edge1, edge2, edge3, edge4 };
+
+    // api_make_ewire(4, edges.data(), wire_body);
+
+    // // sweep
+    // BODY* new_body = nullptr;
+
+    // EXCEPTION_BEGIN
+    //     sweep_options* sw_options = ACIS_NEW sweep_options();
+    // // sw_options->set_draft_angle(M_PI * 0.1);
+    // EXCEPTION_TRY
+    //     outcome result_outcome = api_sweep_with_options(wire_body, SPAvector(0,0,1), sw_options, new_body);
+
+    //     // error_info* error_result = result_outcome.get_error_info();
+    //     // qInfo() << "result_outcome: " << error_result->error_message();
+
+    // EXCEPTION_CATCH_TRUE
+    //     ACIS_DELETE sw_options;
+    // EXCEPTION_END
+
+    // // facet code
+    // api_facet_entity(wire_body);
+
+    // ENTITY_LIST faces;
+    // api_get_faces(wire_body, faces);
+
+    // faces.init();
+    // for (int i = 0; i < faces.iteration_count(); i++)
+    // {
+    //     ENTITY* itr = faces.next();
+
+    //     qInfo() << "Face is there";
+
+    //     std::vector<float> coords;
+    //     std::vector<int> triangles;
+    //     std::vector<float> normal_coords;
+    //     std::vector<float> uv_coords;
+
+    //     af_serializable_mesh* sm = GetSerializableMesh((FACE*)itr);
+    //     if (sm == NULL)
+    //     {
+    //         continue;
+    //     }
+
+    //     const int nv = sm->number_of_vertices();
+    //     int ntri = sm->number_of_polygons();
+
+    //     coords.resize(3 * nv);
+    //     sm->serialize_positions(coords.data());
+
+    //     bool const has_normals = sm->has_normals() == TRUE;
+    //     if (has_normals)
+    //     {
+    //         normal_coords.resize(3 * nv);
+    //     }
+    //     sm->serialize_normals(normal_coords.data());
+
+    //     triangles.resize(3 * ntri);
+    //     int ntri_actual = sm->serialize_triangles(triangles.data());
+    //     while (ntri_actual < ntri)
+    //     {
+    //         triangles.pop_back();
+    //         ntri_actual = static_cast<int>(triangles.size());
+    //     }
+
+    //     bool const has_uvs = sm->has_uv() == TRUE;
+    //     if (has_uvs)
+    //     {
+    //         uv_coords.resize(2 * nv);
+    //     }
+    //     sm->serialize_uv_data(uv_coords.data(), true);
+
+    //     for (int i = 0; i < coords.size(); i = i + 3)
+    //     {
+    //         qInfo() << "Coords: (" << coords[i] << ", " << coords[i + 1] << ", " << coords[i + 2] << ")";
+    //     }
+
+    //     for (int i = 0; i < normal_coords.size(); i = i + 3)
+    //     {
+    //         qInfo() << "Normals: (" << normal_coords[i] << ", " << normal_coords[i + 1] << ", " << normal_coords[i + 2] << ")";
+    //     }
+
+    //     for (int i = 0; i < uv_coords.size(); i = i + 2)
+    //     {
+    //         qInfo() << "UVs: (" << uv_coords[i] << ", " << uv_coords[i + 1] << ")";
+    //     }
+
+    //     for (int i = 0; i < triangles.size(); i = i + 3)
+    //     {
+    //         qInfo() << "Triangles: (" << triangles[i] << ", " << triangles[i + 1] << ", " << triangles[i + 2] << ")";
+    //     }
+
+    //     // calculate edge data
+    //     FACE* face_itr = (FACE*)itr;
+    //     LOOP* loop = face_itr->loop();
+    //     const LOOP* first_loop = loop;
+
+    //     do
+    //     {
+    //         qInfo() << "New Loop";
+    //         // get co-edges in loop
+    //         COEDGE* coedge = loop->start();
+    //         COEDGE* first_coedge = coedge;
+
+    //         do
+    //         {
+    //             qInfo() << "New Edge";
+    //             EDGE* edge = coedge->edge();
+
+    //             SPAposition* pos_array = nullptr;
+    //             int numOfEdgeVertices = 0;
+    //             api_get_facet_edge_points(edge, pos_array, numOfEdgeVertices);
+
+    //             for (int i = 0; i < numOfEdgeVertices; i++)
+    //             {
+    //                 SPAposition& pos = pos_array[i];
+    //                 qInfo() << "Position of edge: " << pos.x() << ", " << pos.y() << ", " << pos.z();
+    //             }
+
+    //             coedge = coedge->next();
+    //         }
+    //         while (coedge != first_coedge);
+
+    //         loop = loop->next();
+    //     }
+    //     while ((loop != first_loop) && (loop != nullptr));
+    // }
 
     odrxInitialize(&svcs);
 
@@ -285,7 +452,7 @@ int main(int argc, char *argv[])
     odIfcUninitialize();
     odrxUninitialize();
 
-    api_stop_modeller();
+    // api_stop_modeller();
 
     return result;
 }
