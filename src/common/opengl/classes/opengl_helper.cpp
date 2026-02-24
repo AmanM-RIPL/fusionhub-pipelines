@@ -645,14 +645,18 @@ void OpenglHelper::getMeshGeometry(
     ENTITY_LIST faces;
     api_get_faces(body, faces);
 
+    // qInfo() << "Face count: " << faces.iteration_count();
+
     faces.init();
     for (int i = 0; i < faces.iteration_count(); i++)
     {
+        // qInfo() << "New face";
         ENTITY* itr = faces.next();
 
         std::vector<float> coords;
         std::vector<int> triangles;
         std::vector<float> normal_coords;
+        std::vector<float> uv_coords;
 
         af_serializable_mesh* sm = GetSerializableMesh((FACE*)itr);
         if (sm == NULL)
@@ -681,27 +685,40 @@ void OpenglHelper::getMeshGeometry(
             ntri_actual = static_cast<int>(triangles.size());
         }
 
+        bool const has_uvs = sm->has_uv() == TRUE;
+        if (has_uvs)
+        {
+            uv_coords.resize(2 * nv);
+        }
+        sm->serialize_uv_data(uv_coords.data(), true);
+
+
         int numOfVertices = vertices_position.size();
 
         for (int i = 0; i < coords.size(); i = i + 3)
         {
-            qInfo() << "Coords: (" << coords[i] << ", " << coords[i + 1] << ", " << coords[i + 2] << ")";
+            // qInfo() << "Coords: (" << coords[i] << ", " << coords[i + 1] << ", " << coords[i + 2] << ")";
             vertices_position.push_back({ coords[i], coords[i + 1], coords[i + 2], 0.0f }); // position is vec4
 
-            vertices_textureuv.push_back({0.0f, 0.0f});
             vertices_materialIndex.push_back(materialIndex);
             vertices_textureIndex.push_back(textureIndex);
         }
 
         for (int i = 0; i < normal_coords.size(); i = i + 3)
         {
-            qInfo() << "Normals: (" << normal_coords[i] << ", " << normal_coords[i + 1] << ", " << normal_coords[i + 2] << ")";
+            // qInfo() << "Normals: (" << normal_coords[i] << ", " << normal_coords[i + 1] << ", " << normal_coords[i + 2] << ")";
             vertices_normal.push_back({ normal_coords[i], normal_coords[i + 1], normal_coords[i + 2] });
+        }
+
+        for (int i = 0; i < uv_coords.size(); i = i + 2)
+        {
+            // qInfo() << "UVs: (" << uv_coords[i] << ", " << uv_coords[i + 1] << ")";
+            vertices_textureuv.push_back({uv_coords[i], uv_coords[i + 1]});
         }
 
         for (int i = 0; i < triangles.size(); i = i + 3)
         {
-            qInfo() << "Triangles: (" << triangles[i] << ", " << triangles[i + 1] << ", " << triangles[i + 2] << ")";
+            // qInfo() << "Triangles: (" << triangles[i] << ", " << triangles[i + 1] << ", " << triangles[i + 2] << ")";
             meshIndices.push_back(triangles[i] + numOfVertices);
             meshIndices.push_back(triangles[i + 1] + numOfVertices);
             meshIndices.push_back(triangles[i + 2] + numOfVertices);
@@ -714,10 +731,100 @@ void OpenglHelper::getMeshGeometry(
 
         do
         {
+            // get co-edges in loop
+            COEDGE* coedge = loop->start();
+            COEDGE* first_coedge = coedge;
+
+            do
+            {
+                EDGE* edge = coedge->edge();
+
+                std::vector<int> edge_pos_index_array = {};
+                SPAposition* pos_array = nullptr;
+                int numOfEdgeVertices = 0;
+                api_get_facet_edge_points(edge, pos_array, numOfEdgeVertices);
+
+                for (int i = 0; i < numOfEdgeVertices; i++)
+                {
+                    SPAposition& pos = pos_array[i];
+                    // qInfo() << "Position of edge: " << pos.x() << ", " << pos.y() << ", " << pos.z();
+
+                    // get index of that vertices
+                    int pos_index = -1;
+                    for (int j = numOfVertices; j < vertices_position.size(); j++)
+                    {
+                        if (
+                            (vertices_position[j][0] == pos.x()) &&
+                            (vertices_position[j][1] == pos.y()) &&
+                            (vertices_position[j][2] == pos.z())
+                        )
+                        {
+                            pos_index = j;
+                            break;
+                        }
+                    }
+
+                    if (pos_index == -1)
+                    {
+                        // qInfo() << "*****************pos_index == -1";
+                        vertices_position.push_back({
+                            static_cast<float>(pos.x()),
+                            static_cast<float>(pos.y()),
+                            static_cast<float>(pos.z()),
+                            0.0f
+                        }); // position is vec4
+                        vertices_textureuv.push_back({0.0f, 0.0f}); // texture uv does not matter
+
+                        SPAunit_vector face_normal = sg_get_face_normal(face_itr, pos);
+                        vertices_normal.push_back({
+                            static_cast<float>(face_normal.x()),
+                            static_cast<float>(face_normal.y()),
+                            static_cast<float>(face_normal.z())
+                        });
+
+                        vertices_materialIndex.push_back(materialIndex);
+                        vertices_textureIndex.push_back(textureIndex);
+
+                        pos_index = vertices_position.size() - 1;
+                    }
+
+                    edge_pos_index_array.push_back(pos_index);
+                }
+
+                for (int i = 0; i < edge_pos_index_array.size(); i++)
+                {
+                    if (i == edge_pos_index_array.size() - 1)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        edge_indices.push_back(edge_indices.size());
+                        EdgeDataInt ei;
+                        EdgeDataFloat ef;
+
+                        ei.material_index = edgeMaterialIndex;
+                        ei.dash = edgeDash;
+                        ef.width = edgeWidth;
+                        ef.dash_length = edgeDashLength;
+                        ef.gap_length = edgeGapLength;
+                        ef.padding = 0.0f;
+
+                        ei.start_vertex = static_cast<int>(edge_pos_index_array[i]);
+                        ei.end_vertex = static_cast<int>(edge_pos_index_array[i + 1]);
+
+                        edge_data_int.push_back(ei);
+                        edge_data_float.push_back(ef);
+                    }
+                }
+
+                coedge = coedge->next();
+            }
+            while (coedge != first_coedge);
 
             loop = loop->next();
         }
-        while (loop != first_loop);
+        while ((loop != first_loop) && (loop != nullptr));
     }
 
     // delete entity list

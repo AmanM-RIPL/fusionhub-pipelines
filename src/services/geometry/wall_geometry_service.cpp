@@ -231,7 +231,14 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
     EXCEPTION_BEGIN
         sweep_options* sw_options = ACIS_NEW sweep_options();
     EXCEPTION_TRY
-        api_sweep_with_options(wire_body, SPAvector(0,0,1), sw_options, new_body);
+        outcome sw_result = api_sweep_with_options(wire_body, SPAvector(0,0,1 * height), sw_options, new_body);
+
+        if (!sw_result.ok())
+        {
+            error_info* info = sw_result.get_error_info();
+            qInfo() << info->error_message();
+        }
+
     EXCEPTION_CATCH_TRUE
         ACIS_DELETE sw_options;
     EXCEPTION_END
@@ -276,7 +283,7 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
     int scalingFactor = 5;
 
     m_openglHelper.getMeshGeometry(
-        body,
+        wire_body,
         vertices_position,
         vertices_normal,
         vertices_textureuv,

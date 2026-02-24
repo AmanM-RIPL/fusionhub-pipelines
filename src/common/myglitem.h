@@ -98,6 +98,8 @@
 #include "fct_utl.hxx"
 #include "af_serializable_mesh.hxx"
 
+extern void unlock_spatial_products();
+
 class MyApp : public ExSystemServices
 {
 protected:

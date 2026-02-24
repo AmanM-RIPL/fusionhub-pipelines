@@ -11,6 +11,9 @@
 
 // ACIS header files
 #include "acis.hxx"
+#include "license.hxx"
+#include "spa_unlock_result.hxx"
+#include "spatial_license.h"
 #include "kernapi.hxx"
 
 #include <boolapi.hxx>

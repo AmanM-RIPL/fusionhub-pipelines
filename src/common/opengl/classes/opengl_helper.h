@@ -56,6 +56,7 @@
 #include "straight.hxx"
 #include "sweepapi.hxx"
 #include "swp_opts.hxx"
+#include "faceutil.hxx"
 
 // for faceter
 #include "af_api.hxx"

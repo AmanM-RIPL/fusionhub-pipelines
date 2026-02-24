@@ -137,8 +137,8 @@ int main(int argc, char *argv[])
 {
     //static OdStaticRxObject<MyServices> svcs;
 
-    api_start_modeller(0);
-    unlock_spatial_products();
+    // api_start_modeller(0);
+    // unlock_spatial_products();
 
     // ENTITY_LIST ents;
 
@@ -157,6 +157,7 @@ int main(int argc, char *argv[])
     // EDGE* edge4 = nullptr;
 
     // api_curve_line(SPAposition(0,0,0), SPAposition(1,0,0), edge1);
+    // // api_curve_arc_3pt(SPAposition(0,0,0), SPAposition(0.5, -0.5, 0), SPAposition(1,0,0), false, edge1);
     // api_curve_line(SPAposition(1,0,0), SPAposition(1,1,0), edge2);
     // api_curve_line(SPAposition(1,1,0), SPAposition(0,1,0), edge3);
     // api_curve_line(SPAposition(0,1,0), SPAposition(0,0,0), edge4);
@@ -170,7 +171,7 @@ int main(int argc, char *argv[])
 
     // EXCEPTION_BEGIN
     //     sweep_options* sw_options = ACIS_NEW sweep_options();
-    // sw_options->set_draft_angle(M_PI * 0.1);
+    // // sw_options->set_draft_angle(M_PI * 0.1);
     // EXCEPTION_TRY
     //     outcome result_outcome = api_sweep_with_options(wire_body, SPAvector(0,0,1), sw_options, new_body);
 
@@ -197,6 +198,7 @@ int main(int argc, char *argv[])
     //     std::vector<float> coords;
     //     std::vector<int> triangles;
     //     std::vector<float> normal_coords;
+    //     std::vector<float> uv_coords;
 
     //     af_serializable_mesh* sm = GetSerializableMesh((FACE*)itr);
     //     if (sm == NULL)
@@ -225,6 +227,13 @@ int main(int argc, char *argv[])
     //         ntri_actual = static_cast<int>(triangles.size());
     //     }
 
+    //     bool const has_uvs = sm->has_uv() == TRUE;
+    //     if (has_uvs)
+    //     {
+    //         uv_coords.resize(2 * nv);
+    //     }
+    //     sm->serialize_uv_data(uv_coords.data(), true);
+
     //     for (int i = 0; i < coords.size(); i = i + 3)
     //     {
     //         qInfo() << "Coords: (" << coords[i] << ", " << coords[i + 1] << ", " << coords[i + 2] << ")";
@@ -235,10 +244,50 @@ int main(int argc, char *argv[])
     //         qInfo() << "Normals: (" << normal_coords[i] << ", " << normal_coords[i + 1] << ", " << normal_coords[i + 2] << ")";
     //     }
 
+    //     for (int i = 0; i < uv_coords.size(); i = i + 2)
+    //     {
+    //         qInfo() << "UVs: (" << uv_coords[i] << ", " << uv_coords[i + 1] << ")";
+    //     }
+
     //     for (int i = 0; i < triangles.size(); i = i + 3)
     //     {
     //         qInfo() << "Triangles: (" << triangles[i] << ", " << triangles[i + 1] << ", " << triangles[i + 2] << ")";
     //     }
+
+    //     // calculate edge data
+    //     FACE* face_itr = (FACE*)itr;
+    //     LOOP* loop = face_itr->loop();
+    //     const LOOP* first_loop = loop;
+
+    //     do
+    //     {
+    //         qInfo() << "New Loop";
+    //         // get co-edges in loop
+    //         COEDGE* coedge = loop->start();
+    //         COEDGE* first_coedge = coedge;
+
+    //         do
+    //         {
+    //             qInfo() << "New Edge";
+    //             EDGE* edge = coedge->edge();
+
+    //             SPAposition* pos_array = nullptr;
+    //             int numOfEdgeVertices = 0;
+    //             api_get_facet_edge_points(edge, pos_array, numOfEdgeVertices);
+
+    //             for (int i = 0; i < numOfEdgeVertices; i++)
+    //             {
+    //                 SPAposition& pos = pos_array[i];
+    //                 qInfo() << "Position of edge: " << pos.x() << ", " << pos.y() << ", " << pos.z();
+    //             }
+
+    //             coedge = coedge->next();
+    //         }
+    //         while (coedge != first_coedge);
+
+    //         loop = loop->next();
+    //     }
+    //     while ((loop != first_loop) && (loop != nullptr));
     // }
 
     odrxInitialize(&svcs);
@@ -876,7 +925,7 @@ int main(int argc, char *argv[])
     odIfcUninitialize();
     odrxUninitialize();
 
-    api_stop_modeller();
+    // api_stop_modeller();
 
     return result;
 }
