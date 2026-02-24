@@ -253,6 +253,7 @@ Column {
                         height: 130
                         leftPadding: 2
                         model: dataList
+                        removeRow: true;
                         columns: [
                             {
                                 "label": "Cost",
@@ -266,9 +267,25 @@ Column {
                             }
                         ]
 
-                        onRemoveRowChanged: {
-                            dataList.splice(removedIndex, 1)
-                            checkCreateFormValidity()
+                        // onRemoveRowChanged: {
+                        //     dataList.splice(removedIndex, 1)
+                        //     checkCreateFormValidity()
+                        // }
+
+                        onRemovedIndexChanged: {
+                            if (removedIndex >= 0 && removedIndex < dataList.length) {
+                                var temp = []
+                                for (var i = 0; i < dataList.length; i++) {
+                                    if (i !== removedIndex) {
+                                      temp =  temp.concat(dataList[i])
+                                    }
+                                }
+
+                                var key = scheduleNameComboBox.currentIndex;
+                                dataList = temp
+                                dataMap[key] = temp
+                                //checkCreateFormValidity()
+                            }
                         }
                     }
                 }
@@ -472,13 +489,13 @@ Column {
                      enabled: true
 
                     onCurrentIndexChanged: {
-                        if (scheduleSetupList.length>0/*popupMode === "edit" && currentIndex >= 0*/) {
+                        if (scheduleSetupList.length>0 /*&& popupMode === "edit"*/ && currentIndex >= 0) {
                             var scheduleSetup = scheduleSetupList[currentIndex]
 
-                            dataMap.key = scheduleSetup.id
+                            var key = scheduleSetup.id
 
-                            if (dataMap[dataMap.key]) {
-                                dataList = dataMap[dataMap.key]
+                            if (dataMap[key]) {
+                                dataList = dataMap[key]
                             } else {
                                 dataList = []
                             }
@@ -502,6 +519,7 @@ Column {
                         height: 130
                         leftPadding: 2
                         model: dataList
+                        removeRow: popupMode === "edit"? true : false
                         columns: [
                             {
                                 "label": "Cost",
@@ -515,10 +533,31 @@ Column {
                             }
                         ]
 
-                        onRemoveRowChanged: {
-                            dataList.splice(removedIndex, 1)
-                            if (popupMode === "edit") {
-                                checkEditFormValidity()
+                        // onRemoveRowChanged: {
+                        //     dataList.splice(removedIndex, 1)
+                        //     if (popupMode === "edit") {
+                        //         console.log("onRemoveRowChanged")
+                        //         checkEditFormValidity()
+                        //     }
+                        // }
+
+                        onRemovedIndexChanged: {
+
+                            if (popupMode === "edit" && removedIndex >= 0 && removedIndex < dataList.length) {
+
+                                const updatedList = [...dataList];
+                                updatedList.splice(removedIndex, 1);
+                                dataList = updatedList;
+                                //dataMap[scheduleNameComboBox.currentIndex] = dataList
+                                // dataMap = {
+                                //   dataMap,           // Copy all existing keys
+                                //   [scheduleNameComboBox.currentIndex]: updatedList    // Overwrite the specific key with the new list
+                                // };
+
+                                console.log("removedIndex1:", removedIndex)
+
+                                console.log("onRemovedIndexChanged")
+                                //checkCreateFormValidity()
                             }
                         }
                     }
