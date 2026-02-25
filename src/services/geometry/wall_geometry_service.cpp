@@ -7,8 +7,10 @@ WallGeometryService::WallGeometryService(QObject *parent)
 
 void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
 {
+    ENTITY_LIST ents;
+
     std::vector<std::vector<Point>> polygon;
-    std::vector<Point> referenceLine = {};
+    std::vector<ReferenceLineSegment> referenceLine = {};
     float width = 0;
     float height = 0;
     float distance = 0;
@@ -22,94 +24,199 @@ void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
         return;
     }
 
-    // 3. Generate a parallel line
-    std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
+    // 1. Convert referenceLine to ACIS open wire-body
+    BODY* wire_body = nullptr;
+    std::vector<EDGE*> edges = {};
+    for (ReferenceLineSegment& line_seg: referenceLine)
+    {
+        EDGE* edge = nullptr;
+        ents.add(edge);
 
-    referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
+        if (line_seg.type == "line")
+        {
+            api_curve_line(
+                SPAposition(line_seg.points[0][0], line_seg.points[0][1], 0.0),
+                SPAposition(line_seg.points[1][0], line_seg.points[1][1], 0.0),
+                edge
+            );
+        }
 
-    // for (Point point: referenceLine)
-    // {
-    //     qInfo() << "x: " << point[0] << " , y: " << point[1];
-    // }
+        edges.push_back(edge);
+    }
 
-    // 4. Get triangulated mesh
-    polygon.push_back(referenceLine);
-    polygon.push_back({}); // for holes
-    std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(polygon);
+    api_make_ewire(edges.size(), edges.data(), wire_body);
 
-    // for (uint32_t index: indices)
-    // {
-    //     qInfo() << index;
-    // }
+    // 2. sweep the open-wire body to generate solid face
+    if (edges.size() == 0)
+    {
+        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {});
+        return;
+    }
 
-    // 5. Create and export mesh
+    EDGE* first_edge = edges[0];
+    SPAposition first_edge_point = first_edge->start_pos();
+
+    SPAvector tangent_vector = first_edge->start_deriv();
+    SPAvector perp_vector(-1 * tangent_vector.y(), tangent_vector.x(), tangent_vector.z());
+    perp_vector = (width / perp_vector.len()) * perp_vector;
+
+    SPAposition profile_point(
+        perp_vector.x() + first_edge_point.x(),
+        perp_vector.y() + first_edge_point.y(),
+        perp_vector.z()
+    );
+
+    EDGE* edge_for_sweep = nullptr;
+    ents.add(edge_for_sweep);
+    api_curve_line(first_edge_point, profile_point, edge_for_sweep);
+
+    // do sweep
+    BODY* new_body = nullptr;
+    ents.add(new_body);
+
+    EXCEPTION_BEGIN
+        sweep_options* sw_options = ACIS_NEW sweep_options();
+    EXCEPTION_TRY
+        outcome sw_result = api_sweep_with_options(edge_for_sweep, wire_body, sw_options, new_body);
+
+    if (!sw_result.ok())
+    {
+        error_info* info = sw_result.get_error_info();
+        qInfo() << info->error_message();
+    }
+
+    EXCEPTION_CATCH_TRUE
+        ACIS_DELETE sw_options;
+    EXCEPTION_END
+
+    // Mesh geometry generation
+    std::vector<uint32_t> meshIndices = {};
     std::vector<Position> vertices_position = {};
     std::vector<Normal> vertices_normal = {};
     std::vector<TextureUV> vertices_textureuv = {};
     std::vector<int> vertices_materialIndex = {};
     std::vector<int> vertices_textureIndex = {};
-    for (int i = 0; i < referenceLine.size(); i++)
-    {
-        Point point = referenceLine[i];
-
-        // Vertex v = {
-        //     {point[0], point[1], 0.0f},
-        //     {0.0f, 0.0f, 1.0f},
-        //     {0.0f, 0.0f},
-        //     OpenGLMaterial::IVORY,
-        //     Texture::NONE
-        // };
-
-        vertices_position.push_back({point[0], point[1], 0.0f, 0.0f});
-        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
-        vertices_textureuv.push_back({0.0f, 0.0f});
-        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
-        vertices_textureIndex.push_back(Texture::NONE);
-
-        // verticesVector.push_back(point[0]); // x
-        // verticesVector.push_back(point[1]); // y
-        // verticesVector.push_back(0.0f); // z
-        // verticesVector.push_back(0.0f); // n.x
-        // verticesVector.push_back(0.0f); // n.y
-        // verticesVector.push_back(1.0f); // n.z
-    }
-
     std::vector<int> edge_indices = {};
     std::vector<EdgeDataInt> edge_data_int = {};
     std::vector<EdgeDataFloat> edge_data_float = {};
-    for (int i = 0; i < referenceLine.size(); i++)
-    {
-        EdgeDataInt ei;
-        EdgeDataFloat ef;
+    int textureIndex = Texture::NONE; // if less than zero then we don't need to worry about textures
+    int materialIndex = OpenGLMaterial::IVORY;
+    float edgeWidth = 1.0f;
+    float edgeDashLength = 1.0f;
+    float edgeGapLength = 1.0f;
+    int edgeDash = 0;
+    int edgeMaterialIndex = OpenGLMaterial::BLACK;
+    int scalingFactor = 5;
 
-        ei.material_index = OpenGLMaterial::BLACK;
-        ei.dash = 0;
-        ef.width = 1.0f;
-        ef.dash_length = 1.0f;
-        ef.gap_length = 1.0f;
-        ef.padding = 0.0f;
+    m_openglHelper.getMeshGeometry(
+        new_body,
+        vertices_position,
+        vertices_normal,
+        vertices_textureuv,
+        vertices_materialIndex,
+        vertices_textureIndex,
+        meshIndices,
+        edge_indices,
+        edge_data_int,
+        edge_data_float,
+        textureIndex,
+        materialIndex,
+        scalingFactor,
+        edgeWidth,
+        edgeDashLength,
+        edgeGapLength,
+        edgeDash,
+        edgeMaterialIndex
+    );
 
-        if (i == referenceLine.size() - 1)
-        {
-            ei.start_vertex = i;
-            ei.end_vertex = 0;
-        }
-        else
-        {
-            ei.start_vertex = i;
-            ei.end_vertex = i + 1;
-        }
+    // // 3. Generate a parallel line
+    // std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
 
-        edge_data_int.push_back(ei);
-        edge_data_float.push_back(ef);
-        edge_indices.push_back(i);
-    }
+    // referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
 
-    // // Allocate memory for the new array using std::unique_ptr for safety.
-    // auto indices_raw = std::make_unique<unsigned int[]>(indices.size());
+    // // for (Point point: referenceLine)
+    // // {
+    // //     qInfo() << "x: " << point[0] << " , y: " << point[1];
+    // // }
 
-    // // Copy elements from the vector to the new array.
-    // std::copy(indices.begin(), indices.end(), indices_raw.get());
+    // // 4. Get triangulated mesh
+    // polygon.push_back(referenceLine);
+    // polygon.push_back({}); // for holes
+    // std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(polygon);
+
+    // // for (uint32_t index: indices)
+    // // {
+    // //     qInfo() << index;
+    // // }
+
+    // // 5. Create and export mesh
+    // std::vector<Position> vertices_position = {};
+    // std::vector<Normal> vertices_normal = {};
+    // std::vector<TextureUV> vertices_textureuv = {};
+    // std::vector<int> vertices_materialIndex = {};
+    // std::vector<int> vertices_textureIndex = {};
+    // for (int i = 0; i < referenceLine.size(); i++)
+    // {
+    //     Point point = referenceLine[i];
+
+    //     // Vertex v = {
+    //     //     {point[0], point[1], 0.0f},
+    //     //     {0.0f, 0.0f, 1.0f},
+    //     //     {0.0f, 0.0f},
+    //     //     OpenGLMaterial::IVORY,
+    //     //     Texture::NONE
+    //     // };
+
+    //     vertices_position.push_back({point[0], point[1], 0.0f, 0.0f});
+    //     vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    //     vertices_textureuv.push_back({0.0f, 0.0f});
+    //     vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    //     vertices_textureIndex.push_back(Texture::NONE);
+
+    //     // verticesVector.push_back(point[0]); // x
+    //     // verticesVector.push_back(point[1]); // y
+    //     // verticesVector.push_back(0.0f); // z
+    //     // verticesVector.push_back(0.0f); // n.x
+    //     // verticesVector.push_back(0.0f); // n.y
+    //     // verticesVector.push_back(1.0f); // n.z
+    // }
+
+    // std::vector<int> edge_indices = {};
+    // std::vector<EdgeDataInt> edge_data_int = {};
+    // std::vector<EdgeDataFloat> edge_data_float = {};
+    // for (int i = 0; i < referenceLine.size(); i++)
+    // {
+    //     EdgeDataInt ei;
+    //     EdgeDataFloat ef;
+
+    //     ei.material_index = OpenGLMaterial::BLACK;
+    //     ei.dash = 0;
+    //     ef.width = 1.0f;
+    //     ef.dash_length = 1.0f;
+    //     ef.gap_length = 1.0f;
+    //     ef.padding = 0.0f;
+
+    //     if (i == referenceLine.size() - 1)
+    //     {
+    //         ei.start_vertex = i;
+    //         ei.end_vertex = 0;
+    //     }
+    //     else
+    //     {
+    //         ei.start_vertex = i;
+    //         ei.end_vertex = i + 1;
+    //     }
+
+    //     edge_data_int.push_back(ei);
+    //     edge_data_float.push_back(ef);
+    //     edge_indices.push_back(i);
+    // }
+
+    // // // Allocate memory for the new array using std::unique_ptr for safety.
+    // // auto indices_raw = std::make_unique<unsigned int[]>(indices.size());
+
+    // // // Copy elements from the vector to the new array.
+    // // std::copy(indices.begin(), indices.end(), indices_raw.get());
 
     // Mesh* mesh = new Mesh(this);
     mesh->Initialize(
@@ -120,27 +227,30 @@ void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
         vertices_textureIndex,
         edge_data_int,
         edge_data_float,
-        indices,
+        meshIndices,
         edge_indices
     );
     mesh->setBIMElementId(wallElement->getId());
 
 
-    // GLfloat* vertices1 = mesh->getVerticies();
-    // unsigned int* indices1 = mesh->getIndices();
-    // for (int i = 0; i < 6; i++)
-    // {
-    //     qInfo() << vertices1[6*i] << " , " << vertices1[6*i + 1] << " , " << vertices1[6*i + 2] << " , " << vertices1[6*i + 3] << " , " << vertices1[6*i + 4] << " , " << vertices1[6*i + 5];
-    // }
+    // // GLfloat* vertices1 = mesh->getVerticies();
+    // // unsigned int* indices1 = mesh->getIndices();
+    // // for (int i = 0; i < 6; i++)
+    // // {
+    // //     qInfo() << vertices1[6*i] << " , " << vertices1[6*i + 1] << " , " << vertices1[6*i + 2] << " , " << vertices1[6*i + 3] << " , " << vertices1[6*i + 4] << " , " << vertices1[6*i + 5];
+    // // }
 
-    // qInfo() << "----------------------------------";
+    // // qInfo() << "----------------------------------";
 
-    // for (int i = 0; i < 6; i++)
-    // {
-    //     qInfo() << indices1[i];
-    // }
+    // // for (int i = 0; i < 6; i++)
+    // // {
+    // //     qInfo() << indices1[i];
+    // // }
 
-    // return mesh;
+    // // return mesh;
+
+    // delete entity list
+    api_del_entity_list(ents);
 }
 
 void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)

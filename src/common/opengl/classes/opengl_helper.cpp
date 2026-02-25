@@ -43,7 +43,7 @@ OpenglHelper::OpenglHelper(QObject *parent)
     : QObject{parent}
 {}
 
-void OpenglHelper::extractBIMParameters(BIMElement *wallElement, std::vector<Point> &referenceLine, float &width, float &height, float& distance)
+void OpenglHelper::extractBIMParameters(BIMElement *wallElement, std::vector<ReferenceLineSegment> &referenceLine, float &width, float &height, float& distance)
 {
     QList<BIMParameter*> parameterList = wallElement->getParameterList();
 
@@ -102,13 +102,113 @@ void OpenglHelper::extractBIMParameters(BIMElement *wallElement, std::vector<Poi
 
     for (const QJsonValue& outerValue : jsonArray)
     {
-        QJsonArray innerArray = outerValue.toArray();
-        Point innerList = {innerArray.at(0).toDouble(), innerArray.at(1).toDouble()};
-        referenceLine.push_back(innerList);
+        QJsonObject innerObject = outerValue.toObject();
+        QString position = innerObject["position"].toString();
+        QString type = innerObject["type"].toString();
+        QJsonArray pointArray = innerObject["points"].toArray();
+
+        std::vector<Point> pointList = {};
+        for (const QJsonValue& pointValue : pointArray)
+        {
+            QJsonArray innerArray = pointValue.toArray();
+            Point innerList = {innerArray.at(0).toDouble(), innerArray.at(1).toDouble()};
+            pointList.push_back(innerList);
+        }
+
+        ReferenceLineSegment line_seg;
+        line_seg.points = pointList;
+        line_seg.position = position;
+        line_seg.type = type;
+
+        referenceLine.push_back(line_seg);
     }
 
    // height = 4;
 }
+
+void OpenglHelper::extractBIMParameters(BIMElement *wallElement, std::vector<Point> &referenceLine, float &width, float &height, float& distance)
+{
+    QList<BIMParameter*> parameterList = wallElement->getParameterList();
+
+    // 1. Find Reference Line parameter and convert to a list of list (2D)
+
+    // 2. Find Width
+    QString widthString = "0";
+    QString heightString = "0";
+    QString distanceString = "0";
+    QString referenceLineString = "[]";
+
+    for (BIMParameter* parameter: parameterList)
+    {
+        if (parameter->getKey() == "ReferenceLine")
+        {
+            // referenceLineString = parameter->getValue();
+        }
+        else if (parameter->getKey() == "Width")
+        {
+            widthString = parameter->getValue();
+        }
+
+        else if (parameter->getKey() == "Height")
+        {
+            heightString = parameter->getValue();
+        }
+
+        else if (parameter->getKey() == "Distance")
+        {
+            distanceString = parameter->getValue();
+        }
+    }
+
+    bool ok;
+    width = widthString.toFloat(&ok);
+    if (!ok)
+    {
+        // ignore for now
+    }
+
+
+    height = heightString.toFloat(&ok);
+    if (!ok)
+    {
+        // ignore for now
+    }
+
+    distance = distanceString.toFloat(&ok);
+    if (!ok)
+    {
+        // ignore for now
+    }
+
+    // QJsonDocument jsonDoc = QJsonDocument::fromJson(referenceLineString.toUtf8());
+    // QJsonArray jsonArray = jsonDoc.array();
+
+    // for (const QJsonValue& outerValue : jsonArray)
+    // {
+    //     QJsonObject innerObject = outerValue.toObject();
+    //     QString position = innerObject["position"].toString();
+    //     QString type = innerObject["type"].toString();
+    //     QJsonArray pointArray = innerObject["points"].toArray();
+
+    //     std::vector<Point> pointList = {};
+    //     for (const QJsonValue& pointValue : pointArray)
+    //     {
+    //         QJsonArray innerArray = pointValue.toArray();
+    //         Point innerList = {innerArray.at(0).toDouble(), innerArray.at(1).toDouble()};
+    //         pointList.push_back(innerList);
+    //     }
+
+    //     ReferenceLineSegment line_seg;
+    //     line_seg.points = pointList;
+    //     line_seg.position = position;
+    //     line_seg.type = type;
+
+    //     referenceLine.push_back(line_seg);
+    // }
+
+    // height = 4;
+}
+
 
 std::vector<Point> OpenglHelper::generateParallelCurve(std::vector<Point> referenceCurve, float width)
 {

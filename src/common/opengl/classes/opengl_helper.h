@@ -66,6 +66,12 @@
 using Point = std::array<float, 2>; // (x,y)
 using Line = std::array<float, 3>; // (m, b, x) for y = mx + b and x in case m is infinity
 
+struct ReferenceLineSegment
+{
+    std::vector<Point> points;
+    QString type; // line, 3pt-circle, center-circle
+    QString position; // inner, outer, middle
+};
 
 
 class OpenglHelper: public QObject
@@ -75,6 +81,7 @@ public:
     explicit OpenglHelper(QObject *parent = nullptr);
 
     void extractBIMParameters(BIMElement *wallElement, std::vector<Point>& referenceLine, float& width, float& height, float& distance);
+    void extractBIMParameters(BIMElement *wallElement, std::vector<ReferenceLineSegment>& referenceLine, float& width, float& height, float& distance);
 
     std::vector<Point> generateParallelCurve(std::vector<Point> referenceCurve, float width);
 
