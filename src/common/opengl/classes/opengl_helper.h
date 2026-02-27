@@ -73,6 +73,12 @@ struct ReferenceLineSegment
     QString position; // inner, outer, middle
 };
 
+struct Layer
+{
+    QString name;
+    float width;
+};
+
 
 class OpenglHelper: public QObject
 {
@@ -81,7 +87,7 @@ public:
     explicit OpenglHelper(QObject *parent = nullptr);
 
     void extractBIMParameters(BIMElement *wallElement, std::vector<Point>& referenceLine, float& width, float& height, float& distance);
-    void extractBIMParameters(BIMElement *wallElement, std::vector<ReferenceLineSegment>& referenceLine, float& width, float& height, float& distance);
+    void extractBIMParameters(BIMElement *wallElement, std::vector<ReferenceLineSegment>& referenceLine, std::vector<Layer>& layers, float& width, float& height, float& distance);
 
     std::vector<Point> generateParallelCurve(std::vector<Point> referenceCurve, float width);
 

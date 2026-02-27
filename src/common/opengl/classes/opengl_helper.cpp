@@ -43,7 +43,7 @@ OpenglHelper::OpenglHelper(QObject *parent)
     : QObject{parent}
 {}
 
-void OpenglHelper::extractBIMParameters(BIMElement *wallElement, std::vector<ReferenceLineSegment> &referenceLine, float &width, float &height, float& distance)
+void OpenglHelper::extractBIMParameters(BIMElement *wallElement, std::vector<ReferenceLineSegment> &referenceLine, std::vector<Layer>& layers, float &width, float &height, float& distance)
 {
     QList<BIMParameter*> parameterList = wallElement->getParameterList();
 
@@ -54,6 +54,7 @@ void OpenglHelper::extractBIMParameters(BIMElement *wallElement, std::vector<Ref
     QString heightString = "0";
     QString distanceString = "0";
     QString referenceLineString = "[]";
+    QString layersString = "[]";
 
     for (BIMParameter* parameter: parameterList)
     {
@@ -65,15 +66,17 @@ void OpenglHelper::extractBIMParameters(BIMElement *wallElement, std::vector<Ref
         {
             widthString = parameter->getValue();
         }
-
         else if (parameter->getKey() == "Height")
         {
             heightString = parameter->getValue();
         }
-
         else if (parameter->getKey() == "Distance")
         {
             distanceString = parameter->getValue();
+        }
+        else if (parameter->getKey() == "Layers")
+        {
+            layersString = parameter->getValue();
         }
     }
 
@@ -121,6 +124,23 @@ void OpenglHelper::extractBIMParameters(BIMElement *wallElement, std::vector<Ref
         line_seg.type = type;
 
         referenceLine.push_back(line_seg);
+    }
+
+    // layer data
+    QJsonDocument jsonDocLayers = QJsonDocument::fromJson(layersString.toUtf8());
+    QJsonArray jsonArrayLayers = jsonDocLayers.array();
+
+    for (const QJsonValue& outerValue : jsonArrayLayers)
+    {
+        QJsonObject innerObject = outerValue.toObject();
+        QString name = innerObject["name"].toString();
+        float width = static_cast<float>(innerObject["width"].toDouble());
+
+        Layer layer;
+        layer.name = name;
+        layer.width = width;
+
+        layers.push_back(layer);
     }
 
    // height = 4;

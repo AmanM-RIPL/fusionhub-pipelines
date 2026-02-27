@@ -25,6 +25,8 @@
 #include "straight.hxx"
 #include "sweepapi.hxx"
 #include "swp_opts.hxx"
+#include "ofstapi.hxx"
+#include "wire_offset_options.hxx"
 
 // for faceter
 #include "af_api.hxx"

@@ -11,11 +11,14 @@ void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
 
     std::vector<std::vector<Point>> polygon;
     std::vector<ReferenceLineSegment> referenceLine = {};
+    std::vector<Layer> layers = {};
     float width = 0;
     float height = 0;
     float distance = 0;
 
-    m_openglHelper.extractBIMParameters(wallElement, referenceLine, width, height, distance);
+    m_openglHelper.extractBIMParameters(wallElement, referenceLine, layers, width, height, distance);
+
+    qInfo() << "layer length: " << layers.size();
 
     // if reference line is only one point then we don't need to render
     if (referenceLine.size() < 2)
@@ -40,11 +43,85 @@ void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
                 edge
             );
         }
+        else if (line_seg.type == "3pt-circle")
+        {
+            api_curve_arc_3pt(
+                SPAposition(line_seg.points[0][0], line_seg.points[0][1], 0.0),
+                SPAposition(line_seg.points[1][0], line_seg.points[1][1], 0.0),
+                SPAposition(line_seg.points[2][0], line_seg.points[2][1], 0.0),
+                false,
+                edge
+            );
+        }
+        else if (line_seg.type == "bezier")
+        {
+            api_curve_bezier(
+                SPAposition(line_seg.points[0][0], line_seg.points[0][1], 0.0),
+                SPAposition(line_seg.points[1][0], line_seg.points[1][1], 0.0),
+                SPAposition(line_seg.points[2][0], line_seg.points[2][1], 0.0),
+                SPAposition(line_seg.points[3][0], line_seg.points[3][1], 0.0),
+                edge
+            );
+        }
 
         edges.push_back(edge);
     }
 
     api_make_ewire(edges.size(), edges.data(), wire_body);
+
+    // try offsetting
+    BODY* offset_wire = nullptr;
+    ents.add(offset_wire);
+    SPAunit_vector wire_normal(0.0, 0.0, -1.0);
+
+    wire_offset_options* offset_options = ACIS_NEW wire_offset_options();
+    offset_options->set_distance(1.0);
+    offset_options->set_plane_normal(wire_normal);
+    offset_options->set_gap_type(sg_gap_type::natural);
+    api_offset_planar_wire(wire_body, offset_options, offset_wire);
+
+    ACIS_DELETE offset_options;
+
+    // add two wire edges
+    BODY* edge_body1 = nullptr;
+    ents.add(edge_body1);
+    std::vector<SPAposition> array_pts = {
+        SPAposition(0.0,0.0,0.0),
+        SPAposition(-1.0, 0.0, 0.0),
+        // SPAposition(4.0,5.0,0.0),
+        // SPAposition(4.0, 4.0, 0.0),
+    };
+    std::vector<double> array_bulges = {0.0};
+    api_make_kwire(offset_wire, wire_normal, 2, array_pts.data(), array_bulges.data(), edge_body1);
+
+    api_unite(edge_body1, offset_wire);
+
+    BODY* edge_body2 = nullptr;
+    ents.add(edge_body2);
+    std::vector<SPAposition> array_pts2 = {
+        SPAposition(4.0,5.0,0.0),
+        SPAposition(4.0, 4.0, 0.0),
+    };
+    std::vector<double> array_bulges2 = {0.0};
+    api_make_kwire(offset_wire, wire_normal, 2, array_pts2.data(), array_bulges2.data(), edge_body2);
+
+    api_unite(edge_body2, offset_wire);
+
+    if (offset_wire != nullptr)
+    {
+        ENTITY_LIST coedge_list;
+        api_wire_to_chain(offset_wire, coedge_list);
+
+        for (int i = 0; i < coedge_list.iteration_count(); i++)
+        {
+            COEDGE* coedge = static_cast<COEDGE*>(coedge_list[i]);
+            EDGE* edge = coedge->edge();
+            SPAposition start_pos = edge->start_pos();
+            SPAposition end_pos = edge->end_pos();
+
+            qInfo() << "Edge: (" << start_pos.x() << ", " << start_pos.y() << ", " << start_pos.z() << ") - (" << end_pos.x() << ", " << end_pos.y() << ", " << end_pos.z() << ")";
+        }
+    }
 
     // 2. sweep the open-wire body to generate solid face
     if (edges.size() == 0)

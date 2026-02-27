@@ -859,9 +859,11 @@ MyGLItem::MyGLItem(QQuickItem *parent)
     BIMParameter* widthParameter = new BIMParameter(1,"1",false,"Width","1",1,this);
     BIMParameter* heightParameter = new BIMParameter(37, "1", false, "Height", "4", 1, this);
     BIMParameter* rlParameter = new BIMParameter(1,"1",false,"ReferenceLine","[{\"points\":[[0,0], [0,4]], \"type\": \"line\", \"position\": \"inner\"}, {\"points\":[[0,4], [4,4]], \"type\": \"line\", \"position\": \"inner\"}]",1,this);
+    BIMParameter* layerParameter = new BIMParameter(39, "1", false, "Layers", "[{\"name\": \"layer-1\", \"width\": 1}, {\"name\": \"layer-2\", \"width\": 1}]", 1, this);
     bimElement->addParameter(widthParameter);
     bimElement->addParameter(heightParameter);
     bimElement->addParameter(rlParameter);
+    bimElement->addParameter(layerParameter);
 
     bimElementList.append(bimElement);
 
