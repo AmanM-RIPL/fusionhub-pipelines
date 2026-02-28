@@ -50,7 +50,9 @@ public:
 signals:
 
 private:
-    OpenglHelper m_openglHelper;   
+    OpenglHelper m_openglHelper;
+
+    void generateWallLayers2D(std::vector<BODY*> &final_bodies, ENTITY_LIST &ents, std::vector<ReferenceLineSegment> &referenceLine, std::vector<Layer> &layers, float width, QString& referenceLinePosition);
 };
 
 #endif // WALL_GEOMETRY_SERVICE_H

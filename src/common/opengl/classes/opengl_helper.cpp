@@ -43,7 +43,17 @@ OpenglHelper::OpenglHelper(QObject *parent)
     : QObject{parent}
 {}
 
-void OpenglHelper::extractBIMParameters(BIMElement *wallElement, std::vector<ReferenceLineSegment> &referenceLine, std::vector<Layer>& layers, float &width, float &height, float& distance)
+void OpenglHelper::extractBIMParameters(
+    BIMElement *wallElement,
+    std::vector<ReferenceLineSegment>& referenceLine,
+    std::vector<Layer>& layers,
+    float& width,
+    float& height,
+    float& distance,
+    float& slantAngle,
+    float& taperAngle,
+    QString& referenceLinePosition
+)
 {
     QList<BIMParameter*> parameterList = wallElement->getParameterList();
 
@@ -53,6 +63,9 @@ void OpenglHelper::extractBIMParameters(BIMElement *wallElement, std::vector<Ref
     QString widthString = "0";
     QString heightString = "0";
     QString distanceString = "0";
+    QString slantAngleString = "0";
+    QString taperAngleString = "0";
+    QString referenceLinePositionString = "inner";
     QString referenceLineString = "[]";
     QString layersString = "[]";
 
@@ -78,6 +91,18 @@ void OpenglHelper::extractBIMParameters(BIMElement *wallElement, std::vector<Ref
         {
             layersString = parameter->getValue();
         }
+        else if (parameter->getKey() == "SlantAngle")
+        {
+            slantAngleString = parameter->getValue();
+        }
+        else if (parameter->getKey() == "TaperAngle")
+        {
+            taperAngleString = parameter->getValue();
+        }
+        else if (parameter->getKey() == "ReferenceLinePosition")
+        {
+            referenceLinePositionString = parameter->getValue();
+        }
     }
 
     bool ok;
@@ -99,6 +124,20 @@ void OpenglHelper::extractBIMParameters(BIMElement *wallElement, std::vector<Ref
     {
         // ignore for now
     }
+
+    slantAngle = slantAngleString.toFloat(&ok);
+    if (!ok)
+    {
+        // ignore for now
+    }
+
+    taperAngle = taperAngleString.toFloat(&ok);
+    if (!ok)
+    {
+        // ignore for now
+    }
+
+    referenceLinePosition = referenceLinePositionString;
 
     QJsonDocument jsonDoc = QJsonDocument::fromJson(referenceLineString.toUtf8());
     QJsonArray jsonArray = jsonDoc.array();
@@ -444,6 +483,89 @@ Point OpenglHelper::getPointAtDistanceAngle(Point point1, Point point2, float an
         x_proj_rotated_unit * distance + point2[0],
         y_proj_rotated_unit * distance + point2[1]
     };
+}
+
+void OpenglHelper::getReferenceLineWireBody(BODY *&wire_body, ENTITY_LIST& ents, std::vector<ReferenceLineSegment> &referenceLine, std::vector<EDGE*> &edges)
+{
+    for (ReferenceLineSegment& line_seg: referenceLine)
+    {
+        EDGE* edge = nullptr;
+        ents.add(edge);
+
+        if (line_seg.type == "line")
+        {
+            api_curve_line(
+                SPAposition(line_seg.points[0][0], line_seg.points[0][1], 0.0),
+                SPAposition(line_seg.points[1][0], line_seg.points[1][1], 0.0),
+                edge
+                );
+        }
+        else if (line_seg.type == "3pt-circle")
+        {
+            api_curve_arc_3pt(
+                SPAposition(line_seg.points[0][0], line_seg.points[0][1], 0.0),
+                SPAposition(line_seg.points[1][0], line_seg.points[1][1], 0.0),
+                SPAposition(line_seg.points[2][0], line_seg.points[2][1], 0.0),
+                false,
+                edge
+                );
+        }
+        else if (line_seg.type == "bezier")
+        {
+            api_curve_bezier(
+                SPAposition(line_seg.points[0][0], line_seg.points[0][1], 0.0),
+                SPAposition(line_seg.points[1][0], line_seg.points[1][1], 0.0),
+                SPAposition(line_seg.points[2][0], line_seg.points[2][1], 0.0),
+                SPAposition(line_seg.points[3][0], line_seg.points[3][1], 0.0),
+                edge
+                );
+        }
+
+        edges.push_back(edge);
+    }
+
+    api_make_ewire(edges.size(), edges.data(), wire_body);
+}
+
+void OpenglHelper::getParallelCurvePlanerBody(BODY *&new_body, BODY* &wire_body, ENTITY_LIST &ents, EDGE *&first_edge, float width, QString& referenceLinePosition)
+{
+
+    // create edge perpendicular to the first edge of the wire_body
+    SPAposition first_edge_point = first_edge->start_pos();
+
+    SPAvector tangent_vector = first_edge->start_deriv();
+
+    // use referenceLinePosition to get the perpendicular vector
+    float perp_x = referenceLinePosition == "outer" ? tangent_vector.y() : -1 * tangent_vector.y();
+    float perp_y = referenceLinePosition == "outer" ? -1 * tangent_vector.x() : tangent_vector.x();
+    SPAvector perp_vector(perp_x, perp_y, tangent_vector.z());
+    perp_vector = (width / perp_vector.len()) * perp_vector;
+
+    SPAposition profile_point(
+        perp_vector.x() + first_edge_point.x(),
+        perp_vector.y() + first_edge_point.y(),
+        perp_vector.z()
+    );
+
+    EDGE* edge_for_sweep = nullptr;
+    ents.add(edge_for_sweep);
+    api_curve_line(first_edge_point, profile_point, edge_for_sweep);
+
+    // do sweep
+    EXCEPTION_BEGIN
+        sweep_options* sw_options = ACIS_NEW sweep_options();
+    EXCEPTION_TRY
+        outcome sw_result = api_sweep_with_options(edge_for_sweep, wire_body, sw_options, new_body);
+
+    if (!sw_result.ok())
+    {
+        error_info* info = sw_result.get_error_info();
+        qInfo() << info->error_message();
+    }
+
+    EXCEPTION_CATCH_TRUE
+        ACIS_DELETE sw_options;
+    EXCEPTION_END
 }
 
 void OpenglHelper::getMeshGeometry(
@@ -950,6 +1072,7 @@ void OpenglHelper::getMeshGeometry(
     // delete entity list
     api_del_entity_list(faces);
 }
+
 
 void OpenglHelper::getMeshGeometry(
     const OdMdBody& body,

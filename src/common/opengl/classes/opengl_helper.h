@@ -87,7 +87,17 @@ public:
     explicit OpenglHelper(QObject *parent = nullptr);
 
     void extractBIMParameters(BIMElement *wallElement, std::vector<Point>& referenceLine, float& width, float& height, float& distance);
-    void extractBIMParameters(BIMElement *wallElement, std::vector<ReferenceLineSegment>& referenceLine, std::vector<Layer>& layers, float& width, float& height, float& distance);
+    void extractBIMParameters(
+        BIMElement *wallElement,
+        std::vector<ReferenceLineSegment>& referenceLine,
+        std::vector<Layer>& layers,
+        float& width,
+        float& height,
+        float& distance,
+        float& slantAngle,
+        float& taperAngle,
+        QString& referenceLinePosition
+    );
 
     std::vector<Point> generateParallelCurve(std::vector<Point> referenceCurve, float width);
 
@@ -112,6 +122,13 @@ public:
     float getAngleBetweenPoints(Point point1, Point point2, Point point3);
 
     Point getPointAtDistanceAngle(Point point1, Point point2, float angle, float distance); // angle in degrees and counter-clockwise
+
+
+    // Below methods use ACIS
+    void getReferenceLineWireBody(BODY *&wire_body, ENTITY_LIST& ents, std::vector<ReferenceLineSegment> &referenceLine, std::vector<EDGE*> &edges);
+
+    void getParallelCurvePlanerBody(BODY* &new_body, BODY* &wire_body, ENTITY_LIST& ents, EDGE* &first_edge, float width, QString& referenceLinePosition);
+
 
     /*
     void getMeshGeometry(const FacetModeler::Body& body, OdGePoint3dArray& pointArray, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, OdGeVector3dArray& normalArray);

@@ -9,16 +9,16 @@ void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
 {
     ENTITY_LIST ents;
 
-    std::vector<std::vector<Point>> polygon;
     std::vector<ReferenceLineSegment> referenceLine = {};
     std::vector<Layer> layers = {};
     float width = 0;
     float height = 0;
     float distance = 0;
+    float slantAngle = 0;
+    float taperAngle = 0;
+    QString referenceLinePosition = "inner";
 
-    m_openglHelper.extractBIMParameters(wallElement, referenceLine, layers, width, height, distance);
-
-    qInfo() << "layer length: " << layers.size();
+    m_openglHelper.extractBIMParameters(wallElement, referenceLine, layers, width, height, distance, slantAngle, taperAngle, referenceLinePosition);
 
     // if reference line is only one point then we don't need to render
     if (referenceLine.size() < 2)
@@ -27,144 +27,79 @@ void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
         return;
     }
 
-    // 1. Convert referenceLine to ACIS open wire-body
-    BODY* wire_body = nullptr;
-    std::vector<EDGE*> edges = {};
-    for (ReferenceLineSegment& line_seg: referenceLine)
-    {
-        EDGE* edge = nullptr;
-        ents.add(edge);
+    // // 1. Convert referenceLine to ACIS open wire-body
+    // BODY* wire_body = nullptr;
+    // std::vector<EDGE*> edges = {};
+    // m_openglHelper.getReferenceLineWireBody(wire_body, ents, referenceLine, edges);
 
-        if (line_seg.type == "line")
-        {
-            api_curve_line(
-                SPAposition(line_seg.points[0][0], line_seg.points[0][1], 0.0),
-                SPAposition(line_seg.points[1][0], line_seg.points[1][1], 0.0),
-                edge
-            );
-        }
-        else if (line_seg.type == "3pt-circle")
-        {
-            api_curve_arc_3pt(
-                SPAposition(line_seg.points[0][0], line_seg.points[0][1], 0.0),
-                SPAposition(line_seg.points[1][0], line_seg.points[1][1], 0.0),
-                SPAposition(line_seg.points[2][0], line_seg.points[2][1], 0.0),
-                false,
-                edge
-            );
-        }
-        else if (line_seg.type == "bezier")
-        {
-            api_curve_bezier(
-                SPAposition(line_seg.points[0][0], line_seg.points[0][1], 0.0),
-                SPAposition(line_seg.points[1][0], line_seg.points[1][1], 0.0),
-                SPAposition(line_seg.points[2][0], line_seg.points[2][1], 0.0),
-                SPAposition(line_seg.points[3][0], line_seg.points[3][1], 0.0),
-                edge
-            );
-        }
+    // // try offsetting
+    // BODY* offset_wire = nullptr;
+    // ents.add(offset_wire);
+    // SPAunit_vector wire_normal(0.0, 0.0, -1.0);
 
-        edges.push_back(edge);
-    }
+    // wire_offset_options* offset_options = ACIS_NEW wire_offset_options();
+    // offset_options->set_distance(1.0);
+    // offset_options->set_plane_normal(wire_normal);
+    // offset_options->set_gap_type(sg_gap_type::natural);
+    // api_offset_planar_wire(wire_body, offset_options, offset_wire);
 
-    api_make_ewire(edges.size(), edges.data(), wire_body);
+    // ACIS_DELETE offset_options;
 
-    // try offsetting
-    BODY* offset_wire = nullptr;
-    ents.add(offset_wire);
-    SPAunit_vector wire_normal(0.0, 0.0, -1.0);
+    // // add two wire edges
+    // BODY* edge_body1 = nullptr;
+    // ents.add(edge_body1);
+    // std::vector<SPAposition> array_pts = {
+    //     SPAposition(0.0,0.0,0.0),
+    //     SPAposition(-1.0, 0.0, 0.0),
+    //     // SPAposition(4.0,5.0,0.0),
+    //     // SPAposition(4.0, 4.0, 0.0),
+    // };
+    // std::vector<double> array_bulges = {0.0};
+    // api_make_kwire(offset_wire, wire_normal, 2, array_pts.data(), array_bulges.data(), edge_body1);
 
-    wire_offset_options* offset_options = ACIS_NEW wire_offset_options();
-    offset_options->set_distance(1.0);
-    offset_options->set_plane_normal(wire_normal);
-    offset_options->set_gap_type(sg_gap_type::natural);
-    api_offset_planar_wire(wire_body, offset_options, offset_wire);
+    // api_unite(edge_body1, offset_wire);
 
-    ACIS_DELETE offset_options;
+    // BODY* edge_body2 = nullptr;
+    // ents.add(edge_body2);
+    // std::vector<SPAposition> array_pts2 = {
+    //     SPAposition(4.0,5.0,0.0),
+    //     SPAposition(4.0, 4.0, 0.0),
+    // };
+    // std::vector<double> array_bulges2 = {0.0};
+    // api_make_kwire(offset_wire, wire_normal, 2, array_pts2.data(), array_bulges2.data(), edge_body2);
 
-    // add two wire edges
-    BODY* edge_body1 = nullptr;
-    ents.add(edge_body1);
-    std::vector<SPAposition> array_pts = {
-        SPAposition(0.0,0.0,0.0),
-        SPAposition(-1.0, 0.0, 0.0),
-        // SPAposition(4.0,5.0,0.0),
-        // SPAposition(4.0, 4.0, 0.0),
-    };
-    std::vector<double> array_bulges = {0.0};
-    api_make_kwire(offset_wire, wire_normal, 2, array_pts.data(), array_bulges.data(), edge_body1);
+    // api_unite(edge_body2, offset_wire);
 
-    api_unite(edge_body1, offset_wire);
+    // if (offset_wire != nullptr)
+    // {
+    //     ENTITY_LIST coedge_list;
+    //     api_wire_to_chain(offset_wire, coedge_list);
 
-    BODY* edge_body2 = nullptr;
-    ents.add(edge_body2);
-    std::vector<SPAposition> array_pts2 = {
-        SPAposition(4.0,5.0,0.0),
-        SPAposition(4.0, 4.0, 0.0),
-    };
-    std::vector<double> array_bulges2 = {0.0};
-    api_make_kwire(offset_wire, wire_normal, 2, array_pts2.data(), array_bulges2.data(), edge_body2);
+    //     for (int i = 0; i < coedge_list.iteration_count(); i++)
+    //     {
+    //         COEDGE* coedge = static_cast<COEDGE*>(coedge_list[i]);
+    //         EDGE* edge = coedge->edge();
+    //         SPAposition start_pos = edge->start_pos();
+    //         SPAposition end_pos = edge->end_pos();
 
-    api_unite(edge_body2, offset_wire);
-
-    if (offset_wire != nullptr)
-    {
-        ENTITY_LIST coedge_list;
-        api_wire_to_chain(offset_wire, coedge_list);
-
-        for (int i = 0; i < coedge_list.iteration_count(); i++)
-        {
-            COEDGE* coedge = static_cast<COEDGE*>(coedge_list[i]);
-            EDGE* edge = coedge->edge();
-            SPAposition start_pos = edge->start_pos();
-            SPAposition end_pos = edge->end_pos();
-
-            qInfo() << "Edge: (" << start_pos.x() << ", " << start_pos.y() << ", " << start_pos.z() << ") - (" << end_pos.x() << ", " << end_pos.y() << ", " << end_pos.z() << ")";
-        }
-    }
+    //         qInfo() << "Edge: (" << start_pos.x() << ", " << start_pos.y() << ", " << start_pos.z() << ") - (" << end_pos.x() << ", " << end_pos.y() << ", " << end_pos.z() << ")";
+    //     }
+    // }
 
     // 2. sweep the open-wire body to generate solid face
-    if (edges.size() == 0)
-    {
-        mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {});
-        return;
-    }
+    // if (edges.size() == 0)
+    // {
+    //     mesh->Initialize({}, {}, {}, {}, {}, {}, {}, {}, {});
+    //     return;
+    // }
 
-    EDGE* first_edge = edges[0];
-    SPAposition first_edge_point = first_edge->start_pos();
+    // EDGE* first_edge = edges[0];
+    // BODY* new_body = nullptr;
+    // ents.add(new_body);
+    // m_openglHelper.getParallelCurvePlanerBody(new_body, wire_body, ents, first_edge, width);
 
-    SPAvector tangent_vector = first_edge->start_deriv();
-    SPAvector perp_vector(-1 * tangent_vector.y(), tangent_vector.x(), tangent_vector.z());
-    perp_vector = (width / perp_vector.len()) * perp_vector;
-
-    SPAposition profile_point(
-        perp_vector.x() + first_edge_point.x(),
-        perp_vector.y() + first_edge_point.y(),
-        perp_vector.z()
-    );
-
-    EDGE* edge_for_sweep = nullptr;
-    ents.add(edge_for_sweep);
-    api_curve_line(first_edge_point, profile_point, edge_for_sweep);
-
-    // do sweep
-    BODY* new_body = nullptr;
-    ents.add(new_body);
-
-    EXCEPTION_BEGIN
-        sweep_options* sw_options = ACIS_NEW sweep_options();
-    EXCEPTION_TRY
-        outcome sw_result = api_sweep_with_options(edge_for_sweep, wire_body, sw_options, new_body);
-
-    if (!sw_result.ok())
-    {
-        error_info* info = sw_result.get_error_info();
-        qInfo() << info->error_message();
-    }
-
-    EXCEPTION_CATCH_TRUE
-        ACIS_DELETE sw_options;
-    EXCEPTION_END
+    std::vector<BODY*> final_bodies;
+    generateWallLayers2D(final_bodies, ents, referenceLine, layers, width, referenceLinePosition);
 
     // Mesh geometry generation
     std::vector<uint32_t> meshIndices = {};
@@ -185,26 +120,30 @@ void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
     int edgeMaterialIndex = OpenGLMaterial::BLACK;
     int scalingFactor = 5;
 
-    m_openglHelper.getMeshGeometry(
-        new_body,
-        vertices_position,
-        vertices_normal,
-        vertices_textureuv,
-        vertices_materialIndex,
-        vertices_textureIndex,
-        meshIndices,
-        edge_indices,
-        edge_data_int,
-        edge_data_float,
-        textureIndex,
-        materialIndex,
-        scalingFactor,
-        edgeWidth,
-        edgeDashLength,
-        edgeGapLength,
-        edgeDash,
-        edgeMaterialIndex
-    );
+
+    for (BODY* &new_body: final_bodies)
+    {
+        m_openglHelper.getMeshGeometry(
+            new_body,
+            vertices_position,
+            vertices_normal,
+            vertices_textureuv,
+            vertices_materialIndex,
+            vertices_textureIndex,
+            meshIndices,
+            edge_indices,
+            edge_data_int,
+            edge_data_float,
+            textureIndex,
+            materialIndex,
+            scalingFactor,
+            edgeWidth,
+            edgeDashLength,
+            edgeGapLength,
+            edgeDash,
+            edgeMaterialIndex
+        );
+    }
 
     // // 3. Generate a parallel line
     // std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
@@ -335,13 +274,16 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
     // ACIS entity list to delete all entities at the end of the function
     ENTITY_LIST ents;
 
-    std::vector<Point> referenceLine = {};
+    std::vector<ReferenceLineSegment> referenceLine = {};
+    std::vector<Layer> layers = {};
     float width = 0;
     float height = 0;
     float distance = 0;
+    float slantAngle = 0;
+    float taperAngle = 0;
+    QString referenceLinePosition = "inner";
 
-
-    m_openglHelper.extractBIMParameters(wallElement, referenceLine, width, height, distance);
+    m_openglHelper.extractBIMParameters(wallElement, referenceLine, layers, width, height, distance, slantAngle, taperAngle, referenceLinePosition);
 
     // if reference line is only one point then we don't need to render
     if (referenceLine.size() < 2)
@@ -350,80 +292,99 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
         return;
     }
 
-    // 3. Generate a parallel line
-    std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
+    // 2D bodies
+    std::vector<BODY*> final_bodies;
+    generateWallLayers2D(final_bodies, ents, referenceLine, layers, width, referenceLinePosition);
 
-    referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
+    // // 3. Generate a parallel line
+    // std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
 
-    // Create a contour2D
-    FacetModeler::Contour2D polygon;
+    // referenceLine.insert(referenceLine.end(), parallelLine.begin(), parallelLine.end());
 
-    OdGePoint2dArray points;
-    points.reserve(referenceLine.size());
+    // // Create a contour2D
+    // FacetModeler::Contour2D polygon;
 
-    for (Point point: referenceLine)
-    {
-        points.push_back(OdGePoint2d(point[0], point[1]));
-    }
+    // OdGePoint2dArray points;
+    // points.reserve(referenceLine.size());
 
-    polygon.appendVertices(points);
+    // for (Point point: referenceLine)
+    // {
+    //     points.push_back(OdGePoint2d(point[0], point[1]));
+    // }
 
-    for (int i = 0; i < referenceLine.size(); i++)
-    {
-        polygon.setOrientationAt(i, FacetModeler::efoFront);
-    }
+    // polygon.appendVertices(points);
 
-    polygon.setClosed();
-    polygon.makeCCW();
+    // for (int i = 0; i < referenceLine.size(); i++)
+    // {
+    //     polygon.setOrientationAt(i, FacetModeler::efoFront);
+    // }
 
-    FacetModeler::Profile2D profile(polygon);
-    FacetModeler::Body body = FacetModeler::Body::extrusion(profile, OdGeVector3d(0.0, 0.0, 1.0) * height);
+    // polygon.setClosed();
+    // polygon.makeCCW();
 
-    // ACIS BODY
+    // FacetModeler::Profile2D profile(polygon);
+    // FacetModeler::Body body = FacetModeler::Body::extrusion(profile, OdGeVector3d(0.0, 0.0, 1.0) * height);
 
-    // 1. Create wire body of the reference line
-    BODY* wire_body = nullptr;
-    ents.add(wire_body);
+    // // ACIS BODY
 
-    std::vector<EDGE*> wire_edges = {};
-    for (int i = 0; i < referenceLine.size(); i++)
-    {
-        SPAposition first_point;
-        SPAposition second_point;
+    // // 1. Create wire body of the reference line
+    // BODY* wire_body = nullptr;
+    // ents.add(wire_body);
 
-        first_point = SPAposition(referenceLine[i][0], referenceLine[i][1], 0);
+    // std::vector<EDGE*> wire_edges = {};
+    // for (int i = 0; i < referenceLine.size(); i++)
+    // {
+    //     SPAposition first_point;
+    //     SPAposition second_point;
 
-        if (i == referenceLine.size() - 1)
-        {
-            second_point = SPAposition(referenceLine[0][0], referenceLine[0][1], 0);
-        }
-        else
-        {
-            second_point = SPAposition(referenceLine[i + 1][0], referenceLine[i + 1][1], 0);
-        }
+    //     first_point = SPAposition(referenceLine[i][0], referenceLine[i][1], 0);
 
-        EDGE* edge = nullptr;
-        ents.add(edge);
+    //     if (i == referenceLine.size() - 1)
+    //     {
+    //         second_point = SPAposition(referenceLine[0][0], referenceLine[0][1], 0);
+    //     }
+    //     else
+    //     {
+    //         second_point = SPAposition(referenceLine[i + 1][0], referenceLine[i + 1][1], 0);
+    //     }
 
-        api_curve_line(first_point, second_point, edge);
-        wire_edges.push_back(edge);
-    }
+    //     EDGE* edge = nullptr;
+    //     ents.add(edge);
 
-    api_make_ewire(wire_edges.size(), wire_edges.data(), wire_body);
+    //     api_curve_line(first_point, second_point, edge);
+    //     wire_edges.push_back(edge);
+    // }
+
+    // api_make_ewire(wire_edges.size(), wire_edges.data(), wire_body);
 
     // 2. Sweep along z-axis vector
-    BODY* new_body = nullptr;
-    ents.add(new_body);
-
     EXCEPTION_BEGIN
         sweep_options* sw_options = ACIS_NEW sweep_options();
     EXCEPTION_TRY
-        outcome sw_result = api_sweep_with_options(wire_body, SPAvector(0,0,1 * height), sw_options, new_body);
 
-        if (!sw_result.ok())
+        for (BODY* &two_dim_body: final_bodies)
         {
-            error_info* info = sw_result.get_error_info();
-            qInfo() << info->error_message();
+            BODY* new_body = nullptr;
+            ents.add(new_body);
+
+            // get the face in the 2d body
+            ENTITY_LIST face_ents;
+            api_get_faces(two_dim_body, face_ents);
+
+            if (face_ents.iteration_count() == 0)
+            {
+                // ignore if no face
+                continue;
+            }
+
+            FACE* two_dim_face = static_cast<FACE*>(face_ents[0]);
+            outcome sw_result = api_sweep_with_options(two_dim_face, SPAvector(0,0,1 * height), sw_options, new_body);
+
+            if (!sw_result.ok())
+            {
+                error_info* info = sw_result.get_error_info();
+                qInfo() << info->error_message();
+            }
         }
 
     EXCEPTION_CATCH_TRUE
@@ -431,24 +392,24 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
     EXCEPTION_END
 
 
-    QList<BIMElement*> hostedElementList = wallElement->getHostedElementList();
-    for (BIMElement* hostedElement: hostedElementList)
-    {
-        if (hostedElement->getType() == "Door")
-        {
-            DoorGeometryService service = DoorGeometryService();
-            FacetModeler::Body voidBody = service.generateVoidBody(hostedElement, wallElement);
+    // QList<BIMElement*> hostedElementList = wallElement->getHostedElementList();
+    // for (BIMElement* hostedElement: hostedElementList)
+    // {
+    //     if (hostedElement->getType() == "Door")
+    //     {
+    //         DoorGeometryService service = DoorGeometryService();
+    //         FacetModeler::Body voidBody = service.generateVoidBody(hostedElement, wallElement);
 
-            body = FacetModeler::Body::boolOper(FacetModeler::eDifference, body, voidBody);
-        }
-        else if (hostedElement->getType() == "Window")
-        {
-            WindowGeometryService service = WindowGeometryService();
-            FacetModeler::Body voidBody = service.generateVoidBody(hostedElement, wallElement);
+    //         body = FacetModeler::Body::boolOper(FacetModeler::eDifference, body, voidBody);
+    //     }
+    //     else if (hostedElement->getType() == "Window")
+    //     {
+    //         WindowGeometryService service = WindowGeometryService();
+    //         FacetModeler::Body voidBody = service.generateVoidBody(hostedElement, wallElement);
 
-            body = FacetModeler::Body::boolOper(FacetModeler::eDifference, body, voidBody);
-        }
-    }
+    //         body = FacetModeler::Body::boolOper(FacetModeler::eDifference, body, voidBody);
+    //     }
+    // }
 
     // Mesh geometry generation
     std::vector<uint32_t> meshIndices = {};
@@ -469,26 +430,29 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
     int edgeMaterialIndex = OpenGLMaterial::BLACK;
     int scalingFactor = 5;
 
-    m_openglHelper.getMeshGeometry(
-        wire_body,
-        vertices_position,
-        vertices_normal,
-        vertices_textureuv,
-        vertices_materialIndex,
-        vertices_textureIndex,
-        meshIndices,
-        edge_indices,
-        edge_data_int,
-        edge_data_float,
-        textureIndex,
-        materialIndex,
-        scalingFactor,
-        edgeWidth,
-        edgeDashLength,
-        edgeGapLength,
-        edgeDash,
-        edgeMaterialIndex
-    );
+    for (BODY* &final_body: final_bodies)
+    {
+        m_openglHelper.getMeshGeometry(
+            final_body,
+            vertices_position,
+            vertices_normal,
+            vertices_textureuv,
+            vertices_materialIndex,
+            vertices_textureIndex,
+            meshIndices,
+            edge_indices,
+            edge_data_int,
+            edge_data_float,
+            textureIndex,
+            materialIndex,
+            scalingFactor,
+            edgeWidth,
+            edgeDashLength,
+            edgeGapLength,
+            edgeDash,
+            edgeMaterialIndex
+        );
+    }
 
     mesh->Initialize(
         vertices_position,
@@ -916,4 +880,47 @@ void WallGeometryService::generateHelperPoints(BIMElement *bimElement, QList<Hel
 
     helperPoints.append(length);
     helperPoints.append(angle);
+}
+
+void WallGeometryService::generateWallLayers2D(std::vector<BODY *> &final_bodies, ENTITY_LIST &ents, std::vector<ReferenceLineSegment> &referenceLine, std::vector<Layer> &layers, float width, QString &referenceLinePosition)
+{
+    // 1. Convert referenceLine to ACIS open wire-body
+    BODY* wire_body = nullptr;
+    std::vector<EDGE*> edges = {};
+    m_openglHelper.getReferenceLineWireBody(wire_body, ents, referenceLine, edges);
+
+    // 2. Sweep to generate the body of first surface
+    EDGE* first_edge = edges[0];
+    BODY* first_body = nullptr;
+    ents.add(first_body);
+    float widthOfFirstLayer = layers.size() > 0 ? layers[0].width : width; // if no layer then just use width
+    m_openglHelper.getParallelCurvePlanerBody(first_body, wire_body, ents, first_edge, widthOfFirstLayer, referenceLinePosition);
+    final_bodies.push_back(first_body);
+
+    // 3. loop over the layers
+    float cumulativeWidth = widthOfFirstLayer;
+    for (int i = 1; i < layers.size(); i++)
+    {
+        // create copy of last entry in final_bodies
+        ENTITY* copied_entity = nullptr;
+
+        api_deep_copy_entity(final_bodies[final_bodies.size() - 1], copied_entity);
+
+        BODY* old_body_copy = dynamic_cast<BODY*>(copied_entity);
+        ents.add(old_body_copy);
+
+        // increment the cumulativeWidth
+        cumulativeWidth = cumulativeWidth + layers[i].width;
+
+        // sweep using the new width
+        BODY* new_body = nullptr;
+        ents.add(new_body);
+        m_openglHelper.getParallelCurvePlanerBody(new_body, wire_body, ents, first_edge, cumulativeWidth, referenceLinePosition);
+
+        // boolean subtract the old_body_copy from new_body
+        api_subtract(old_body_copy, new_body);
+
+        // save in final_bodies
+        final_bodies.push_back(new_body);
+    }
 }
