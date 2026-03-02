@@ -294,7 +294,7 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
 
     // 2D bodies
     std::vector<BODY*> final_bodies;
-    generateWallLayers2D(final_bodies, ents, referenceLine, layers, width, referenceLinePosition);
+    generateWallLayers3D(final_bodies, ents, referenceLine, layers, width, height, referenceLinePosition, slantAngle, taperAngle);
 
     // // 3. Generate a parallel line
     // std::vector<Point> parallelLine = m_openglHelper.generateParallelCurve(referenceLine, width);
@@ -357,39 +357,39 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
 
     // api_make_ewire(wire_edges.size(), wire_edges.data(), wire_body);
 
-    // 2. Sweep along z-axis vector
-    EXCEPTION_BEGIN
-        sweep_options* sw_options = ACIS_NEW sweep_options();
-    EXCEPTION_TRY
+    // // 2. Sweep along z-axis vector
+    // EXCEPTION_BEGIN
+    //     sweep_options* sw_options = ACIS_NEW sweep_options();
+    // EXCEPTION_TRY
 
-        for (BODY* &two_dim_body: final_bodies)
-        {
-            BODY* new_body = nullptr;
-            ents.add(new_body);
+    //     for (BODY* &two_dim_body: final_bodies)
+    //     {
+    //         BODY* new_body = nullptr;
+    //         ents.add(new_body);
 
-            // get the face in the 2d body
-            ENTITY_LIST face_ents;
-            api_get_faces(two_dim_body, face_ents);
+    //         // get the face in the 2d body
+    //         ENTITY_LIST face_ents;
+    //         api_get_faces(two_dim_body, face_ents);
 
-            if (face_ents.iteration_count() == 0)
-            {
-                // ignore if no face
-                continue;
-            }
+    //         if (face_ents.iteration_count() == 0)
+    //         {
+    //             // ignore if no face
+    //             continue;
+    //         }
 
-            FACE* two_dim_face = static_cast<FACE*>(face_ents[0]);
-            outcome sw_result = api_sweep_with_options(two_dim_face, SPAvector(0,0,1 * height), sw_options, new_body);
+    //         FACE* two_dim_face = static_cast<FACE*>(face_ents[0]);
+    //         outcome sw_result = api_sweep_with_options(two_dim_face, SPAvector(0,0,1 * height), sw_options, new_body);
 
-            if (!sw_result.ok())
-            {
-                error_info* info = sw_result.get_error_info();
-                qInfo() << info->error_message();
-            }
-        }
+    //         if (!sw_result.ok())
+    //         {
+    //             error_info* info = sw_result.get_error_info();
+    //             qInfo() << info->error_message();
+    //         }
+    //     }
 
-    EXCEPTION_CATCH_TRUE
-        ACIS_DELETE sw_options;
-    EXCEPTION_END
+    // EXCEPTION_CATCH_TRUE
+    //     ACIS_DELETE sw_options;
+    // EXCEPTION_END
 
 
     // QList<BIMElement*> hostedElementList = wallElement->getHostedElementList();
@@ -923,4 +923,202 @@ void WallGeometryService::generateWallLayers2D(std::vector<BODY *> &final_bodies
         // save in final_bodies
         final_bodies.push_back(new_body);
     }
+}
+
+void WallGeometryService::generateWallLayers3D(
+    std::vector<BODY*> &final_bodies,
+    ENTITY_LIST &ents,
+    std::vector<ReferenceLineSegment> &referenceLine,
+    std::vector<Layer> &layers,
+    float width,
+    float height,
+    QString& referenceLinePosition,
+    float slantAngle,
+    float taperAngle
+)
+{
+    // create section profile for each layer for sweeping along the referenceLinePath
+    std::vector<BODY*> profile_list;
+    float widthOfFirstLayer = layers.size() > 0 ? layers[0].width : width; // if no layer then just use width
+
+    // 1. Convert referenceLine to ACIS open wire-body
+    BODY* path_wire_body = nullptr;
+    ents.add(path_wire_body);
+    std::vector<EDGE*> path_edges = {};
+    m_openglHelper.getReferenceLineWireBody(path_wire_body, ents, referenceLine, path_edges);
+
+    // 2. Get section profile with slant and taper angle
+    // 2.1 create edge perpendicular to the first edge of the wire_body
+    EDGE* first_path_edge = path_edges[0];
+    SPAposition first_edge_point = first_path_edge->start_pos();
+
+    SPAvector tangent_vector = first_path_edge->start_deriv();
+
+    // 2.2 use referenceLinePosition to get the four positions
+    float perp_x = referenceLinePosition == "outer" ? tangent_vector.y() : -1 * tangent_vector.y();
+    float perp_y = referenceLinePosition == "outer" ? -1 * tangent_vector.x() : tangent_vector.x();
+    SPAvector perp_vector(perp_x, perp_y, tangent_vector.z());
+    SPAvector perp_vector_unit = perp_vector / perp_vector.len(); // unit vector
+
+    SPAposition second_edge_point(
+        (perp_vector_unit.x() * widthOfFirstLayer) + first_edge_point.x(),
+        (perp_vector_unit.y() * widthOfFirstLayer) + first_edge_point.y(),
+        (perp_vector_unit.z() * widthOfFirstLayer)
+    );
+
+    float trapezoid_offset = height * qTan(qDegreesToRadians(taperAngle));
+    float slant_offset = height * qTan(qDegreesToRadians(slantAngle));
+
+    BODY* profile_wire_body = nullptr;
+    ents.add(profile_wire_body);
+    std::vector<EDGE*> profile_edges;
+
+    // in case the taper angle causes intersection of the two points
+    if (trapezoid_offset >= (widthOfFirstLayer / 2))
+    {
+        trapezoid_offset = widthOfFirstLayer / 2;
+
+        float total_offset_third = referenceLinePosition == "outer" ? trapezoid_offset + slant_offset : trapezoid_offset - slant_offset;
+        SPAposition third_edge_point(
+            (perp_vector_unit.x() * total_offset_third) + first_edge_point.x(),
+            (perp_vector_unit.y() * total_offset_third) + first_edge_point.y(),
+            (perp_vector_unit.z() * total_offset_third) + first_edge_point.z() + height
+        );
+
+        // 2.3 Create the wire-body of all the edges
+        EDGE* first_edge = nullptr;
+        ents.add(first_edge);
+        api_curve_line(first_edge_point, second_edge_point, first_edge);
+
+        EDGE* second_edge = nullptr;
+        ents.add(second_edge);
+        api_curve_line(second_edge_point, third_edge_point, second_edge);
+
+        EDGE* fourth_edge = nullptr;
+        ents.add(fourth_edge);
+        api_curve_line(third_edge_point, first_edge_point, fourth_edge);
+
+        profile_edges = { first_edge, second_edge, fourth_edge };
+        api_make_ewire(profile_edges.size(), profile_edges.data(), profile_wire_body);
+    }
+    else
+    {
+        float total_offset_third = referenceLinePosition == "outer" ? trapezoid_offset + slant_offset : trapezoid_offset - slant_offset;
+        SPAposition third_edge_point(
+            (perp_vector_unit.x() * total_offset_third) + first_edge_point.x(),
+            (perp_vector_unit.y() * total_offset_third) + first_edge_point.y(),
+            (perp_vector_unit.z() * total_offset_third) + first_edge_point.z() + height
+        );
+
+        float total_offset_fourth = referenceLinePosition == "outer" ? widthOfFirstLayer - trapezoid_offset  + slant_offset : widthOfFirstLayer - trapezoid_offset  - slant_offset;
+        SPAposition fourth_edge_point(
+            (perp_vector_unit.x() * total_offset_fourth) + first_edge_point.x(),
+            (perp_vector_unit.y() * total_offset_fourth) + first_edge_point.y(),
+            (perp_vector_unit.z() * total_offset_fourth) + first_edge_point.z() + height
+        );
+
+        // 2.3 Create the wire-body of all the edges
+        EDGE* first_edge = nullptr;
+        ents.add(first_edge);
+        api_curve_line(first_edge_point, second_edge_point, first_edge);
+
+        EDGE* second_edge = nullptr;
+        ents.add(second_edge);
+        api_curve_line(second_edge_point, fourth_edge_point, second_edge);
+
+        EDGE* third_edge = nullptr;
+        ents.add(third_edge);
+        api_curve_line(fourth_edge_point, third_edge_point, third_edge);
+
+        EDGE* fourth_edge = nullptr;
+        ents.add(fourth_edge);
+        api_curve_line(third_edge_point, first_edge_point, fourth_edge);
+
+        profile_edges = { first_edge, second_edge, third_edge, fourth_edge };
+        api_make_ewire(profile_edges.size(), profile_edges.data(), profile_wire_body);
+    }
+
+    profile_list.push_back(profile_wire_body);
+
+    // // 3. Calculate profile of other layers
+    float cumulativeWidth = widthOfFirstLayer;
+    for (int i = 1; i < layers.size(); i++)
+    {
+        BODY* profile_wire_body_layer = nullptr;
+        ents.add(profile_wire_body_layer);
+        std::vector<EDGE*> profile_edges_layer;
+
+        SPAposition first_edge_point_layer(
+            (perp_vector_unit.x() * cumulativeWidth) + first_edge_point.x(),
+            (perp_vector_unit.y() * cumulativeWidth) + first_edge_point.y(),
+            (perp_vector_unit.z() * cumulativeWidth)
+        );
+
+        SPAposition second_edge_point_layer(
+            (perp_vector_unit.x() * layers[i].width) + first_edge_point_layer.x(),
+            (perp_vector_unit.y() * layers[i].width) + first_edge_point_layer.y(),
+            (perp_vector_unit.z() * layers[i].width)
+        );
+
+        float total_offset_third = referenceLinePosition == "outer" ? -1*trapezoid_offset + slant_offset : -1*trapezoid_offset - slant_offset;
+        SPAposition third_edge_point_layer(
+            (perp_vector_unit.x() * total_offset_third) + first_edge_point_layer.x(),
+            (perp_vector_unit.y() * total_offset_third) + first_edge_point_layer.y(),
+            (perp_vector_unit.z() * total_offset_third) + first_edge_point_layer.z() + height
+        );
+
+        float total_offset_fourth = referenceLinePosition == "outer" ? layers[i].width - trapezoid_offset  + slant_offset : layers[i].width - trapezoid_offset  - slant_offset;
+        SPAposition fourth_edge_point_layer(
+            (perp_vector_unit.x() * total_offset_fourth) + first_edge_point_layer.x(),
+            (perp_vector_unit.y() * total_offset_fourth) + first_edge_point_layer.y(),
+            (perp_vector_unit.z() * total_offset_fourth) + first_edge_point_layer.z() + height
+        );
+
+        // 2.3 Create the wire-body of all the edges
+        EDGE* first_edge_layer = nullptr;
+        ents.add(first_edge_layer);
+        api_curve_line(first_edge_point_layer, second_edge_point_layer, first_edge_layer);
+
+        EDGE* second_edge_layer = nullptr;
+        ents.add(second_edge_layer);
+        api_curve_line(second_edge_point_layer, fourth_edge_point_layer, second_edge_layer);
+
+        EDGE* third_edge_layer = nullptr;
+        ents.add(third_edge_layer);
+        api_curve_line(fourth_edge_point_layer, third_edge_point_layer, third_edge_layer);
+
+        EDGE* fourth_edge_layer = nullptr;
+        ents.add(fourth_edge_layer);
+        api_curve_line(third_edge_point_layer, first_edge_point_layer, fourth_edge_layer);
+
+        profile_edges_layer = { first_edge_layer, second_edge_layer, third_edge_layer, fourth_edge_layer };
+        api_make_ewire(profile_edges_layer.size(), profile_edges_layer.data(), profile_wire_body_layer);
+
+        profile_list.push_back(profile_wire_body_layer);
+    }
+
+    // 4. Sweep along path
+    EXCEPTION_BEGIN
+        sweep_options* sw_options = ACIS_NEW sweep_options();
+        BODY* new_body = nullptr;
+    EXCEPTION_TRY
+
+        for (BODY* &profile: profile_list)
+        {
+            outcome sw_result = api_sweep_with_options(profile, path_wire_body, sw_options, new_body);
+
+            if (!sw_result.ok())
+            {
+                error_info* info = sw_result.get_error_info();
+                qInfo() << info->error_message();
+            }
+            else
+            {
+                final_bodies.push_back(profile);
+            }
+        }
+
+    EXCEPTION_CATCH_TRUE
+        ACIS_DELETE sw_options;
+    EXCEPTION_END
 }

@@ -53,6 +53,17 @@ private:
     OpenglHelper m_openglHelper;
 
     void generateWallLayers2D(std::vector<BODY*> &final_bodies, ENTITY_LIST &ents, std::vector<ReferenceLineSegment> &referenceLine, std::vector<Layer> &layers, float width, QString& referenceLinePosition);
+    void generateWallLayers3D(
+        std::vector<BODY*> &final_bodies,
+        ENTITY_LIST &ents,
+        std::vector<ReferenceLineSegment> &referenceLine,
+        std::vector<Layer> &layers,
+        float width,
+        float height,
+        QString& referenceLinePosition,
+        float slantAngle,
+        float taperAngle
+    );
 };
 
 #endif // WALL_GEOMETRY_SERVICE_H

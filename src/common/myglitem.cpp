@@ -858,9 +858,9 @@ MyGLItem::MyGLItem(QQuickItem *parent)
     BIMElement* bimElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, 0, this);
     BIMParameter* widthParameter = new BIMParameter(1,"1",false,"Width","1",1,this);
     BIMParameter* heightParameter = new BIMParameter(37, "1", false, "Height", "4", 1, this);
-    BIMParameter* slantAngleParameter = new BIMParameter(34, "1", false, "SlantAngle", "20", 1, this);
-    BIMParameter* taperAngleParameter = new BIMParameter(34, "1", false, "TaperAngle", "20", 1, this);
-    BIMParameter* rlPositionParameter = new BIMParameter(34, "1", false, "ReferenceLinePosition", "outer", 1, this);
+    BIMParameter* slantAngleParameter = new BIMParameter(34, "1", false, "SlantAngle", "0", 1, this);
+    BIMParameter* taperAngleParameter = new BIMParameter(34, "1", false, "TaperAngle", "5", 1, this);
+    BIMParameter* rlPositionParameter = new BIMParameter(34, "1", false, "ReferenceLinePosition", "inner", 1, this);
     BIMParameter* rlParameter = new BIMParameter(1,"1",false,"ReferenceLine","[{\"points\":[[0,0], [0,4]], \"type\": \"line\"}, {\"points\":[[0,4], [4,4]], \"type\": \"line\"}]",1,this);
     BIMParameter* layerParameter = new BIMParameter(39, "1", false, "Layers", "[{\"name\": \"layer-1\", \"width\": 1}, {\"name\": \"layer-2\", \"width\": 0.25}]", 1, this);
     bimElement->addParameter(widthParameter);
