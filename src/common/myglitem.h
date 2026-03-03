@@ -138,6 +138,7 @@ public:
     int m_lastHoverY = -1;
     int m_glsceneX = -1;
     int m_glsceneY = -1;
+    QString m_curveType = "line";
     QList<HelperPoint> m_middlePointValue;
     bool m_middlePointValueUpdated = false;
     Mesh* mesh = nullptr;
@@ -169,6 +170,7 @@ public slots:
     void requestPick(int x, int y);
     void requestHover(int x, int y, int glsceneX, int glsceneY);
     void updateMousePosition(int x, int y);
+    void updateCurveType(QString curveType);
 
     void handlePick(int id);
     void viewIfc();

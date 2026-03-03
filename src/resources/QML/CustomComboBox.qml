@@ -18,7 +18,6 @@ ComboBox {
         required property var model
         required property int index
 
-
         width: control.width
         contentItem: Text {
             text: delegate.model[control.textRole]

@@ -15,6 +15,8 @@ Row {
     padding: 10
     spacing: 10
 
+    signal updateCurveType(string curveType);
+
     property var ifcDetailList: [];
     property string pageType: "PlannedBIM";
     property string pageAction: "ModelView";
@@ -35,12 +37,19 @@ Row {
     property int windowExpandedIndex: -1
     property int stairsExpandedIndex: -1
 
-   property var scheduleSetupList: []
+    property var scheduleSetupList: []
+
+    property string curveType: "line"
 
     onPageActionChanged: {
         if (pageAction === "ModelView" || pageAction === "PlanView")
         {
             glscene.updateView(plannedBIMRoot.pageAction);
+        }
+        else if (pageAction === "line" || pageAction === "3pt-circle" || pageAction === "bezier")
+        {
+            plannedBIMRoot.curveType = pageAction;
+            glscene.updateCurveType(pageAction);
         }
     }
 
@@ -505,6 +514,9 @@ Row {
 
             property string wallTotalHeightText: ""
             property string wallWidthText: ""
+            property string wallSlantAngleText: ""
+            property string wallTaperAngleText: ""
+            property string wallReferenceLinePositionText: ""
             property string wallSheduleSetupText: ""
 
 
@@ -515,6 +527,10 @@ Row {
                 bimElementController.addParameter(bimElementPtr, "Height", wallTotalHeightText);
                 bimElementController.addParameter(bimElementPtr, "Width", wallWidthText);
                 bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
+                bimElementController.addParameter(bimElementPtr, "Layers", "[]");
+                bimElementController.addParameter(bimElementPtr, "SlantAngle", wallSlantAngleText);
+                bimElementController.addParameter(bimElementPtr, "TaperAngle", wallTaperAngleText);
+                bimElementController.addParameter(bimElementPtr, "ReferenceLinePosition", wallReferenceLinePositionText);
 
                 bimElementController.addParameter(bimElementPtr, "ScheduleSetup", wallSheduleSetupText);
 
@@ -522,6 +538,9 @@ Row {
 
                 wallTotalHeightText = "";
                 wallWidthText = "";
+                wallSlantAngleText = "";
+                wallTaperAngleText = "";
+                wallReferenceLinePositionText = "";
 
                 glscene.setCurrentItem("Wall");
                 glscene.update();
@@ -530,6 +549,9 @@ Row {
             onCancelCallback: function () {
                 wallTotalHeightText = "";
                 wallWidthText = "";
+                wallSlantAngleText = "";
+                wallTaperAngleText = "";
+                wallReferenceLinePositionText = "";
                 //wallSheduleSetupText = "";
                 glscene.update();
             }
@@ -1643,8 +1665,8 @@ Row {
 
 
                     Text{
-                        id: wallTypeLabel
-                        text: "Wall Type"
+                        id: wallSlantAngleLabel
+                        text: "Slant Angle (in Degrees)"
                         color: "#323130"
                         //font.weight: 700
                         font.pixelSize: 14
@@ -1652,10 +1674,14 @@ Row {
                         topPadding: 10
                     }
                     CustomTextBox{
-                        id: wallTypeTextBox
-                        placeholderText: "Wall Type"
+                        id: wallSlantAngleTextBox
+                        placeholderText: "0"
                         text:""
                         color: "#323130"
+
+                        onTextChanged: {
+                            wallSettingsPopup.wallSlantAngleText = wallSlantAngleTextBox.text;
+                        }
                     }
                 }
             }
@@ -1724,8 +1750,8 @@ Row {
 
 
                     Text{
-                        id: wallGeometryTypeLabel
-                        text: "Geometry Type"
+                        id: wallTaperAngleLabel
+                        text: "Taper Angle (in Degrees)"
                         color: "#323130"
                         //font.weight: 700
                         font.pixelSize: 14
@@ -1733,10 +1759,14 @@ Row {
                         topPadding: 10
                      }
                     CustomTextBox{
-                        id: wallGeometryTypeTextBox
-                        placeholderText: "Geometry Type"
+                        id: wallTaperAngleTextBox
+                        placeholderText: "0"
                         text:""
                         color: "#323130"
+
+                        onTextChanged: {
+                            wallSettingsPopup.wallTaperAngleText = wallTaperAngleTextBox.text;
+                        }
                     }
                 }
             }
@@ -1755,6 +1785,30 @@ Row {
                 id: firstColumn
                 width: (wallRowLayoutModel.width - wallRowLayoutModel.spacing) / 2-20
                 height: 300
+
+                ColumnLayout {
+                    width: firstColumn.width
+                    height:40// firstColumn.height
+
+                    Text{
+                        id: wallReferenceLinePositionLabel
+                        text: "Orientation Type"
+                        color: "#323130"
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                    }
+                    CustomComboBox{
+                        id: wallReferenceLinePositionComboBox
+                        model: ["Inner", "Outer"]
+                        width: parent.width
+                        currentIndex: 0
+                        onCurrentTextChanged: {
+                            const referenceLinePosition = wallReferenceLinePositionComboBox.currentIndex === 0 ? "inner" : "outer";
+                            wallSettingsPopup.wallReferenceLinePositionText = referenceLinePosition;
+                        }
+                    }
+                }
+
             }
         }
     }    

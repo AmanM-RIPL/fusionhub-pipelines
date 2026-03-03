@@ -70,7 +70,6 @@ struct ReferenceLineSegment
 {
     std::vector<Point> points;
     QString type; // line, 3pt-circle, center-circle
-    QString position; // inner, outer, middle
 };
 
 struct Layer
@@ -126,6 +125,8 @@ public:
 
     // Below methods use ACIS
     void getReferenceLineWireBody(BODY *&wire_body, ENTITY_LIST& ents, std::vector<ReferenceLineSegment> &referenceLine, std::vector<EDGE*> &edges);
+
+    // void addPointToReferenceLine(std::vector<ReferenceLineSegment> &referenceLine, );
 
     void getParallelCurvePlanerBody(BODY* &new_body, BODY* &wire_body, ENTITY_LIST& ents, EDGE* &first_edge, float width, QString& referenceLinePosition);
 

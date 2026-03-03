@@ -1119,6 +1119,11 @@ void MyGLItem::updateMousePosition(int x, int y)
     QCursor::setPos(m_glsceneX + x, m_glsceneY + y);
 }
 
+void MyGLItem::updateCurveType(QString curveType)
+{
+    m_curveType = curveType;
+}
+
 void MyGLItem::handlePick(int id) {
     emit selectionChanged(id);
 }

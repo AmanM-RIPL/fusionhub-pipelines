@@ -24,6 +24,8 @@ Rectangle {
         height: parent.height
 
         ProjectRibbon {
+            id: projectRibbon
+
             onLogOutButtonClicked: {
                 logOutClicked()
             }
@@ -174,6 +176,10 @@ Rectangle {
                     break;
                 }
 
+            }
+
+            onUpdateCurveType: {
+                projectRibbon.curveType = curveType;
             }
         }
     }

@@ -3,10 +3,13 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Column {
+    id: projectRibbon
 
     signal logOutButtonClicked()
     signal projectPageToRedirect(string pageName)
     signal projectPageAction(string pageAction)
+
+    property string curveType: "line"
 
     width: parent.width
     height: 131
@@ -418,6 +421,61 @@ Column {
 
                         onClicked: {
                             projectPageToRedirect("Collision")
+                        }
+                    }
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 60
+                    color: "#7676801F"
+                }
+
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/line.png"
+                    btnName: "Line"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            projectPageAction("line");
+                            projectRibbon.curveType = "line"
+                        }
+                    }
+                }
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/3pt-circle.png"
+                    btnName: "3PT Circle"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            projectPageAction("3pt-circle");
+                            projectRibbon.curveType = "3pt-circle";
+                        }
+                    }
+                }
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/spline.png"
+                    btnName: "Bezier"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            projectPageAction("bezier");
+                            projectRibbon.curveType = "bezier";
                         }
                     }
                 }
