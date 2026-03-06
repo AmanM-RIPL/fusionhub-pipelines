@@ -61,7 +61,7 @@ bool UserController::login(const QString& username, const QString& password)
     // {
     //     gUser->setUserName("admin");
 
-    //     const_cast<UserController*>(this)->startBackgroundSync();
+    //    // const_cast<UserController*>(this)->startBackgroundSync();
     // }
     // else if (username.isEmpty() || password.isEmpty()) {
     //     emit loginFailed("Username or password cannot be empty");
@@ -69,19 +69,19 @@ bool UserController::login(const QString& username, const QString& password)
     // }
 
     // // Get NetworkManager instance and trigger async login
-    // NetworkManager* network = NetworkManager::getInstance();
-    // network->loginAPI(username, password);
+    NetworkManager* network = NetworkManager::getInstance();
+    network->loginAPI(username, password);
 
-    QJsonObject userData;
-    userData["id"] = 2;
-    userData["username"] = "admin";
-    userData["token"] = "44rrfdcsxx";
-    userData["firstName"] = "First Name";
-    userData["lastName"] = "Last Name";
-    userData["email"] = "sample@gmail.com";
-    userData["mobile"] = "+91-990543";
+    // QJsonObject userData;
+    // userData["id"] = 2;
+    // userData["username"] = "admin";
+    // userData["token"] = "44rrfdcsxx";
+    // userData["firstName"] = "First Name";
+    // userData["lastName"] = "Last Name";
+    // userData["email"] = "sample@gmail.com";
+    // userData["mobile"] = "+91-990543";
 
-    onNetworkLoginSuccess(userData);
+    // onNetworkLoginSuccess(userData);
 
     return true;
 }
@@ -105,6 +105,8 @@ void UserController::onNetworkLoginSuccess(const QJsonObject& userData)
     // Emit success signal to QML
     emit loginSuccess(userData);
 }
+
+
 
 void UserController::onNetworkLoginFailed(const QString& error)
 {
@@ -200,78 +202,268 @@ QString UserController::getCurrentUserPassword() const
     return gUser->getUserPassword();
 }
 
-void UserController::create(const QString& user_fullname,
-                            const QString& user_name,
-                            const QString& mobile1,
-                            const QString& mobile2,
-                            const QString& email1,
-                            const QString& email2,
-                            const QString& jobTitle,
-                            const QString& startDate,
-                            const QString& endDate,
-                            const QString& monthlyDeskCostValue) const
+void UserController::createUser(const QString& username, const QString& password, const QString& email,
+                                const QString& firstName,
+                                const QString& lastName,
+                                const QString& mobile)
 {
-    // This is used only for user creation
-    auto dbManager = DatabaseManager::getInstance();
-    QSqlDatabase database = dbManager->getDatabase();
-    if (database.isOpen())
-    {
-        database.close();
-    }
+    QString token = NetworkManager::getInstance()->getStoredToken();
 
-    if (!dbManager->initializeDatabase("Users")) {
-        qDebug() << "Failed to initialize database";
+    if (token.isEmpty()) {
+        emit userCreationFailed("Authorization token missing. Please login first");
         return;
     }
 
-    qDebug() << "Database initialized successfully!";
-    qDebug() << "Project path:" << dbManager->getProjectPath();
+    QUrl url("http://127.0.0.1:8080/api/v1/default/user");
+    QNetworkRequest request(url);
 
-    User user;
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-    qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+    // Authorization Header Set
+    request.setRawHeader("Authorization",
+                         QString("Bearer %1").arg(token).toUtf8());
 
-    QUuid uuid = QUuid::createUuid();
-    QString randomUserId = uuid.toString();
+    QJsonObject json;
+    json["username"] = username;
+    json["password"] = password;
+    json["email"] = email;
+    json["firstName"] = firstName;
+    json["lastName"] = lastName;
+    json["mobile"] = mobile;
 
-    user.setId(id_in_milliseconds);
-    user.setGlobalId("123");
-    user.setApprovalStatus(true);
-    user.setUserId(randomUserId);
+    QJsonDocument doc(json);
+    QByteArray data = doc.toJson();
+    QNetworkAccessManager* m_manager = new QNetworkAccessManager(NetworkManager::getInstance());
+    qDebug() << "data=" << data;
+    QNetworkReply *reply = m_manager->post(request, data);
 
-    user.setUserFullName(user_fullname);
-    user.setUserName(user_name);
-    user.setUserMobile1(mobile1);
-    user.setUserMobile2(mobile2);
-    user.setUserEmail1(email1);
-    user.setUserEmail2(email2);
-    user.setUserJobTitle(jobTitle);
-    user.setUserStartDate(startDate);
-    user.setUserEndDate(endDate);
-    user.setUserMonthlyDeskCostValue(monthlyDeskCostValue);
-    user.setUserPassword("repl123");
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
 
-    if(m_userRepository->saveQML(&user))
-    {
-        qDebug() << "Data Saved";
-    }
-    else
-    {
-        qDebug() << "Data not Saved";
-    }
+        QByteArray responseData = reply->readAll();
+        // emit userCreated(responseData);
+        qDebug() << "userCreated: " << responseData;
+        if (reply->error() != QNetworkReply::NoError) {
+            qWarning() << "Network error:" << reply->errorString();
+            reply->deleteLater();
+            qDebug() << "userCreatedFailed: " << responseData;
+            //  return ;
+        }
+
+        reply->deleteLater();
+    });
 }
 
-void UserController::update(const QString& userId,
-                            const QString& user_fullname,
-                            const QString& user_name,
-                            const QString& mobile1,
-                            const QString& mobile2,
-                            const QString& email1,
-                            const QString& email2,
-                            const QString& jobTitle,
-                            const QString& startDate,
-                            const QString& endDate,
-                            const QString& monthlyDeskCostValue,
+
+void UserController::updateUser(const QString& userId,
+                                const QString& username,
+                                const QString& firstName,
+                                const QString& lastName,
+                                const QString& email,
+                                const QString& mobile,
+                                const QString& password)
+{
+    QString token = NetworkManager::getInstance()->getStoredToken();
+
+    if (token.isEmpty()) {
+        emit userListFailed("Authorization token missing. Please login first");
+        return;
+    }
+
+    QUrl url(QString("http://127.0.0.1:8080/api/v1/default/user/%1").arg(userId));
+    QNetworkRequest request(url);
+
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setRawHeader("Authorization", QString("Bearer %1").arg(token).toUtf8());
+
+    QJsonObject json;
+    json["username"] = username;
+    json["firstName"] = firstName;
+    json["lastName"] = lastName;
+    json["email"] = email;
+    json["mobile"] = mobile;
+    if(!password.isEmpty()) {
+        json["password"] = password;
+    }
+
+    QJsonDocument doc(json);
+    QByteArray data = doc.toJson();
+
+    QNetworkAccessManager* m_manager = new QNetworkAccessManager(NetworkManager::getInstance());
+
+    QNetworkReply *reply = m_manager->put(request, data);
+
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        QByteArray responseData = reply->readAll();
+
+        if (reply->error() == QNetworkReply::NoError) {
+            qDebug() << "Update Success:" << responseData;
+            getUserList();
+        } else {
+            qWarning() << "Update Failed:" << reply->errorString();
+            qDebug() << "Server Response:" << responseData;
+        }
+
+        reply->deleteLater();
+    });
+}
+
+
+void UserController::getUserList()
+{
+    QString token = NetworkManager::getInstance()->getStoredToken();
+    if(token.isEmpty()) {
+        emit userListFailed("Please login first");
+        return;
+    }
+
+    QUrl url("http://127.0.0.1:8080/api/v1/default/user");
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setRawHeader("Authorization", QString("Bearer %1").arg(token).toUtf8());
+
+    QNetworkAccessManager* manager = new QNetworkAccessManager(this);
+    QNetworkReply *reply = manager->get(request);
+
+    connect(reply, &QNetworkReply::finished, this, [this, reply, manager]() {
+        if(reply->error() == QNetworkReply::NoError) {
+            QByteArray responseData = reply->readAll();
+            QJsonDocument doc = QJsonDocument::fromJson(responseData);
+
+            if(doc.isArray()) {
+                QJsonArray array = doc.array();
+                QVariantList list;
+                for(const QJsonValue &value : array) {
+                    QJsonObject obj = value.toObject();
+                    QVariantMap user;
+                    user["id"] = obj["id"].toInt();
+                    user["username"] = obj["username"].toString();
+                    user["firstName"] = obj["firstName"].toString();
+                    user["lastName"] = obj["lastName"].toString();
+                    user["email"] = obj["email"].toString();
+                    user["mobile"] = obj["mobile"].toString();
+
+                    list.append(user);
+                }
+                // qDebug() << "Emitting list with count:" << list.count();
+                emit userListReceived(list);
+            } else {
+                emit userListFailed("Invalid JSON format");
+            }
+        } else {
+            emit userListFailed(reply->errorString());
+        }
+        reply->deleteLater();
+        manager->deleteLater();
+    });
+}
+
+void UserController::getUserById(int id)
+{
+    QString token = NetworkManager::getInstance()->getStoredToken();
+    if(token.isEmpty()) {
+        emit userDetailsFailed("Auth token missing");
+        return;
+    }
+
+    QUrl url(QString("http://127.0.0.1:8080/api/v1/default/user/%1").arg(id));
+
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setRawHeader("Authorization", QString("Bearer %1").arg(token).toUtf8());
+
+    QNetworkAccessManager* manager = new QNetworkAccessManager(this);
+    QNetworkReply *reply = manager->get(request);
+
+    connect(reply, &QNetworkReply::finished, this, [this, reply, manager]() {
+        if(reply->error() == QNetworkReply::NoError) {
+            QByteArray responseData = reply->readAll();
+            QJsonDocument doc = QJsonDocument::fromJson(responseData);
+
+            if(doc.isObject()) {
+                QJsonObject obj = doc.object();
+                QVariantMap details;
+
+                details["id"] = obj["id"].toInt();
+                details["firstName"] = obj["first_name"].toString();
+                details["lastName"] = obj["last_name"].toString();
+                details["email"] = obj["email"].toString();
+                details["mobile"] = obj["mobile"].toString();
+
+                emit userDetailsReceived(details);
+            } else {
+                emit userDetailsFailed("Invalid user data format");
+            }
+        } else {
+            emit userDetailsFailed(reply->errorString());
+        }
+        reply->deleteLater();
+        manager->deleteLater();
+    });
+}
+
+// void UserController::create(const QString& user_fullname,
+//                             const QString& user_name,
+//                             const QString& mobile1,
+//                             const QString& mobile2,
+//                             const QString& email1,
+//                             const QString& email2,
+//                             const QString& jobTitle,
+//                             const QString& startDate,
+//                             const QString& endDate,
+//                             const QString& monthlyDeskCostValue) const
+// {
+//     // This is used only for user creation
+//     auto dbManager = DatabaseManager::getInstance();
+//     QSqlDatabase database = dbManager->getDatabase();
+//     if (database.isOpen())
+//     {
+//         database.close();
+//     }
+
+//     if (!dbManager->initializeDatabase("Users")) {
+//         qDebug() << "Failed to initialize database";
+//         return;
+//     }
+
+//     qDebug() << "Database initialized successfully!";
+//     qDebug() << "Project path:" << dbManager->getProjectPath();
+
+//     User user;
+
+//     qint64 id_in_milliseconds = QDateTime::currentMSecsSinceEpoch();
+
+//     QUuid uuid = QUuid::createUuid();
+//     QString randomUserId = uuid.toString();
+
+//     user.setId(id_in_milliseconds);
+//     user.setGlobalId("123");
+//     user.setApprovalStatus(true);
+//     user.setUserId(randomUserId);
+
+//     user.setUserFullName(user_fullname);
+//     user.setUserName(user_name);
+//     user.setUserMobile1(mobile1);
+//     user.setUserMobile2(mobile2);
+//     user.setUserEmail1(email1);
+//     user.setUserEmail2(email2);
+//     user.setUserJobTitle(jobTitle);
+//     user.setUserStartDate(startDate);
+//     user.setUserEndDate(endDate);
+//     user.setUserMonthlyDeskCostValue(monthlyDeskCostValue);
+//     user.setUserPassword("repl123");
+
+//     if(m_userRepository->saveQML(&user))
+//     {
+//         qDebug() << "Data Saved";
+//     }
+//     else
+//     {
+//         qDebug() << "Data not Saved";
+//     }
+// }
+
+void UserController::update(const QString& userId,const QString& user_fullname,const QString& user_name, const QString& mobile1,const QString& mobile2, const QString& email1, const QString& email2,const QString& jobTitle,
+                            const QString& startDate, const QString& endDate, const QString& monthlyDeskCostValue,
                             const QString& password) const
 {
     // This is used only for user update
@@ -312,27 +504,6 @@ void UserController::update(const QString& userId,
     {
         qDebug() << "Data not Updated";
     }
-}
-
-std::vector<User*> UserController::getUserList() const
-{
-    // This is used to fetch all users
-    auto dbManager = DatabaseManager::getInstance();
-    QSqlDatabase database = dbManager->getDatabase();
-    if (database.isOpen())
-    {
-        database.close();
-    }
-
-    if (!dbManager->initializeDatabase("Users")) {
-        qDebug() << "Failed to initialize database";
-        return std::vector<User*>();
-    }
-
-    qDebug() << "Database initialized successfully!";
-    qDebug() << "Project path:" << dbManager->getProjectPath();
-
-    return m_userRepository->findAllQML();
 }
 
 std::shared_ptr<User> UserController::getUserDetailsById(const QString& userid) const

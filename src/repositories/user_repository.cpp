@@ -201,7 +201,7 @@ void UserRepository::bindEntityToQuery(QSqlQuery& query, const User& entity) con
     query.addBindValue(entity.getId());
     query.addBindValue(entity.getGlobalId());
     query.addBindValue(entity.getApprovalStatus());
-    query.addBindValue(entity.getUserId());    
+    query.addBindValue(entity.getUserId());
     query.addBindValue(entity.getUserFullName());
     query.addBindValue(entity.getUserName());
     query.addBindValue(entity.getUserMobile1());

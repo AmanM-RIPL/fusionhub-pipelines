@@ -66,6 +66,7 @@
 #include "controllers/good_received_note_controller.h"
 #include "controllers/material_indent_controller.h"
 #include "controllers/draft_entity_controller.h"
+#include "controllers/permission_controller.h"
 
 #include "models/user.h"
 #include "models/unit_of_measurement.h"
@@ -716,6 +717,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<GoodReceivedNoteController>("com.fh.controllers", 1, 0, "GoodReceivedNoteController");
     qmlRegisterType<MaterialIndentController>("com.fh.controllers", 1, 0, "MaterialIndentController");
     qmlRegisterType<DraftEntityController>("com.fh.controllers", 1, 0, "DraftEntityController");
+    qmlRegisterType<PermissionController>("com.fh.controllers", 1, 0, "PermissionController");
 
     const QUrl url(QStringLiteral("qrc:/resources/QML/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,

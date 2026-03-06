@@ -84,5 +84,7 @@
         <file>resources/shaders/edge.frag</file>
         <file>resources/shaders/edge.vert</file>
         <file>resources/QML/utils/ValidationHelper.qml</file>
+        <file>resources/QML/AddUserPermissionPage.qml</file>
+        <file>resources/QML/UserPermissionPage.qml</file>
     </qresource>
 </RCC>

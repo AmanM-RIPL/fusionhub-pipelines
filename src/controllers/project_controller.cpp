@@ -1,4 +1,5 @@
 #include "project_controller.h"
+#include "network/network_manager.h"
 #include "common/repository_locator.h"
 #include <QDir>
 //#import QtQuick.LocalStorage as Sql
@@ -76,6 +77,56 @@ void ProjectController::create(const QString &projectName, const QString &custom
     else{
          qDebug()<<"ifc file could not be created";
     }
+}
+
+void ProjectController::getAllProjectList(bool isBlocked)
+{
+    QString token = NetworkManager::getInstance()->getStoredToken();
+    if(token.isEmpty()) {
+        emit projectListFailed("Please login first");
+        return;
+    }
+
+    QUrl url("http://127.0.0.1:8080/api/v1/default/project");
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setRawHeader("Authorization", QString("Bearer %1").arg(token).toUtf8());
+
+    QNetworkAccessManager* manager = new QNetworkAccessManager(this);
+    QNetworkReply *reply = manager->get(request);
+
+    connect(reply, &QNetworkReply::finished, this, [this, reply, manager]() {
+        if(reply->error() == QNetworkReply::NoError) {
+            QByteArray responseData = reply->readAll();
+            QJsonDocument doc = QJsonDocument::fromJson(responseData);
+
+            if(doc.isArray()) {
+                QJsonArray array = doc.array();
+                QVariantList list;
+                for(const QJsonValue &value : array) {
+                    QJsonObject obj = value.toObject();
+                    QVariantMap project;
+
+                    project["id"] = obj["id"].toInt();
+                    project["projectName"] = obj["projectName"].toString();
+                    project["status"] = obj["status"].toString();
+                    project["description"] = obj["description"].toString();
+                    project["customerName"] = obj["customerName"].toString();
+                    project["startDate"] = obj["startDate"].toString();
+                    project["endDate"] = obj["endDate"].toString();
+
+                    list.append(project);
+                }
+                emit projectListReceived(list);
+            } else {
+                emit projectListFailed("Invalid Project JSON format");
+            }
+        } else {
+            emit projectListFailed(reply->errorString());
+        }
+        reply->deleteLater();
+        manager->deleteLater();
+    });
 }
 
 QString ProjectController::getProjectList(bool isBlocked) const

@@ -2,6 +2,7 @@
 #define PROJECT_CONTROLLER_H
 
 #include <QObject>
+#include <QVariantList>
 #include "repositories/project_repository.h"
 #include "common/ifcdetail.h"
 
@@ -17,6 +18,8 @@ public:
 
     Q_INVOKABLE QString getProjectList(bool isBlocked=false) const;
 
+    Q_INVOKABLE void getAllProjectList(bool isBlocked = false);
+
     Q_INVOKABLE void openDatabase(const QString &projectName, int projectId)const;
 
     Q_INVOKABLE int getLastSyncedOn()const;
@@ -31,7 +34,8 @@ private:
 
 
 signals:
-
+   void projectListReceived(QVariantList list);
+   void projectListFailed(QString error);
 
 };
 
