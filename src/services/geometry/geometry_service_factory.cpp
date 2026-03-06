@@ -75,12 +75,12 @@ void GeometryServiceFactory::generateMesh3D(BIMElement *bimElement, Mesh *mesh, 
     }
 }
 
-void GeometryServiceFactory::updateGeometry(const QVector3D& point, BIMElement* bimElement, BIMElement* hostElement)
+void GeometryServiceFactory::updateGeometry(const QVector3D& point, const QString &curveType, BIMElement* bimElement, BIMElement* hostElement)
 {
     if (bimElement->getType() == "Wall")
     {
         WallGeometryService service = WallGeometryService();
-        service.updateGeometry(bimElement, point);
+        service.updateGeometry(bimElement, point, curveType);
     }
     else if (bimElement->getType() == "Beam")
     {
@@ -109,12 +109,12 @@ void GeometryServiceFactory::updateGeometry(const QVector3D& point, BIMElement* 
     }
 }
 
-void GeometryServiceFactory::generateWIPMesh2D(BIMElement *bimElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints, BIMElement* hostElement)
+void GeometryServiceFactory::generateWIPMesh2D(BIMElement *bimElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints, const QString &curveType, BIMElement* hostElement)
 {
     if (bimElement->getType() == "Wall")
     {
         WallGeometryService service = WallGeometryService();
-        service.generateWIPMesh2D(bimElement, mesh, point, screen_point, view, helperPoints);
+        service.generateWIPMesh2D(bimElement, mesh, point, screen_point, view, helperPoints, curveType);
     }
     else if (bimElement->getType() == "Beam")
     {

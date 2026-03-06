@@ -159,7 +159,6 @@ void OpenglHelper::extractBIMParameters(
 
         ReferenceLineSegment line_seg;
         line_seg.points = pointList;
-        line_seg.position = position;
         line_seg.type = type;
 
         referenceLine.push_back(line_seg);
@@ -485,6 +484,38 @@ Point OpenglHelper::getPointAtDistanceAngle(Point point1, Point point2, float an
     };
 }
 
+void OpenglHelper::getEdgeFromReferenceLineSegment(EDGE *edge, const ReferenceLineSegment &referenceLineSegment)
+{
+    if (referenceLineSegment.type == "line")
+    {
+        api_curve_line(
+            SPAposition(referenceLineSegment.points[0][0], referenceLineSegment.points[0][1], 0.0),
+            SPAposition(referenceLineSegment.points[1][0], referenceLineSegment.points[1][1], 0.0),
+            edge
+        );
+    }
+    else if (referenceLineSegment.type == "3pt-circle")
+    {
+        api_curve_arc_3pt(
+            SPAposition(referenceLineSegment.points[0][0], referenceLineSegment.points[0][1], 0.0),
+            SPAposition(referenceLineSegment.points[1][0], referenceLineSegment.points[1][1], 0.0),
+            SPAposition(referenceLineSegment.points[2][0], referenceLineSegment.points[2][1], 0.0),
+            false,
+            edge
+        );
+    }
+    else if (referenceLineSegment.type == "bezier")
+    {
+        api_curve_bezier(
+            SPAposition(referenceLineSegment.points[0][0], referenceLineSegment.points[0][1], 0.0),
+            SPAposition(referenceLineSegment.points[1][0], referenceLineSegment.points[1][1], 0.0),
+            SPAposition(referenceLineSegment.points[2][0], referenceLineSegment.points[2][1], 0.0),
+            SPAposition(referenceLineSegment.points[3][0], referenceLineSegment.points[3][1], 0.0),
+            edge
+        );
+    }
+}
+
 void OpenglHelper::getReferenceLineWireBody(BODY *&wire_body, ENTITY_LIST& ents, std::vector<ReferenceLineSegment> &referenceLine, std::vector<EDGE*> &edges)
 {
     for (ReferenceLineSegment& line_seg: referenceLine)
@@ -527,6 +558,66 @@ void OpenglHelper::getReferenceLineWireBody(BODY *&wire_body, ENTITY_LIST& ents,
     api_make_ewire(edges.size(), edges.data(), wire_body);
 }
 
+void OpenglHelper::addPointToReferenceLine(std::vector<ReferenceLineSegment> &referenceLine, const QVector3D &new_point, const QString &curveType)
+{
+    // 1. Get the last ReferenceLineSegment
+    if (referenceLine.size() == 0)
+    {
+        ReferenceLineSegment rls;
+        rls.points = { { new_point.x(), new_point.y() } };
+        rls.type = curveType;
+
+        referenceLine.push_back(rls);
+
+        return;
+    }
+
+    ReferenceLineSegment& last_rls = referenceLine.back();
+
+    // 2. Check if all points are there in rls based on curve type
+    bool canAddAnotherPointToRLS = false;
+
+    if (last_rls.type == "line" && last_rls.points.size() < 2)
+    {
+        canAddAnotherPointToRLS = true;
+    }
+    else if (last_rls.type == "3pt-circle" && last_rls.points.size() < 3)
+    {
+        canAddAnotherPointToRLS = true;
+    }
+    else if (last_rls.type == "bezier" && last_rls.points.size() < 4)
+    {
+        canAddAnotherPointToRLS = true;
+    }
+
+    // 3. Update point based on above input
+    if (canAddAnotherPointToRLS && (last_rls.type == curveType))
+    {
+        last_rls.points.push_back({ new_point.x(), new_point.y() });
+    }
+    else if (canAddAnotherPointToRLS && (last_rls.type != curveType))
+    {
+        // last_rls always have one point in .points as per point 1.
+        last_rls.points = {
+            last_rls.points[0],
+            { new_point.x(), new_point.y() }
+        };
+
+        last_rls.type = curveType;
+    }
+    else if (!canAddAnotherPointToRLS)
+    {
+        ReferenceLineSegment rls;
+        rls.points = {
+            last_rls.points.back(),
+            { new_point.x(), new_point.y() }
+        };
+        rls.type = curveType;
+
+        referenceLine.push_back(rls);
+    }
+}
+
 void OpenglHelper::getParallelCurvePlanerBody(BODY *&new_body, BODY* &wire_body, ENTITY_LIST &ents, EDGE *&first_edge, float width, QString& referenceLinePosition)
 {
 
@@ -566,6 +657,249 @@ void OpenglHelper::getParallelCurvePlanerBody(BODY *&new_body, BODY* &wire_body,
     EXCEPTION_CATCH_TRUE
         ACIS_DELETE sw_options;
     EXCEPTION_END
+}
+
+void OpenglHelper::addHelperPointsForLine(
+    std::vector<ReferenceLineSegment> &referenceLine,
+    ENTITY_LIST& ents,
+    const QVector3D &point,
+    const Point& screen_point,
+    View *view, QList<HelperPoint> &helperPoints,
+    std::vector<Position>& vertices_position,
+    std::vector<Normal>& vertices_normal,
+    std::vector<TextureUV>& vertices_textureuv,
+    std::vector<int>& vertices_materialIndex,
+    std::vector<int>& vertices_textureIndex,
+    std::vector<uint32_t>& meshIndices,
+    std::vector<int>& edge_indices,
+    std::vector<EdgeDataInt>& edge_data_int,
+    std::vector<EdgeDataFloat>& edge_data_float
+)
+{
+    const ReferenceLineSegment& last_rls = referenceLine.back();
+
+    // 1. ignore if type is not a line
+    if (last_rls.type != "line") return;
+
+    // 2. need at least two points to show the line helper points
+    if (last_rls.points.size() < 2) return;
+
+    // 3. update the length parameter at helperPoints[0]
+
+    // 3.1 show length helper point
+    helperPoints[0].visible = true;
+
+    // 3.2 calculate helperPoints in WCS
+    Point lastPointReferenceLine = last_rls.points[0];
+    QVector3D lastPoint(lastPointReferenceLine[0], lastPointReferenceLine[1], 0.0f);
+    Point lastPointScreenSpace = view->GetPointInScreenSpace(lastPoint);
+    Point middlePointScreenSpace = getMiddlePoint(lastPointScreenSpace, screen_point);
+
+    Point new_point1 = getPointAtPerpendicularDistance(lastPointScreenSpace, screen_point, 4);
+    Point new_point2 = getPointAtPerpendicularDistance(lastPointScreenSpace, screen_point, 10);
+    Point new_point3 = getPointAtPerpendicularDistance(screen_point, lastPointScreenSpace, -10);
+    Point new_point4 = getPointAtPerpendicularDistance(screen_point, lastPointScreenSpace, -4);
+    Point middle_point = getPointAtPerpendicularDistance(middlePointScreenSpace, screen_point, 10);
+
+    helperPoints[0].x = middle_point[0];
+    helperPoints[0].y = middle_point[1] + 30; // 30px added to offset
+
+    QVector3D wcs_point1 = view->GetPointInViewSpace(new_point1[0], new_point1[1]);
+    QVector3D wcs_point2 = view->GetPointInViewSpace(new_point2[0], new_point2[1]);
+    QVector3D wcs_point3 = view->GetPointInViewSpace(new_point3[0], new_point3[1]);
+    QVector3D wcs_point4 = view->GetPointInViewSpace(new_point4[0], new_point4[1]);
+
+    helperPoints[0].value = getDistanceBetweenPoints(lastPointReferenceLine, {point[0], point[1]});
+
+    // 3.3 Add the vertex and edges of helper lines
+    vertices_position.push_back({wcs_point1[0], wcs_point1[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({wcs_point2[0], wcs_point2[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({wcs_point3[0], wcs_point3[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({wcs_point4[0], wcs_point4[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    for (int i = 0; i < 3; i++)
+    {
+        int first_point = (vertices_position.size() / 4) + i;
+        int second_point = (vertices_position.size() / 4) + i + 1;
+
+        EdgeDataInt ei;
+        EdgeDataFloat ef;
+
+        ei.material_index = OpenGLMaterial::BLACK;
+        ei.dash = 1;
+        ef.width = 2.0f;
+        ef.dash_length = 5.0f;
+        ef.gap_length = 5.0f;
+        ef.padding = 0.0f;
+
+        ei.start_vertex = first_point;
+        ei.end_vertex = second_point;
+
+        edge_data_int.push_back(ei);
+        edge_data_float.push_back(ef);
+        edge_indices.push_back(edge_indices.size());
+    }
+
+    // 4. Calculate angle helper point if referenceLine has more than one rls
+    if (referenceLine.size() > 1)
+    {
+        const ReferenceLineSegment& second_last_rls = referenceLine[referenceLine.size() - 2];
+
+        // 4.1 convert to edge and get the reversed tangent vector
+        EDGE* edge = nullptr;
+        ents.add(edge);
+
+        getEdgeFromReferenceLineSegment(edge, second_last_rls);
+
+        SPAposition last_edge_point = edge->end_pos();
+        SPAvector tangent_vector = edge->end_deriv();
+        SPAvector opposite_vector = -1 * tangent_vector;
+
+        Point secondLastPointReferenceLine = {
+            last_edge_point.x() + opposite_vector.x(),
+            last_edge_point.y() + opposite_vector.y()
+        };
+        QVector3D secondLastPoint(secondLastPointReferenceLine[0], secondLastPointReferenceLine[1], 0.0f);
+        Point secondLastPointScreenSpace = view->GetPointInScreenSpace(secondLastPoint);
+
+        float angle_degrees = getAngleBetweenPoints(secondLastPointReferenceLine, lastPointReferenceLine, {point[0], point[1]});
+
+        // angles are negative because the screen-coordinates are following the left-handle rule
+        // y axis points downwards
+        Point angle_point0 = getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, 0.0f, 20);
+        Point angle_point1 = getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, -1*angle_degrees/4, 20);
+        Point angle_point2 = getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, -1*angle_degrees/2, 20);
+        Point angle_point3 = getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, -3*angle_degrees/4, 20);
+        Point angle_point4 = getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, -1*angle_degrees, 20);
+
+        QVector3D wcs_angle_point0 = view->GetPointInViewSpace(angle_point0[0], angle_point0[1]);
+        QVector3D wcs_angle_point1 = view->GetPointInViewSpace(angle_point1[0], angle_point1[1]);
+        QVector3D wcs_angle_point2 = view->GetPointInViewSpace(angle_point2[0], angle_point2[1]);
+        QVector3D wcs_angle_point3 = view->GetPointInViewSpace(angle_point3[0], angle_point3[1]);
+        QVector3D wcs_angle_point4 = view->GetPointInViewSpace(angle_point4[0], angle_point4[1]);
+
+
+        helperPoints[1].x = angle_point2[0];
+        helperPoints[1].y = angle_point2[1] + 30; // go 30 px down
+        helperPoints[1].value = angle_degrees;
+
+        // Add the vertex and edges of helper lines
+        vertices_position.push_back({wcs_angle_point0[0], wcs_angle_point0[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
+
+        vertices_position.push_back({wcs_angle_point1[0], wcs_angle_point1[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
+
+        vertices_position.push_back({wcs_angle_point2[0], wcs_angle_point2[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
+
+        vertices_position.push_back({wcs_angle_point3[0], wcs_angle_point3[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
+
+        vertices_position.push_back({wcs_angle_point4[0], wcs_angle_point4[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
+
+
+        for (int i = 0; i < 4; i++)
+        {
+            // 4 is added to account for length helper point
+            int first_point = (vertices_position.size() / 4) + i;
+            int second_point = (vertices_position.size() / 4) + i + 1;
+
+            EdgeDataInt ei;
+            EdgeDataFloat ef;
+
+            ei.material_index = OpenGLMaterial::BLACK;
+            ei.dash = 1;
+            ef.width = 2.0f;
+            ef.dash_length = 5.0f;
+            ef.gap_length = 5.0f;
+            ef.padding = 0.0f;
+
+            ei.start_vertex = first_point;
+            ei.end_vertex = second_point;
+
+            edge_data_int.push_back(ei);
+            edge_data_float.push_back(ef);
+            edge_indices.push_back(edge_indices.size());
+        }
+    }
+}
+
+Point OpenglHelper::updatePointForLine(std::vector<ReferenceLineSegment> &referenceLine, ENTITY_LIST &ents, const QList<HelperPoint> &helperPoints, const Point &screen_point, View *view)
+{
+    // 1. Get last point of referenceLine
+    ReferenceLineSegment& last_rls = referenceLine.back();
+    Point lastPointReferenceLine = last_rls.points.back();
+
+    QVector3D screenPointInViewSpace = view->GetPointInViewSpace(screen_point[0], screen_point[1]);
+    Point screenPointInViewSpace2D = {screenPointInViewSpace[0], screenPointInViewSpace[1]};
+
+    Point newPointViewSpace = {0.0f, 0.0f};
+
+    if (referenceLine.size() < 2)
+    {
+        newPointViewSpace = getPointAtDistance(lastPointReferenceLine, screenPointInViewSpace2D, helperPoints[0].value);
+    }
+    else
+    {
+        ReferenceLineSegment& second_last_rls = referenceLine[referenceLine.size() - 2];
+        EDGE* edge = nullptr;
+        ents.add(edge);
+
+        getEdgeFromReferenceLineSegment(edge, second_last_rls);
+
+        SPAposition last_edge_point = edge->end_pos();
+        SPAvector tangent_vector = edge->end_deriv();
+        SPAvector opposite_vector = -1 * tangent_vector;
+
+        Point secondLastPointReferenceLine = {
+            last_edge_point.x() + opposite_vector.x(),
+            last_edge_point.y() + opposite_vector.y()
+        };
+
+        newPointViewSpace = getPointAtDistanceAngle(secondLastPointReferenceLine, lastPointReferenceLine, helperPoints[1].value, helperPoints[0].value);
+    }
+
+    QVector3D newPoint(newPointViewSpace[0], newPointViewSpace[1], 0.0f);
+
+    Point newPointScreenSpace = view->GetPointInScreenSpace(newPoint);
+
+    return newPointScreenSpace;
 }
 
 void OpenglHelper::getMeshGeometry(

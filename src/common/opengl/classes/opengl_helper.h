@@ -38,10 +38,12 @@
 #include "Entities/IfcGeometricRepresentationItem.h"
 
 #include "models/bim_element.h"
+#include "common/helper_point.h"
 #include "common/opengl/classes/mesh.h"
 #include "common/opengl/classes/earcut_algorithm.h"
 #include "common/opengl/classes/opengl_material.h"
 #include "common/opengl/classes/texture.h"
+#include "common/opengl/classes/view.h"
 
 // ACIS header files
 #include "acis.hxx"
@@ -124,11 +126,33 @@ public:
 
 
     // Below methods use ACIS
+    void getEdgeFromReferenceLineSegment(EDGE* edge, const ReferenceLineSegment& referenceLineSegment);
+
     void getReferenceLineWireBody(BODY *&wire_body, ENTITY_LIST& ents, std::vector<ReferenceLineSegment> &referenceLine, std::vector<EDGE*> &edges);
 
-    // void addPointToReferenceLine(std::vector<ReferenceLineSegment> &referenceLine, );
+    void addPointToReferenceLine(std::vector<ReferenceLineSegment> &referenceLine, const QVector3D &new_point, const QString &curveType);
 
     void getParallelCurvePlanerBody(BODY* &new_body, BODY* &wire_body, ENTITY_LIST& ents, EDGE* &first_edge, float width, QString& referenceLinePosition);
+
+    void addHelperPointsForLine(
+        std::vector<ReferenceLineSegment> &referenceLine,
+        ENTITY_LIST& ents,
+        const QVector3D &point,
+        const Point& screen_point,
+        View *view,
+        QList<HelperPoint> &helperPoints,
+        std::vector<Position>& vertices_position,
+        std::vector<Normal>& vertices_normal,
+        std::vector<TextureUV>& vertices_textureuv,
+        std::vector<int>& vertices_materialIndex,
+        std::vector<int>& vertices_textureIndex,
+        std::vector<uint32_t>& meshIndices,
+        std::vector<int>& edge_indices,
+        std::vector<EdgeDataInt>& edge_data_int,
+        std::vector<EdgeDataFloat>& edge_data_float
+    );
+
+    Point updatePointForLine(std::vector<ReferenceLineSegment> &referenceLine, ENTITY_LIST& ents, const QList<HelperPoint> &helperPoints, const Point &screen_point, View *view);
 
 
     /*

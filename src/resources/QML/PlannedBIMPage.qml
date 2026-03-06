@@ -534,6 +534,8 @@ Row {
 
                 bimElementController.addParameter(bimElementPtr, "ScheduleSetup", wallSheduleSetupText);
 
+                console.log("Working till here!");
+
                 glscene.updateEditableBimElement(bimElementPtr);
 
                 wallTotalHeightText = "";

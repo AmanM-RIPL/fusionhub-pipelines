@@ -41,8 +41,8 @@ public:
 
     void generateMesh2D(BIMElement* wallElement, Mesh* mesh);
     void generateMesh3D(BIMElement *wallElement, Mesh* mesh);
-    void updateGeometry(BIMElement* wallElement, const QVector3D &point);
-    void generateWIPMesh2D(BIMElement* wallElement, Mesh* mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints);
+    void updateGeometry(BIMElement* wallElement, const QVector3D &point, const QString &curveType);
+    void generateWIPMesh2D(BIMElement* wallElement, Mesh* mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints, const QString &curveType);
     Point updatePoint2D(BIMElement* wallElement, const QList<HelperPoint>& helperPoints, const Point& screen_point, View *view); // value comes from m_middlePointValue
     void generateHelperPoints(BIMElement *bimElement, QList<HelperPoint> &helperPoints);
 

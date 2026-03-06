@@ -326,7 +326,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         // update glItem BIM Element
         if (glItem->editableBimElement != nullptr)
         {
-            GeometryServiceFactory::updateGeometry(clickedPoint, glItem->editableBimElement, hostElement);
+            GeometryServiceFactory::updateGeometry(clickedPoint, glItem->m_curveType, glItem->editableBimElement, hostElement);
 
             // generating mesh for Editable BIMElement
             Mesh* mesh = new Mesh();
@@ -374,7 +374,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
             {
                 // qInfo() << "PickPoint: " << m_pickX << ", " << m_pickY;
                 Point screenPoint = {m_pickX, m_pickY};
-                GeometryServiceFactory::generateWIPMesh2D(glItem->editableBimElement, mesh, clickedPoint, screenPoint, m_view, glItem->m_middlePointValue, hostElement);
+                GeometryServiceFactory::generateWIPMesh2D(glItem->editableBimElement, mesh, clickedPoint, screenPoint, m_view, glItem->m_middlePointValue, glItem->m_curveType, hostElement);
                 glItem->middlePointPositionChanged(); // signal to QML
             }
 
