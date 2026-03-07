@@ -126,7 +126,7 @@ public:
 
 
     // Below methods use ACIS
-    void getEdgeFromReferenceLineSegment(EDGE* edge, const ReferenceLineSegment& referenceLineSegment);
+    void getEdgeFromReferenceLineSegment(EDGE* &edge, const ReferenceLineSegment& referenceLineSegment);
 
     void getReferenceLineWireBody(BODY *&wire_body, ENTITY_LIST& ents, std::vector<ReferenceLineSegment> &referenceLine, std::vector<EDGE*> &edges);
 

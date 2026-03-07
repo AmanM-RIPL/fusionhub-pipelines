@@ -1001,8 +1001,12 @@ void WallGeometryService::generateWallLayers2D(std::vector<BODY *> &final_bodies
 {
     // 1. Convert referenceLine to ACIS open wire-body
     BODY* wire_body = nullptr;
+    ents.add(wire_body);
     std::vector<EDGE*> edges = {};
     m_openglHelper.getReferenceLineWireBody(wire_body, ents, referenceLine, edges);
+
+    // 1.1 if no edges or wire_body is nullptr then don't proceed
+    if (edges.size() == 0 || wire_body == nullptr) return;
 
     // 2. Sweep to generate the body of first surface
     EDGE* first_edge = edges[0];
@@ -1010,6 +1014,8 @@ void WallGeometryService::generateWallLayers2D(std::vector<BODY *> &final_bodies
     ents.add(first_body);
     float widthOfFirstLayer = layers.size() > 0 ? layers[0].width : width; // if no layer then just use width
     m_openglHelper.getParallelCurvePlanerBody(first_body, wire_body, ents, first_edge, widthOfFirstLayer, referenceLinePosition);
+
+    if (first_body == nullptr) return;
     final_bodies.push_back(first_body);
 
     // 3. loop over the layers
@@ -1032,8 +1038,12 @@ void WallGeometryService::generateWallLayers2D(std::vector<BODY *> &final_bodies
         ents.add(new_body);
         m_openglHelper.getParallelCurvePlanerBody(new_body, wire_body, ents, first_edge, cumulativeWidth, referenceLinePosition);
 
+        if (new_body == nullptr) continue;
+
         // boolean subtract the old_body_copy from new_body
         api_subtract(old_body_copy, new_body);
+
+        if (new_body == nullptr) continue;
 
         // save in final_bodies
         final_bodies.push_back(new_body);

@@ -484,9 +484,9 @@ Point OpenglHelper::getPointAtDistanceAngle(Point point1, Point point2, float an
     };
 }
 
-void OpenglHelper::getEdgeFromReferenceLineSegment(EDGE *edge, const ReferenceLineSegment &referenceLineSegment)
+void OpenglHelper::getEdgeFromReferenceLineSegment(EDGE* &edge, const ReferenceLineSegment &referenceLineSegment)
 {
-    if (referenceLineSegment.type == "line")
+    if (referenceLineSegment.type == "line" && referenceLineSegment.points.size() == 2)
     {
         api_curve_line(
             SPAposition(referenceLineSegment.points[0][0], referenceLineSegment.points[0][1], 0.0),
@@ -494,7 +494,7 @@ void OpenglHelper::getEdgeFromReferenceLineSegment(EDGE *edge, const ReferenceLi
             edge
         );
     }
-    else if (referenceLineSegment.type == "3pt-circle")
+    else if (referenceLineSegment.type == "3pt-circle" && referenceLineSegment.points.size() == 3)
     {
         api_curve_arc_3pt(
             SPAposition(referenceLineSegment.points[0][0], referenceLineSegment.points[0][1], 0.0),
@@ -504,7 +504,7 @@ void OpenglHelper::getEdgeFromReferenceLineSegment(EDGE *edge, const ReferenceLi
             edge
         );
     }
-    else if (referenceLineSegment.type == "bezier")
+    else if (referenceLineSegment.type == "bezier" && referenceLineSegment.points.size() == 4)
     {
         api_curve_bezier(
             SPAposition(referenceLineSegment.points[0][0], referenceLineSegment.points[0][1], 0.0),
@@ -523,7 +523,7 @@ void OpenglHelper::getReferenceLineWireBody(BODY *&wire_body, ENTITY_LIST& ents,
         EDGE* edge = nullptr;
         ents.add(edge);
 
-        if (line_seg.type == "line")
+        if (line_seg.type == "line" && line_seg.points.size() == 2)
         {
             api_curve_line(
                 SPAposition(line_seg.points[0][0], line_seg.points[0][1], 0.0),
@@ -531,7 +531,7 @@ void OpenglHelper::getReferenceLineWireBody(BODY *&wire_body, ENTITY_LIST& ents,
                 edge
                 );
         }
-        else if (line_seg.type == "3pt-circle")
+        else if (line_seg.type == "3pt-circle" && line_seg.points.size() == 3)
         {
             api_curve_arc_3pt(
                 SPAposition(line_seg.points[0][0], line_seg.points[0][1], 0.0),
@@ -541,7 +541,7 @@ void OpenglHelper::getReferenceLineWireBody(BODY *&wire_body, ENTITY_LIST& ents,
                 edge
                 );
         }
-        else if (line_seg.type == "bezier")
+        else if (line_seg.type == "bezier" && line_seg.points.size() == 4)
         {
             api_curve_bezier(
                 SPAposition(line_seg.points[0][0], line_seg.points[0][1], 0.0),
@@ -551,9 +551,18 @@ void OpenglHelper::getReferenceLineWireBody(BODY *&wire_body, ENTITY_LIST& ents,
                 edge
                 );
         }
+        else
+        {
+            // this else clause prevents crash due to mis-formed ReferenceLineSegments
+            continue;
+        }
 
         edges.push_back(edge);
     }
+
+    // don't proceed further if there are no edges
+    if (edges.size() == 0) return;
+
 
     api_make_ewire(edges.size(), edges.data(), wire_body);
 }
@@ -648,11 +657,11 @@ void OpenglHelper::getParallelCurvePlanerBody(BODY *&new_body, BODY* &wire_body,
     EXCEPTION_TRY
         outcome sw_result = api_sweep_with_options(edge_for_sweep, wire_body, sw_options, new_body);
 
-    if (!sw_result.ok())
-    {
-        error_info* info = sw_result.get_error_info();
-        qInfo() << info->error_message();
-    }
+        if (!sw_result.ok())
+        {
+            error_info* info = sw_result.get_error_info();
+            qInfo() << info->error_message();
+        }
 
     EXCEPTION_CATCH_TRUE
         ACIS_DELETE sw_options;
@@ -738,8 +747,9 @@ void OpenglHelper::addHelperPointsForLine(
 
     for (int i = 0; i < 3; i++)
     {
-        int first_point = (vertices_position.size() / 4) + i;
-        int second_point = (vertices_position.size() / 4) + i + 1;
+        // - 4 because we have added four points above
+        int first_point = (vertices_position.size() - 4) + i;
+        int second_point = (vertices_position.size() - 4) + i + 1;
 
         EdgeDataInt ei;
         EdgeDataFloat ef;
@@ -762,6 +772,9 @@ void OpenglHelper::addHelperPointsForLine(
     // 4. Calculate angle helper point if referenceLine has more than one rls
     if (referenceLine.size() > 1)
     {
+        // show the angle helper point
+        helperPoints[1].visible = true;
+
         const ReferenceLineSegment& second_last_rls = referenceLine[referenceLine.size() - 2];
 
         // 4.1 convert to edge and get the reversed tangent vector
@@ -769,6 +782,8 @@ void OpenglHelper::addHelperPointsForLine(
         ents.add(edge);
 
         getEdgeFromReferenceLineSegment(edge, second_last_rls);
+
+        if (edge == nullptr) return;
 
         SPAposition last_edge_point = edge->end_pos();
         SPAvector tangent_vector = edge->end_deriv();
@@ -837,8 +852,8 @@ void OpenglHelper::addHelperPointsForLine(
         for (int i = 0; i < 4; i++)
         {
             // 4 is added to account for length helper point
-            int first_point = (vertices_position.size() / 4) + i;
-            int second_point = (vertices_position.size() / 4) + i + 1;
+            int first_point = (vertices_position.size() - 5) + i;
+            int second_point = (vertices_position.size() - 5) + i + 1;
 
             EdgeDataInt ei;
             EdgeDataFloat ef;
