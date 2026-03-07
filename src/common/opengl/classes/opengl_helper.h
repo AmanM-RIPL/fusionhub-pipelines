@@ -152,7 +152,47 @@ public:
         std::vector<EdgeDataFloat>& edge_data_float
     );
 
+    void addHelperPointsFor3PtCircle(
+        std::vector<ReferenceLineSegment> &referenceLine,
+        ENTITY_LIST& ents,
+        const QVector3D &point,
+        const Point& screen_point,
+        View *view,
+        QList<HelperPoint> &helperPoints,
+        std::vector<Position>& vertices_position,
+        std::vector<Normal>& vertices_normal,
+        std::vector<TextureUV>& vertices_textureuv,
+        std::vector<int>& vertices_materialIndex,
+        std::vector<int>& vertices_textureIndex,
+        std::vector<uint32_t>& meshIndices,
+        std::vector<int>& edge_indices,
+        std::vector<EdgeDataInt>& edge_data_int,
+        std::vector<EdgeDataFloat>& edge_data_float
+    );
+
+    void addHelperPointsForBezier(
+        std::vector<ReferenceLineSegment> &referenceLine,
+        ENTITY_LIST& ents,
+        const QVector3D &point,
+        const Point& screen_point,
+        View *view,
+        QList<HelperPoint> &helperPoints,
+        std::vector<Position>& vertices_position,
+        std::vector<Normal>& vertices_normal,
+        std::vector<TextureUV>& vertices_textureuv,
+        std::vector<int>& vertices_materialIndex,
+        std::vector<int>& vertices_textureIndex,
+        std::vector<uint32_t>& meshIndices,
+        std::vector<int>& edge_indices,
+        std::vector<EdgeDataInt>& edge_data_int,
+        std::vector<EdgeDataFloat>& edge_data_float
+    );
+
     Point updatePointForLine(std::vector<ReferenceLineSegment> &referenceLine, ENTITY_LIST& ents, const QList<HelperPoint> &helperPoints, const Point &screen_point, View *view);
+
+    Point updatePointFor3PtCircle(std::vector<ReferenceLineSegment> &referenceLine, ENTITY_LIST& ents, const QList<HelperPoint> &helperPoints, const Point &screen_point, View *view);
+
+    Point updatePointForBezier(std::vector<ReferenceLineSegment> &referenceLine, ENTITY_LIST& ents, const QList<HelperPoint> &helperPoints, const Point &screen_point, View *view);
 
 
     /*

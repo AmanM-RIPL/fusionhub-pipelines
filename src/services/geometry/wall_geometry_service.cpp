@@ -626,6 +626,46 @@ void WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh,
             edge_data_float
         );
     }
+    else if (last_rls.type == "3pt-circle")
+    {
+        m_openglHelper.addHelperPointsFor3PtCircle(
+            referenceLine,
+            ents,
+            point,
+            screen_point,
+            view,
+            helperPoints,
+            vertices_position,
+            vertices_normal,
+            vertices_textureuv,
+            vertices_materialIndex,
+            vertices_textureIndex,
+            meshIndices,
+            edge_indices,
+            edge_data_int,
+            edge_data_float
+        );
+    }
+    else if (last_rls.type == "bezier")
+    {
+        m_openglHelper.addHelperPointsForBezier(
+            referenceLine,
+            ents,
+            point,
+            screen_point,
+            view,
+            helperPoints,
+            vertices_position,
+            vertices_normal,
+            vertices_textureuv,
+            vertices_materialIndex,
+            vertices_textureIndex,
+            meshIndices,
+            edge_indices,
+            edge_data_int,
+            edge_data_float
+        );
+    }
 
     // // show length helper point
     // helperPoints[0].visible = true;
@@ -966,6 +1006,14 @@ Point WallGeometryService::updatePoint2D(BIMElement *wallElement, const QList<He
     if (last_rls.type == "line")
     {
         newPointScreenSpace = m_openglHelper.updatePointForLine(referenceLine, ents, helperPoints, screen_point, view);
+    }
+    else if (last_rls.type == "3pt-circle")
+    {
+        newPointScreenSpace = m_openglHelper.updatePointFor3PtCircle(referenceLine, ents, helperPoints, screen_point, view);
+    }
+    else if (last_rls.type == "bezier")
+    {
+        newPointScreenSpace = m_openglHelper.updatePointForBezier(referenceLine, ents, helperPoints, screen_point, view);
     }
 
     // delete entity list

@@ -486,7 +486,10 @@ Point OpenglHelper::getPointAtDistanceAngle(Point point1, Point point2, float an
 
 void OpenglHelper::getEdgeFromReferenceLineSegment(EDGE* &edge, const ReferenceLineSegment &referenceLineSegment)
 {
-    if (referenceLineSegment.type == "line" && referenceLineSegment.points.size() == 2)
+    // we allow circle with 2 points to be shown as a line and 3-point bezier to be shown as a circle
+    // for easy viewing for the user. Can be changed if required
+
+    if ((referenceLineSegment.type == "line" || referenceLineSegment.type == "3pt-circle") && referenceLineSegment.points.size() == 2)
     {
         api_curve_line(
             SPAposition(referenceLineSegment.points[0][0], referenceLineSegment.points[0][1], 0.0),
@@ -494,7 +497,7 @@ void OpenglHelper::getEdgeFromReferenceLineSegment(EDGE* &edge, const ReferenceL
             edge
         );
     }
-    else if (referenceLineSegment.type == "3pt-circle" && referenceLineSegment.points.size() == 3)
+    else if ((referenceLineSegment.type == "3pt-circle") && referenceLineSegment.points.size() == 3)
     {
         api_curve_arc_3pt(
             SPAposition(referenceLineSegment.points[0][0], referenceLineSegment.points[0][1], 0.0),
@@ -523,39 +526,9 @@ void OpenglHelper::getReferenceLineWireBody(BODY *&wire_body, ENTITY_LIST& ents,
         EDGE* edge = nullptr;
         ents.add(edge);
 
-        if (line_seg.type == "line" && line_seg.points.size() == 2)
-        {
-            api_curve_line(
-                SPAposition(line_seg.points[0][0], line_seg.points[0][1], 0.0),
-                SPAposition(line_seg.points[1][0], line_seg.points[1][1], 0.0),
-                edge
-                );
-        }
-        else if (line_seg.type == "3pt-circle" && line_seg.points.size() == 3)
-        {
-            api_curve_arc_3pt(
-                SPAposition(line_seg.points[0][0], line_seg.points[0][1], 0.0),
-                SPAposition(line_seg.points[1][0], line_seg.points[1][1], 0.0),
-                SPAposition(line_seg.points[2][0], line_seg.points[2][1], 0.0),
-                false,
-                edge
-                );
-        }
-        else if (line_seg.type == "bezier" && line_seg.points.size() == 4)
-        {
-            api_curve_bezier(
-                SPAposition(line_seg.points[0][0], line_seg.points[0][1], 0.0),
-                SPAposition(line_seg.points[1][0], line_seg.points[1][1], 0.0),
-                SPAposition(line_seg.points[2][0], line_seg.points[2][1], 0.0),
-                SPAposition(line_seg.points[3][0], line_seg.points[3][1], 0.0),
-                edge
-                );
-        }
-        else
-        {
-            // this else clause prevents crash due to mis-formed ReferenceLineSegments
-            continue;
-        }
+        getEdgeFromReferenceLineSegment(edge, line_seg);
+
+        if (edge == nullptr) continue;
 
         edges.push_back(edge);
     }
@@ -875,6 +848,456 @@ void OpenglHelper::addHelperPointsForLine(
     }
 }
 
+void OpenglHelper::addHelperPointsFor3PtCircle(
+    std::vector<ReferenceLineSegment> &referenceLine,
+    ENTITY_LIST &ents,
+    const QVector3D &point,
+    const Point &screen_point,
+    View *view,
+    QList<HelperPoint> &helperPoints,
+    std::vector<Position> &vertices_position,
+    std::vector<Normal> &vertices_normal,
+    std::vector<TextureUV> &vertices_textureuv,
+    std::vector<int> &vertices_materialIndex,
+    std::vector<int> &vertices_textureIndex,
+    std::vector<uint32_t> &meshIndices,
+    std::vector<int> &edge_indices,
+    std::vector<EdgeDataInt> &edge_data_int,
+    std::vector<EdgeDataFloat> &edge_data_float
+)
+{
+    const ReferenceLineSegment& last_rls = referenceLine.back();
+
+    // 1. ignore if type is not a 3pt-cicle
+    if (last_rls.type != "3pt-circle") return;
+
+    // 2. need at least two points to show the 3pt-circle helper points
+    if (last_rls.points.size() < 2) return;
+
+    // 3. update the length parameter at helperPoints[0]
+
+    // 3.1 show length helper point
+    helperPoints[0].visible = true;
+
+    // 3.2 calculate helperPoints in WCS
+    Point lastPointReferenceLine = last_rls.points[last_rls.points.size() - 2]; // get the second last point
+    QVector3D lastPoint(lastPointReferenceLine[0], lastPointReferenceLine[1], 0.0f);
+    Point lastPointScreenSpace = view->GetPointInScreenSpace(lastPoint);
+    Point middlePointScreenSpace = getMiddlePoint(lastPointScreenSpace, screen_point);
+
+    Point new_point1 = getPointAtPerpendicularDistance(lastPointScreenSpace, screen_point, 4);
+    Point new_point2 = getPointAtPerpendicularDistance(lastPointScreenSpace, screen_point, 10);
+    Point new_point3 = getPointAtPerpendicularDistance(screen_point, lastPointScreenSpace, -10);
+    Point new_point4 = getPointAtPerpendicularDistance(screen_point, lastPointScreenSpace, -4);
+    Point middle_point = getPointAtPerpendicularDistance(middlePointScreenSpace, screen_point, 10);
+
+    helperPoints[0].x = middle_point[0];
+    helperPoints[0].y = middle_point[1] + 30; // 30px added to offset
+
+    QVector3D wcs_point1 = view->GetPointInViewSpace(new_point1[0], new_point1[1]);
+    QVector3D wcs_point2 = view->GetPointInViewSpace(new_point2[0], new_point2[1]);
+    QVector3D wcs_point3 = view->GetPointInViewSpace(new_point3[0], new_point3[1]);
+    QVector3D wcs_point4 = view->GetPointInViewSpace(new_point4[0], new_point4[1]);
+
+    helperPoints[0].value = getDistanceBetweenPoints(lastPointReferenceLine, {point[0], point[1]});
+
+    // 3.3 Add the vertex and edges of helper lines
+    vertices_position.push_back({wcs_point1[0], wcs_point1[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({wcs_point2[0], wcs_point2[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({wcs_point3[0], wcs_point3[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({wcs_point4[0], wcs_point4[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    for (int i = 0; i < 3; i++)
+    {
+        // - 4 because we have added four points above
+        int first_point = (vertices_position.size() - 4) + i;
+        int second_point = (vertices_position.size() - 4) + i + 1;
+
+        EdgeDataInt ei;
+        EdgeDataFloat ef;
+
+        ei.material_index = OpenGLMaterial::BLACK;
+        ei.dash = 1;
+        ef.width = 2.0f;
+        ef.dash_length = 5.0f;
+        ef.gap_length = 5.0f;
+        ef.padding = 0.0f;
+
+        ei.start_vertex = first_point;
+        ei.end_vertex = second_point;
+
+        edge_data_int.push_back(ei);
+        edge_data_float.push_back(ef);
+        edge_indices.push_back(edge_indices.size());
+    }
+
+    // 4. Get the angle relative to x-axis
+    // show the angle helper point
+    helperPoints[1].visible = true;
+
+    Point secondLastPointReferenceLine = {
+        lastPointReferenceLine[0] + 3.0f,
+        lastPointReferenceLine[1]
+    };
+    QVector3D secondLastPoint(secondLastPointReferenceLine[0], secondLastPointReferenceLine[1], 0.0f);
+    Point secondLastPointScreenSpace = view->GetPointInScreenSpace(secondLastPoint);
+
+    float angle_degrees = getAngleBetweenPoints(secondLastPointReferenceLine, lastPointReferenceLine, {point[0], point[1]});
+
+    // angles are negative because the screen-coordinates are following the left-handle rule
+    // y axis points downwards
+    Point angle_point0 = getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, 0.0f, 20);
+    Point angle_point1 = getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, -1*angle_degrees/4, 20);
+    Point angle_point2 = getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, -1*angle_degrees/2, 20);
+    Point angle_point3 = getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, -3*angle_degrees/4, 20);
+    Point angle_point4 = getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, -1*angle_degrees, 20);
+
+    QVector3D wcs_angle_point0 = view->GetPointInViewSpace(angle_point0[0], angle_point0[1]);
+    QVector3D wcs_angle_point1 = view->GetPointInViewSpace(angle_point1[0], angle_point1[1]);
+    QVector3D wcs_angle_point2 = view->GetPointInViewSpace(angle_point2[0], angle_point2[1]);
+    QVector3D wcs_angle_point3 = view->GetPointInViewSpace(angle_point3[0], angle_point3[1]);
+    QVector3D wcs_angle_point4 = view->GetPointInViewSpace(angle_point4[0], angle_point4[1]);
+
+
+    helperPoints[1].x = angle_point2[0];
+    helperPoints[1].y = angle_point2[1] + 30; // go 30 px down
+    helperPoints[1].value = angle_degrees;
+
+    // Add the vertex and edges of helper lines
+    vertices_position.push_back({wcs_angle_point0[0], wcs_angle_point0[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({wcs_angle_point1[0], wcs_angle_point1[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({wcs_angle_point2[0], wcs_angle_point2[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({wcs_angle_point3[0], wcs_angle_point3[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({wcs_angle_point4[0], wcs_angle_point4[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({lastPointReferenceLine[0], lastPointReferenceLine[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({secondLastPointReferenceLine[0], secondLastPointReferenceLine[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    // edges for angle
+    for (int i = 0; i < 4; i++)
+    {
+        // 7 is added to account for length helper point
+        int first_point = (vertices_position.size() - 7) + i;
+        int second_point = (vertices_position.size() - 7) + i + 1;
+
+        EdgeDataInt ei;
+        EdgeDataFloat ef;
+
+        ei.material_index = OpenGLMaterial::BLACK;
+        ei.dash = 1;
+        ef.width = 2.0f;
+        ef.dash_length = 5.0f;
+        ef.gap_length = 5.0f;
+        ef.padding = 0.0f;
+
+        ei.start_vertex = first_point;
+        ei.end_vertex = second_point;
+
+        edge_data_int.push_back(ei);
+        edge_data_float.push_back(ef);
+        edge_indices.push_back(edge_indices.size());
+    }
+
+    // edges for x-axis
+    int first_point = vertices_position.size() - 2;
+    int second_point = vertices_position.size() - 1;
+
+    EdgeDataInt ei;
+    EdgeDataFloat ef;
+
+    ei.material_index = OpenGLMaterial::BLACK;
+    ei.dash = 1;
+    ef.width = 2.0f;
+    ef.dash_length = 5.0f;
+    ef.gap_length = 5.0f;
+    ef.padding = 0.0f;
+
+    ei.start_vertex = first_point;
+    ei.end_vertex = second_point;
+
+    edge_data_int.push_back(ei);
+    edge_data_float.push_back(ef);
+    edge_indices.push_back(edge_indices.size());
+}
+
+void OpenglHelper::addHelperPointsForBezier(
+    std::vector<ReferenceLineSegment> &referenceLine,
+    ENTITY_LIST &ents,
+    const QVector3D &point,
+    const Point &screen_point,
+    View *view,
+    QList<HelperPoint> &helperPoints,
+    std::vector<Position> &vertices_position,
+    std::vector<Normal> &vertices_normal,
+    std::vector<TextureUV> &vertices_textureuv,
+    std::vector<int> &vertices_materialIndex,
+    std::vector<int> &vertices_textureIndex,
+    std::vector<uint32_t> &meshIndices,
+    std::vector<int> &edge_indices,
+    std::vector<EdgeDataInt> &edge_data_int,
+    std::vector<EdgeDataFloat> &edge_data_float
+)
+{
+    const ReferenceLineSegment& last_rls = referenceLine.back();
+
+    // 1. ignore if type is not a bezier
+    if (last_rls.type != "bezier") return;
+
+    // 2. need at least two points to show the bezier helper points
+    if (last_rls.points.size() < 2) return;
+
+    // 2.1 draw edges of the control points
+    for (int i = 0; i < last_rls.points.size(); i++)
+    {
+        // add the points
+        vertices_position.push_back({last_rls.points[i][0], last_rls.points[i][1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
+    }
+
+    for (int i = 0; i < last_rls.points.size() - 1; i++)
+    {
+        // add the edges
+        int first_point = (vertices_position.size() - last_rls.points.size()) + i;
+        int second_point = (vertices_position.size() - last_rls.points.size()) + i + 1;
+
+        EdgeDataInt ei;
+        EdgeDataFloat ef;
+
+        ei.material_index = OpenGLMaterial::BLACK;
+        ei.dash = 0;
+        ef.width = 2.0f;
+        ef.dash_length = 5.0f;
+        ef.gap_length = 5.0f;
+        ef.padding = 0.0f;
+
+        ei.start_vertex = first_point;
+        ei.end_vertex = second_point;
+
+        edge_data_int.push_back(ei);
+        edge_data_float.push_back(ef);
+        edge_indices.push_back(edge_indices.size());
+    }
+
+    // 3. update the length parameter at helperPoints[0]
+
+    // 3.1 show length helper point
+    helperPoints[0].visible = true;
+
+    // 3.2 calculate helperPoints in WCS
+    Point lastPointReferenceLine = last_rls.points[last_rls.points.size() - 2]; // get the second last point
+    QVector3D lastPoint(lastPointReferenceLine[0], lastPointReferenceLine[1], 0.0f);
+    Point lastPointScreenSpace = view->GetPointInScreenSpace(lastPoint);
+    Point middlePointScreenSpace = getMiddlePoint(lastPointScreenSpace, screen_point);
+
+    Point new_point1 = getPointAtPerpendicularDistance(lastPointScreenSpace, screen_point, 4);
+    Point new_point2 = getPointAtPerpendicularDistance(lastPointScreenSpace, screen_point, 10);
+    Point new_point3 = getPointAtPerpendicularDistance(screen_point, lastPointScreenSpace, -10);
+    Point new_point4 = getPointAtPerpendicularDistance(screen_point, lastPointScreenSpace, -4);
+    Point middle_point = getPointAtPerpendicularDistance(middlePointScreenSpace, screen_point, 10);
+
+    helperPoints[0].x = middle_point[0];
+    helperPoints[0].y = middle_point[1] + 30; // 30px added to offset
+
+    QVector3D wcs_point1 = view->GetPointInViewSpace(new_point1[0], new_point1[1]);
+    QVector3D wcs_point2 = view->GetPointInViewSpace(new_point2[0], new_point2[1]);
+    QVector3D wcs_point3 = view->GetPointInViewSpace(new_point3[0], new_point3[1]);
+    QVector3D wcs_point4 = view->GetPointInViewSpace(new_point4[0], new_point4[1]);
+
+    helperPoints[0].value = getDistanceBetweenPoints(lastPointReferenceLine, {point[0], point[1]});
+
+    // 3.3 Add the vertex and edges of helper lines
+    vertices_position.push_back({wcs_point1[0], wcs_point1[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({wcs_point2[0], wcs_point2[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({wcs_point3[0], wcs_point3[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    vertices_position.push_back({wcs_point4[0], wcs_point4[1], 0.0f, 0.0f});
+    vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+    vertices_textureuv.push_back({0.0f, 0.0f});
+    vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+    vertices_textureIndex.push_back(Texture::NONE);
+
+    for (int i = 0; i < 3; i++)
+    {
+        // - 4 because we have added four points above
+        int first_point = (vertices_position.size() - 4) + i;
+        int second_point = (vertices_position.size() - 4) + i + 1;
+
+        EdgeDataInt ei;
+        EdgeDataFloat ef;
+
+        ei.material_index = OpenGLMaterial::BLACK;
+        ei.dash = 1;
+        ef.width = 2.0f;
+        ef.dash_length = 5.0f;
+        ef.gap_length = 5.0f;
+        ef.padding = 0.0f;
+
+        ei.start_vertex = first_point;
+        ei.end_vertex = second_point;
+
+        edge_data_int.push_back(ei);
+        edge_data_float.push_back(ef);
+        edge_indices.push_back(edge_indices.size());
+    }
+
+    // 4. Get the angle relative to third last bezier point
+    if (last_rls.points.size() > 2)
+    {
+        // show the angle helper point
+        helperPoints[1].visible = true;
+
+        Point secondLastPointReferenceLine = last_rls.points[last_rls.points.size() - 3];
+        QVector3D secondLastPoint(secondLastPointReferenceLine[0], secondLastPointReferenceLine[1], 0.0f);
+        Point secondLastPointScreenSpace = view->GetPointInScreenSpace(secondLastPoint);
+
+        float angle_degrees = getAngleBetweenPoints(secondLastPointReferenceLine, lastPointReferenceLine, {point[0], point[1]});
+
+        // angles are negative because the screen-coordinates are following the left-handle rule
+        // y axis points downwards
+        Point angle_point0 = getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, 0.0f, 20);
+        Point angle_point1 = getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, -1*angle_degrees/4, 20);
+        Point angle_point2 = getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, -1*angle_degrees/2, 20);
+        Point angle_point3 = getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, -3*angle_degrees/4, 20);
+        Point angle_point4 = getPointAtDistanceAngle(secondLastPointScreenSpace, lastPointScreenSpace, -1*angle_degrees, 20);
+
+        QVector3D wcs_angle_point0 = view->GetPointInViewSpace(angle_point0[0], angle_point0[1]);
+        QVector3D wcs_angle_point1 = view->GetPointInViewSpace(angle_point1[0], angle_point1[1]);
+        QVector3D wcs_angle_point2 = view->GetPointInViewSpace(angle_point2[0], angle_point2[1]);
+        QVector3D wcs_angle_point3 = view->GetPointInViewSpace(angle_point3[0], angle_point3[1]);
+        QVector3D wcs_angle_point4 = view->GetPointInViewSpace(angle_point4[0], angle_point4[1]);
+
+
+        helperPoints[1].x = angle_point2[0];
+        helperPoints[1].y = angle_point2[1] + 30; // go 30 px down
+        helperPoints[1].value = angle_degrees;
+
+        // Add the vertex and edges of helper lines
+        vertices_position.push_back({wcs_angle_point0[0], wcs_angle_point0[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
+
+        vertices_position.push_back({wcs_angle_point1[0], wcs_angle_point1[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
+
+        vertices_position.push_back({wcs_angle_point2[0], wcs_angle_point2[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
+
+        vertices_position.push_back({wcs_angle_point3[0], wcs_angle_point3[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
+
+        vertices_position.push_back({wcs_angle_point4[0], wcs_angle_point4[1], 0.0f, 0.0f});
+        vertices_normal.push_back({0.0f, 0.0f, 1.0f});
+        vertices_textureuv.push_back({0.0f, 0.0f});
+        vertices_materialIndex.push_back(OpenGLMaterial::IVORY);
+        vertices_textureIndex.push_back(Texture::NONE);
+
+        // edges for angle
+        for (int i = 0; i < 4; i++)
+        {
+            // 7 is added to account for length helper point
+            int first_point = (vertices_position.size() - 5) + i;
+            int second_point = (vertices_position.size() - 5) + i + 1;
+
+            EdgeDataInt ei;
+            EdgeDataFloat ef;
+
+            ei.material_index = OpenGLMaterial::BLACK;
+            ei.dash = 1;
+            ef.width = 2.0f;
+            ef.dash_length = 5.0f;
+            ef.gap_length = 5.0f;
+            ef.padding = 0.0f;
+
+            ei.start_vertex = first_point;
+            ei.end_vertex = second_point;
+
+            edge_data_int.push_back(ei);
+            edge_data_float.push_back(ef);
+            edge_indices.push_back(edge_indices.size());
+        }
+    }
+}
+
 Point OpenglHelper::updatePointForLine(std::vector<ReferenceLineSegment> &referenceLine, ENTITY_LIST &ents, const QList<HelperPoint> &helperPoints, const Point &screen_point, View *view)
 {
     // 1. Get last point of referenceLine
@@ -916,6 +1339,68 @@ Point OpenglHelper::updatePointForLine(std::vector<ReferenceLineSegment> &refere
 
     return newPointScreenSpace;
 }
+
+Point OpenglHelper::updatePointFor3PtCircle(std::vector<ReferenceLineSegment> &referenceLine, ENTITY_LIST &ents, const QList<HelperPoint> &helperPoints, const Point &screen_point, View *view)
+{
+    // 1. Get last point of referenceLine
+    ReferenceLineSegment& last_rls = referenceLine.back();
+    Point lastPointReferenceLine = last_rls.points.back();
+
+    QVector3D screenPointInViewSpace = view->GetPointInViewSpace(screen_point[0], screen_point[1]);
+    Point screenPointInViewSpace2D = {screenPointInViewSpace[0], screenPointInViewSpace[1]};
+
+    Point newPointViewSpace = {0.0f, 0.0f};
+
+    if (last_rls.points.size() < 2)
+    {
+        newPointViewSpace = getPointAtDistance(lastPointReferenceLine, screenPointInViewSpace2D, helperPoints[0].value);
+    }
+    else
+    {
+        Point secondLastPointReferenceLine = {
+            lastPointReferenceLine[0] + 3.0f,
+            lastPointReferenceLine[1]
+        };
+
+        newPointViewSpace = getPointAtDistanceAngle(secondLastPointReferenceLine, lastPointReferenceLine, helperPoints[1].value, helperPoints[0].value);
+    }
+
+    QVector3D newPoint(newPointViewSpace[0], newPointViewSpace[1], 0.0f);
+
+    Point newPointScreenSpace = view->GetPointInScreenSpace(newPoint);
+
+    return newPointScreenSpace;
+}
+
+Point OpenglHelper::updatePointForBezier(std::vector<ReferenceLineSegment> &referenceLine, ENTITY_LIST &ents, const QList<HelperPoint> &helperPoints, const Point &screen_point, View *view)
+{
+    // 1. Get last point of referenceLine
+    ReferenceLineSegment& last_rls = referenceLine.back();
+    Point lastPointReferenceLine = last_rls.points.back();
+
+    QVector3D screenPointInViewSpace = view->GetPointInViewSpace(screen_point[0], screen_point[1]);
+    Point screenPointInViewSpace2D = {screenPointInViewSpace[0], screenPointInViewSpace[1]};
+
+    Point newPointViewSpace = {0.0f, 0.0f};
+
+    if (last_rls.points.size() < 2)
+    {
+        newPointViewSpace = getPointAtDistance(lastPointReferenceLine, screenPointInViewSpace2D, helperPoints[0].value);
+    }
+    else
+    {
+        Point secondLastPointReferenceLine = last_rls.points[last_rls.points.size() - 2];
+
+        newPointViewSpace = getPointAtDistanceAngle(secondLastPointReferenceLine, lastPointReferenceLine, helperPoints[1].value, helperPoints[0].value);
+    }
+
+    QVector3D newPoint(newPointViewSpace[0], newPointViewSpace[1], 0.0f);
+
+    Point newPointScreenSpace = view->GetPointInScreenSpace(newPoint);
+
+    return newPointScreenSpace;
+}
+
 
 void OpenglHelper::getMeshGeometry(
     const FacetModeler::Body& body,
