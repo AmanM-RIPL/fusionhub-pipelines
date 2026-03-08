@@ -370,8 +370,8 @@ Rectangle {
     FHPopup {
         id: viewEditPermissionPopup
         popupWidth: 500
-        popupHeight: 680
-        title: popupMode === "view" ? "Permission Details" : "Edit Permission"
+        popupHeight: 660
+        title: popupMode === "view" ? "View Permission" : "Edit Permission"
         parent: Overlay.overlay
 
         showAcceptButton: popupMode === "edit"
@@ -388,15 +388,15 @@ Rectangle {
                 appIds.push(approvalUserData[i].id)
             }
 
-            permissionController.updatePermission(
+            permissionController.updateUserPermission(
                         currentSelectedPermissionId,
-                        currentUserId,
-                        editEntityCombo.currentText,
-                        editProjectCombo.model[editProjectCombo.currentIndex].id,
-                        chkEditCreate.checked,
-                        "self",
-                        chkEditUpdate.checked,
-                        appIds
+                           currentUserId,
+                           editProjectCombo.model[editProjectCombo.currentIndex].id,
+                           editEntityCombo.currentText,
+                           appIds,
+                           chkEditCreate.checked,
+                           "self",
+                           chkEditUpdate.checked
                         )
             close()
         }
@@ -448,11 +448,11 @@ Rectangle {
 
             Rectangle {
                 width: parent.width
-                height: popupMode === "edit" ? 200 : 135
+                height: popupMode === "edit" ? 220 : 200
                 color: "#EDF1F4"
                 border.color: "#D0D0D0"
                 radius: 4
-                clip: true
+               // clip: true
 
                 Column {
                     width: parent.width
@@ -461,11 +461,16 @@ Rectangle {
                     FHTable {
                         id: editPopupTable
                         width: parent.width
-                        height: 130
+                        height: 200
                         removeRow: popupMode === "edit"
                         model: approvalUserData
                         columns: [
-                            { "label": "Approval User", "width": 450, "key": "userName" }
+                            {
+                                "label": "Approval User",
+                                "width": 500,
+                                "key": "name"
+                            }
+
                         ]
                         onRemovedIndexChanged: {
                             if (removedIndex >= 0 && popupMode === "edit") {
@@ -481,59 +486,92 @@ Rectangle {
                     // Add Row
                     Rectangle {
                         width: parent.width
-                        height: 70
-                        color: "white"
                         visible: popupMode === "edit"
+                        height: visible ? 70 : 0
+                        color: "white"
                         border.color: "#D0D0D0"
+                        border.width: 1
 
-                        Row {
-                            anchors.centerIn: parent
-                            spacing: 8
-                            CustomComboBox {
-                                id: editApprovalUserCombo
-                                width: 380; height: 28
-                                model: permissionRoot.allUsers
-                                textRole: "username"
-                            }
-                            CustomButton {
-                                id: addBtn
-                                width: 24
-                                height: 24
-                                btnSource: "qrc:/resources/images/add.svg"
+                        Column {
+                            width: parent.width
+                            height: parent.height
+                            spacing: 4
+                            topPadding: 4
 
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        if (editApprovalUserCombo.currentIndex < 0) return
+                            Row {
+                                width: parent.width - 4
+                                height: 28
+                                leftPadding: 2
+                                spacing: 6
 
-                                        // Duplicate check
-                                        for (var i = 0; i < approvalUserData.length; i++) {
-                                            if (approvalUserData[i].user_name === editApprovalUserCombo.currentText) {
-                                                permissionRoot.editApproverError = "Approver already added"
-                                                return
+                                CustomComboBox {
+                                    id: editApprovalUserCombo
+                                    width: 400
+                                    height: 24
+                                    model: permissionRoot.allUsers
+                                    textRole: "username"
+                                    currentIndex: model && model.length > 0 ? 0 : -1
+                                    onCurrentIndexChanged: {
+                                        if (currentIndex !== -1 && model[currentIndex]) {
+                                            console.log("Selected User ID:", model[currentIndex].id)
+                                        }
+                                    }
+                                }
+
+                                CustomButton {
+                                    id: addBtn
+                                    color: "transparent"
+                                    width: 24
+                                    height: 24
+                                    border.color: "#8080808C"
+                                    btnSource: "qrc:/resources/images/add.svg"
+                                    btnName: ""
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        hoverEnabled: true
+                                        onEntered: parent.color = "#f2f2f2"
+                                        onExited:  parent.color = "transparent"
+
+                                        onClicked: {
+                                            if (editApprovalUserCombo.currentIndex < 0) return
+
+                                            for (var i = 0; i < approvalUserData.length; i++) {
+                                                if (approvalUserData[i].name === editApprovalUserCombo.currentText) {
+                                                    permissionRoot.editApproverError = "Approver already added"
+                                                    return
+                                                }
                                             }
-                                        }
 
-                                        var newUser = {
-                                            "id": editApprovalUserCombo.model[editApprovalUserCombo.currentIndex].id,
-                                            "user_name": editApprovalUserCombo.currentText
+                                            var newUser = {
+                                                "id":   editApprovalUserCombo.model[editApprovalUserCombo.currentIndex].id,
+                                                "name": editApprovalUserCombo.currentText
+                                            }
+                                            approvalUserData = approvalUserData.concat(newUser)
+                                            permissionRoot.editApproverError = ""
                                         }
-                                        approvalUserData = approvalUserData.concat(newUser)
-                                        permissionRoot.editApproverError = ""
                                     }
                                 }
                             }
+
+                            Text {
+                                text: permissionRoot.createApproverError
+                                color: permissionRoot.errorColor
+                                font.pixelSize: 11
+                                visible: permissionRoot.createApproverError !== ""
+                                leftPadding: 2
+                            }
                         }
                     }
-                }
+                    }
             }
 
             /* ---- Access Levels ---- */
             Text {
                 text: "Access Level <span style='color: #FF3B30;'>*</span>"
                 font.weight: 700; font.pixelSize: 14; textFormat: Text.RichText
-                topPadding: 10
+                topPadding: 20
             }
 
             Rectangle {
@@ -870,6 +908,11 @@ Rectangle {
         function onPermissionListReceived(data) {
             permissionRoot.permissionList = data
         }
+        function onPermissionOperationSuccess(message) {
+               console.log(message)
+               viewEditPermissionPopup.close()
+               showPermissionList(currentUserId, currentProjectId)
+        }
     }
 
     function showPermissionList(targetUser, targetProject) {
@@ -887,15 +930,16 @@ Rectangle {
 
 
         approvalUserData = []
-        var rawApprovers = data.approvers || data.approval_users || data.approver_list || []
+        var rawApprovers = data.approvalData || []
 
-        console.log("Full rowData:", JSON.stringify(data))
+       // console.log("Full rowData:", JSON.stringify(data))
 
         var formattedApprovers = []
         for (var j = 0; j < rawApprovers.length; j++) {
+          //  console.log("rawApprovers",JSON.stringify(rawApprovers[j]))
             formattedApprovers.push({
                 "id":        rawApprovers[j].id,
-                "user_name": rawApprovers[j].user_name || rawApprovers[j].username || rawApprovers[j].name || ""
+                "name": rawApprovers[j].username || rawApprovers[j].name || ""
             })
         }
         approvalUserData = formattedApprovers

@@ -109,7 +109,10 @@ void PermissionController::updateUserPermission(int permissionId,
 
     QNetworkAccessManager* manager = new QNetworkAccessManager(this);
 
-    QNetworkReply* reply = manager->put(request, QJsonDocument(root).toJson());
+  //  QNetworkReply* reply = manager->patch(request, QJsonDocument(root).toJson());
+    QByteArray data = QJsonDocument(root).toJson();
+
+    QNetworkReply *reply = manager->sendCustomRequest( request,"PATCH", data );
 
     connect(reply, &QNetworkReply::finished, this, [this, reply, manager]() {
         if (reply->error() == QNetworkReply::NoError) {
