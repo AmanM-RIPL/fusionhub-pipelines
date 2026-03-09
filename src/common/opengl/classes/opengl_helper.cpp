@@ -484,6 +484,11 @@ Point OpenglHelper::getPointAtDistanceAngle(Point point1, Point point2, float an
     };
 }
 
+void OpenglHelper::convertSPAtransfToQMatrix4x4(SPAtransf &acis_trans, QMatrix4x4 &qt_matrix)
+{
+    SPAmatrix& acis_matrix = acis_trans.affine();
+}
+
 void OpenglHelper::getEdgeFromReferenceLineSegment(EDGE* &edge, const ReferenceLineSegment &referenceLineSegment)
 {
     // we allow circle with 2 points to be shown as a line and 3-point bezier to be shown as a circle
@@ -1714,7 +1719,7 @@ void OpenglHelper::getMeshGeometry(
     int edgeDash,
     int edgeMaterialIndex
 )
-{
+{      
     // facet code
     api_facet_entity(body);
 

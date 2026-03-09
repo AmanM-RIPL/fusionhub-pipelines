@@ -59,6 +59,7 @@
 #include "sweepapi.hxx"
 #include "swp_opts.hxx"
 #include "faceutil.hxx"
+#include "sgquery.hxx"
 
 // for faceter
 #include "af_api.hxx"
@@ -126,6 +127,8 @@ public:
 
 
     // Below methods use ACIS
+    void convertSPAtransfToQMatrix4x4(SPAtransf& acis_trans, QMatrix4x4& qt_matrix);
+
     void getEdgeFromReferenceLineSegment(EDGE* &edge, const ReferenceLineSegment& referenceLineSegment);
 
     void getReferenceLineWireBody(BODY *&wire_body, ENTITY_LIST& ents, std::vector<ReferenceLineSegment> &referenceLine, std::vector<EDGE*> &edges);

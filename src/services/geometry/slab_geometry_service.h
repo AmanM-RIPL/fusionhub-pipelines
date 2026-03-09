@@ -7,6 +7,34 @@
 #include "common/opengl/classes/view.h"
 #include "common/helper_point.h"
 
+#include <QJsonObject>
+
+// ACIS header files
+#include "acis.hxx"
+#include "license.hxx"
+#include "spa_unlock_result.hxx"
+#include "spatial_license.h"
+#include "kernapi.hxx"
+
+#include <boolapi.hxx>
+#include "api.hxx"
+#include "lists.hxx"
+#include "fileinfo.hxx"
+#include <cstrapi.hxx>
+#include "curdef.hxx"
+#include "straight.hxx"
+#include "sweepapi.hxx"
+#include "swp_opts.hxx"
+#include "ofstapi.hxx"
+#include "wire_offset_options.hxx"
+#include "transf.hxx"
+#include "coverapi.hxx"
+
+// for faceter
+#include "af_api.hxx"
+#include "fct_utl.hxx"
+#include "af_serializable_mesh.hxx"
+
 class SlabGeometryService : public QObject
 {
     Q_OBJECT
@@ -15,15 +43,18 @@ public:
 
     void generateMesh2D(BIMElement* slabElement, Mesh* mesh);
     void generateMesh3D(BIMElement* slabElement, Mesh* mesh);
-    void updateGeometry(BIMElement* slabElement, const QVector3D& point);
-    void generateWIPMesh2D(BIMElement* slabElement, Mesh* mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints);
+    void updateGeometry(BIMElement* slabElement, const QVector3D& point, const QString &curveType);
+    void generateWIPMesh2D(BIMElement* slabElement, Mesh* mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints, const QString &curveType);
     Point updatePoint2D(BIMElement* slabElement, const QList<HelperPoint>& helperPoints, const Point& screen_point, View *view); // value comes from m_middlePointValue
     void generateHelperPoints(BIMElement *bimElement, QList<HelperPoint> &helperPoints);
 
 signals:
 
 private:
-    OpenglHelper m_openglHelper;   
+    OpenglHelper m_openglHelper;
+
+    void generateSlab2D(BODY* &final_body, ENTITY_LIST &ents, std::vector<ReferenceLineSegment> &referenceLine);
+    void generateSlab3D(BODY* &final_body, ENTITY_LIST &ents, std::vector<ReferenceLineSegment> &referenceLine, float height, float distance);
 };
 
 #endif // SLAB_GEOMETRY_SERVICE_H

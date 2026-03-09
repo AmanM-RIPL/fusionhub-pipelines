@@ -95,7 +95,7 @@ void GeometryServiceFactory::updateGeometry(const QVector3D& point, const QStrin
     else if (bimElement->getType() == "Slab")
     {
         SlabGeometryService service = SlabGeometryService();
-        service.updateGeometry(bimElement, point);
+        service.updateGeometry(bimElement, point, curveType);
     }
     else if (bimElement->getType() == "Door" && hostElement != nullptr)
     {
@@ -129,7 +129,7 @@ void GeometryServiceFactory::generateWIPMesh2D(BIMElement *bimElement, Mesh *mes
     else if (bimElement->getType() == "Slab")
     {
         SlabGeometryService service = SlabGeometryService();
-        service.generateWIPMesh2D(bimElement, mesh, point, screen_point, view, helperPoints);
+        service.generateWIPMesh2D(bimElement, mesh, point, screen_point, view, helperPoints, curveType);
     }
     else if (bimElement->getType() == "Door")
     {
