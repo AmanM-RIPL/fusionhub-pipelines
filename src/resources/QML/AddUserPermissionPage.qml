@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import com.fh.models 1.0
 import QtQuick.Layouts 1.15
 import com.fh.controllers
+import QtQuick.Dialogs
 import "utils"
 
 
@@ -83,6 +84,23 @@ Rectangle {
     property string mandatoryColor: "#D13438"
     property string labelColor: "#323130"
     property string errorColor: "#D13438"
+
+    MessageDialog {
+        id: deleteConfirmationDialog
+        title: "Confirm Delete"
+        text: "Are you sure you want to delete this permission?"
+        buttons: MessageDialog.Yes | MessageDialog.No
+       // icon: MessageDialog.Warning
+
+        property int idToDelete: 0
+
+        onButtonClicked: function (button, role) {
+            if (role === MessageDialog.YesRole) {
+                console.log("Deleting ID:", idToDelete)
+                permissionController.deletePermission(idToDelete)
+            }
+        }
+    }
 
     onVisibleChanged: {
         if (visible) {
@@ -858,6 +876,37 @@ Rectangle {
                                     }
                                 }
 
+                                /* ── Delete button ── */
+                                Rectangle {
+                                    Layout.preferredWidth: 60
+                                    Layout.preferredHeight: 26
+                                    radius: 4
+                                    color: "#FFF5F5"
+                                    border.color: "#FF3B30"
+                                    border.width: 1
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "Delete"
+                                        color: "#FF3B30"
+                                        font.bold: true
+                                        font.pixelSize: 12
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+
+                                        onEntered: parent.color = "#FFE5E5"
+                                        onExited: parent.color = "#FFF5F5"
+
+                                        onClicked: {
+                                            var deleteId = modelData.id || 0
+                                            deleteConfirmationDialog.idToDelete = modelData.id || 0
+                                            deleteConfirmationDialog.open()
+                                        }
+                                    }
+                                }
                             }
 
                             /* ── Access badges ── */
