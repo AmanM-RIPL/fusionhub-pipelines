@@ -53,11 +53,13 @@ void MeshMap::AddMesh(Mesh *mesh, BIMElement *bim_element, ViewType view_type)
 
     //3. Update mesh's indices and edge_indices based on
     //   global indices in MeshMap
-    mesh->OffsetMeshData(m_numOfVertices, m_numOfEdges, m_numOfModelMatrices);
+    mesh->OffsetMeshData(m_numOfVertices, m_numOfEdges, m_numOfModelMatrices/16); // m_numOfModelMatrices adds 16 for every matrix
 
     //4. Update indices
     m_numOfVertices = m_numOfVertices + mesh->getNumOfVertices();
     m_numOfEdges = m_numOfEdges + mesh->getNumOfEdges();
+
+    qInfo() << "viewtype, numVertex, numEdges " << view_type << ", " << m_numOfVertices << ", " << m_numOfEdges;
 
     QMatrix4x4 modelMatrix = mesh->getModelMatrix();
 
@@ -175,6 +177,8 @@ void MeshMap::SyncIndicesWithOpenGL(CombinedIndices *combinedIndices, ViewType v
 
     auto meshMap = view_type == ViewType::PLAN ? m_mesh_map_plan : m_mesh_map_model;
 
+    qInfo() << "View Type: --------------------------------" << view_type;
+
     for (auto& meshMapItem: meshMap)
     {
         Mesh* mesh = meshMapItem.second;
@@ -183,6 +187,11 @@ void MeshMap::SyncIndicesWithOpenGL(CombinedIndices *combinedIndices, ViewType v
 
         std::vector<int> meshEdgeIndices = mesh->getEdgeIndices();
         edge_indices.insert(edge_indices.end(), meshEdgeIndices.begin(), meshEdgeIndices.end());
+
+        for (int& mesh_ind: meshEdgeIndices)
+        {
+            qInfo() << "Edge Index: " << mesh_ind;
+        }
     }
 
     // Adding data to combined mesh

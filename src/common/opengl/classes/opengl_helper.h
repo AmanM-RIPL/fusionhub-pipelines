@@ -127,7 +127,7 @@ public:
 
 
     // Below methods use ACIS
-    void convertSPAtransfToQMatrix4x4(SPAtransf& acis_trans, QMatrix4x4& qt_matrix);
+    void convertSPAtransfToQMatrix4x4(const SPAtransf& acis_trans, QMatrix4x4& qt_matrix);
 
     void getEdgeFromReferenceLineSegment(EDGE* &edge, const ReferenceLineSegment& referenceLineSegment);
 

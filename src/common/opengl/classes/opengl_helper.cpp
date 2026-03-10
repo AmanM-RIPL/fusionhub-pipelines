@@ -484,9 +484,16 @@ Point OpenglHelper::getPointAtDistanceAngle(Point point1, Point point2, float an
     };
 }
 
-void OpenglHelper::convertSPAtransfToQMatrix4x4(SPAtransf &acis_trans, QMatrix4x4 &qt_matrix)
+void OpenglHelper::convertSPAtransfToQMatrix4x4(const SPAtransf &acis_trans, QMatrix4x4 &qt_matrix)
 {
-    SPAmatrix& acis_matrix = acis_trans.affine();
+    SPAmatrix acis_matrix = acis_trans.affine();
+    SPAvector acis_vector = acis_trans.translation();
+    qt_matrix = QMatrix4x4(
+        acis_matrix.element(0,0), acis_matrix.element(0,1), acis_matrix.element(0,2), acis_vector.x(),
+        acis_matrix.element(1,0), acis_matrix.element(1,1), acis_matrix.element(1,2), acis_vector.y(),
+        acis_matrix.element(2,0), acis_matrix.element(2,1), acis_matrix.element(2,2), acis_vector.z(),
+        0.0, 0.0, 0.0, 1.0
+    );
 }
 
 void OpenglHelper::getEdgeFromReferenceLineSegment(EDGE* &edge, const ReferenceLineSegment &referenceLineSegment)

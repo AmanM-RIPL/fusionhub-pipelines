@@ -29,6 +29,7 @@
 #include "wire_offset_options.hxx"
 #include "transf.hxx"
 #include "coverapi.hxx"
+#include "transfrm.hxx"
 
 // for faceter
 #include "af_api.hxx"

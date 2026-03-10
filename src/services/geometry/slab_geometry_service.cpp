@@ -133,6 +133,7 @@ void SlabGeometryService::generateMesh3D(BIMElement* slabElement, Mesh* mesh)
     int edgeDash = 0;
     int edgeMaterialIndex = OpenGLMaterial::BLACK;
     int scalingFactor = 5;
+    QMatrix4x4 qt_matrix;
 
 
     if (final_body != nullptr)
@@ -157,6 +158,13 @@ void SlabGeometryService::generateMesh3D(BIMElement* slabElement, Mesh* mesh)
             edgeDash,
             edgeMaterialIndex
         );
+
+        TRANSFORM* trans = final_body->transform();
+
+        if (trans != nullptr)
+        {
+            m_openglHelper.convertSPAtransfToQMatrix4x4(trans->transform(), qt_matrix);
+        }
     }
 
     mesh->Initialize(
@@ -171,6 +179,7 @@ void SlabGeometryService::generateMesh3D(BIMElement* slabElement, Mesh* mesh)
         edge_indices
     );
     mesh->setBIMElementId(slabElement->getId());
+    mesh->setModelMatrix(qt_matrix);
 
     // delete entity list
     api_del_entity_list(ents);
@@ -493,9 +502,6 @@ void SlabGeometryService::generateSlab2D(BODY *&final_body, ENTITY_LIST &ents, s
 
 void SlabGeometryService::generateSlab3D(BODY *&final_body, ENTITY_LIST &ents, std::vector<ReferenceLineSegment> &referenceLine, float height, float distance)
 {
-
-    qInfo() << "Distance: " << distance;
-
     // 1. Generate 2D planar profile
     generateSlab2D(final_body, ents, referenceLine);
 
@@ -522,9 +528,5 @@ void SlabGeometryService::generateSlab3D(BODY *&final_body, ENTITY_LIST &ents, s
 
     // 3. Translate the body by +z distance
     SPAtransf translation_matrix = translate_transf(SPAvector(0.0, 0.0, 1 * distance));
-
-    SPAvector trans_vector = translation_matrix.translation();
-    qInfo() << "Translation: " << trans_vector.x() << ", " << trans_vector.y() << ", " << trans_vector.z();
-
     api_transform_entity(final_body, translation_matrix);
 }
