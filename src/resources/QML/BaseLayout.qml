@@ -95,6 +95,10 @@ Rectangle {
             visible: pageName === "WorkBilling"
         }
 
+        AnalyticsPage{
+            visible: pageName === "Analytics"
+        }
+
 
 
         /*

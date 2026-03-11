@@ -57,31 +57,31 @@ void UserController::logout()
 
 bool UserController::login(const QString& username, const QString& password)
 {
-    // if(username == "admin" || username.isEmpty())
-    // {
-    //     gUser->setUserName("admin");
+    if(username == "admin" || username.isEmpty())
+    {
+        gUser->setUserName("admin");
 
-    //    // const_cast<UserController*>(this)->startBackgroundSync();
-    // }
-    // else if (username.isEmpty() || password.isEmpty()) {
-    //     emit loginFailed("Username or password cannot be empty");
-    //     return false;
-    // }
+       // const_cast<UserController*>(this)->startBackgroundSync();
+    }
+    else if (username.isEmpty() || password.isEmpty()) {
+        emit loginFailed("Username or password cannot be empty");
+        return false;
+    }
 
     // // Get NetworkManager instance and trigger async login
-    NetworkManager* network = NetworkManager::getInstance();
-    network->loginAPI(username, password);
+    // NetworkManager* network = NetworkManager::getInstance();
+    // network->loginAPI(username, password);
 
-    // QJsonObject userData;
-    // userData["id"] = 2;
-    // userData["username"] = "admin";
-    // userData["token"] = "44rrfdcsxx";
-    // userData["firstName"] = "First Name";
-    // userData["lastName"] = "Last Name";
-    // userData["email"] = "sample@gmail.com";
-    // userData["mobile"] = "+91-990543";
+    QJsonObject userData;
+    userData["id"] = 2;
+    userData["username"] = "admin";
+    userData["token"] = "44rrfdcsxx";
+    userData["firstName"] = "First Name";
+    userData["lastName"] = "Last Name";
+    userData["email"] = "sample@gmail.com";
+    userData["mobile"] = "+91-990543";
 
-    // onNetworkLoginSuccess(userData);
+    onNetworkLoginSuccess(userData);
 
     return true;
 }

@@ -22,16 +22,16 @@ public:
                                       QString readType,
                                       bool canUpdate,
                                       QVariantList approverIds);
-   // Q_INVOKABLE void getPermissionList();
+    // Q_INVOKABLE void getPermissionList();
     Q_INVOKABLE void getUserPermissionList(int userId, int projectId = -1);
     Q_INVOKABLE void updateUserPermission(int permissionId,
-                                      int userId,
-                                      int projectId,
-                                      QString entity,
-                                      QVariantList approverIds,
-                                      bool canCreate,
-                                      QString readType,
-                                      bool canUpdate);
+                                          int userId,
+                                          int projectId,
+                                          QString entity,
+                                          QVariantList approverIds,
+                                          bool canCreate,
+                                          QString readType,
+                                          bool canUpdate);
 
     Q_INVOKABLE void deletePermission(const QString& permissionId);
 

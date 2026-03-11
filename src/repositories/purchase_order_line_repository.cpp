@@ -51,6 +51,8 @@ PurchaseOrderLine* PurchaseOrderLineRepository::mapFromQueryQML(const QSqlQuery&
     po->setPurchaseOrderId(query.value("purchase_order_id").toInt());
     po->setMaterialId(query.value("material_id").toInt());
     po->setUnitOfMeasurementId(query.value("unit_of_measurement_id").toInt());
+    po->setQuantity(query.value("quantity").toDouble());
+    po->setAmount(query.value("dollar_value").toDouble());
 
 
     return po;

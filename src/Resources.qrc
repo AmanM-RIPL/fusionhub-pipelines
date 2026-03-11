@@ -86,5 +86,6 @@
         <file>resources/QML/utils/ValidationHelper.qml</file>
         <file>resources/QML/AddUserPermissionPage.qml</file>
         <file>resources/QML/UserPermissionPage.qml</file>
+        <file>resources/QML/AnalyticsPage.qml</file>
     </qresource>
 </RCC>

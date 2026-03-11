@@ -74,13 +74,13 @@ void PermissionController::createPermission(int userId,
 }
 
 void PermissionController::updateUserPermission(int permissionId,
-                                            int userId,
-                                            int projectId,
-                                            QString entity,
-                                            QVariantList approverIds,
-                                            bool canCreate,
-                                            QString readType,
-                                            bool canUpdate)
+                                                int userId,
+                                                int projectId,
+                                                QString entity,
+                                                QVariantList approverIds,
+                                                bool canCreate,
+                                                QString readType,
+                                                bool canUpdate)
 {
     QString token = getAuthToken();
     if (token.isEmpty()) return;
@@ -109,7 +109,7 @@ void PermissionController::updateUserPermission(int permissionId,
 
     QNetworkAccessManager* manager = new QNetworkAccessManager(this);
 
-  //  QNetworkReply* reply = manager->patch(request, QJsonDocument(root).toJson());
+    //  QNetworkReply* reply = manager->patch(request, QJsonDocument(root).toJson());
     QByteArray data = QJsonDocument(root).toJson();
 
     QNetworkReply *reply = manager->sendCustomRequest( request,"PATCH", data );
@@ -231,9 +231,9 @@ void PermissionController::deletePermission(const QString& permissionId)
     connect(reply, &QNetworkReply::finished, this, [this, reply, manager]() {
         if (reply->error() == QNetworkReply::NoError) {
             emit permissionOperationSuccess("Permission Deleted");
-           // getPermissionList();
+            // getPermissionList();
         } else {
-           // emit permissionOperationFailed(reply->errorString());
+            // emit permissionOperationFailed(reply->errorString());
         }
         reply->deleteLater();
         manager->deleteLater();
