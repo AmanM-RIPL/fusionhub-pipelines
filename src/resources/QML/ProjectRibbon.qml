@@ -433,7 +433,7 @@ Column {
 
 
                 RibbonButton {
-                    btnSource: "qrc:/resources/images/line.png"
+                    btnSource: "qrc:/resources/images/line.svg"
                     btnName: "Line"
                     btnNameColor: "#000000"
                     anchors.verticalCenter: parent.verticalCenter
@@ -449,7 +449,7 @@ Column {
                 }
 
                 RibbonButton {
-                    btnSource: "qrc:/resources/images/3pt-circle.png"
+                    btnSource: "qrc:/resources/images/circle.svg"
                     btnName: "3PT Circle"
                     btnNameColor: "#000000"
                     anchors.verticalCenter: parent.verticalCenter
@@ -465,8 +465,84 @@ Column {
                 }
 
                 RibbonButton {
-                    btnSource: "qrc:/resources/images/spline.png"
+                    btnSource: "qrc:/resources/images/bezier.svg"
                     btnName: "Bezier"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            projectPageAction("bezier");
+                            projectRibbon.curveType = "bezier";
+                        }
+                    }
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 60
+                    color: "#7676801F"
+                }
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/cube.svg"
+                    btnName: "Cube"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            projectPageAction("bezier");
+                            projectRibbon.curveType = "bezier";
+                        }
+                    }
+                }
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/sphere.svg"
+                    btnName: "Sphere"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            projectPageAction("bezier");
+                            projectRibbon.curveType = "bezier";
+                        }
+                    }
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 60
+                    color: "#7676801F"
+                }
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/copy.svg"
+                    btnName: "Copy"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            projectPageAction("bezier");
+                            projectRibbon.curveType = "bezier";
+                        }
+                    }
+                }
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/move.svg"
+                    btnName: "Move"
                     btnNameColor: "#000000"
                     anchors.verticalCenter: parent.verticalCenter
 

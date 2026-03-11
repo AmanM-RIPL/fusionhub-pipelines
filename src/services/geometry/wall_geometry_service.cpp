@@ -466,12 +466,6 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
         edge_indices
     );
     mesh->setBIMElementId(wallElement->getId());
-    mesh->setModelMatrix(QMatrix4x4(
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 3,
-        0, 0, 0, 1
-    ));
 
     // delete entity list
     api_del_entity_list(ents);

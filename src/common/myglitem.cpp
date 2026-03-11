@@ -454,6 +454,11 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
         m_viewType = glItem->m_viewType;
 
+        // removing the dynamic mesh data
+        Mesh* mesh = new Mesh();
+        m_view->LoadDynamicMeshData(mesh);
+        delete mesh;
+
         // remove bim element from bim element to sync
         glItem->bimElementToSync = nullptr;
     }
@@ -873,15 +878,23 @@ MyGLItem::MyGLItem(QQuickItem *parent)
 
     bimElementList.append(bimElement);
 
-    // BIMElement* bimElementNew = new BIMElement(2,"1",false,"Wall", "Front Wall", 0, 0, this);
-    // BIMParameter* widthParameterNew = new BIMParameter(1,"1",false,"Width","1",2,this);
-    // BIMParameter* heightParameterNew = new BIMParameter(37, "1", false, "Height", "4", 2, this);
-    // BIMParameter* rlParameterNew = new BIMParameter(1,"1",false,"ReferenceLine","[[0,0], [4,0], [4,4]]",2,this);
-    // bimElementNew->addParameter(widthParameterNew);
-    // bimElementNew->addParameter(heightParameterNew);
-    // bimElementNew->addParameter(rlParameterNew);
+    BIMElement* bimElementNew = new BIMElement(2,"1",false,"Wall", "Front Wall", 0, 0, this);
+    BIMParameter* widthParameterNew = new BIMParameter(1,"1",false,"Width","1",2,this);
+    BIMParameter* heightParameterNew = new BIMParameter(37, "1", false, "Height", "4", 2, this);
+    BIMParameter* slantAngleParameterNew = new BIMParameter(34, "1", false, "SlantAngle", "0", 1, this);
+    BIMParameter* taperAngleParameterNew = new BIMParameter(34, "1", false, "TaperAngle", "5", 1, this);
+    BIMParameter* rlPositionParameterNew = new BIMParameter(34, "1", false, "ReferenceLinePosition", "inner", 1, this);
+    BIMParameter* rlParameterNew = new BIMParameter(1,"1",false,"ReferenceLine","[{\"points\":[[0,0], [4,0]], \"type\": \"line\"}, {\"points\":[[4,0], [4,4]], \"type\": \"line\"}]",1,this);
+    BIMParameter* layerParameterNew = new BIMParameter(39, "1", false, "Layers", "[{\"name\": \"layer-1\", \"width\": 1}, {\"name\": \"layer-2\", \"width\": 0.25}]", 1, this);
+    bimElementNew->addParameter(widthParameterNew);
+    bimElementNew->addParameter(heightParameterNew);
+    bimElementNew->addParameter(slantAngleParameterNew);
+    bimElementNew->addParameter(taperAngleParameterNew);
+    bimElementNew->addParameter(rlPositionParameterNew);
+    bimElementNew->addParameter(rlParameterNew);
+    bimElementNew->addParameter(layerParameterNew);
 
-    // bimElementList.append(bimElementNew);
+    bimElementList.append(bimElementNew);
 
     // BIMElement* bimElementDoor = new BIMElement(3,"1",false,"Window", "Front Window", 0, 2, this);
     // BIMParameter* distanceParameterDoor = new BIMParameter(1,"1",false,"Distance","1",3,this);
