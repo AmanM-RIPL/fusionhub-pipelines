@@ -158,24 +158,25 @@ MyGLRenderer::~MyGLRenderer()
 void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 {
     glItem = static_cast<MyGLItem*>(item);
+    EditOption* editOption = EditOption::instance();
 
     // Orbit only works in 3D mode and not in 2D
-    if (glItem->m_moveUp && glItem->m_viewType == "ModelView") {
+    if (glItem->m_moveUp && editOption->viewType() == "ModelView") {
         m_camera->OrbitVertical(true);
     }
     glItem->m_moveUp = false;  // reset
 
-    if (glItem->m_moveDown && glItem->m_viewType == "ModelView") {
+    if (glItem->m_moveDown && editOption->viewType() == "ModelView") {
         m_camera->OrbitVertical(false);
     }
     glItem->m_moveDown = false;
 
-    if (glItem->m_moveLeft && glItem->m_viewType == "ModelView") {
+    if (glItem->m_moveLeft && editOption->viewType() == "ModelView") {
         m_camera->OrbitHorizontal(false);
     }
     glItem->m_moveLeft = false;
 
-    if (glItem->m_moveRight && glItem->m_viewType == "ModelView") {
+    if (glItem->m_moveRight && editOption->viewType() == "ModelView") {
         m_camera->OrbitHorizontal(true);
     }
     glItem->m_moveRight = false;
@@ -326,16 +327,16 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         // update glItem BIM Element
         if (glItem->editableBimElement != nullptr)
         {
-            GeometryServiceFactory::updateGeometry(clickedPoint, glItem->m_curveType, glItem->editableBimElement, hostElement);
+            GeometryServiceFactory::updateGeometry(clickedPoint, editOption, glItem->editableBimElement, hostElement);
 
             // generating mesh for Editable BIMElement
             Mesh* mesh = new Mesh();
 
-            if (glItem->m_viewType == "ModelView")
+            if (editOption->viewType() == "ModelView")
             {
                 GeometryServiceFactory::generateMesh3D(glItem->editableBimElement, mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
             }
-            else if (glItem->m_viewType == "PlanView")
+            else if (editOption->viewType() == "PlanView")
             {
                 GeometryServiceFactory::generateMesh2D(glItem->editableBimElement, mesh);
             }
@@ -370,11 +371,11 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
             // generating mesh for Editable BIMElement
             Mesh* mesh = new Mesh();
 
-            if (glItem->m_viewType == "PlanView")
+            if (editOption->viewType() == "PlanView")
             {
                 // qInfo() << "PickPoint: " << m_pickX << ", " << m_pickY;
                 Point screenPoint = {m_pickX, m_pickY};
-                GeometryServiceFactory::generateWIPMesh2D(glItem->editableBimElement, mesh, clickedPoint, screenPoint, m_view, glItem->m_middlePointValue, glItem->m_curveType, hostElement);
+                GeometryServiceFactory::generateWIPMesh2D(glItem->editableBimElement, mesh, clickedPoint, screenPoint, m_view, glItem->m_middlePointValue, editOption, hostElement);
                 glItem->middlePointPositionChanged(); // signal to QML
             }
 
@@ -412,18 +413,18 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         m_view->Initialize();
         m_view->LoadStaticMeshData(m_mesh_map);
 
-        ViewType view_type = glItem->m_viewType == "PlanView" ? ViewType::PLAN : ViewType::MODEL;
+        ViewType view_type = editOption->viewType() == "PlanView" ? ViewType::PLAN : ViewType::MODEL;
         m_view->LoadStaticIndicesData(m_mesh_map, view_type);
 
         meshInitialized = true;
-        m_viewType = glItem->m_viewType;
+        m_viewType = editOption->viewType();
     }
 
-    if (m_viewType != glItem->m_viewType)
+    if (m_viewType != editOption->viewType())
     {
-        m_viewType = glItem->m_viewType;
+        m_viewType = editOption->viewType();
 
-        if (glItem->m_viewType == "ModelView")
+        if (editOption->viewType() == "ModelView")
         {
             m_view->LoadStaticIndicesData(m_mesh_map, ViewType::MODEL);
             m_camera->SetCameraParameters(QVector3D(0.0f, 0.0f, -1.0f), QVector3D(0.0f, 0.0f, 1.0f), QVector3D(0.0f, -10.0f, 10.0f), 5.0f, 0.5f);
@@ -449,10 +450,10 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
         m_view->AppendToStaticMeshData(m_mesh_map);
 
-        ViewType view_type = glItem->m_viewType == "PlanView" ? ViewType::PLAN : ViewType::MODEL;
+        ViewType view_type = editOption->viewType() == "PlanView" ? ViewType::PLAN : ViewType::MODEL;
         m_view->LoadStaticIndicesData(m_mesh_map, view_type);
 
-        m_viewType = glItem->m_viewType;
+        m_viewType = editOption->viewType();
 
         // removing the dynamic mesh data
         Mesh* mesh = new Mesh();
@@ -860,6 +861,10 @@ QOpenGLFramebufferObject* MyGLRenderer::createFramebufferObject(const QSize &siz
 MyGLItem::MyGLItem(QQuickItem *parent)
     : QQuickFramebufferObject(parent)
 {
+
+    connect(EditOption::instance(), &EditOption::viewTypeChanged, this, &MyGLItem::updateEditOption);
+    connect(EditOption::instance(), &EditOption::editTypeChanged, this, &MyGLItem::updateEditOption);
+
     BIMElement* bimElement = new BIMElement(1,"1",false,"Wall", "Front Wall", 0, 0, this);
     BIMParameter* widthParameter = new BIMParameter(1,"1",false,"Width","1",1,this);
     BIMParameter* heightParameter = new BIMParameter(37, "1", false, "Height", "4", 1, this);
@@ -1096,9 +1101,8 @@ void MyGLItem::zoomOut()
     update();
 }
 
-void MyGLItem::updateView(QString viewType)
+void MyGLItem::updateEditOption()
 {
-    m_viewType = viewType;
     update();
 }
 
@@ -1130,11 +1134,6 @@ void MyGLItem::requestHover(int x, int y, int glsceneX, int glsceneY)
 void MyGLItem::updateMousePosition(int x, int y)
 {
     QCursor::setPos(m_glsceneX + x, m_glsceneY + y);
-}
-
-void MyGLItem::updateCurveType(QString curveType)
-{
-    m_curveType = curveType;
 }
 
 void MyGLItem::handlePick(int id) {

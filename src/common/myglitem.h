@@ -64,6 +64,7 @@
 #include "common/opengl/classes/opengl_material.h"
 #include "common/opengl/classes/texture.h"
 #include "common/helper_point.h"
+#include "common/edit_option.h"
 // #include "controllers/bim_element_controller.h"
 #include "models/bim_element.h"
 #include "models/bim_parameter.h"
@@ -138,14 +139,11 @@ public:
     int m_lastHoverY = -1;
     int m_glsceneX = -1;
     int m_glsceneY = -1;
-    QString m_curveType = "line";
     QList<HelperPoint> m_middlePointValue;
     bool m_middlePointValueUpdated = false;
     Mesh* mesh = nullptr;
     IFCDetailController* pIfcDetailController;
     IfcGeometryService* pIfcGeometryService;
-
-    QString m_viewType = "ModelView";
 
     QList<BIMElement*> bimElementList;
     BIMElement* editableBimElement = nullptr;
@@ -165,12 +163,11 @@ public slots:
     void zoomIn();
     void zoomOut();
 
-    void updateView(QString viewType);
+    void updateEditOption();
 
     void requestPick(int x, int y);
     void requestHover(int x, int y, int glsceneX, int glsceneY);
     void updateMousePosition(int x, int y);
-    void updateCurveType(QString curveType);
 
     void handlePick(int id);
     void viewIfc();

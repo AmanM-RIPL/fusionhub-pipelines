@@ -80,6 +80,7 @@
 #include "models/unit_of_measurement.h"
 #include "models/draft_entity.h"
 #include "common/helper_point.h"
+#include "common/edit_option.h"
 
 #include "network/network_manager.h"
 
@@ -132,6 +133,11 @@ void unlock_spatial_products()
    spa_unlock_result res = spa_unlock_products(unlock_str);
 
    qDebug() << "SPATIAL License info:" << res.get_message_text();
+}
+
+static QObject* editOptionProvider(QQmlEngine*, QJSEngine*)
+{
+    return EditOption::instance();
 }
 
 int main(int argc, char *argv[])
@@ -407,6 +413,9 @@ int main(int argc, char *argv[])
     qmlRegisterType<User>("com.fh.models", 1, 0, "Project");
 
     qRegisterMetaType<HelperPoint>();
+
+
+    qmlRegisterSingletonType<EditOption>("com.fh.defaults", 1, 0, "EditOption", editOptionProvider);
 
 
     qmlRegisterType<UserController>("com.fh.controllers", 1, 0, "UserController");

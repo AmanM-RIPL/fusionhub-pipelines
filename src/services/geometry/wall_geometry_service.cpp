@@ -471,8 +471,9 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
     api_del_entity_list(ents);
 }
 
-void WallGeometryService::updateGeometry(BIMElement *wallElement, const QVector3D &point, const QString &curveType)
+void WallGeometryService::updateGeometry(BIMElement *wallElement, const QVector3D &point, EditOption *editOption)
 {
+    QString curveType = editOption->editType();
     std::vector<ReferenceLineSegment> referenceLine = {};
     std::vector<Layer> layers = {};
     float width = 0;
@@ -530,10 +531,11 @@ void WallGeometryService::updateGeometry(BIMElement *wallElement, const QVector3
     }
 }
 
-void WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints, const QString &curveType)
+void WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints, EditOption *editOption)
 {
     ENTITY_LIST ents;
 
+    QString curveType = editOption->editType();
     std::vector<ReferenceLineSegment> referenceLine = {};
     std::vector<Layer> layers = {};
     float width = 0;

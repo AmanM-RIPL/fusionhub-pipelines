@@ -1,15 +1,14 @@
 import QtQuick 2.15
 import QtQuick.Controls
 import QtQuick.Layouts
+import com.fh.defaults 1.0
 
 Column {
     id: projectRibbon
 
     signal logOutButtonClicked()
     signal projectPageToRedirect(string pageName)
-    signal projectPageAction(string pageAction)
-
-    property string curveType: "line"
+    signal projectPageAction()
 
     width: parent.width
     height: 131
@@ -340,7 +339,9 @@ Column {
 
                         onClicked: {
                             projectPageToRedirect("PlannedBIM")
-                            projectPageAction("ModelView")
+
+                            EditOption.viewType = "ModelView";
+                            projectPageAction();
                         }
                     }
                 }
@@ -356,7 +357,9 @@ Column {
 
                         onClicked: {
                             projectPageToRedirect("PlannedBIM")
-                            projectPageAction("PlanView")
+
+                            EditOption.viewType = "PlanView";
+                            projectPageAction();
                         }
                     }
                 }
@@ -442,8 +445,8 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            projectPageAction("line");
-                            projectRibbon.curveType = "line"
+                            EditOption.editType = "line";
+                            projectPageAction();
                         }
                     }
                 }
@@ -458,8 +461,8 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            projectPageAction("3pt-circle");
-                            projectRibbon.curveType = "3pt-circle";
+                            EditOption.editType = "3pt-circle";
+                            projectPageAction();
                         }
                     }
                 }
@@ -474,8 +477,8 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            projectPageAction("bezier");
-                            projectRibbon.curveType = "bezier";
+                            EditOption.editType = "bezier";
+                            projectPageAction();
                         }
                     }
                 }
@@ -496,8 +499,8 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            projectPageAction("bezier");
-                            projectRibbon.curveType = "bezier";
+                            EditOption.editType = "cube";
+                            projectPageAction();
                         }
                     }
                 }
@@ -512,8 +515,8 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            projectPageAction("bezier");
-                            projectRibbon.curveType = "bezier";
+                            EditOption.editType = "sphere";
+                            projectPageAction();
                         }
                     }
                 }
@@ -534,8 +537,8 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            projectPageAction("bezier");
-                            projectRibbon.curveType = "bezier";
+                            EditOption.editType = "copy";
+                            projectPageAction();
                         }
                     }
                 }
@@ -550,8 +553,8 @@ Column {
                         anchors.fill: parent
 
                         onClicked: {
-                            projectPageAction("bezier");
-                            projectRibbon.curveType = "bezier";
+                            EditOption.editType = "move";
+                            projectPageAction();
                         }
                     }
                 }

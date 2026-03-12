@@ -75,12 +75,12 @@ void GeometryServiceFactory::generateMesh3D(BIMElement *bimElement, Mesh *mesh, 
     }
 }
 
-void GeometryServiceFactory::updateGeometry(const QVector3D& point, const QString &curveType, BIMElement* bimElement, BIMElement* hostElement)
+void GeometryServiceFactory::updateGeometry(const QVector3D& point, EditOption *editOption, BIMElement* bimElement, BIMElement* hostElement)
 {
     if (bimElement->getType() == "Wall")
     {
         WallGeometryService service = WallGeometryService();
-        service.updateGeometry(bimElement, point, curveType);
+        service.updateGeometry(bimElement, point, editOption);
     }
     else if (bimElement->getType() == "Beam")
     {
@@ -95,7 +95,7 @@ void GeometryServiceFactory::updateGeometry(const QVector3D& point, const QStrin
     else if (bimElement->getType() == "Slab")
     {
         SlabGeometryService service = SlabGeometryService();
-        service.updateGeometry(bimElement, point, curveType);
+        service.updateGeometry(bimElement, point, editOption);
     }
     else if (bimElement->getType() == "Door" && hostElement != nullptr)
     {
@@ -109,12 +109,12 @@ void GeometryServiceFactory::updateGeometry(const QVector3D& point, const QStrin
     }
 }
 
-void GeometryServiceFactory::generateWIPMesh2D(BIMElement *bimElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints, const QString &curveType, BIMElement* hostElement)
+void GeometryServiceFactory::generateWIPMesh2D(BIMElement *bimElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints, EditOption *editOption, BIMElement* hostElement)
 {
     if (bimElement->getType() == "Wall")
     {
         WallGeometryService service = WallGeometryService();
-        service.generateWIPMesh2D(bimElement, mesh, point, screen_point, view, helperPoints, curveType);
+        service.generateWIPMesh2D(bimElement, mesh, point, screen_point, view, helperPoints, editOption);
     }
     else if (bimElement->getType() == "Beam")
     {
@@ -129,7 +129,7 @@ void GeometryServiceFactory::generateWIPMesh2D(BIMElement *bimElement, Mesh *mes
     else if (bimElement->getType() == "Slab")
     {
         SlabGeometryService service = SlabGeometryService();
-        service.generateWIPMesh2D(bimElement, mesh, point, screen_point, view, helperPoints, curveType);
+        service.generateWIPMesh2D(bimElement, mesh, point, screen_point, view, helperPoints, editOption);
     }
     else if (bimElement->getType() == "Door")
     {

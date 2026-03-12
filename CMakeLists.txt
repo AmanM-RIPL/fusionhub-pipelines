@@ -85,6 +85,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Concurrent)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 
 set(CMAKE_AUTOMOC ON)
@@ -291,6 +292,8 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/common/helper_point.h
     src/common/opengl/classes/mesh_map.h src/common/opengl/classes/mesh_map.cpp
     src/controllers/draft_entity_controller.h src/controllers/draft_entity_controller.cpp
+    src/common/edit_option.h src/common/edit_option.cpp
+
 )
 
 target_include_directories(FusionHubQt PRIVATE src)
@@ -412,6 +415,7 @@ target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7
 
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Concurrent)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 #End

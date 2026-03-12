@@ -15,11 +15,8 @@ Row {
     padding: 10
     spacing: 10
 
-    signal updateCurveType(string curveType);
-
     property var ifcDetailList: [];
     property string pageType: "PlannedBIM";
-    property string pageAction: "ModelView";
     property int treeviewWidth: parent.width/2 - 20
     property int glsceneWidth: parent.width/2
     property bool glsceneVisible: false
@@ -38,20 +35,6 @@ Row {
     property int stairsExpandedIndex: -1
 
     property var scheduleSetupList: []
-
-    property string curveType: "line"
-
-    onPageActionChanged: {
-        if (pageAction === "ModelView" || pageAction === "PlanView")
-        {
-            glscene.updateView(plannedBIMRoot.pageAction);
-        }
-        else if (pageAction === "line" || pageAction === "3pt-circle" || pageAction === "bezier")
-        {
-            plannedBIMRoot.curveType = pageAction;
-            glscene.updateCurveType(pageAction);
-        }
-    }
 
 
     IFCWallController {

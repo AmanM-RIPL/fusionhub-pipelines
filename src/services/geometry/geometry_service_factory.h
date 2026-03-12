@@ -7,6 +7,7 @@
 #include "common/opengl/classes/mesh.h"
 #include "common/opengl/classes/view.h"
 #include "common/helper_point.h"
+#include "common/edit_option.h"
 #include "wall_geometry_service.h"
 #include "beam_geometry_service.h"
 #include "column_geometry_service.h"
@@ -25,8 +26,8 @@ public:
 
     static void generateMesh2D(BIMElement* bimElement, Mesh* mesh);
     static void generateMesh3D(BIMElement* bimElement, Mesh* mesh, IFCDetailController* pIfcDetailController, IfcGeometryService* pIfcGeometryService);
-    static void updateGeometry(const QVector3D& point, const QString &curveType, BIMElement* bimElement, BIMElement* hostElement = nullptr);
-    static void generateWIPMesh2D(BIMElement* bimElement, Mesh* mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints, const QString &curveType, BIMElement* hostElement = nullptr);
+    static void updateGeometry(const QVector3D& point, EditOption *editOption, BIMElement* bimElement, BIMElement* hostElement = nullptr);
+    static void generateWIPMesh2D(BIMElement* bimElement, Mesh* mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints, EditOption *editOption, BIMElement* hostElement = nullptr);
     static Point updatePoint2D(BIMElement* bimElement, const QList<HelperPoint>& helperPoints, const Point& screen_point, View *view, BIMElement* hostElement = nullptr);
     static void generateHelperPoints(BIMElement* bimElement, QList<HelperPoint>& helperPoints);
 

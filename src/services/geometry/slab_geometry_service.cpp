@@ -185,8 +185,9 @@ void SlabGeometryService::generateMesh3D(BIMElement* slabElement, Mesh* mesh)
     api_del_entity_list(ents);
 }
 
-void SlabGeometryService::updateGeometry(BIMElement *slabElement, const QVector3D &point, const QString &curveType)
+void SlabGeometryService::updateGeometry(BIMElement *slabElement, const QVector3D &point, EditOption *editOption)
 {
+    QString curveType = editOption->editType();
     std::vector<ReferenceLineSegment> referenceLine = {};
     std::vector<Layer> layers = {};
     float width = 0;
@@ -244,10 +245,11 @@ void SlabGeometryService::updateGeometry(BIMElement *slabElement, const QVector3
     }
 }
 
-void SlabGeometryService::generateWIPMesh2D(BIMElement *slabElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints, const QString &curveType)
+void SlabGeometryService::generateWIPMesh2D(BIMElement *slabElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints, EditOption *editOption)
 {
     ENTITY_LIST ents;
 
+    QString curveType = editOption->editType();
     std::vector<ReferenceLineSegment> referenceLine = {};
     std::vector<Layer> layers = {};
     float width = 0;
