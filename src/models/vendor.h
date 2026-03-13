@@ -19,6 +19,11 @@ class Vendor : public QObject
     Q_PROPERTY(QString vendorEmail READ getVendorEmail WRITE setVendorEmail NOTIFY vendoEmailChanged)
     Q_PROPERTY(int nextApprovingUser READ getNextApprovingUser WRITE setNextApprovingUser NOTIFY nextApprovingUserChanged)
     Q_PROPERTY(int createdByUser READ getCreatedByUser WRITE setCreatedByUser NOTIFY createdByUserChanged)
+    Q_PROPERTY(double totalAmount READ getTotalAmount WRITE setTotalAmount NOTIFY totalAmountChanged)
+    Q_PROPERTY(int totalBilling READ getTotalBilling WRITE setTotalBilling NOTIFY totalBillingChanged)
+    Q_PROPERTY(double totalWorkOrderAmount READ getTotalWorkOrderAmount WRITE setTotalWorkOrderAmount NOTIFY totalWorkOrderAmountChanged)
+    Q_PROPERTY(double totalBillingAmount READ getTotalBillingAmount WRITE setTotalBillingAmount NOTIFY totalBillingAmountChanged)
+    Q_PROPERTY(double totalRemaining READ getTotalRemaining WRITE setTotalRemaining NOTIFY totalRemainingChanged)
 
 
 public:
@@ -26,7 +31,7 @@ public:
     Vendor(int id, const QString& globalId, const QString& approvalStatus,
            const QString& vendorName, const QString& vendorAddress,
            const QString& vendorContactPerson, const QString& vendorMobile,
-           const QString& vendorEmail, QObject* parent = nullptr);
+           const QString& vendorEmail, const double totalAmount, int totalBilling, const double totalWorkOrderAmount, const double totalBillingAmount,const double totalRemaining, QObject* parent = nullptr);
     
     int getId() const { return id; }
     QString getGlobalId() const { return globalId; }
@@ -38,6 +43,11 @@ public:
     QString getVendorEmail() const { return vendorEmail; }
     int getNextApprovingUser() const { return nextApprovingUser; }
     int getCreatedByUser() const { return createdByUser; }
+    double getTotalAmount() const { return totalAmount; }
+    int getTotalBilling() const { return totalBilling; }
+    double getTotalWorkOrderAmount() const { return totalWorkOrderAmount; }
+    double getTotalBillingAmount() const { return totalBillingAmount; }
+    double getTotalRemaining() const { return totalRemaining; }
     
     void setId(int id) { this->id = id; }
     void setGlobalId(const QString& globalId) { this->globalId = globalId; }
@@ -49,6 +59,11 @@ public:
     void setVendorEmail(const QString& vendorEmail) { this->vendorEmail = vendorEmail; }
     void setNextApprovingUser(int nextApprovingUser) { this->nextApprovingUser = nextApprovingUser; }
     void setCreatedByUser(int createdByUser) { this->createdByUser = createdByUser; }
+    void setTotalAmount(double totalAmount) { this->totalAmount = totalAmount; }
+    void setTotalBilling(int totalBilling) { this->totalBilling = totalBilling; }
+    void setTotalWorkOrderAmount(double totalWorkOrderAmount) { this->totalWorkOrderAmount = totalWorkOrderAmount; }
+    void setTotalBillingAmount(double totalBillingAmount) { this->totalBillingAmount = totalBillingAmount; }
+    void setTotalRemaining(double totalRemaining) { this->totalRemaining = totalRemaining; }
 
 signals:
     void globalIdChanged();
@@ -60,6 +75,11 @@ signals:
     void vendoEmailChanged();
     void nextApprovingUserChanged();
     void createdByUserChanged();
+    void totalAmountChanged();
+    void totalBillingChanged();
+    void totalWorkOrderAmountChanged();
+    void totalBillingAmountChanged();
+    void totalRemainingChanged();
 
 private:
     int id = 0;
@@ -72,6 +92,11 @@ private:
     QString vendorEmail;
     int nextApprovingUser = 0;
     int createdByUser = 0;
+    double totalAmount = 0.0 ;
+    int totalBilling = 0;
+    double totalWorkOrderAmount = 0.0;
+    double totalBillingAmount = 0.0;
+    double totalRemaining = 0.0;
 };
 
 Q_DECLARE_METATYPE(Vendor)

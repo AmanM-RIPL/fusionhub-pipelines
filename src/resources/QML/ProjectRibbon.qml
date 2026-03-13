@@ -35,7 +35,7 @@ Column {
         TabButton {
             text: qsTr("Analytics")
             onClicked: {
-                projectPageToRedirect("Analytics")
+                projectPageToRedirect("PurchaseDashboard")
             }
         }
         TabButton {
@@ -456,8 +456,7 @@ Column {
         Item {
             id: activityTab
             onVisibleChanged:   {
-                //This will be changed after Implemention of Analytics
-                  projectPageToRedirect("Analytics")
+                  projectPageToRedirect("PurchaseDashboard")
             }
             Rectangle {
                 width: parent.width - 20
@@ -469,7 +468,7 @@ Column {
                 //anchors.horizontalCenter: parent.horizontalCenter
                 Layout.alignment: parent.anchors.alignWhenCentered
                 onVisibleChanged:   {
-                     projectPageToRedirect("Analytics")
+                     projectPageToRedirect("PurchaseDashboard")
                 }
 
                 Row {
@@ -486,7 +485,7 @@ Column {
                             anchors.fill: parent
 
                             onClicked: {
-                                projectPageToRedirect("Procurement")
+                                projectPageToRedirect("PurchaseDashboard")
                             }
                         }
                     }
@@ -499,20 +498,27 @@ Column {
                     }
 
                     RibbonButton {
-                        btnSource: "qrc:/resources/images/budget_icon.png"
-                        btnName: "Engineering Work"
+                        btnSource: "qrc:/resources/images/task_board_icon.png"
+                        btnName: "Engineering Works"
                         btnNameColor: "#000000"
                         anchors.verticalCenter: parent.verticalCenter
-                        width: 100
+                        width: 120
 
                         MouseArea {
                             anchors.fill: parent
 
                             onClicked: {
-                                projectPageToRedirect("EngineeringWork")
+                                projectPageToRedirect("WorksDashboard")
                             }
                         }
                     }
+
+                    Rectangle {
+                        width: 1
+                        height: 60
+                        color: "#7676801F"
+                    }
+
                 }
 
 
@@ -625,7 +631,6 @@ Column {
                     color: "#7676801F"
                 }
 
-
                 RibbonButton {
                     btnSource: "qrc:/resources/images/budget_icon.png"
                     btnName: "Budget Head"
@@ -639,6 +644,12 @@ Column {
                             projectPageToRedirect("BudgetHead")
                         }
                     }
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 60
+                    color: "#7676801F"
                 }
 
                 RibbonButton {

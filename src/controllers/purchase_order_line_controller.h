@@ -17,12 +17,11 @@ public:
 
     Q_INVOKABLE std::vector<PurchaseOrderLine*> getPurchaseOrderLineList(bool isApproved = false) const;
     Q_INVOKABLE std::vector<PurchaseOrderLine*> getPurchaseOrderLineMaterialList(bool isApproved = false) const;
-    Q_INVOKABLE std::vector<PurchaseOrderLine*> getPurchaseOrderLineVendorList(bool isApproved = false) const;
+   // Q_INVOKABLE std::vector<PurchaseOrderLine*> getPurchaseOrderLineVendorList(bool isApproved = false) const;
+    Q_INVOKABLE std::vector<PurchaseOrderLine*> getDashboardData(int purchaseOrderId, bool isApproved = false) const;
+    Q_INVOKABLE std::vector<PurchaseOrderLine*> getDashboardTableData(int materialId, bool isApproved = false) const;
 
-    Q_INVOKABLE double getTotalPurchaseExpense() const;
-    Q_INVOKABLE double getTotalMaterialQuantity() const;
-    Q_INVOKABLE QVariantList getMaterialExpenseList() const;
-    Q_INVOKABLE QVariantList getVendorExpenseList() const;
+
 
 private:
     PurchaseOrderLineRepository* m_purchaseOrderLineRepository;

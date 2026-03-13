@@ -19,6 +19,9 @@ public:
 
     Q_INVOKABLE std::vector<PurchaseOrderLine*> findAllQML();
 
+    Q_INVOKABLE std::vector<PurchaseOrderLine*> findDashboardQML(int purchaseOrderId);
+    Q_INVOKABLE std::vector<PurchaseOrderLine*> findDashboardTableQML(int materialId);
+
     bool save(const PurchaseOrderLine& entity) override;
     Q_INVOKABLE bool saveQML(PurchaseOrderLine* entity);
 

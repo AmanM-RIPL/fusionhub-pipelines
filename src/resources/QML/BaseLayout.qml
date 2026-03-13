@@ -95,8 +95,12 @@ Rectangle {
             visible: pageName === "WorkBilling"
         }
 
-        AnalyticsPage{
-            visible: pageName === "Analytics"
+        PurchaseDashboardPage{
+            visible: pageName === "PurchaseDashboard"
+        }
+
+        WorksDashboardPage{
+            visible: pageName === "WorksDashboard"
         }
 
 

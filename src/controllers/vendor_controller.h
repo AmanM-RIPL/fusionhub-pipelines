@@ -21,6 +21,12 @@ public:
 
     Q_INVOKABLE std::vector<Vendor*> getVendorList(bool isApproved = false) const;
 
+    Q_INVOKABLE std::vector<Vendor*> getWorkOrderTableList(int vendorId, bool isApproved = false) const;
+
+    Q_INVOKABLE std::vector<Vendor*> getDashboardData(int vendorId, bool isApproved = false) const;
+
+
+
 private:
     VendorRepository* m_vendorRepository;
     DraftEntityRepository* m_draftEntityRepository;

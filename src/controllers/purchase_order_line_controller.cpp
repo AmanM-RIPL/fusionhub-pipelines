@@ -265,155 +265,16 @@ std::vector<PurchaseOrderLine*> PurchaseOrderLineController::getPurchaseOrderLin
     return purchaseOrderLines;
 }
 
-std::vector<PurchaseOrderLine*> PurchaseOrderLineController::getPurchaseOrderLineVendorList(bool isApproved) const
+std::vector<PurchaseOrderLine*> PurchaseOrderLineController::getDashboardData(int materialId, bool isApproved) const
 {
-    qDebug() << "Fetching Purchase Order Lines. IsApproved: " << isApproved;
-
-    std::vector<PurchaseOrderLine*> purchaseOrderLines;
-
-    // 1. Repository se saara data uthao (Approved/DB data)
-    purchaseOrderLines = m_purchaseOrderLineRepository->findAllQML();
-
-    // 2. Mapping ke liye Reference Controllers
-    VendorController vendorController;
-    MaterialController materialController;
-    PurchaseOrderController poController; // PO ID se Vendor ID nikalne ke liye
-
-    // Reference data collections
-    std::vector<Vendor*> vecVendor = vendorController.getVendorList(true);
-    std::vector<Material*> vecMaterial = materialController.getMaterialList(true);
-    std::vector<PurchaseOrder*> vecPO = poController.getPurchaseOrderList(isApproved);
-
-    // 3. Fast Mapping ke liye Maps (Aapke loop ko speed dene ke liye)
-    QMap<int, int> poToVendorMap;
-    for (auto po : vecPO) poToVendorMap.insert(po->getId(), po->getVendorId());
-
-    QMap<int, QString> vendorMap;
-    for (auto v : vecVendor) vendorMap.insert(v->getId(), v->getVendorName());
-
-    QMap<int, QString> materialMap;
-    for (auto m : vecMaterial) materialMap.insert(m->getId(), m->getMaterialName());
-
-    // 4. Mapping Loop (Aapke code ka logic apply karte hue)
-    for (int i = 0; i < purchaseOrderLines.size(); i++)
-    {
-        auto line = purchaseOrderLines[i];
-
-        // ---- Match Vendor (PO -> VendorID -> VendorName) ----
-        int poId = line->getPurchaseOrderId();
-        if (poToVendorMap.contains(poId))
-        {
-            int vId = poToVendorMap.value(poId);
-            line->setVendorId(vId);
-            line->setVendorName(vendorMap.value(vId, "Unknown Vendor"));
-        }
-
-        // ---- Match Material Name ----
-        int mId = line->getMaterialId();
-        if (materialMap.contains(mId))
-        {
-            line->setMaterialName(materialMap.value(mId));
-        }
-
-        // Note: Quantity Repository se pehle hi line object mein aa chuki hogi.
-        // Agar zero aa rahi hai, toh Repository ka query check karein.
+    if(isApproved){
+        return m_purchaseOrderLineRepository->findDashboardQML(materialId);
     }
-
-    return purchaseOrderLines;
-}
-double PurchaseOrderLineController::getTotalPurchaseExpense() const
-{
-    auto lines = getPurchaseOrderLineList(true);
-
-    double total = 0;
-
-    for (auto line : lines)
-    {
-        if (!line) continue;
-
-        total += line->getAmount();
-    }
-
-    return total;
 }
 
-double PurchaseOrderLineController::getTotalMaterialQuantity() const
+std::vector<PurchaseOrderLine*> PurchaseOrderLineController::getDashboardTableData(int materialId, bool isApproved) const
 {
-    auto lines = getPurchaseOrderLineList(true);
-
-    double total = 0;
-
-    for (auto line : lines)
-    {
-        if (!line) continue;
-
-        total += line->getQuantity();
+    if(isApproved){
+        return m_purchaseOrderLineRepository->findDashboardTableQML(materialId);
     }
-
-    return total;
-}
-QVariantList PurchaseOrderLineController::getMaterialExpenseList() const
-{
-    QVariantList result;
-
-    MaterialController materialController;
-
-    auto lines = getPurchaseOrderLineList(true);
-    auto materials = materialController.getMaterialList(true);
-
-    QMap<int,double> materialExpense;
-
-    for (auto line : lines)
-    {
-        if (!line) continue;
-
-        materialExpense[line->getMaterialId()] += line->getAmount();
-    }
-
-    for (auto mat : materials)
-    {
-        if (!mat) continue;
-
-        QVariantMap obj;
-
-        obj["materialName"] = mat->getMaterialName();
-        obj["amount"] = materialExpense[mat->getId()];
-
-        result.append(obj);
-    }
-
-    return result;
-}
-
-QVariantList PurchaseOrderLineController::getVendorExpenseList() const
-{
-    QVariantList result;
-
-    VendorController vendorController;
-
-    auto lines = getPurchaseOrderLineList(true);
-    auto vendors = vendorController.getVendorList(true);
-
-    QMap<int,double> vendorExpense;
-
-    for (auto line : lines)
-    {
-        if (!line) continue;
-
-        vendorExpense[line->getVendorId()] += line->getAmount();
-    }
-
-    for (auto v : vendors)
-    {
-        if (!v) continue;
-
-        QVariantMap obj;
-
-        obj["vendorName"] = v->getVendorName();
-        obj["amount"] = vendorExpense[v->getId()];
-
-        result.append(obj);
-    }
-
-    return result;
 }
