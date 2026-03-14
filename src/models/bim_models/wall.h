@@ -1,5 +1,5 @@
-#ifndef IFC_WALL_H
-#define IFC_WALL_H
+#ifndef WALL_H
+#define WALL_H
 
 #include <QObject>
 
@@ -12,4 +12,4 @@ public:
 signals:
 };
 
-#endif // IFC_WALL_H
+#endif // WALL_H

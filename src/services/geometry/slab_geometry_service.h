@@ -49,6 +49,7 @@ public:
     void generateWIPMesh2D(BIMElement* slabElement, Mesh* mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints, EditOption *editOption);
     Point updatePoint2D(BIMElement* slabElement, const QList<HelperPoint>& helperPoints, const Point& screen_point, View *view); // value comes from m_middlePointValue
     void generateHelperPoints(BIMElement *bimElement, QList<HelperPoint> &helperPoints);
+    void getRayHitPoint(BIMElement* bimElement, View* view, const Point& screen_point, QVector3D &point);
 
 signals:
 

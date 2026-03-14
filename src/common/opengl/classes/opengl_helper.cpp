@@ -484,6 +484,45 @@ Point OpenglHelper::getPointAtDistanceAngle(Point point1, Point point2, float an
     };
 }
 
+void OpenglHelper::getRayHitPoint(ENTITY_LIST &body_list, View *view, const Point &screen_point, QVector3D &point)
+{
+    // 1. Get ray from view
+    Ray ray_from_camera = view->GetRayFromCamera(screen_point[0], screen_point[1]);
+
+    // 2. Find the point where the ray hits the BODY*
+    ray ray_acis(
+        SPAposition(ray_from_camera.position.x(), ray_from_camera.position.y(), ray_from_camera.position.z()),
+        SPAunit_vector(ray_from_camera.direction.x(), ray_from_camera.direction.y(), ray_from_camera.direction.z())
+    );
+    entity_hit_list hit_list;
+
+    EXCEPTION_BEGIN
+        rayfire_options* fire_options = ACIS_NEW rayfire_options();
+        fire_options->set_entity_type(FACE_TYPE);
+    EXCEPTION_TRY
+
+        outcome sw_result = api_ray_fire(body_list, ray_acis, hit_list, fire_options);
+
+        if (!sw_result.ok())
+        {
+            error_info* info = sw_result.get_error_info();
+            qInfo() << info->error_message();
+        }
+
+    EXCEPTION_CATCH_TRUE
+        ACIS_DELETE fire_options;
+    EXCEPTION_END
+
+    // 3. Store the hit point in point variable
+    if (hit_list.count() > 0)
+    {
+        entity_hit* hit_point = hit_list[0];
+        double hit_paramter = hit_point->hit_param();
+
+        point = ray_from_camera.position + hit_paramter * ray_from_camera.direction;
+    }
+}
+
 void OpenglHelper::convertSPAtransfToQMatrix4x4(const SPAtransf &acis_trans, QMatrix4x4 &qt_matrix)
 {
     SPAmatrix acis_matrix = acis_trans.affine();

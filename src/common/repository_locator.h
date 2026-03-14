@@ -15,7 +15,6 @@
 #include "repositories/schedule_of_rates_line_repository.h"
 #include "repositories/draft_entity_repository.h"
 #include "repositories/ifc_detail_repository.h"
-#include "repositories/ifc_repositories/ifc_wall_repository.h"
 #include "repositories/bill_of_quantity_repository.h"
 #include "repositories/bill_of_quantity_line_repository.h"
 #include "repositories/task_repository.h"
@@ -63,8 +62,6 @@ public:
     WorkBillingRepository* workBillingRepository();
     WorkBillingLineRepository* workBillingLineRepository();
 
-    IFCWallRepository* ifcWallRepository();
-
 
 
 
@@ -97,9 +94,6 @@ private:
 
     std::unique_ptr<WorkBillingRepository> m_workBillingRepository;
     std::unique_ptr<WorkBillingLineRepository> m_workBillingLineRepository;
-
-    std::unique_ptr<IFCWallRepository> m_ifcWallRepository;
-
 };
 
 #endif // REPOSITORY_LOCATOR_H

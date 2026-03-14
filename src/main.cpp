@@ -58,7 +58,6 @@
 #include "controllers/schedule_setup_controller.h"
 #include "controllers/schedule_of_rates_controller.h"
 #include "controllers/ifc_detail_controller.h"
-#include "controllers/ifc_controllers/ifc_wall_controller.h"
 #include "controllers/bim_element_controller.h"
 #include "controllers/bill_of_quantity_controller.h"
 #include "controllers/bill_of_quantity_line_controller.h"
@@ -429,7 +428,6 @@ int main(int argc, char *argv[])
     qmlRegisterType<ScheduleOfRatesController>("com.fh.controllers", 1, 0, "ScheduleOfRatesController");
     qmlRegisterType<ScheduleOfRatesLineController>("com.fh.controllers", 1, 0, "ScheduleOfRatesLineController");
     qmlRegisterType<IFCDetailController>("com.fh.controllers", 1, 0, "IFCDetailController");
-    qmlRegisterType<IFCWallController>("com.fh.controllers", 1, 0, "IFCWallController");
     qmlRegisterType<BIMElementController>("com.fh.controllers", 1, 0, "BIMElementController");
     qmlRegisterType<BillOfQuantityController>("com.fh.controllers", 1, 0, "BillOfQuantityController");
     qmlRegisterType<BillOfQuantityLineController>("com.fh.controllers", 1, 0, "BillOfQuantityLineController");

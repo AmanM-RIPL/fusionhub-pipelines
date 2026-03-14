@@ -234,9 +234,7 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/repositories/draft_entity_repository.h src/repositories/draft_entity_repository.cpp
     src/models/draft_entity.h src/models/draft_entity.cpp
     src/controllers/ifc_detail_controller.h src/controllers/ifc_detail_controller.cpp
-    src/repositories/ifc_repositories/ifc_wall_repository.h src/repositories/ifc_repositories/ifc_wall_repository.cpp
-    src/controllers/ifc_controllers/ifc_wall_controller.h src/controllers/ifc_controllers/ifc_wall_controller.cpp
-    src/models/ifc_models/ifc_wall.h src/models/ifc_models/ifc_wall.cpp
+    src/models/bim_models/wall.h src/models/bim_models/wall.cpp
     src/database/ifc_database_manager.h src/database/ifc_database_manager.cpp
     src/common/ifc_filler_extender.h
     src/common/tree_model.h src/common/tree_model.cpp

@@ -60,6 +60,9 @@
 #include "swp_opts.hxx"
 #include "faceutil.hxx"
 #include "sgquery.hxx"
+#include "queryapi.hxx"
+#include "raytest.hxx"
+#include "rayfire_opts.hxx"
 
 // for faceter
 #include "af_api.hxx"
@@ -127,6 +130,8 @@ public:
 
 
     // Below methods use ACIS
+    void getRayHitPoint(ENTITY_LIST& body_list, View* view, const Point& screen_point, QVector3D &point);
+
     void convertSPAtransfToQMatrix4x4(const SPAtransf& acis_trans, QMatrix4x4& qt_matrix);
 
     void getEdgeFromReferenceLineSegment(EDGE* &edge, const ReferenceLineSegment& referenceLineSegment);

@@ -232,6 +232,11 @@ private:
     int m_pickY = -1;
     QString m_viewType = "ModelView";
 
+    // Below is for morph object
+    ENTITY_LIST morph_bodies;
+    std::vector<SPAposition> morph_points;
+    std::vector<int> morph_selected_bodies;
+
     GLuint m_pickProgram = 0;
     GLuint m_pickColorLoc = -1;
     GLuint m_pickModelLoc = -1;

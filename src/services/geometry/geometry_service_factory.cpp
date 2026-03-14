@@ -224,3 +224,17 @@ void GeometryServiceFactory::generateHelperPoints(BIMElement *bimElement, QList<
         service.generateHelperPoints(bimElement, helperPoints);
     }
 }
+
+void GeometryServiceFactory::getRayHitPoint(BIMElement *bimElement, View *view, const Point &screen_point, QVector3D &point)
+{
+    if (bimElement->getType() == "Wall")
+    {
+        WallGeometryService service = WallGeometryService();
+        service.getRayHitPoint(bimElement, view, screen_point, point);
+    }
+    else if (bimElement->getType() == "Slab")
+    {
+        SlabGeometryService service = SlabGeometryService();
+        service.getRayHitPoint(bimElement, view, screen_point, point);
+    }
+}

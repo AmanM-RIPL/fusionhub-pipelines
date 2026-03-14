@@ -152,6 +152,9 @@ MyGLRenderer::~MyGLRenderer()
     }
     m_textureList.clear();
 
+    // delete entity list
+    api_del_entity_list(morph_bodies);
+
     api_stop_modeller();
 }
 
@@ -312,7 +315,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
     // has been processed.
     if (m_pickRequested == true && m_pickedBimElementId >= 0)
     {
-        QVector3D clickedPoint = m_view->GetPointInViewSpace(m_pickX, m_pickY);
+        QVector3D clickedPoint;
         BIMElement* hostElement = nullptr;
 
         for (BIMElement* element: glItem->bimElementList)
@@ -322,6 +325,17 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
                 hostElement = element;
                 break;
             }
+        }
+
+        // find the clicked point
+        if (editOption->viewType() == "ModelView" && hostElement != nullptr)
+        {
+            Point screen_point = { m_pickX, m_pickY };
+            GeometryServiceFactory::getRayHitPoint(hostElement, m_view, screen_point, clickedPoint);
+        }
+        else
+        {
+            clickedPoint = m_view->GetPointInViewSpace(m_pickX, m_pickY);
         }
 
         // update glItem BIM Element
@@ -353,7 +367,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
     if (m_hoverRequested == true && m_pickedBimElementId >= 0)
     {
-        QVector3D clickedPoint = m_view->GetPointInViewSpace(m_pickX, m_pickY);
+        QVector3D clickedPoint;
         BIMElement* hostElement = nullptr;
 
         for (BIMElement* element: glItem->bimElementList)
@@ -363,6 +377,17 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
                 hostElement = element;
                 break;
             }
+        }
+
+        // find the clicked point
+        if (editOption->viewType() == "ModelView" && hostElement != nullptr)
+        {
+            Point screen_point = { m_pickX, m_pickY };
+            GeometryServiceFactory::getRayHitPoint(hostElement, m_view, screen_point, clickedPoint);
+        }
+        else
+        {
+            clickedPoint = m_view->GetPointInViewSpace(m_pickX, m_pickY);
         }
 
         // update glItem BIM Element

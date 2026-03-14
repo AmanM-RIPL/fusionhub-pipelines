@@ -30,6 +30,7 @@ public:
     static void generateWIPMesh2D(BIMElement* bimElement, Mesh* mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints, EditOption *editOption, BIMElement* hostElement = nullptr);
     static Point updatePoint2D(BIMElement* bimElement, const QList<HelperPoint>& helperPoints, const Point& screen_point, View *view, BIMElement* hostElement = nullptr);
     static void generateHelperPoints(BIMElement* bimElement, QList<HelperPoint>& helperPoints);
+    static void getRayHitPoint(BIMElement* bimElement, View* view, const Point& screen_point, QVector3D &point);
 
 signals:
 

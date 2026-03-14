@@ -1,4 +1,4 @@
-#include "ifc_wall.h"
+#include "wall.h"
 
 IFCWall::IFCWall(QObject *parent)
     : QObject{parent}

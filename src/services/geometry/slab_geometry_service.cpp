@@ -460,6 +460,39 @@ void SlabGeometryService::generateHelperPoints(BIMElement *bimElement, QList<Hel
     helperPoints.append(angle);
 }
 
+void SlabGeometryService::getRayHitPoint(BIMElement *bimElement, View *view, const Point &screen_point, QVector3D &point)
+{
+    ENTITY_LIST ents;
+
+    std::vector<ReferenceLineSegment> referenceLine = {};
+    std::vector<Layer> layers = {};
+    float width = 0;
+    float height = 0;
+    float distance = 0;
+    float slantAngle = 0;
+    float taperAngle = 0;
+    QString referenceLinePosition = "inner";
+
+    m_openglHelper.extractBIMParameters(bimElement, referenceLine, layers, width, height, distance, slantAngle, taperAngle, referenceLinePosition);
+
+    if (referenceLine.size() < 2)
+    {
+        return;
+    }
+
+    BODY* final_body = nullptr;
+    ents.add(final_body);
+    generateSlab3D(final_body, ents, referenceLine, height, distance);
+
+    ENTITY_LIST body_list;
+    body_list.add(final_body);
+
+    m_openglHelper.getRayHitPoint(body_list, view, screen_point, point);
+
+    // delete entity list
+    api_del_entity_list(ents);
+}
+
 void SlabGeometryService::generateSlab2D(BODY *&final_body, ENTITY_LIST &ents, std::vector<ReferenceLineSegment> &referenceLine)
 {
     // 1. Convert referenceLine to ACIS open wire-body

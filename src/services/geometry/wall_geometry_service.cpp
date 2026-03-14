@@ -1047,6 +1047,44 @@ void WallGeometryService::generateHelperPoints(BIMElement *bimElement, QList<Hel
     helperPoints.append(angle);
 }
 
+void WallGeometryService::getRayHitPoint(BIMElement *bimElement, View *view, const Point &screen_point, QVector3D &point)
+{
+    // ACIS entity list to delete all entities at the end of the function
+    ENTITY_LIST ents;
+
+    std::vector<ReferenceLineSegment> referenceLine = {};
+    std::vector<Layer> layers = {};
+    float width = 0;
+    float height = 0;
+    float distance = 0;
+    float slantAngle = 0;
+    float taperAngle = 0;
+    QString referenceLinePosition = "inner";
+
+    m_openglHelper.extractBIMParameters(bimElement, referenceLine, layers, width, height, distance, slantAngle, taperAngle, referenceLinePosition);
+
+    // if reference line is only one point then we don't need to render
+    if (referenceLine.size() < 2)
+    {
+        return;
+    }
+
+    // 2D bodies
+    std::vector<BODY*> final_bodies;
+    generateWallLayers3D(final_bodies, ents, referenceLine, layers, width, height, referenceLinePosition, slantAngle, taperAngle);
+
+    ENTITY_LIST body_list;
+    for (BODY* &body: final_bodies)
+    {
+        body_list.add(body);
+    }
+
+    m_openglHelper.getRayHitPoint(body_list, view, screen_point, point);
+
+    // delete entity list
+    api_del_entity_list(ents);
+}
+
 void WallGeometryService::generateWallLayers2D(std::vector<BODY *> &final_bodies, ENTITY_LIST &ents, std::vector<ReferenceLineSegment> &referenceLine, std::vector<Layer> &layers, float width, QString &referenceLinePosition)
 {
     // 1. Convert referenceLine to ACIS open wire-body

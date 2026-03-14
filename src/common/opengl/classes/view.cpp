@@ -880,6 +880,28 @@ QVector3D View::GetPointInViewSpace(int pointX, int pointY)
     return hitPoint;
 }
 
+Ray View::GetRayFromCamera(int pointX, int pointY)
+{
+    // --- Step 1: Screen -> NDC
+    float x = (2.0f * pointX) / float(viewportWidth) - 1.0f;
+    float y = 1.0f - (2.0f * pointY) / float(viewportHeight);
+    QVector4D rayClip(x, y, -1.0f, 1.0f);
+
+    // --- Step 2: NDC -> Eye space
+    QVector4D rayEye = m_projectionMatrix.inverted() * rayClip;
+    rayEye = QVector4D(rayEye.x(), rayEye.y(), -1.0f, 0.0f);
+
+    // --- Step 3: Eye -> World space
+    QVector3D rayDirWorld = (camera->calculateViewMatrix().inverted() * rayEye).toVector3D().normalized();
+    QVector3D rayOriginWorld = camera->getCameraPosition();
+
+    Ray ray;
+    ray.direction = rayDirWorld;
+    ray.position = rayOriginWorld;
+
+    return ray;
+}
+
 std::array<float, 2> View::GetPointInScreenSpace(QVector3D& point3D)
 {
     QRect viewport(0, 0, viewportWidth, viewportHeight);
