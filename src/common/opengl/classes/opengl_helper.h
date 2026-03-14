@@ -104,6 +104,9 @@ public:
         QString& referenceLinePosition
     );
 
+    void readSATFile(QString& fileName, ENTITY_LIST& ents);
+    void saveSATFile(QString& fileName, ENTITY_LIST& ents);
+
     std::vector<Point> generateParallelCurve(std::vector<Point> referenceCurve, float width);
 
     // [10,2] where 10 = m and 2 = b in y = mx + b

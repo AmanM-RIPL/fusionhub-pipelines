@@ -184,6 +184,50 @@ void OpenglHelper::extractBIMParameters(
    // height = 4;
 }
 
+void OpenglHelper::readSATFile(QString &fileName, ENTITY_LIST &ents)
+{
+    QByteArray byteArray = fileName.toUtf8();
+    const char* constCharPointer = byteArray.constData();
+
+    FILE* input_file = nullptr;
+    fopen_s(&input_file, constCharPointer, "r");
+
+    if (input_file == nullptr)
+    {
+        fclose(input_file);
+        return;
+    }
+
+    api_restore_entity_list(input_file, TRUE, ents);
+
+    fclose(input_file);
+}
+
+void OpenglHelper::saveSATFile(QString &fileName, ENTITY_LIST &ents)
+{
+    API_NOP_BEGIN;
+    // Set the units and product_id.
+    FileInfo fileinfo;
+    fileinfo.set_units(1.0);
+    fileinfo.set_product_id("Example Application");
+    outcome result = api_set_file_info((FileIdent | FileUnits), fileinfo);
+
+    //Also set the option to produce sequence numbers in the SAT file.
+    result = api_set_int_option("sequence_save_files", 1);
+
+    // Open a file for writing, save the list of entities, and close the file.
+    FILE* save_file = acis_fopen(fileName, "w");
+    result = api_save_entity_list(save_file, TRUE, ents);
+
+    if (!result.ok())
+    {
+        std::cout << "Error: " << result.get_error_info()->error_message() << std::endl;
+    }
+
+    acis_fclose(save_file);
+    API_NOP_END;
+}
+
 void OpenglHelper::extractBIMParameters(BIMElement *wallElement, std::vector<Point> &referenceLine, float &width, float &height, float& distance)
 {
     QList<BIMParameter*> parameterList = wallElement->getParameterList();

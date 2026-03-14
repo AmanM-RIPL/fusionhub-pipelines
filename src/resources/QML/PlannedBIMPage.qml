@@ -1398,7 +1398,8 @@ Row {
 
             onAcceptCallback: function () {
                 let bimElementPtr = bimElementController.create("Morph", "New Morph Object", 0, 0);
-                bimElementController.addParameter(bimElementPtr, "SATFileName", "");
+                bimElementController.addParameter(bimElementPtr, "SATFileName3D", "");
+                bimElementController.addParameter(bimElementPtr, "SATFileName2D", "");
 
                 glscene.updateEditableBimElement(bimElementPtr);
 
