@@ -139,6 +139,7 @@ MyGLRenderer::~MyGLRenderer()
     delete m_picking_shader;
     delete m_edge_shader;
     delete m_view;
+    delete editableBimModel;
 
     for (OpenGLMaterial* material : m_materialList)
     {
@@ -162,6 +163,15 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 {
     glItem = static_cast<MyGLItem*>(item);
     EditOption* editOption = EditOption::instance();
+
+    // if editableBimModel is null then create a new bim model
+    if (glItem->editableBimElement != nullptr && editableBimModel == nullptr)
+    {
+        editableBimModel = GeometryServiceFactory::generateBimModel(glItem->editableBimElement);
+
+        // generate helper points
+        GeometryServiceFactory::generateHelperPoints(editableBimModel, glItem->m_middlePointValue);
+    }
 
     // Orbit only works in 3D mode and not in 2D
     if (glItem->m_moveUp && editOption->viewType() == "ModelView") {
@@ -254,7 +264,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         if (glItem->editableBimElement->getType() != "Door" && glItem->editableBimElement->getType() != "Window")
         {
             Point screenPoint = {m_pickX, m_pickY};
-            Point newPoint = GeometryServiceFactory::updatePoint2D(glItem->editableBimElement, glItem->m_middlePointValue, screenPoint, m_view);
+            Point newPoint = GeometryServiceFactory::updatePoint2D(editableBimModel, glItem->m_middlePointValue, screenPoint, m_view);
 
             m_pickX = newPoint[0];
             m_pickY = newPoint[1];
@@ -291,8 +301,10 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
                     }
                 }
 
+                BaseBimModel* hostModel = GeometryServiceFactory::generateBimModel(hostElement);
+
                 Point screenPoint = {m_pickX, m_pickY};
-                Point newPoint = GeometryServiceFactory::updatePoint2D(glItem->editableBimElement, glItem->m_middlePointValue, screenPoint, m_view, hostElement);
+                Point newPoint = GeometryServiceFactory::updatePoint2D(editableBimModel, glItem->m_middlePointValue, screenPoint, m_view, hostModel);
 
                 m_pickX = newPoint[0];
                 m_pickY = newPoint[1];
@@ -306,6 +318,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
                 glItem->m_lastHoverX = -1;
                 glItem->m_lastHoverY = -1;
                 glItem->m_middlePointValueUpdated = false;
+                delete hostModel;
             }
         }
     }
@@ -327,11 +340,13 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
             }
         }
 
+        BaseBimModel* hostModel = GeometryServiceFactory::generateBimModel(hostElement);
+
         // find the clicked point
-        if (editOption->viewType() == "ModelView" && hostElement != nullptr)
+        if (editOption->viewType() == "ModelView" && hostModel != nullptr)
         {
             Point screen_point = { m_pickX, m_pickY };
-            GeometryServiceFactory::getRayHitPoint(hostElement, m_view, screen_point, clickedPoint);
+            GeometryServiceFactory::getRayHitPoint(hostModel, m_view, screen_point, clickedPoint);
         }
         else
         {
@@ -341,18 +356,18 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         // update glItem BIM Element
         if (glItem->editableBimElement != nullptr)
         {
-            GeometryServiceFactory::updateGeometry(clickedPoint, editOption, glItem->editableBimElement, hostElement);
+            GeometryServiceFactory::updateGeometry(clickedPoint, editOption, editableBimModel, hostModel);
 
             // generating mesh for Editable BIMElement
             Mesh* mesh = new Mesh();
 
             if (editOption->viewType() == "ModelView")
             {
-                GeometryServiceFactory::generateMesh3D(glItem->editableBimElement, mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
+                GeometryServiceFactory::generateMesh3D(editableBimModel, mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
             }
             else if (editOption->viewType() == "PlanView")
             {
-                GeometryServiceFactory::generateMesh2D(glItem->editableBimElement, mesh);
+                GeometryServiceFactory::generateMesh2D(editableBimModel, mesh);
             }
 
             m_view->LoadDynamicMeshData(mesh);
@@ -363,6 +378,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         m_pickRequested = false;
         m_hoverRequested = false;
         m_pickedBimElementId = -1;
+        delete hostModel;
     }
 
     if (m_hoverRequested == true && m_pickedBimElementId >= 0)
@@ -379,11 +395,13 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
             }
         }
 
+        BaseBimModel* hostModel = GeometryServiceFactory::generateBimModel(hostElement);
+
         // find the clicked point
-        if (editOption->viewType() == "ModelView" && hostElement != nullptr)
+        if (editOption->viewType() == "ModelView" && hostModel != nullptr)
         {
             Point screen_point = { m_pickX, m_pickY };
-            GeometryServiceFactory::getRayHitPoint(hostElement, m_view, screen_point, clickedPoint);
+            GeometryServiceFactory::getRayHitPoint(hostModel, m_view, screen_point, clickedPoint);
         }
         else
         {
@@ -400,7 +418,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
             {
                 // qInfo() << "PickPoint: " << m_pickX << ", " << m_pickY;
                 Point screenPoint = {m_pickX, m_pickY};
-                GeometryServiceFactory::generateWIPMesh2D(glItem->editableBimElement, mesh, clickedPoint, screenPoint, m_view, glItem->m_middlePointValue, editOption, hostElement);
+                GeometryServiceFactory::generateWIPMesh2D(editableBimModel, mesh, clickedPoint, screenPoint, m_view, glItem->m_middlePointValue, editOption, hostModel);
                 glItem->middlePointPositionChanged(); // signal to QML
             }
 
@@ -413,6 +431,7 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         m_pickRequested = false;
         m_hoverRequested = false;
         m_pickedBimElementId = -1;
+        delete hostModel;
     }
 
     if (!meshInitialized)
@@ -424,15 +443,23 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
 
         for (BIMElement* bimElement: glItem->bimElementList)
         {
+            // generate BaseBimModel
+            BaseBimModel* bimModel = GeometryServiceFactory::generateBimModel(bimElement);
+
+            if (bimModel == nullptr) continue;
+
             // mesh for plan view
             Mesh* plan_mesh = m_mesh_map->GenerateMesh();
-            GeometryServiceFactory::generateMesh2D(bimElement, plan_mesh);
+            GeometryServiceFactory::generateMesh2D(bimModel, plan_mesh);
             m_mesh_map->AddMesh(plan_mesh, bimElement, ViewType::PLAN);
 
             // mesh for model view
             Mesh* model_mesh = m_mesh_map->GenerateMesh();
-            GeometryServiceFactory::generateMesh3D(bimElement, model_mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
+            GeometryServiceFactory::generateMesh3D(bimModel, model_mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
             m_mesh_map->AddMesh(model_mesh, bimElement, ViewType::MODEL);
+
+            // delete BimModel
+            delete bimModel;
         }
 
         m_view->Initialize();
@@ -465,12 +492,12 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
     {
         // mesh for plan view
         Mesh* plan_mesh = m_mesh_map->GenerateMesh();
-        GeometryServiceFactory::generateMesh2D(glItem->bimElementToSync, plan_mesh);
+        GeometryServiceFactory::generateMesh2D(editableBimModel, plan_mesh);
         m_mesh_map->AddMesh(plan_mesh, glItem->bimElementToSync, ViewType::PLAN);
 
         // mesh for model view
         Mesh* model_mesh = m_mesh_map->GenerateMesh();
-        GeometryServiceFactory::generateMesh3D(glItem->bimElementToSync, model_mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
+        GeometryServiceFactory::generateMesh3D(editableBimModel, model_mesh, glItem->pIfcDetailController, glItem->pIfcGeometryService);
         m_mesh_map->AddMesh(model_mesh, glItem->bimElementToSync, ViewType::MODEL);
 
         m_view->AppendToStaticMeshData(m_mesh_map);
@@ -485,8 +512,15 @@ void MyGLRenderer::synchronize(QQuickFramebufferObject *item)
         m_view->LoadDynamicMeshData(mesh);
         delete mesh;
 
+        // update the changes to bimElementToSync
+        GeometryServiceFactory::updateBimElement(glItem->bimElementToSync, editableBimModel);
+
         // remove bim element from bim element to sync
         glItem->bimElementToSync = nullptr;
+
+        // delete editable bim model
+        delete editableBimModel;
+        editableBimModel = nullptr;
     }
 }
 
@@ -1194,8 +1228,6 @@ void MyGLItem::viewIfc()
 void MyGLItem::updateEditableBimElement(QVariant bimElement)
 {
     editableBimElement = bimElement.value<BIMElement*>();
-
-    GeometryServiceFactory::generateHelperPoints(editableBimElement, m_middlePointValue);
 }
 
 void MyGLItem::saveEditableBimElement()

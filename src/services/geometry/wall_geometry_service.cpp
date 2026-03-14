@@ -5,20 +5,18 @@ WallGeometryService::WallGeometryService(QObject *parent)
 {}
 
 
-void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
+void WallGeometryService::generateMesh2D(Wall* wallModel, Mesh* mesh)
 {
     ENTITY_LIST ents;
 
-    std::vector<ReferenceLineSegment> referenceLine = {};
-    std::vector<Layer> layers = {};
-    float width = 0;
-    float height = 0;
-    float distance = 0;
-    float slantAngle = 0;
-    float taperAngle = 0;
-    QString referenceLinePosition = "inner";
-
-    m_openglHelper.extractBIMParameters(wallElement, referenceLine, layers, width, height, distance, slantAngle, taperAngle, referenceLinePosition);
+    std::vector<ReferenceLineSegment> referenceLine = wallModel->referenceLine();
+    std::vector<Layer> layers = wallModel->layers();
+    float width = wallModel->width();
+    float height = wallModel->height();
+    float distance = wallModel->distance();
+    float slantAngle = wallModel->slantAngle();
+    float taperAngle = wallModel->taperAngle();
+    QString referenceLinePosition = wallModel->referenceLinePosition();
 
     // if reference line is only one point then we don't need to render
     if (referenceLine.size() < 2)
@@ -246,7 +244,7 @@ void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
         meshIndices,
         edge_indices
     );
-    mesh->setBIMElementId(wallElement->getId());
+    mesh->setBIMElementId(wallModel->id());
 
 
     // // GLfloat* vertices1 = mesh->getVerticies();
@@ -269,21 +267,19 @@ void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
     api_del_entity_list(ents);
 }
 
-void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
+void WallGeometryService::generateMesh3D(Wall* wallModel, Mesh* mesh)
 {
     // ACIS entity list to delete all entities at the end of the function
     ENTITY_LIST ents;
 
-    std::vector<ReferenceLineSegment> referenceLine = {};
-    std::vector<Layer> layers = {};
-    float width = 0;
-    float height = 0;
-    float distance = 0;
-    float slantAngle = 0;
-    float taperAngle = 0;
-    QString referenceLinePosition = "inner";
-
-    m_openglHelper.extractBIMParameters(wallElement, referenceLine, layers, width, height, distance, slantAngle, taperAngle, referenceLinePosition);
+    std::vector<ReferenceLineSegment> referenceLine = wallModel->referenceLine();
+    std::vector<Layer> layers = wallModel->layers();
+    float width = wallModel->width();
+    float height = wallModel->height();
+    float distance = wallModel->distance();
+    float slantAngle = wallModel->slantAngle();
+    float taperAngle = wallModel->taperAngle();
+    QString referenceLinePosition = wallModel->referenceLinePosition();
 
     // if reference line is only one point then we don't need to render
     if (referenceLine.size() < 2)
@@ -465,87 +461,44 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
         meshIndices,
         edge_indices
     );
-    mesh->setBIMElementId(wallElement->getId());
+    mesh->setBIMElementId(wallModel->id());
 
     // delete entity list
     api_del_entity_list(ents);
 }
 
-void WallGeometryService::updateGeometry(BIMElement *wallElement, const QVector3D &point, EditOption *editOption)
+void WallGeometryService::updateGeometry(Wall *wallModel, const QVector3D &point, EditOption *editOption)
 {
     QString curveType = editOption->editType();
-    std::vector<ReferenceLineSegment> referenceLine = {};
-    std::vector<Layer> layers = {};
-    float width = 0;
-    float height = 0;
-    float distance = 0;
-    float slantAngle = 0;
-    float taperAngle = 0;
-    QString referenceLinePosition = "inner";
-
-    m_openglHelper.extractBIMParameters(wallElement, referenceLine, layers, width, height, distance, slantAngle, taperAngle, referenceLinePosition);
+    std::vector<ReferenceLineSegment> referenceLine = wallModel->referenceLine();
+    std::vector<Layer> layers = wallModel->layers();
+    float width = wallModel->width();
+    float height = wallModel->height();
+    float distance = wallModel->distance();
+    float slantAngle = wallModel->slantAngle();
+    float taperAngle = wallModel->taperAngle();
+    QString referenceLinePosition = wallModel->referenceLinePosition();
 
     // update the new point in the reference line
     m_openglHelper.addPointToReferenceLine(referenceLine, point, curveType);
 
-    // updating the BIMElement
-    QJsonArray referenceLineJsonArray;
-
-    for (const ReferenceLineSegment& rlsArray : referenceLine)
-    {
-        QJsonObject rlsObject;
-
-        rlsObject.insert("type", rlsArray.type);
-
-        QJsonArray pointsArray;
-
-        for (const Point &point: rlsArray.points)
-        {
-            QJsonArray jsonInnerArray;
-            for (float value : point) {
-                jsonInnerArray.append(QJsonValue(value));
-            }
-
-            pointsArray.append(jsonInnerArray);
-        }
-
-        rlsObject.insert("points", pointsArray);
-
-        referenceLineJsonArray.append(rlsObject);
-    }
-
-    QJsonDocument jsonDoc(referenceLineJsonArray);
-    QByteArray byteArray = jsonDoc.toJson(QJsonDocument::Compact);
-    QString referenceLineString = QString(byteArray);
-
-    QList<BIMParameter*> parameterList = wallElement->getParameterList();
-
-    for (BIMParameter* parameter: parameterList)
-    {
-        if (parameter->getKey() == "ReferenceLine")
-        {
-            parameter->setValue(referenceLineString);
-
-            break;
-        }
-    }
+    // update BimModel
+    wallModel->setReferenceLine(referenceLine);
 }
 
-void WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints, EditOption *editOption)
+void WallGeometryService::generateWIPMesh2D(Wall *wallModel, Mesh *mesh, const QVector3D &point, const Point& screen_point, View *view, QList<HelperPoint> &helperPoints, EditOption *editOption)
 {
     ENTITY_LIST ents;
 
     QString curveType = editOption->editType();
-    std::vector<ReferenceLineSegment> referenceLine = {};
-    std::vector<Layer> layers = {};
-    float width = 0;
-    float height = 0;
-    float distance = 0;
-    float slantAngle = 0;
-    float taperAngle = 0;
-    QString referenceLinePosition = "inner";
-
-    m_openglHelper.extractBIMParameters(wallElement, referenceLine, layers, width, height, distance, slantAngle, taperAngle, referenceLinePosition);
+    std::vector<ReferenceLineSegment> referenceLine = wallModel->referenceLine();
+    std::vector<Layer> layers = wallModel->layers();
+    float width = wallModel->width();
+    float height = wallModel->height();
+    float distance = wallModel->distance();
+    float slantAngle = wallModel->slantAngle();
+    float taperAngle = wallModel->taperAngle();
+    QString referenceLinePosition = wallModel->referenceLinePosition();
 
     // update the new point in the reference line
     m_openglHelper.addPointToReferenceLine(referenceLine, point, curveType);
@@ -942,7 +895,7 @@ void WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh,
         meshIndices,
         edge_indices
     );
-    mesh->setBIMElementId(wallElement->getId());
+    mesh->setBIMElementId(wallModel->id());
 
 
     // GLfloat* vertices1 = mesh->getVerticies();
@@ -965,20 +918,18 @@ void WallGeometryService::generateWIPMesh2D(BIMElement *wallElement, Mesh *mesh,
     api_del_entity_list(ents);
 }
 
-Point WallGeometryService::updatePoint2D(BIMElement *wallElement, const QList<HelperPoint> &helperPoints, const Point &screen_point, View *view)
+Point WallGeometryService::updatePoint2D(Wall *wallModel, const QList<HelperPoint> &helperPoints, const Point &screen_point, View *view)
 {
     ENTITY_LIST ents;
 
-    std::vector<ReferenceLineSegment> referenceLine = {};
-    std::vector<Layer> layers = {};
-    float width = 0;
-    float height = 0;
-    float distance = 0;
-    float slantAngle = 0;
-    float taperAngle = 0;
-    QString referenceLinePosition = "inner";
-
-    m_openglHelper.extractBIMParameters(wallElement, referenceLine, layers, width, height, distance, slantAngle, taperAngle, referenceLinePosition);
+    std::vector<ReferenceLineSegment> referenceLine = wallModel->referenceLine();
+    std::vector<Layer> layers = wallModel->layers();
+    float width = wallModel->width();
+    float height = wallModel->height();
+    float distance = wallModel->distance();
+    float slantAngle = wallModel->slantAngle();
+    float taperAngle = wallModel->taperAngle();
+    QString referenceLinePosition = wallModel->referenceLinePosition();
 
     // // last point of referenceLine
     // Point lastPointReferenceLine = referenceLine.back();
@@ -1024,7 +975,7 @@ Point WallGeometryService::updatePoint2D(BIMElement *wallElement, const QList<He
     return newPointScreenSpace;
 }
 
-void WallGeometryService::generateHelperPoints(BIMElement *bimElement, QList<HelperPoint> &helperPoints)
+void WallGeometryService::generateHelperPoints(Wall *wallModel, QList<HelperPoint> &helperPoints)
 {
     HelperPoint length;
     HelperPoint angle;
@@ -1047,21 +998,19 @@ void WallGeometryService::generateHelperPoints(BIMElement *bimElement, QList<Hel
     helperPoints.append(angle);
 }
 
-void WallGeometryService::getRayHitPoint(BIMElement *bimElement, View *view, const Point &screen_point, QVector3D &point)
+void WallGeometryService::getRayHitPoint(Wall *wallModel, View *view, const Point &screen_point, QVector3D &point)
 {
     // ACIS entity list to delete all entities at the end of the function
     ENTITY_LIST ents;
 
-    std::vector<ReferenceLineSegment> referenceLine = {};
-    std::vector<Layer> layers = {};
-    float width = 0;
-    float height = 0;
-    float distance = 0;
-    float slantAngle = 0;
-    float taperAngle = 0;
-    QString referenceLinePosition = "inner";
-
-    m_openglHelper.extractBIMParameters(bimElement, referenceLine, layers, width, height, distance, slantAngle, taperAngle, referenceLinePosition);
+    std::vector<ReferenceLineSegment> referenceLine = wallModel->referenceLine();
+    std::vector<Layer> layers = wallModel->layers();
+    float width = wallModel->width();
+    float height = wallModel->height();
+    float distance = wallModel->distance();
+    float slantAngle = wallModel->slantAngle();
+    float taperAngle = wallModel->taperAngle();
+    QString referenceLinePosition = wallModel->referenceLinePosition();
 
     // if reference line is only one point then we don't need to render
     if (referenceLine.size() < 2)
@@ -1083,6 +1032,82 @@ void WallGeometryService::getRayHitPoint(BIMElement *bimElement, View *view, con
 
     // delete entity list
     api_del_entity_list(ents);
+}
+
+Wall* WallGeometryService::generateBimModel(BIMElement *bimElement)
+{
+    std::vector<ReferenceLineSegment> referenceLine = {};
+    std::vector<Layer> layers = {};
+    float width = 0;
+    float height = 0;
+    float distance = 0;
+    float slantAngle = 0;
+    float taperAngle = 0;
+    QString referenceLinePosition = "inner";
+
+    m_openglHelper.extractBIMParameters(bimElement, referenceLine, layers, width, height, distance, slantAngle, taperAngle, referenceLinePosition);
+
+    // the ownership of this class is with myglitem.h, checkout MyGLRenderer.editableBimModel
+    Wall* wallModel = new Wall();
+
+    wallModel->setId(bimElement->getId());
+    wallModel->setReferenceLine(referenceLine);
+    wallModel->setLayers(layers);
+    wallModel->setWidth(width);
+    wallModel->setHeight(height);
+    wallModel->setDistance(distance);
+    wallModel->setSlantAngle(slantAngle);
+    wallModel->setTaperAngle(taperAngle);
+    wallModel->setReferenceLinePosition(referenceLinePosition);
+
+    return wallModel;
+}
+
+void WallGeometryService::updateBimElement(BIMElement *wallElement, Wall *wallModel)
+{
+    std::vector<ReferenceLineSegment> referenceLine = wallModel->referenceLine();
+
+    // updating the BIMElement
+    QJsonArray referenceLineJsonArray;
+
+    for (const ReferenceLineSegment& rlsArray : referenceLine)
+    {
+        QJsonObject rlsObject;
+
+        rlsObject.insert("type", rlsArray.type);
+
+        QJsonArray pointsArray;
+
+        for (const Point &point: rlsArray.points)
+        {
+            QJsonArray jsonInnerArray;
+            for (float value : point) {
+                jsonInnerArray.append(QJsonValue(value));
+            }
+
+            pointsArray.append(jsonInnerArray);
+        }
+
+        rlsObject.insert("points", pointsArray);
+
+        referenceLineJsonArray.append(rlsObject);
+    }
+
+    QJsonDocument jsonDoc(referenceLineJsonArray);
+    QByteArray byteArray = jsonDoc.toJson(QJsonDocument::Compact);
+    QString referenceLineString = QString(byteArray);
+
+    QList<BIMParameter*> parameterList = wallElement->getParameterList();
+
+    for (BIMParameter* parameter: parameterList)
+    {
+        if (parameter->getKey() == "ReferenceLine")
+        {
+            parameter->setValue(referenceLineString);
+
+            break;
+        }
+    }
 }
 
 void WallGeometryService::generateWallLayers2D(std::vector<BODY *> &final_bodies, ENTITY_LIST &ents, std::vector<ReferenceLineSegment> &referenceLine, std::vector<Layer> &layers, float width, QString &referenceLinePosition)

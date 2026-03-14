@@ -68,6 +68,7 @@
 // #include "controllers/bim_element_controller.h"
 #include "models/bim_element.h"
 #include "models/bim_parameter.h"
+#include "models/bim_models/base_bim_model.h"
 #include "services/geometry/wall_geometry_service.h"
 #include "services/geometry/beam_geometry_service.h"
 #include "services/geometry/column_geometry_service.h"
@@ -236,6 +237,8 @@ private:
     ENTITY_LIST morph_bodies;
     std::vector<SPAposition> morph_points;
     std::vector<int> morph_selected_bodies;
+
+    BaseBimModel* editableBimModel = nullptr;
 
     GLuint m_pickProgram = 0;
     GLuint m_pickColorLoc = -1;

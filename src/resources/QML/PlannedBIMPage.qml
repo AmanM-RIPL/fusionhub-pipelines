@@ -37,11 +37,6 @@ Row {
 
     property var scheduleSetupList: []
 
-
-    IFCWallController {
-        id: wallController
-    }
-
     BIMElementController{
         id: bimElementController
     }

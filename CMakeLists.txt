@@ -291,6 +291,7 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/common/opengl/classes/mesh_map.h src/common/opengl/classes/mesh_map.cpp
     src/controllers/draft_entity_controller.h src/controllers/draft_entity_controller.cpp
     src/common/edit_option.h src/common/edit_option.cpp
+    src/models/bim_models/base_bim_model.h src/models/bim_models/base_bim_model.cpp
 
 )
 
