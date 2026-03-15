@@ -11,6 +11,7 @@ std::vector<std::unique_ptr<Vendor>> VendorRepository::findAll()
 {
     return {};
 }
+
 std::vector<Vendor*> VendorRepository::findAllQML() {
     std::vector<Vendor*> vendors;
 
@@ -23,6 +24,92 @@ std::vector<Vendor*> VendorRepository::findAllQML() {
     }
     return vendors;
 }
+
+std::vector<Vendor*> VendorRepository::findDashboardQML(int vendorId)
+{
+    std::vector<Vendor*> vendors;
+
+    QSqlQuery query;
+
+    query.prepare(R"(
+        SELECT
+            COALESCE(SUM(wol.dollar_value),0) AS work_order,
+            COALESCE(SUM(wbl.dollar_value),0) AS billing,
+            COALESCE(SUM(wol.dollar_value),0) - COALESCE(SUM(wbl.dollar_value),0) AS remaining
+
+        FROM WorkOrder wo
+
+        LEFT JOIN WorkOrderLine wol
+            ON wol.work_order_id = wo.id
+
+         LEFT JOIN WorkBillingLine wbl
+         ON wbl.work_order_line_id = wol.id
+
+        WHERE wo.vendor_id = :vendorId
+    )");
+
+    query.bindValue(":vendorId", vendorId);
+
+    if(query.exec() && query.next()) {
+
+        Vendor* v = new Vendor();
+
+        v->setTotalWorkOrderAmount(query.value("work_order").toDouble());
+        v->setTotalBillingAmount(query.value("billing").toDouble());
+        v->setTotalRemaining(query.value("remaining").toDouble());
+
+        vendors.push_back(v);
+    }
+
+    return vendors;
+
+}
+
+std::vector<Vendor*> VendorRepository::findDashboardTableQML(int vendorId) {
+    std::vector<Vendor*> workOrders;
+    QSqlQuery query(dbManager->getDatabase());
+
+    QString sql = R"(
+        SELECT
+            wo.id,
+            wo.description AS workOrderDescription,
+            COALESCE(SUM(wol.dollar_value), 0) AS totalAmount,
+            COUNT(wol.id) AS totalBilling
+        FROM WorkOrder wo
+
+        LEFT JOIN WorkOrderLine wol ON wol.work_order_id = wo.id
+        WHERE wo.vendor_id = :vendorId
+        GROUP BY wo.id, wo.description
+    )";
+
+    if (!query.prepare(sql)) {
+        qDebug() << "SQL Prepare Failed:" << query.lastError().text();
+        return workOrders;
+    }
+
+    query.bindValue(":vendorId", vendorId);
+
+    if (query.exec()) {
+        while (query.next()) {
+            Vendor* wo = new Vendor();
+
+            wo->setVendorName(query.value("workOrderDescription").toString());
+            wo->setTotalAmount(query.value("totalAmount").toDouble());
+            wo->setTotalBilling(query.value("totalBilling").toInt());
+
+            workOrders.push_back(wo);
+        }
+
+        if (workOrders.empty()) {
+            qDebug() << "Query executed but returned 0 rows for vendorId:" << vendorId;
+        }
+    } else {
+        qDebug() << "Query Exec Error:" << query.lastError().text();
+    }
+
+    return workOrders;
+}
+
 bool VendorRepository::save(const Vendor& entity) { return false; }
 
 bool VendorRepository::saveQML(Vendor* entity) {
@@ -51,6 +138,7 @@ Vendor* VendorRepository::mapFromQueryQML(const QSqlQuery& query, QObject* paren
 
     return vendor;
 }
+
 void VendorRepository::bindEntityToQuery(QSqlQuery& query, const Vendor& entity) const {
     query.addBindValue(entity.getGlobalId());
     query.addBindValue(entity.getApprovalStatus());

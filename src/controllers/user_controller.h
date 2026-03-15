@@ -1,6 +1,8 @@
 #ifndef USER_CONTROLLER_H
 #define USER_CONTROLLER_H
 #include <QObject>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QJsonObject>
 #include "repositories/user_repository.h"
 
@@ -12,17 +14,32 @@ public:
     Q_INVOKABLE bool login(const QString& username, const QString& password);
     Q_INVOKABLE void logout();
     //void initializeTimer();
+    Q_INVOKABLE void createUser(const QString& username,
+                                   const QString& password,
+                                   const QString& firstName,
+                                   const QString& lastName,
+                                   const QString& mobile,
+                                   const QString& email
+                                   );
 
-    Q_INVOKABLE void create(const QString& userFullName,
-                            const QString& userName,
-                            const QString& mobile1,
-                            const QString& mobile2,
-                            const QString& email1,
-                            const QString& email2,
-                            const QString& jobTitle,
-                            const QString& startDate,
-                            const QString& endDate,
-                            const QString& monthlyDeskCostValue) const;
+    Q_INVOKABLE void updateUser(const QString& userId,
+                                const QString& username,
+                                const QString& firstName,
+                                const QString& lastName,
+                                const QString& email,
+                                const QString& mobile,
+                                const QString& password);
+
+    // Q_INVOKABLE void create(const QString& userFullName,
+    //                         const QString& userName,
+    //                         const QString& mobile1,
+    //                         const QString& mobile2,
+    //                         const QString& email1,
+    //                         const QString& email2,
+    //                         const QString& jobTitle,
+    //                         const QString& startDate,
+    //                         const QString& endDate,
+    //                         const QString& monthlyDeskCostValue) const;
     Q_INVOKABLE void update(const QString& userId,
                             const QString& userFullName,
                             const QString& userName,
@@ -35,7 +52,7 @@ public:
                             const QString& endDate,
                             const QString& monthlyDeskCostValue,
                             const QString& password) const;
-    Q_INVOKABLE std::vector<User*> getUserList() const;
+  // Q_INVOKABLE std::vector<User*> getUserList();
     Q_INVOKABLE std::shared_ptr<User> getUserDetailsById(const QString& userId) const;
     Q_INVOKABLE std::shared_ptr<User> getCurrentUserObject() const;
     Q_INVOKABLE int getCurrentId() const;
@@ -55,6 +72,9 @@ public:
     Q_INVOKABLE QString getCurrentUserMonthlyDeskCostValue() const;
     Q_INVOKABLE QString getCurrentUserPassword() const;
 
+    Q_INVOKABLE void getUserList();
+    Q_INVOKABLE void getUserById(int id);
+
 
     void startBackgroundSync();
 
@@ -62,14 +82,25 @@ signals:
     // Login signals
     void loginSuccess(const QJsonObject& userData);
     void loginFailed(const QString& errorMessage);
+    void userCreated(const QByteArray& response);
+    void userCreationFailed(QString error);
+    // void responseUserReceived(const QByteArray& data);
+    void userListReceived(QVariantList userList);
+    void userListFailed(QString error);
+    void userDetailsReceived(const QVariantMap &userDetails);
+    void userDetailsFailed(const QString &error);
+
+
 
 private slots:
-    // Handle network manager responses
     void onNetworkLoginSuccess(const QJsonObject& userData);
     void onNetworkLoginFailed(const QString& error);
 
 private:
     UserRepository* m_userRepository;
+
+   // QNetworkAccessManager* m_manager;
+
 };
 
 #endif // USER_CONTROLLER_H

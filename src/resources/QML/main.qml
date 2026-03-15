@@ -18,35 +18,142 @@ ApplicationWindow {
         id:userController
     }
 
-
-    AddUserPage{
-        id: addUserPage
-        anchors.fill: parent
-
-        onLogOutClicked: {
-            loginPage.visible = true
-            welcomePage.visible = false
-            addUserPage.visible = false
-            userController.logout()
-
+    // 1. Add User Page
+        AddUserPage {
+            id: addUserPage
+            anchors.fill: parent
+            visible: false
+            onLogOutClicked: {
+                loginPage.visible = true
+                welcomePage.visible = false
+                organizationSettingsPage.visible = false
+                addUserPermissionPage.visible = false
+                userPermissionPage.visible = false
+                userController.logout()
+            }
         }
-    }
 
-    OrganizationSettingsPage{
-        id: organizationSettingsPage
-        anchors.fill: parent
+        // 2. Add User Permission Page
+        AddUserPermissionPage {
+            id: addUserPermissionPage
+            anchors.fill: parent
+            visible: false
+            onLogOutClicked: {
+                loginPage.visible = true
+                welcomePage.visible = false
+                organizationSettingsPage.visible = false
+                addUserPermissionPage.visible = false
+                userPermissionPage.visible = false
+                userController.logout()
+            }
+        }
 
-        onLogOutClicked: {
-            loginPage.visible = true
+        // 3. User Permission Page
+        UserPermissionPage {
+            id: userPermissionPage
+            anchors.fill: parent
+            visible: false
+            onShowAddUserPermission: {
+                    userPermissionPage.visible = false
+                    addUserPermissionPage.visible = true
+                   // addUserPermissionPage.populateFields(row);
+                }
+            onLogOutClicked: {
+                loginPage.visible = true
+                welcomePage.visible = false
+                organizationSettingsPage.visible = false
+                addUserPermissionPage.visible = false
+                userPermissionPage.visible = false
+                userController.logout()
+            }
+
+            onBackClicked: {
+                userPermissionPage.visible = false
+                organizationSettingsPage.visible = true
+            }
+        }
+
+        // 4. Organization Settings Page
+        OrganizationSettingsPage {
+            id: organizationSettingsPage
+            anchors.fill: parent
+            visible: false
+
+            onUserSettingsClicked: {
+                hideAllPages()
+                addUserPage.visible = true
+            }
+
+            // 2. Permission List (UserPermissionPage)
+            onUserPermissionSettingsClicked: {
+                hideAllPages()
+                userPermissionPage.visible = true
+            }
+
+            onLogOutClicked: handleLogout()
+        }
+
+        // Helper function to reset visibility
+        function hideAllPages() {
+            loginPage.visible = false
             welcomePage.visible = false
             organizationSettingsPage.visible = false
-            userController.logout()
+            addUserPage.visible = false
+            userPermissionPage.visible = false
         }
+        // AddUserPage{
+    //     id: addUserPage
+    //     anchors.fill: parent
 
-        onUserSettingsClicked:{
-            userSettingsPopup.open()
-        }
-    }
+    //     onLogOutClicked: {
+    //         loginPage.visible = true
+    //         welcomePage.visible = false
+    //         addUserPage.visible = false
+    //         addUserPermissionPage = false
+    //         userController.logout()
+
+    //     }
+    // }
+
+
+    // AddUserPermissionPage {
+    //     id: addUserPermissionPage
+    //     anchors.fill: parent
+    //     //visible: false
+
+    //     onLogOutClicked: {
+    //         loginPage.visible = true
+    //         welcomePage.visible = false
+    //         organizationSettingsPage.visible = false
+    //         addUserPermissionPage.visible = false
+    //         userController.logout()
+    //     }
+    // }
+
+    // OrganizationSettingsPage{
+    //     id: organizationSettingsPage
+    //     anchors.fill: parent
+
+    //     onLogOutClicked: {
+    //         loginPage.visible = true
+    //         welcomePage.visible = false
+    //         organizationSettingsPage.visible = false
+    //         userController.logout()
+    //     }
+
+    //     onUserSettingsClicked:{
+    //         userSettingsPopup.open()
+    //     }
+
+    //     onUserPermissionSettingsClicked: {
+    //         loginPage.visible = false
+    //         welcomePage.visible = false
+    //         organizationSettingsPage.visible = false
+    //         addUserPage.visible = false
+    //         addUserPermissionPage.visible = true
+    //     }
+
+    // }
 
     LoginPage{
         id: loginPage

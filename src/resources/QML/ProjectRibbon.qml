@@ -34,6 +34,9 @@ Column {
         }
         TabButton {
             text: qsTr("Analytics")
+            onClicked: {
+                projectPageToRedirect("PurchaseDashboard")
+            }
         }
         TabButton {
             text: qsTr("Master")
@@ -453,9 +456,98 @@ Column {
         Item {
             id: activityTab
             onVisibleChanged:   {
-                //This will be changed after Implemention of Analytics
-                  projectPageToRedirect("Analytics")
+                  projectPageToRedirect("PurchaseDashboard")
             }
+            Rectangle {
+                width: parent.width - 20
+                height: 100
+                radius: 8
+                border.width: 1
+                border.color: "#7676801F"//"#8A888629"
+                color: "white"
+                //anchors.horizontalCenter: parent.horizontalCenter
+                Layout.alignment: parent.anchors.alignWhenCentered
+                onVisibleChanged:   {
+                     projectPageToRedirect("PurchaseDashboard")
+                }
+
+                Row {
+                    spacing: 7
+                    padding: 10
+
+                    RibbonButton {
+                        btnSource: "qrc:/resources/images/budget_icon.png"
+                        btnName: "Procurement"
+                        btnNameColor: "#000000"
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        MouseArea {
+                            anchors.fill: parent
+
+                            onClicked: {
+                                projectPageToRedirect("PurchaseDashboard")
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        width: 1
+                        height: 60
+                        color: "#7676801F"
+
+                    }
+
+                    RibbonButton {
+                        btnSource: "qrc:/resources/images/task_board_icon.png"
+                        btnName: "Engineering Works"
+                        btnNameColor: "#000000"
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 120
+
+                        MouseArea {
+                            anchors.fill: parent
+
+                            onClicked: {
+                                projectPageToRedirect("WorksDashboard")
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        width: 1
+                        height: 60
+                        color: "#7676801F"
+                    }
+
+                }
+
+
+                CustomButton {
+                    color: "#007AFF"
+                    width: 89
+                    height: 38
+                    radius: 4
+                    // border.color: "#007AFF"
+                    btnSource: "qrc:/resources/images/logout.svg"
+                    btnName: "Logout"
+                    btnNameColor: "white"
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.right: parent.right
+                    anchors.rightMargin: 13
+
+                    MouseArea{
+                        anchors.fill: parent
+
+                        onClicked: {
+                            logOutButtonClicked()
+                        }
+                    }
+                }
+
+
+            }
+
+
         }
 
         Rectangle {
@@ -539,7 +631,6 @@ Column {
                     color: "#7676801F"
                 }
 
-
                 RibbonButton {
                     btnSource: "qrc:/resources/images/budget_icon.png"
                     btnName: "Budget Head"
@@ -553,6 +644,12 @@ Column {
                             projectPageToRedirect("BudgetHead")
                         }
                     }
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 60
+                    color: "#7676801F"
                 }
 
                 RibbonButton {
