@@ -84,6 +84,19 @@
         <file>resources/shaders/edge.frag</file>
         <file>resources/shaders/edge.vert</file>
         <file>resources/QML/utils/ValidationHelper.qml</file>
+        <file>resources/images/3pt-circle.png</file>
+        <file>resources/images/line.png</file>
+        <file>resources/images/spline.png</file>
+        <file>resources/images/line.svg</file>
+        <file>resources/images/sphere.svg</file>
+        <file>resources/images/cube.svg</file>
+        <file>resources/images/sweep.svg</file>
+        <file>resources/images/offset.svg</file>
+        <file>resources/images/rotate.svg</file>
+        <file>resources/images/move.svg</file>
+        <file>resources/images/copy.svg</file>
+        <file>resources/images/bezier.svg</file>
+        <file>resources/images/circle.svg</file>
         <file>resources/QML/AddUserPermissionPage.qml</file>
         <file>resources/QML/UserPermissionPage.qml</file>
         <file>resources/QML/PurchaseDashboardPage.qml</file>

@@ -157,7 +157,7 @@ private:
     unsigned int m_numOfEdgeIndices;
     unsigned int m_numOfModelMatrices;
 
-    unsigned int m_bimElementId = 1; // default value is 1
+    unsigned int m_bimElementId = 0; // default value is 0
     QMatrix4x4 m_modelMatrix; // this is for the individual mesh
 
     static void encodeIdToColor(unsigned int id, unsigned char &r, unsigned char &g, unsigned char &b);

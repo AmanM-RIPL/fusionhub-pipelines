@@ -237,9 +237,7 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/repositories/draft_entity_repository.h src/repositories/draft_entity_repository.cpp
     src/models/draft_entity.h src/models/draft_entity.cpp
     src/controllers/ifc_detail_controller.h src/controllers/ifc_detail_controller.cpp
-    src/repositories/ifc_repositories/ifc_wall_repository.h src/repositories/ifc_repositories/ifc_wall_repository.cpp
-    src/controllers/ifc_controllers/ifc_wall_controller.h src/controllers/ifc_controllers/ifc_wall_controller.cpp
-    src/models/ifc_models/ifc_wall.h src/models/ifc_models/ifc_wall.cpp
+    src/models/bim_models/wall.h src/models/bim_models/wall.cpp
     src/database/ifc_database_manager.h src/database/ifc_database_manager.cpp
     src/common/ifc_filler_extender.h
     src/common/tree_model.h src/common/tree_model.cpp
@@ -295,6 +293,11 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/common/helper_point.h
     src/common/opengl/classes/mesh_map.h src/common/opengl/classes/mesh_map.cpp
     src/controllers/draft_entity_controller.h src/controllers/draft_entity_controller.cpp
+    src/common/edit_option.h src/common/edit_option.cpp
+    src/models/bim_models/base_bim_model.h src/models/bim_models/base_bim_model.cpp
+    src/models/bim_models/morph.h src/models/bim_models/morph.cpp
+    src/services/geometry/morph_geometry_service.h src/services/geometry/morph_geometry_service.cpp
+
 
 
     src/controllers/permission_controller.h src/controllers/permission_controller.cpp

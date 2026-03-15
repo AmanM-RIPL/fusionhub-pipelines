@@ -1,12 +1,14 @@
 import QtQuick 2.15
 import QtQuick.Controls
 import QtQuick.Layouts
+import com.fh.defaults 1.0
 
 Column {
+    id: projectRibbon
 
     signal logOutButtonClicked()
     signal projectPageToRedirect(string pageName)
-    signal projectPageAction(string pageAction)
+    signal projectPageAction()
 
     width: parent.width
     height: 131
@@ -340,7 +342,9 @@ Column {
 
                         onClicked: {
                             projectPageToRedirect("PlannedBIM")
-                            projectPageAction("ModelView")
+
+                            EditOption.viewType = "ModelView";
+                            projectPageAction();
                         }
                     }
                 }
@@ -356,7 +360,9 @@ Column {
 
                         onClicked: {
                             projectPageToRedirect("PlannedBIM")
-                            projectPageAction("PlanView")
+
+                            EditOption.viewType = "PlanView";
+                            projectPageAction();
                         }
                     }
                 }
@@ -421,6 +427,137 @@ Column {
 
                         onClicked: {
                             projectPageToRedirect("Collision")
+                        }
+                    }
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 60
+                    color: "#7676801F"
+                }
+
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/line.svg"
+                    btnName: "Line"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            EditOption.editType = "line";
+                            projectPageAction();
+                        }
+                    }
+                }
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/circle.svg"
+                    btnName: "3PT Circle"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            EditOption.editType = "3pt-circle";
+                            projectPageAction();
+                        }
+                    }
+                }
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/bezier.svg"
+                    btnName: "Bezier"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            EditOption.editType = "bezier";
+                            projectPageAction();
+                        }
+                    }
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 60
+                    color: "#7676801F"
+                }
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/cube.svg"
+                    btnName: "Cube"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            EditOption.editType = "cube";
+                            projectPageAction();
+                        }
+                    }
+                }
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/sphere.svg"
+                    btnName: "Sphere"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            EditOption.editType = "sphere";
+                            projectPageAction();
+                        }
+                    }
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 60
+                    color: "#7676801F"
+                }
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/copy.svg"
+                    btnName: "Copy"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            EditOption.editType = "copy";
+                            projectPageAction();
+                        }
+                    }
+                }
+
+                RibbonButton {
+                    btnSource: "qrc:/resources/images/move.svg"
+                    btnName: "Move"
+                    btnNameColor: "#000000"
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            EditOption.editType = "move";
+                            projectPageAction();
                         }
                     }
                 }

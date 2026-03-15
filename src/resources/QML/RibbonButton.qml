@@ -22,6 +22,8 @@ Rectangle {
             height: 40
             anchors.horizontalCenter: parent.horizontalCenter
             // anchors.left: parent.left
+            sourceSize.width: 40
+            sourceSize.height: 40
         }
 
         Text{

@@ -38,10 +38,12 @@
 #include "Entities/IfcGeometricRepresentationItem.h"
 
 #include "models/bim_element.h"
+#include "common/helper_point.h"
 #include "common/opengl/classes/mesh.h"
 #include "common/opengl/classes/earcut_algorithm.h"
 #include "common/opengl/classes/opengl_material.h"
 #include "common/opengl/classes/texture.h"
+#include "common/opengl/classes/view.h"
 
 // ACIS header files
 #include "acis.hxx"
@@ -57,6 +59,10 @@
 #include "sweepapi.hxx"
 #include "swp_opts.hxx"
 #include "faceutil.hxx"
+#include "sgquery.hxx"
+#include "queryapi.hxx"
+#include "raytest.hxx"
+#include "rayfire_opts.hxx"
 
 // for faceter
 #include "af_api.hxx"
@@ -66,6 +72,17 @@
 using Point = std::array<float, 2>; // (x,y)
 using Line = std::array<float, 3>; // (m, b, x) for y = mx + b and x in case m is infinity
 
+struct ReferenceLineSegment
+{
+    std::vector<Point> points;
+    QString type; // line, 3pt-circle, center-circle
+};
+
+struct Layer
+{
+    QString name;
+    float width;
+};
 
 
 class OpenglHelper: public QObject
@@ -75,6 +92,20 @@ public:
     explicit OpenglHelper(QObject *parent = nullptr);
 
     void extractBIMParameters(BIMElement *wallElement, std::vector<Point>& referenceLine, float& width, float& height, float& distance);
+    void extractBIMParameters(
+        BIMElement *wallElement,
+        std::vector<ReferenceLineSegment>& referenceLine,
+        std::vector<Layer>& layers,
+        float& width,
+        float& height,
+        float& distance,
+        float& slantAngle,
+        float& taperAngle,
+        QString& referenceLinePosition
+    );
+
+    void readSATFile(QString& fileName, ENTITY_LIST& ents);
+    void saveSATFile(QString& fileName, ENTITY_LIST& ents);
 
     std::vector<Point> generateParallelCurve(std::vector<Point> referenceCurve, float width);
 
@@ -99,6 +130,81 @@ public:
     float getAngleBetweenPoints(Point point1, Point point2, Point point3);
 
     Point getPointAtDistanceAngle(Point point1, Point point2, float angle, float distance); // angle in degrees and counter-clockwise
+
+
+    // Below methods use ACIS
+    void getRayHitPoint(ENTITY_LIST& body_list, View* view, const Point& screen_point, QVector3D &point);
+
+    void convertSPAtransfToQMatrix4x4(const SPAtransf& acis_trans, QMatrix4x4& qt_matrix);
+
+    void getEdgeFromReferenceLineSegment(EDGE* &edge, const ReferenceLineSegment& referenceLineSegment);
+
+    void getReferenceLineWireBody(BODY *&wire_body, ENTITY_LIST& ents, std::vector<ReferenceLineSegment> &referenceLine, std::vector<EDGE*> &edges);
+
+    void addPointToReferenceLine(std::vector<ReferenceLineSegment> &referenceLine, const QVector3D &new_point, const QString &curveType);
+
+    void getParallelCurvePlanerBody(BODY* &new_body, BODY* &wire_body, ENTITY_LIST& ents, EDGE* &first_edge, float width, QString& referenceLinePosition);
+
+    void addHelperPointsForLine(
+        std::vector<ReferenceLineSegment> &referenceLine,
+        ENTITY_LIST& ents,
+        const QVector3D &point,
+        const Point& screen_point,
+        View *view,
+        QList<HelperPoint> &helperPoints,
+        std::vector<Position>& vertices_position,
+        std::vector<Normal>& vertices_normal,
+        std::vector<TextureUV>& vertices_textureuv,
+        std::vector<int>& vertices_materialIndex,
+        std::vector<int>& vertices_textureIndex,
+        std::vector<uint32_t>& meshIndices,
+        std::vector<int>& edge_indices,
+        std::vector<EdgeDataInt>& edge_data_int,
+        std::vector<EdgeDataFloat>& edge_data_float
+    );
+
+    void addHelperPointsFor3PtCircle(
+        std::vector<ReferenceLineSegment> &referenceLine,
+        ENTITY_LIST& ents,
+        const QVector3D &point,
+        const Point& screen_point,
+        View *view,
+        QList<HelperPoint> &helperPoints,
+        std::vector<Position>& vertices_position,
+        std::vector<Normal>& vertices_normal,
+        std::vector<TextureUV>& vertices_textureuv,
+        std::vector<int>& vertices_materialIndex,
+        std::vector<int>& vertices_textureIndex,
+        std::vector<uint32_t>& meshIndices,
+        std::vector<int>& edge_indices,
+        std::vector<EdgeDataInt>& edge_data_int,
+        std::vector<EdgeDataFloat>& edge_data_float
+    );
+
+    void addHelperPointsForBezier(
+        std::vector<ReferenceLineSegment> &referenceLine,
+        ENTITY_LIST& ents,
+        const QVector3D &point,
+        const Point& screen_point,
+        View *view,
+        QList<HelperPoint> &helperPoints,
+        std::vector<Position>& vertices_position,
+        std::vector<Normal>& vertices_normal,
+        std::vector<TextureUV>& vertices_textureuv,
+        std::vector<int>& vertices_materialIndex,
+        std::vector<int>& vertices_textureIndex,
+        std::vector<uint32_t>& meshIndices,
+        std::vector<int>& edge_indices,
+        std::vector<EdgeDataInt>& edge_data_int,
+        std::vector<EdgeDataFloat>& edge_data_float
+    );
+
+    Point updatePointForLine(std::vector<ReferenceLineSegment> &referenceLine, ENTITY_LIST& ents, const QList<HelperPoint> &helperPoints, const Point &screen_point, View *view);
+
+    Point updatePointFor3PtCircle(std::vector<ReferenceLineSegment> &referenceLine, ENTITY_LIST& ents, const QList<HelperPoint> &helperPoints, const Point &screen_point, View *view);
+
+    Point updatePointForBezier(std::vector<ReferenceLineSegment> &referenceLine, ENTITY_LIST& ents, const QList<HelperPoint> &helperPoints, const Point &screen_point, View *view);
+
 
     /*
     void getMeshGeometry(const FacetModeler::Body& body, OdGePoint3dArray& pointArray, std::vector<uint32_t>& meshIndices, std::vector<uint32_t>& borderIndices, OdGeVector3dArray& normalArray);

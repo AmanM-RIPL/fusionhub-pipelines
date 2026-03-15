@@ -17,7 +17,6 @@ Row {
 
     property var ifcDetailList: [];
     property string pageType: "PlannedBIM";
-    property string pageAction: "ModelView";
     property int treeviewWidth: parent.width/2 - 20
     property int glsceneWidth: parent.width/2
     property bool glsceneVisible: false
@@ -34,20 +33,9 @@ Row {
     property int doorExpandedIndex: -1
     property int windowExpandedIndex: -1
     property int stairsExpandedIndex: -1
+    property int morphExpandedIndex: -1
 
-   property var scheduleSetupList: []
-
-    onPageActionChanged: {
-        if (pageAction === "ModelView" || pageAction === "PlanView")
-        {
-            glscene.updateView(plannedBIMRoot.pageAction);
-        }
-    }
-
-
-    IFCWallController {
-        id: wallController
-    }
+    property var scheduleSetupList: []
 
     BIMElementController{
         id: bimElementController
@@ -63,7 +51,7 @@ Row {
         width: treeviewWidth
         height: parent.height
         color: "white"
-        border.color: "#000000"       
+        border.color: "#000000"
 
 
         ScrollView {
@@ -74,7 +62,7 @@ Row {
             clip: true
 
             FHTable {
-                visible: plannedBIMRoot.pageType === "Collision"                
+                visible: plannedBIMRoot.pageType === "Collision"
                 height: 500
                 leftPadding: 20
                 model: plannedBIMRoot.ifcDetailList
@@ -312,7 +300,7 @@ Row {
                 anchors.fill: parent
                 anchors.margins: 10
                 delegate: TreeViewDelegate {}
-                model: treeModel                
+                model: treeModel
 
                 IFCDetailController {
                     id: ifcDetailController
@@ -334,7 +322,8 @@ Row {
                                 {itemName: "Beam"},
                                 {itemName: "Column"},
                                 {itemName: "Slab"},
-                                {itemName: "Stairs"}
+                                {itemName: "Stairs"},
+                                {itemName: "Morph"}
                             ]
                         },
                         {
@@ -455,6 +444,10 @@ Row {
                                 {
                                     stairsSettingsPopup.open();
                                 }
+                                else if(itemName === "Morph")
+                                {
+                                    morphSettingsPopup.open();
+                                }
                             }
 
                             Text {
@@ -505,16 +498,23 @@ Row {
 
             property string wallTotalHeightText: ""
             property string wallWidthText: ""
+            property string wallSlantAngleText: ""
+            property string wallTaperAngleText: ""
+            property string wallReferenceLinePositionText: ""
             property string wallSheduleSetupText: ""
 
 
-            onAcceptCallback: function () {                
+            onAcceptCallback: function () {
                 //wallController.create("projectname", wallTotalHeightTextBox.text, wallWidthTextBox.text);
 
                 let bimElementPtr = bimElementController.create("Wall", "Front Wall", 0, 0);
                 bimElementController.addParameter(bimElementPtr, "Height", wallTotalHeightText);
                 bimElementController.addParameter(bimElementPtr, "Width", wallWidthText);
                 bimElementController.addParameter(bimElementPtr, "ReferenceLine", "[]");
+                bimElementController.addParameter(bimElementPtr, "Layers", "[]");
+                bimElementController.addParameter(bimElementPtr, "SlantAngle", wallSlantAngleText);
+                bimElementController.addParameter(bimElementPtr, "TaperAngle", wallTaperAngleText);
+                bimElementController.addParameter(bimElementPtr, "ReferenceLinePosition", wallReferenceLinePositionText);
 
                 bimElementController.addParameter(bimElementPtr, "ScheduleSetup", wallSheduleSetupText);
 
@@ -522,6 +522,9 @@ Row {
 
                 wallTotalHeightText = "";
                 wallWidthText = "";
+                wallSlantAngleText = "";
+                wallTaperAngleText = "";
+                wallReferenceLinePositionText = "";
 
                 glscene.setCurrentItem("Wall");
                 glscene.update();
@@ -530,6 +533,9 @@ Row {
             onCancelCallback: function () {
                 wallTotalHeightText = "";
                 wallWidthText = "";
+                wallSlantAngleText = "";
+                wallTaperAngleText = "";
+                wallReferenceLinePositionText = "";
                 //wallSheduleSetupText = "";
                 glscene.update();
             }
@@ -550,8 +556,8 @@ Row {
                 id:columnLayout
                 width: wallSettingsPopup.popupWidth-65
                 height: wallSettingsPopup.popupHeight-65
-                ListView{                    
-                    id:mainListView                   
+                ListView{
+                    id:mainListView
                     model: popupModel
                     clip: true
                     orientation: Qt.Vertical
@@ -561,15 +567,15 @@ Row {
 
                     delegate: Rectangle {
                         //id: firstColumn
-                        id: rectId                        
+                        id: rectId
                         width:columnLayout.width
                         height: wallExpandedIndex === index ? 360 : 60
-                        radius: 5                        
-                        color:height === 60 ? "lightgray": "white"                        
+                        radius: 5
+                        color:height === 60 ? "lightgray": "white"
 
                         // Animate the height change
                         Behavior on height {
-                            NumberAnimation { duration: 200 }                            
+                            NumberAnimation { duration: 200 }
                         }
 
                         Text {
@@ -591,11 +597,11 @@ Row {
                             id: wallRowLayout
                             width: parent.width
                             height: 300
-                            spacing: 5                            
+                            spacing: 5
                             anchors.top: nameId.bottom
                             anchors.left: nameId.left
                             visible: wallExpandedIndex === index
-                            Loader {                                        
+                            Loader {
                                         Layout.fillWidth: true
                                         sourceComponent: {
                                             if (nameId.objectName === "0")
@@ -623,12 +629,12 @@ Row {
                                 else {
                                     wallExpandedIndex = index
                                     rectId.border.color = "lightgray"
-                                }                                
+                                }
                             }
                         }
                     }
                 }
-            }                        
+            }
         }
         //End of WallSetting
 
@@ -1380,6 +1386,117 @@ Row {
             }
         }
         //End of StairsSettings
+
+        //Start of MorphSettings
+        FHPopup {
+            id: morphSettingsPopup
+            popupWidth: 500
+            popupHeight: 600
+            title: "Morph Settings"
+            //parent: Overlay
+            anchors.centerIn: Overlay.overlay
+
+            onAcceptCallback: function () {
+                let bimElementPtr = bimElementController.create("Morph", "New Morph Object", 0, 0);
+                bimElementController.addParameter(bimElementPtr, "SATFileName3D", "");
+                bimElementController.addParameter(bimElementPtr, "SATFileName2D", "");
+
+                glscene.updateEditableBimElement(bimElementPtr);
+
+                glscene.setCurrentItem("Morph");
+                glscene.update();
+            }
+
+            onCancelCallback: function () {
+                glscene.update();
+            }
+
+
+            ColumnLayout {
+                id: morphColumnLayout
+                width: morphSettingsPopup.popupWidth-65
+                height: morphSettingsPopup.popupHeight-65
+                ListView{
+                    id: morphMainListView
+                    model: popupModel
+                    clip: true
+                    orientation: Qt.Vertical
+                    spacing: 10
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    delegate: Rectangle {
+                        //id: firstColumn
+                        id: morphRectId
+                        width:columnLayout.width
+                        height: morphExpandedIndex === index ? 360 : 60
+                        radius: 5
+                        color:height === 60 ? "lightgray": "white"
+
+                        // Animate the height change
+                        Behavior on height {
+                            NumberAnimation { duration: 200 }
+                        }
+
+                        Text {
+                            id: morphNameId
+                            text: name
+                            objectName:rowIndexText
+                            topPadding: 10
+                            bottomPadding: 10
+                            font.pointSize: 14
+                            color: "black"
+                            font.weight: 700
+                            font.family: "Segoe UI"
+                            anchors.left: parent.left
+                            anchors.leftMargin: 10
+                        }
+
+                        //Start of row
+                        RowLayout{
+                            id: morphRowLayout
+                            width: parent.width
+                            height: 300
+                            spacing: 5
+                            anchors.top: morphNameId.bottom
+                            anchors.left: morphNameId.left
+                            visible: morphExpandedIndex === index
+                            Loader {
+                                        Layout.fillWidth: true
+                                        sourceComponent: {
+                                            if (morphNameId.objectName === "0")
+                                            {
+                                                return gpDelegateComponentForMorph;
+                                            }
+                                            else if (morphNameId.objectName === "1")
+                                            {
+                                                return modelDelegateComponentForMorph;
+                                            }
+                                            else
+                                            {
+                                                return cpDelegateComponentForMorph;
+                                            }
+                                        }
+                                    }
+                        }//End of row
+                        MouseArea {
+                            anchors.fill: morphNameId
+                            onClicked: {
+                               //If this item is already expanded, collapse it. Otherwise, expand it.
+                                if (morphExpandedIndex === index) {
+                                    morphExpandedIndex = -1
+                                }
+                                else {
+                                    morphExpandedIndex = index
+                                    morphRectId.border.color = "lightgray"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        //End of MorphSetting
     }
 
 
@@ -1472,7 +1589,7 @@ Row {
     }
 
     onVisibleChanged: {
-        //if(plannedBIMRoot.visible && plannedBIMRoot.pageType === "PlannedBIM")        
+        //if(plannedBIMRoot.visible && plannedBIMRoot.pageType === "PlannedBIM")
         {
             //ifcDetailList = ifcDetailRepository.getIFCDetails();
             //ifcDetailList = ifcDetailController.loadIFC(ifcDetailController.getIfcFilePath());
@@ -1643,8 +1760,8 @@ Row {
 
 
                     Text{
-                        id: wallTypeLabel
-                        text: "Wall Type"
+                        id: wallSlantAngleLabel
+                        text: "Slant Angle (in Degrees)"
                         color: "#323130"
                         //font.weight: 700
                         font.pixelSize: 14
@@ -1652,10 +1769,14 @@ Row {
                         topPadding: 10
                     }
                     CustomTextBox{
-                        id: wallTypeTextBox
-                        placeholderText: "Wall Type"
+                        id: wallSlantAngleTextBox
+                        placeholderText: "0"
                         text:""
                         color: "#323130"
+
+                        onTextChanged: {
+                            wallSettingsPopup.wallSlantAngleText = wallSlantAngleTextBox.text;
+                        }
                     }
                 }
             }
@@ -1724,8 +1845,8 @@ Row {
 
 
                     Text{
-                        id: wallGeometryTypeLabel
-                        text: "Geometry Type"
+                        id: wallTaperAngleLabel
+                        text: "Taper Angle (in Degrees)"
                         color: "#323130"
                         //font.weight: 700
                         font.pixelSize: 14
@@ -1733,15 +1854,19 @@ Row {
                         topPadding: 10
                      }
                     CustomTextBox{
-                        id: wallGeometryTypeTextBox
-                        placeholderText: "Geometry Type"
+                        id: wallTaperAngleTextBox
+                        placeholderText: "0"
                         text:""
                         color: "#323130"
+
+                        onTextChanged: {
+                            wallSettingsPopup.wallTaperAngleText = wallTaperAngleTextBox.text;
+                        }
                     }
                 }
             }
         }
-    }    
+    }
 
    //Components for Model
     Component {
@@ -1755,9 +1880,33 @@ Row {
                 id: firstColumn
                 width: (wallRowLayoutModel.width - wallRowLayoutModel.spacing) / 2-20
                 height: 300
+
+                ColumnLayout {
+                    width: firstColumn.width
+                    height:40// firstColumn.height
+
+                    Text{
+                        id: wallReferenceLinePositionLabel
+                        text: "Orientation Type"
+                        color: "#323130"
+                        font.pixelSize: 14
+                        font.family: "Segoe UI"
+                    }
+                    CustomComboBox{
+                        id: wallReferenceLinePositionComboBox
+                        model: ["Inner", "Outer"]
+                        width: parent.width
+                        currentIndex: 0
+                        onCurrentTextChanged: {
+                            const referenceLinePosition = wallReferenceLinePositionComboBox.currentIndex === 0 ? "inner" : "outer";
+                            wallSettingsPopup.wallReferenceLinePositionText = referenceLinePosition;
+                        }
+                    }
+                }
+
             }
         }
-    }    
+    }
 
     //Components for Classification and Properties
     Component {
@@ -3118,4 +3267,60 @@ Row {
         }
     }
     //End of StairsSettings Component
+
+
+    //Components for Geometry and Positioning For MorphSettings
+    Component {
+        id: gpDelegateComponentForMorph
+        RowLayout {
+            id:morphRowLayoutGP
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (morphRowLayoutGP.width - morphRowLayoutGP.spacing) / 2-10
+                height: 300
+            }
+
+            Rectangle {
+                id:secondColumn
+                width: (morphRowLayoutGP.width - morphRowLayoutGP.spacing) / 2-10
+                height: 300
+            }
+        }
+    }
+
+   //Components for morph Model
+    Component {
+        id: modelDelegateComponentForMorph
+        RowLayout {
+            id:morphRowLayoutModel
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (morphRowLayoutModel.width - morphRowLayoutModel.spacing) / 2-20
+                height: 300
+            }
+        }
+    }
+
+    //Components for morph Classification and Properties
+    Component {
+        id: cpDelegateComponentForMorph
+        RowLayout {
+            id: morphRowLayoutCP
+            width: parent.width
+            height: 300
+            spacing: 5
+            Rectangle {
+                id: firstColumn
+                width: (morphRowLayoutCP.width - morphRowLayoutCP.spacing) / 2-20
+                height: 300
+            }
+        }
+    }
+    //End of MorphSettings Component
 }

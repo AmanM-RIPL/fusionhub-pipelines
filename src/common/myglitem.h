@@ -64,9 +64,11 @@
 #include "common/opengl/classes/opengl_material.h"
 #include "common/opengl/classes/texture.h"
 #include "common/helper_point.h"
+#include "common/edit_option.h"
 // #include "controllers/bim_element_controller.h"
 #include "models/bim_element.h"
 #include "models/bim_parameter.h"
+#include "models/bim_models/base_bim_model.h"
 #include "services/geometry/wall_geometry_service.h"
 #include "services/geometry/beam_geometry_service.h"
 #include "services/geometry/column_geometry_service.h"
@@ -144,8 +146,6 @@ public:
     IFCDetailController* pIfcDetailController;
     IfcGeometryService* pIfcGeometryService;
 
-    QString m_viewType = "ModelView";
-
     QList<BIMElement*> bimElementList;
     BIMElement* editableBimElement = nullptr;
     BIMElement* bimElementToSync = nullptr; // if not nullptr then we need to use MeshMap.AddMesh();
@@ -164,7 +164,7 @@ public slots:
     void zoomIn();
     void zoomOut();
 
-    void updateView(QString viewType);
+    void updateEditOption();
 
     void requestPick(int x, int y);
     void requestHover(int x, int y, int glsceneX, int glsceneY);
@@ -232,6 +232,13 @@ private:
     int m_pickX = -1;
     int m_pickY = -1;
     QString m_viewType = "ModelView";
+
+    // Below is for morph object
+    ENTITY_LIST morph_bodies;
+    std::vector<SPAposition> morph_points;
+    std::vector<int> morph_selected_bodies;
+
+    BaseBimModel* editableBimModel = nullptr;
 
     GLuint m_pickProgram = 0;
     GLuint m_pickColorLoc = -1;

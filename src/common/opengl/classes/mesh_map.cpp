@@ -53,7 +53,7 @@ void MeshMap::AddMesh(Mesh *mesh, BIMElement *bim_element, ViewType view_type)
 
     //3. Update mesh's indices and edge_indices based on
     //   global indices in MeshMap
-    mesh->OffsetMeshData(m_numOfVertices, m_numOfEdges, m_numOfModelMatrices);
+    mesh->OffsetMeshData(m_numOfVertices, m_numOfEdges, m_numOfModelMatrices/16); // m_numOfModelMatrices adds 16 for every matrix
 
     //4. Update indices
     m_numOfVertices = m_numOfVertices + mesh->getNumOfVertices();

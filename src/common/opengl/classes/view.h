@@ -15,6 +15,12 @@
 #include "texture.h"
 #include "mesh_map.h"
 
+struct Ray
+{
+    QVector3D position;
+    QVector3D direction;
+};
+
 class View : public QObject, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
@@ -35,6 +41,7 @@ public:
     unsigned int Selection();
     QVector3D GetPointInModelSpace(Mesh* mesh);
     QVector3D GetPointInViewSpace(int pointX, int pointY);
+    Ray GetRayFromCamera(int pointX, int pointY);
     std::array<float, 2> GetPointInScreenSpace(QVector3D& point3D);
 
     void AddMesh(Mesh* mesh);

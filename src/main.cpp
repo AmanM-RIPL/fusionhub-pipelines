@@ -58,7 +58,6 @@
 #include "controllers/schedule_setup_controller.h"
 #include "controllers/schedule_of_rates_controller.h"
 #include "controllers/ifc_detail_controller.h"
-#include "controllers/ifc_controllers/ifc_wall_controller.h"
 #include "controllers/bim_element_controller.h"
 #include "controllers/bill_of_quantity_controller.h"
 #include "controllers/bill_of_quantity_line_controller.h"
@@ -81,6 +80,7 @@
 #include "models/unit_of_measurement.h"
 #include "models/draft_entity.h"
 #include "common/helper_point.h"
+#include "common/edit_option.h"
 
 #include "network/network_manager.h"
 
@@ -133,6 +133,11 @@ void unlock_spatial_products()
    spa_unlock_result res = spa_unlock_products(unlock_str);
 
    qDebug() << "SPATIAL License info:" << res.get_message_text();
+}
+
+static QObject* editOptionProvider(QQmlEngine*, QJSEngine*)
+{
+    return EditOption::instance();
 }
 
 int main(int argc, char *argv[])
@@ -410,6 +415,9 @@ int main(int argc, char *argv[])
     qRegisterMetaType<HelperPoint>();
 
 
+    qmlRegisterSingletonType<EditOption>("com.fh.defaults", 1, 0, "EditOption", editOptionProvider);
+
+
     qmlRegisterType<UserController>("com.fh.controllers", 1, 0, "UserController");
     qmlRegisterType<ProjectController>("com.fh.controllers", 1, 0, "ProjectController");
     qmlRegisterType<BudgetHeadController>("com.fh.controllers", 1, 0, "BudgetHeadController");
@@ -421,7 +429,6 @@ int main(int argc, char *argv[])
     qmlRegisterType<ScheduleOfRatesController>("com.fh.controllers", 1, 0, "ScheduleOfRatesController");
     qmlRegisterType<ScheduleOfRatesLineController>("com.fh.controllers", 1, 0, "ScheduleOfRatesLineController");
     qmlRegisterType<IFCDetailController>("com.fh.controllers", 1, 0, "IFCDetailController");
-    qmlRegisterType<IFCWallController>("com.fh.controllers", 1, 0, "IFCWallController");
     qmlRegisterType<BIMElementController>("com.fh.controllers", 1, 0, "BIMElementController");
     qmlRegisterType<BillOfQuantityController>("com.fh.controllers", 1, 0, "BillOfQuantityController");
     qmlRegisterType<BillOfQuantityLineController>("com.fh.controllers", 1, 0, "BillOfQuantityLineController");
