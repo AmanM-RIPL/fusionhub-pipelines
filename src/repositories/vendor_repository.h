@@ -13,6 +13,10 @@ public:
     Q_INVOKABLE std::unique_ptr<Vendor> findById(int id) override;
     std::vector<std::unique_ptr<Vendor>> findAll() override;
     Q_INVOKABLE std::vector<Vendor*> findAllQML();
+    Q_INVOKABLE std::vector<Vendor*> findDashboardTableQML(int vendorId);
+    Q_INVOKABLE std::vector<Vendor*> findDashboardQML(int vendorId);
+
+
     bool save(const Vendor& entity) override;
     Q_INVOKABLE bool saveQML(Vendor* entity);
     bool update(const Vendor& entity) override;

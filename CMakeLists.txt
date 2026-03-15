@@ -88,6 +88,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 
 set(CMAKE_AUTOMOC ON)
@@ -297,6 +298,9 @@ add_executable(FusionHubQt ${SOURCES} ${HEADERS}
     src/models/bim_models/morph.h src/models/bim_models/morph.cpp
     src/services/geometry/morph_geometry_service.h src/services/geometry/morph_geometry_service.cpp
 
+
+
+    src/controllers/permission_controller.h src/controllers/permission_controller.cpp
 )
 
 target_include_directories(FusionHubQt PRIVATE src)
@@ -418,6 +422,7 @@ target_link_libraries(FusionHubQt PRIVATE "${SHORT_PATH}\\IFC_vc17_amd64dll_26.7
 
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Concurrent)
+target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)
 target_link_libraries(FusionHubQt PRIVATE Qt6::Core)

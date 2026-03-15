@@ -16,6 +16,12 @@ public:
     Q_INVOKABLE void update(int id, const int &vendorId, const QVariantList &purchaseOrderLine) const;
 
     Q_INVOKABLE std::vector<PurchaseOrderLine*> getPurchaseOrderLineList(bool isApproved = false) const;
+    Q_INVOKABLE std::vector<PurchaseOrderLine*> getPurchaseOrderLineMaterialList(bool isApproved = false) const;
+   // Q_INVOKABLE std::vector<PurchaseOrderLine*> getPurchaseOrderLineVendorList(bool isApproved = false) const;
+    Q_INVOKABLE std::vector<PurchaseOrderLine*> getDashboardData(int purchaseOrderId, bool isApproved = false) const;
+    Q_INVOKABLE std::vector<PurchaseOrderLine*> getDashboardTableData(int materialId, bool isApproved = false) const;
+
+
 
 private:
     PurchaseOrderLineRepository* m_purchaseOrderLineRepository;

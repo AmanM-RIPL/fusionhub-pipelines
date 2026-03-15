@@ -1,4 +1,5 @@
 #include "purchase_order_line_controller.h"
+#include "purchase_order_controller.h"
 #include "vendor_controller.h"
 #include "material_controller.h"
 #include "unit_of_measurement_controller.h"
@@ -234,4 +235,46 @@ std::vector<PurchaseOrderLine*> PurchaseOrderLineController::getPurchaseOrderLin
     }
 
     return purchaseOrderLines;
+}
+
+std::vector<PurchaseOrderLine*> PurchaseOrderLineController::getPurchaseOrderLineMaterialList(bool isApproved) const
+{
+    qDebug() << "Fetching Purchase Order Lines with Material Mapping. IsApproved: " << isApproved;
+
+    std::vector<PurchaseOrderLine*> purchaseOrderLines = m_purchaseOrderLineRepository->findAllQML();
+
+    MaterialController materialController;
+    std::vector<Material*> vecMaterial = materialController.getMaterialList(true);
+
+    QMap<int, QString> materialMap;
+    for (const Material *m : vecMaterial) {
+        materialMap.insert(m->getId(), m->getMaterialName());
+    }
+
+
+    for (size_t i = 0; i < purchaseOrderLines.size(); ++i) {
+        int mId = purchaseOrderLines[i]->getMaterialId();
+
+        if (materialMap.contains(mId)) {
+            purchaseOrderLines[i]->setMaterialName(materialMap.value(mId));
+        } else {
+            purchaseOrderLines[i]->setMaterialName("Unknown Material");
+        }
+    }
+
+    return purchaseOrderLines;
+}
+
+std::vector<PurchaseOrderLine*> PurchaseOrderLineController::getDashboardData(int materialId, bool isApproved) const
+{
+    if(isApproved){
+        return m_purchaseOrderLineRepository->findDashboardQML(materialId);
+    }
+}
+
+std::vector<PurchaseOrderLine*> PurchaseOrderLineController::getDashboardTableData(int materialId, bool isApproved) const
+{
+    if(isApproved){
+        return m_purchaseOrderLineRepository->findDashboardTableQML(materialId);
+    }
 }

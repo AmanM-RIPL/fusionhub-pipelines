@@ -92,6 +92,14 @@ Rectangle {
             visible: pageName === "WorkBilling"
         }
 
+        PurchaseDashboardPage{
+            visible: pageName === "PurchaseDashboard"
+        }
+
+        WorksDashboardPage{
+            visible: pageName === "WorksDashboard"
+        }
+
 
 
         /*

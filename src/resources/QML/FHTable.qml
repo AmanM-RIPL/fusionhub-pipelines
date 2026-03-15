@@ -18,6 +18,8 @@ Column {
     property int rowsPerPage: 10
     property int currentPage: 1
 
+    property bool allowPermissionView: false
+
     // Signals
     signal viewRequested(var row)
     signal editRequested(var row)
@@ -277,6 +279,28 @@ Column {
                                             }
                                         }
                                     }
+
+                               //      // View Permissions Button
+                               //      Rectangle {
+                               //          width: 110; height: 24; radius: 4
+                               //          visible: (activeRowIndex === rowIndex) && root.allowPermissionView
+                               //          color: permMouseArea.pressed ? "#28a745" : "#2ECC71"
+                               //          Text {
+                               //              anchors.centerIn: parent
+                               //              text: "View Permissions"
+                               //              color: "white"
+                               //              font.pixelSize: 11
+                               //          }
+                               //          MouseArea {
+                               //              id: permMouseArea
+                               //              anchors.fill: parent
+                               //              onClicked: {
+                               //                  viewPermissionsRequested(rowData)
+                               //                  activeRowIndex = -1
+                               //              }
+                               //          }
+                               //      }
+
                                 }
 
                                 Text {

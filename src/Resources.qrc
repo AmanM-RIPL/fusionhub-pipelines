@@ -97,5 +97,9 @@
         <file>resources/images/copy.svg</file>
         <file>resources/images/bezier.svg</file>
         <file>resources/images/circle.svg</file>
+        <file>resources/QML/AddUserPermissionPage.qml</file>
+        <file>resources/QML/UserPermissionPage.qml</file>
+        <file>resources/QML/PurchaseDashboardPage.qml</file>
+        <file>resources/QML/WorksDashboardPage.qml</file>
     </qresource>
 </RCC>

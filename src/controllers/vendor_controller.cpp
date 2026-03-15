@@ -1,4 +1,7 @@
 #include "vendor_controller.h"
+#include "work_order_controller.h"
+#include "work_order_line_controller.h"
+
 #include "common/repository_locator.h"
 #include <QDir>
 #include <QJsonObject>
@@ -168,5 +171,21 @@ std::vector<Vendor*> VendorController::getVendorList(bool isApproved) const
         return vendors;
     }
 }
+
+std::vector<Vendor*> VendorController::getWorkOrderTableList(int vendorId, bool isApproved) const
+{
+    if(isApproved){
+        return m_vendorRepository->findDashboardTableQML(vendorId);
+    }
+}
+
+std::vector<Vendor*> VendorController::getDashboardData(int vendorId, bool isApproved) const
+{
+    if(isApproved){
+        return m_vendorRepository->findDashboardQML(vendorId);
+    }
+}
+
+
 
 

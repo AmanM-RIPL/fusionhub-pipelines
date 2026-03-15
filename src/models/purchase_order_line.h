@@ -28,10 +28,17 @@ class PurchaseOrderLine: public QObject
     Q_PROPERTY(double taxAmount READ getTaxAmount WRITE setTaxAmount NOTIFY taxAmountChanged)
     Q_PROPERTY(double taxWithHolding READ getTaxWithHolding WRITE setTaxWithHolding NOTIFY taxWithHoldingChanged)
 
+    Q_PROPERTY(double totalIndent READ getTotalIndent WRITE setTotalIndent NOTIFY totalIndentChanged)
+    Q_PROPERTY(double totalPO READ getTotalPO WRITE setTotalPO NOTIFY totalPOChanged)
+    Q_PROPERTY(double totalGRN READ getTotalGRN WRITE setTotalGRN NOTIFY totalGRNChanged)
+    Q_PROPERTY(double totalStoreAmount READ getTotalStoreAmount WRITE setTotalStoreAmount NOTIFY totalStoreAmountChanged)
+    Q_PROPERTY(double totalPurchaseExpense READ getTotalPurchaseExpense WRITE setTotalPurchaseExpense NOTIFY totalPurchaseExpenseChanged)
+
+
 public:
     explicit PurchaseOrderLine(QObject* parent = nullptr): QObject(parent) {}
     PurchaseOrderLine(int id, const QString& globalId, bool approvalStatus,int purchaseOrderId, int materialId, const QString& materialName, int vendorId, const QString& vendorName,
-                      int quantity, int unitOfMeasurementId, const QString& unitOfMeasurementName , double amount , double taxAmount, double taxWithHolding, QObject* parent = nullptr);
+                      int quantity, int unitOfMeasurementId, const QString& unitOfMeasurementName , double amount , double taxAmount, double taxWithHolding, double totalIndent, double totalPO, double totalGRN,double totalStoreAmount, double totalPurchaseExpense, QObject* parent = nullptr);
 
     // --- Getters ---
     int getId() const { return id; }
@@ -49,6 +56,12 @@ public:
     double getTaxAmount() const { return taxAmount; }
     double getTaxWithHolding() const { return taxWithHolding; }
 
+    double getTotalIndent() const { return totalIndent; }
+    double getTotalPO() const { return totalPO; }
+    double getTotalGRN() const { return totalGRN; }
+    double getTotalStoreAmount() const { return totalStoreAmount; }
+    double getTotalPurchaseExpense() const { return totalPurchaseExpense; }
+
     // --- Setters ---
     void setId(int id) { this->id = id; }
     void setGlobalId(const QString& globalId) { this->globalId = globalId; }
@@ -64,6 +77,12 @@ public:
     void setUnitOfMeasurementName(const QString& unitOfMeasurementName) { this->unitOfMeasurementName = unitOfMeasurementName; }
     void setTaxAmount(double taxAmount) { this->taxAmount = taxAmount; }
     void setTaxWithHolding(double taxWithHolding) { this->taxWithHolding = taxWithHolding; }
+
+    void setTotalIndent(double totalIndent) { this->totalIndent = totalIndent; }
+    void setTotalPO(double totalPO){ this->totalPO = totalPO; }
+    void setTotalGRN(double totalGRN){ this->totalGRN = totalGRN; }
+    void setTotalStoreAmount(double totalStoreAmount){ this->totalStoreAmount = totalStoreAmount; }
+    void setTotalPurchaseExpense(double totalPurchaseExpense){ this->totalPurchaseExpense = totalPurchaseExpense; }
 
 
 signals:
@@ -81,6 +100,12 @@ signals:
     void taxAmountChanged();
     void taxWithHoldingChanged();
 
+    void totalIndentChanged();
+    void totalPOChanged();
+    void totalGRNChanged();
+    void totalStoreAmountChanged();
+    void totalPurchaseExpenseChanged();
+
 private:
     int id = 0;
     QString globalId;
@@ -96,6 +121,12 @@ private:
     int quantity = 0;
     double taxAmount = 0;
     double taxWithHolding = 0;
+
+    double totalIndent = 0.0;
+    double totalPO = 0.0;
+    double totalGRN = 0.0;
+    double totalStoreAmount = 0.0;
+    double totalPurchaseExpense = 0.0;
 };
 
 Q_DECLARE_METATYPE(PurchaseOrderLine)

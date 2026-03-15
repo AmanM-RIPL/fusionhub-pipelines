@@ -5,9 +5,11 @@ Rectangle {
     anchors.fill: parent
     color: "#EDF1F4"
 
-    signal logOutClicked()   
+    signal logOutClicked()
+    signal backClicked()
     signal organizationSettingsClicked()
     signal userSettingsClicked()
+    signal userPermissionSettingsClicked()
 
     Column {
         anchors.fill: parent
@@ -94,7 +96,7 @@ Rectangle {
                         }
 
                         onClicked: {
-                            //newProjectClicked();                          
+                            //newProjectClicked();
                         }
                     }
                 }
@@ -205,7 +207,7 @@ Rectangle {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                //projectClicked();
+                                userSettingsClicked()
                             }
                         }
                     }
@@ -222,8 +224,9 @@ Rectangle {
                         anchors.centerIn: parent
                     }
 
-                    Text{
-                        text: "Edit"
+                    Text {
+                        id: viewAllUsersText
+                        text: "View All Users"
                         font.bold: true
                         color: "blue"
                         font.family: "Segoe UI"
@@ -234,41 +237,139 @@ Rectangle {
                         anchors.top: parent.top
                         anchors.topMargin: 131
 
-                       /* MouseArea {
+                        MouseArea {
                             anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+
                             onClicked: {
                                 loginPage.visible = false
                                 welcomePage.visible = false
                                 organizationSettingsPage.visible = false
                                 addUserPage.visible = true
-                            }
-                        }*/
-                    }
-
-                    Image {
-                        source: "qrc:/resources/images/addBlack.svg"
-                        anchors.left: parent.left
-                        anchors.leftMargin: 45
-                        anchors.top: parent.top
-                        anchors.topMargin: 138
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-
-                            onClicked: {
-                                loginPage.visible = false
-                                welcomePage.visible = false
-                                organizationSettingsPage.visible = false
-                                addUserPage.visible = true                                
+                                addUserPermissionPage.visible = false
                             }
                         }
                     }
-                }                
+               //      Image {
+               //          source: "qrc:/resources/images/addBlack.svg"
+               //          anchors.left: parent.left
+               //          anchors.leftMargin: 45
+               //          anchors.top: parent.top
+               //          anchors.topMargin: 138
+
+               //          MouseArea {
+               //              anchors.fill: parent
+               //              cursorShape: Qt.PointingHandCursor
+               //              hoverEnabled: true
+
+               //              onClicked: {
+               //                  loginPage.visible = false
+               //                  welcomePage.visible = false
+               //                  organizationSettingsPage.visible = false
+               //                  addUserPage.visible = true
+               //              }
+               //          }
+               //      }
+
+                }
 
             //}
+     //Space
+            Rectangle {
+                width: 100
+                height: 20
+                color: "#EDF1F4"
+            }
 
+    //Permission
+            Rectangle{
+                width: 300
+                height: 164
+                radius: 8
+
+                //signal addUserClicked()
+
+                Image {
+                    source: "qrc:/resources/images/profile.svg"
+                    anchors.left: parent.left
+                    anchors.leftMargin: 12
+                    anchors.top: parent.top
+                    anchors.topMargin: 13
+                }
+
+                Text{
+                    text: "Permission"
+                    color: "#323130"
+                    font.family: "Segoe UI"
+                    font.weight: 700
+                    font.pixelSize: 20
+                    anchors.left: parent.left
+                    anchors.leftMargin: 30
+                    anchors.top: parent.top
+                    anchors.topMargin: 6
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            //projectClicked();
+                        }
+                    }
+                }
+
+                Text{
+                    width: 275
+                    height: 42
+                    text:"User Permission description"
+                    color: "#323130"
+                    font.family: "Segoe UI"
+                    font.weight: 400
+                    font.pixelSize: 16
+                    wrapMode: Text.Wrap
+                    anchors.centerIn: parent
+                }
+
+                Text{
+                    text: "View All Permissions"
+                    font.bold: true
+                    color: "blue"
+                    font.family: "Segoe UI"
+                    font.weight: 400
+                    font.pixelSize: 16
+                    anchors.left: parent.left
+                    anchors.leftMargin: 12
+                    anchors.top: parent.top
+                    anchors.topMargin: 131
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            userPermissionSettingsClicked()
+                        }
+                    }
+                }
+
+               /* Image {
+                    source: "qrc:/resources/images/addBlack.svg"
+                    anchors.left: parent.left
+                    anchors.leftMargin: 45
+                    anchors.top: parent.top
+                    anchors.topMargin: 138
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        hoverEnabled: true
+
+                        onClicked: {
+                            loginPage.visible = false
+                            welcomePage.visible = false
+                            organizationSettingsPage.visible = false
+                            addUserPage.visible = true
+                        }
+                    }
+                } */
+            }
+    //space
             Rectangle {
                 width: 100
                 height: 20
@@ -277,4 +378,3 @@ Rectangle {
         }
     }
 }
-
