@@ -327,6 +327,25 @@ if(APPLE)
 endif()
 
 #All include directory path
+
+#**********Start For ACIS Modeller********************
+
+set(ACIS_ROOT "C:/Spatial/ACIS_2026.1.0.0hf")
+set(ACIS_ARCH_NT "NT_VC17_64_DLL") # Example architecture for Windows/VS2022
+set(ACIS_ARCH "win_b64")
+set(ACIS_BIN_DIR "${ACIS_ROOT}/${ACIS_ARCH}/code/bin")
+
+target_include_directories(${PROJECT_NAME} PRIVATE "${ACIS_ROOT}/include")
+#find_library(ACIS_LIB NAMES SpaACIS PATHS "${ACIS_ROOT}/${ACIS_ARCH_NT}/code/lib")
+find_library(ACIS_LIB NAMES SPAAcisDs PATHS "${ACIS_ROOT}/${ACIS_ARCH}/code/lib")
+target_compile_definitions(${PROJECT_NAME} PRIVATE SPA_NO_AUTO_LINK)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    ${ACIS_LIB}
+    Qt6::Core
+)
+
+#***********End of ACIS Modeller*****************
+
 target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\KernelBase")
 target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\Kernel\\Include")
 target_include_directories(FusionHubQt PRIVATE "${SHORT_PATH}\\Kernel_vc17_amd64dll_26.7\\FacetModeler\\include")
@@ -455,3 +474,12 @@ file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\IFC2X3_26.7
 file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\hdf5.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\hdf5_cpp.dll DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${SHORT_PATH}\\IFC_vc17_amd64dll_26.7\\exe\\vc17_amd64dll\\hdf5io_26.7_17.tx DESTINATION ${CMAKE_BINARY_DIR})
+
+
+# Copy ALL dlls in one shot after the build succeeds
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${ACIS_BIN_DIR}"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+    COMMENT "Copying all ACIS runtime DLLs to build folder..."
+)

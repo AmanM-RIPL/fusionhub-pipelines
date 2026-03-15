@@ -145,6 +145,9 @@ void WallGeometryService::generateMesh2D(BIMElement* wallElement, Mesh* mesh)
 
 void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
 {
+    // ACIS entity list to delete all entities at the end of the function
+    ENTITY_LIST ents;
+
     std::vector<Point> referenceLine = {};
     float width = 0;
     float height = 0;
@@ -189,6 +192,58 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
     FacetModeler::Profile2D profile(polygon);
     FacetModeler::Body body = FacetModeler::Body::extrusion(profile, OdGeVector3d(0.0, 0.0, 1.0) * height);
 
+    // ACIS BODY
+
+    // 1. Create wire body of the reference line
+    BODY* wire_body = nullptr;
+    ents.add(wire_body);
+
+    std::vector<EDGE*> wire_edges = {};
+    for (int i = 0; i < referenceLine.size(); i++)
+    {
+        SPAposition first_point;
+        SPAposition second_point;
+
+        first_point = SPAposition(referenceLine[i][0], referenceLine[i][1], 0);
+
+        if (i == referenceLine.size() - 1)
+        {
+            second_point = SPAposition(referenceLine[0][0], referenceLine[0][1], 0);
+        }
+        else
+        {
+            second_point = SPAposition(referenceLine[i + 1][0], referenceLine[i + 1][1], 0);
+        }
+
+        EDGE* edge = nullptr;
+        ents.add(edge);
+
+        api_curve_line(first_point, second_point, edge);
+        wire_edges.push_back(edge);
+    }
+
+    api_make_ewire(wire_edges.size(), wire_edges.data(), wire_body);
+
+    // 2. Sweep along z-axis vector
+    BODY* new_body = nullptr;
+    ents.add(new_body);
+
+    EXCEPTION_BEGIN
+        sweep_options* sw_options = ACIS_NEW sweep_options();
+    EXCEPTION_TRY
+        outcome sw_result = api_sweep_with_options(wire_body, SPAvector(0,0,1 * height), sw_options, new_body);
+
+        if (!sw_result.ok())
+        {
+            error_info* info = sw_result.get_error_info();
+            qInfo() << info->error_message();
+        }
+
+    EXCEPTION_CATCH_TRUE
+        ACIS_DELETE sw_options;
+    EXCEPTION_END
+
+
     QList<BIMElement*> hostedElementList = wallElement->getHostedElementList();
     for (BIMElement* hostedElement: hostedElementList)
     {
@@ -228,7 +283,7 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
     int scalingFactor = 5;
 
     m_openglHelper.getMeshGeometry(
-        body,
+        wire_body,
         vertices_position,
         vertices_normal,
         vertices_textureuv,
@@ -260,6 +315,9 @@ void WallGeometryService::generateMesh3D(BIMElement* wallElement, Mesh* mesh)
         edge_indices
     );
     mesh->setBIMElementId(wallElement->getId());
+
+    // delete entity list
+    api_del_entity_list(ents);
 }
 
 void WallGeometryService::updateGeometry(BIMElement *wallElement, const QVector3D &point)

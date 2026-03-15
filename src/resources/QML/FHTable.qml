@@ -163,9 +163,12 @@ Column {
                                     removedIndex = index
                                     console.log("removedIndex:", removedIndex, "removed:", index)
                                     root.model.splice(index, 1)
-                                    listView.model = root.pageData
+                                    //listView.model = root.pageData
+                                    listView.model.splice(index, 1)
                                 }
                             }
+
+
                         }
                     }
 

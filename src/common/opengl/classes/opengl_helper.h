@@ -43,6 +43,25 @@
 #include "common/opengl/classes/opengl_material.h"
 #include "common/opengl/classes/texture.h"
 
+// ACIS header files
+#include "acis.hxx"
+#include "kernapi.hxx"
+
+#include <boolapi.hxx>
+#include "api.hxx"
+#include "lists.hxx"
+#include "fileinfo.hxx"
+#include <cstrapi.hxx>
+#include "curdef.hxx"
+#include "straight.hxx"
+#include "sweepapi.hxx"
+#include "swp_opts.hxx"
+#include "faceutil.hxx"
+
+// for faceter
+#include "af_api.hxx"
+#include "fct_utl.hxx"
+#include "af_serializable_mesh.hxx"
 
 using Point = std::array<float, 2>; // (x,y)
 using Line = std::array<float, 3>; // (m, b, x) for y = mx + b and x in case m is infinity
@@ -112,6 +131,28 @@ public:
         int edgeDash,
         int edgeMaterialIndex // inputs to put in the std::vector<>
     );
+
+    void getMeshGeometry(
+        BODY* body,
+        std::vector<Position>& vertices_position,
+        std::vector<Normal>& vertices_normal,
+        std::vector<TextureUV>& vertices_textureuv,
+        std::vector<int>& vertices_materialIndex,
+        std::vector<int>& vertices_textureIndex,
+        std::vector<uint32_t>& meshIndices,
+        std::vector<int>& edge_indices,
+        std::vector<EdgeDataInt>& edge_data_int,
+        std::vector<EdgeDataFloat>& edge_data_float,
+        int textureIndex,
+        int materialIndex,
+        int scalingFactor,
+        float edgeWidth, // inputs to put in the std::vector<>
+        float edgeDashLength,
+        float edgeGapLength,
+        int edgeDash,
+        int edgeMaterialIndex // inputs to put in the std::vector<>
+    );
+
 
     void getMeshGeometry(const OdMdBody& body,
         std::vector<Position>& vertices_position,
