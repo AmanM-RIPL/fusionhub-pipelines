@@ -42,6 +42,9 @@
 #include "fct_utl.hxx"
 #include "af_serializable_mesh.hxx"
 
+extern QString gEnvironmentPath;
+extern QString gProjectName;
+
 class MorphGeometryService : public QObject
 {
     Q_OBJECT
@@ -63,7 +66,7 @@ public:
 private:
     OpenglHelper m_openglHelper;
 
-    void generateLineEdge(Morph *morphModel, EditOption *editOption, const QVector3D &point);
+    BODY* generateLineEdge(std::vector<SPAposition>& points, const QVector3D &point);
 
 signals:
 };

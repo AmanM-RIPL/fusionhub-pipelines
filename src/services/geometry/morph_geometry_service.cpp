@@ -28,8 +28,11 @@ void MorphGeometryService::generateMesh2D(Morph *morphModel, Mesh *mesh)
     int scalingFactor = 5;
 
 
-    for (BODY* &new_body: entity_list_2d)
+    for (ENTITY* new_entity: entity_list_2d)
     {
+        BODY* new_body = dynamic_cast<BODY*>(new_entity);
+        if (new_body == nullptr) continue;
+
         m_openglHelper.getMeshGeometry(
             new_body,
             vertices_position,
@@ -90,8 +93,11 @@ void MorphGeometryService::generateMesh3D(Morph *morphModel, Mesh *mesh)
     int scalingFactor = 5;
 
 
-    for (BODY* &new_body: entity_list_3d)
+    for (ENTITY* new_entity: entity_list_3d)
     {
+        BODY* new_body = dynamic_cast<BODY*>(new_entity);
+        if (new_body == nullptr) continue;
+
         m_openglHelper.getMeshGeometry(
             new_body,
             vertices_position,
@@ -132,10 +138,168 @@ void MorphGeometryService::updateGeometry(Morph *morphModel, const QVector3D &po
 {
     QString editType = editOption->editType();
 
+    // 1. get points
+    std::vector<SPAposition> points = (editOption->viewType() == "ModelView") ? morphModel->morph_points_3D() : morphModel->morph_points_2D();
+    ENTITY_LIST& entity_list = (editOption->viewType() == "ModelView") ? morphModel->morph_bodies_3D() : morphModel->morph_bodies_2D();
+
+    // 2. Generate geometry
     if (editType == "line")
     {
-        generateLineEdge(morphModel, editOption, point);
+        BODY* wire_body = generateLineEdge(points, point);
+        if (wire_body != nullptr) entity_list.add(wire_body);
     }
+
+    // 3. update morphModel
+    if (editOption->viewType() == "ModelView")
+    {
+        morphModel->setMorph_points_3D(points);
+    }
+    else
+    {
+        morphModel->setMorph_points_2D(points);
+    }
+}
+
+void MorphGeometryService::generateWIPMesh2D(Morph *morphModel, Mesh *mesh, const QVector3D &point, const Point &screen_point, View *view, QList<HelperPoint> &helperPoints, EditOption *editOption)
+{
+    QString editType = editOption->editType();
+    std::vector<SPAposition> points = morphModel->morph_points_2D();
+    ENTITY_LIST ents;
+
+    ENTITY_LIST& entity_list_2d = morphModel->morph_bodies_2D();
+
+    // Mesh geometry generation
+    std::vector<uint32_t> meshIndices = {};
+    std::vector<Position> vertices_position = {};
+    std::vector<Normal> vertices_normal = {};
+    std::vector<TextureUV> vertices_textureuv = {};
+    std::vector<int> vertices_materialIndex = {};
+    std::vector<int> vertices_textureIndex = {};
+    std::vector<int> edge_indices = {};
+    std::vector<EdgeDataInt> edge_data_int = {};
+    std::vector<EdgeDataFloat> edge_data_float = {};
+    int textureIndex = Texture::NONE; // if less than zero then we don't need to worry about textures
+    int materialIndex = OpenGLMaterial::IVORY;
+    float edgeWidth = 1.0f;
+    float edgeDashLength = 1.0f;
+    float edgeGapLength = 1.0f;
+    int edgeDash = 0;
+    int edgeMaterialIndex = OpenGLMaterial::BLACK;
+    int scalingFactor = 5;
+
+
+    for (ENTITY* new_entity: entity_list_2d)
+    {
+        BODY* new_body = dynamic_cast<BODY*>(new_entity);
+        if (new_body == nullptr) continue;
+
+        m_openglHelper.getMeshGeometry(
+            new_body,
+            vertices_position,
+            vertices_normal,
+            vertices_textureuv,
+            vertices_materialIndex,
+            vertices_textureIndex,
+            meshIndices,
+            edge_indices,
+            edge_data_int,
+            edge_data_float,
+            textureIndex,
+            materialIndex,
+            scalingFactor,
+            edgeWidth,
+            edgeDashLength,
+            edgeGapLength,
+            edgeDash,
+            edgeMaterialIndex
+        );
+    }
+
+    // 2. Generate geometry
+    if (editType == "line")
+    {
+        BODY* wire_body = generateLineEdge(points, point);
+        if (wire_body != nullptr)
+        {
+            ents.add(wire_body);
+
+            m_openglHelper.getMeshGeometry(
+                wire_body,
+                vertices_position,
+                vertices_normal,
+                vertices_textureuv,
+                vertices_materialIndex,
+                vertices_textureIndex,
+                meshIndices,
+                edge_indices,
+                edge_data_int,
+                edge_data_float,
+                textureIndex,
+                materialIndex,
+                scalingFactor,
+                edgeWidth,
+                edgeDashLength,
+                edgeGapLength,
+                edgeDash,
+                edgeMaterialIndex
+            );
+
+            // add helper points TBD
+        }
+    }
+
+    mesh->Initialize(
+        vertices_position,
+        vertices_normal,
+        vertices_textureuv,
+        vertices_materialIndex,
+        vertices_textureIndex,
+        edge_data_int,
+        edge_data_float,
+        meshIndices,
+        edge_indices
+    );
+    mesh->setBIMElementId(morphModel->id());
+
+    // delete entity list
+    api_del_entity_list(ents);
+}
+
+Point MorphGeometryService::updatePoint2D(Morph *morphModel, const QList<HelperPoint> &helperPoints, const Point &screen_point, View *view)
+{
+    Point newScreenPoint = { screen_point[0], screen_point[1] };
+
+    return newScreenPoint;
+}
+
+void MorphGeometryService::generateHelperPoints(Morph *morphModel, QList<HelperPoint> &helperPoints)
+{
+    HelperPoint length;
+    HelperPoint angle;
+
+    length.x = 0.0f;
+    length.y = 0.0f;
+    length.text = "Length";
+    length.value = 0.0f;
+    length.visible = false;
+
+    angle.x = 0.0f;
+    angle.y = 0.0f;
+    angle.text = "Angle";
+    angle.value = 0.0f;
+    angle.visible = false;
+
+    helperPoints.clear();
+
+    helperPoints.append(length);
+    helperPoints.append(angle);
+}
+
+void MorphGeometryService::getRayHitPoint(Morph *morphModel, View *view, const Point &screen_point, QVector3D &point)
+{
+    ENTITY_LIST& body_list = morphModel->morph_bodies_3D();
+
+    m_openglHelper.getRayHitPoint(body_list, view, screen_point, point);
 }
 
 Morph *MorphGeometryService::generateBimModel(BIMElement *bimElement)
@@ -214,24 +378,8 @@ void MorphGeometryService::updateBimElement(BIMElement *wallElement, Morph *morp
     }
 }
 
-void MorphGeometryService::generateLineEdge(Morph *morphModel, EditOption *editOption, const QVector3D &point)
+BODY* MorphGeometryService::generateLineEdge(std::vector<SPAposition>& points, const QVector3D &point)
 {
-    std::vector<SPAposition> points;
-    ENTITY_LIST& entity_list;
-
-    // 1. get points
-    if (editOption->viewType() == "ModelView")
-    {
-        points = morphModel->morph_points_3D();
-        entity_list = morphModel->morph_bodies_3D();
-    }
-    else
-    {
-        points = morphModel->morph_points_2D();
-        entity_list = morphModel->morph_bodies_2D();
-    }
-
-    // 2. make updates
     if (points.size() == 0)
     {
         points.push_back(SPAposition(point.x(), point.y(), point.z()));
@@ -251,18 +399,12 @@ void MorphGeometryService::generateLineEdge(Morph *morphModel, EditOption *editO
 
         api_make_ewire(1, edges.data(), wire_body);
 
-        if (wire_body != nullptr) entity_list.add(wire_body);
-
-        points = {};
+        if (wire_body != nullptr)
+        {
+            points = {};
+            return wire_body;
+        }
     }
 
-    // 3. save update to points
-    if (editOption->viewType() == "ModelView")
-    {
-        morphModel->setMorph_points_3D(points);
-    }
-    else
-    {
-        morphModel->setMorph_points_2D(points);
-    }
+    return nullptr;
 }

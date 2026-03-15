@@ -216,12 +216,15 @@ void OpenglHelper::saveSATFile(QString &fileName, ENTITY_LIST &ents)
     result = api_set_int_option("sequence_save_files", 1);
 
     // Open a file for writing, save the list of entities, and close the file.
-    FILE* save_file = acis_fopen(fileName, "w");
+    QByteArray byteArray = fileName.toUtf8();
+    const char* constCharPointer = byteArray.constData();
+
+    FILE* save_file = acis_fopen(constCharPointer, "w");
     result = api_save_entity_list(save_file, TRUE, ents);
 
     if (!result.ok())
     {
-        std::cout << "Error: " << result.get_error_info()->error_message() << std::endl;
+        qInfo() << "Error: " << result.get_error_info()->error_message();
     }
 
     acis_fclose(save_file);

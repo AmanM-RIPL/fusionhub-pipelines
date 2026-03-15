@@ -1018,7 +1018,7 @@ void WallGeometryService::getRayHitPoint(Wall *wallModel, View *view, const Poin
         return;
     }
 
-    // 2D bodies
+    // 3D bodies
     std::vector<BODY*> final_bodies;
     generateWallLayers3D(final_bodies, ents, referenceLine, layers, width, height, referenceLinePosition, slantAngle, taperAngle);
 
