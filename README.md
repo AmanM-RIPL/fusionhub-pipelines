@@ -1,2 +1,2 @@
 # fusionhub-pipelines
-Repo created for fusionhub project piplines
+Repo created for fusionhub QT frontend project piplines
