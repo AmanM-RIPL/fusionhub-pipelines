@@ -8,7 +8,6 @@ gcp_secret/
 src/infrastructure/sqlite
 
 # local env files
-.env
 .ssh
 .env.local
 .env.*.local
