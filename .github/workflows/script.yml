@@ -1,20 +1,22 @@
-name: Qt 6.5 CMake Build Pipeline
+name: Frontend Qt Build Pipeline
 
 on:
   push:
-    branches: [ fusionhub-QT-frontend ]
+    branches:
+      - fusionhub-QT-frontend
+      # - main                   # uncomment when ready for production
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: self-hosted
+  build-frontend:
+    runs-on: [self-hosted, qt-runner]
 
     defaults:
       run:
         shell: bash
 
     env:
-      QT_DIR: 'C:/Qt/6.5.0/msvc2019_64'    # ← Update this
+      QT_DIR: 'C:/Qt/6.5.0/msvc2019_64'   # ← update this
       BUILD_DIR: 'C:/Users/RIPL/Desktop/FusionHubQt-build'
 
     steps:
@@ -50,5 +52,5 @@ jobs:
 
       - name: Build Complete
         run: |
-          echo "Build saved to Desktop at: $BUILD_DIR"
+          echo "Build saved to Desktop: $BUILD_DIR"
           ls -la "$BUILD_DIR/"
