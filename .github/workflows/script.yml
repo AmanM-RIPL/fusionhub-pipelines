@@ -1,13 +1,15 @@
-name: Build Pipeline
+name: Backend Build Pipeline
 
 on:
   push:
-    branches: [ github-action ]
+    branches:
+      - fusionhub-NJs-backend
+      # - main                   # uncomment when ready for production
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: self-hosted
+  build-backend:
+    runs-on: [self-hosted, node-runner]
 
     defaults:
       run:
