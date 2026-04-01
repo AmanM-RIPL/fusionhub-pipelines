@@ -1,0 +1,54 @@
+name: Qt 6.5 CMake Build Pipeline
+
+on:
+  push:
+    branches: [ fusionhub-QT-frontend ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    defaults:
+      run:
+        shell: bash
+
+    env:
+      QT_DIR: 'C:/Qt/6.5.0/msvc2019_64'    # ← Update this
+      BUILD_DIR: 'C:/Users/RIPL/Desktop/FusionHubQt-build'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Verify Qt & CMake
+        run: |
+          echo "Qt path: $QT_DIR"
+          "$QT_DIR/bin/qmake" -version
+          cmake --version
+          ninja --version
+
+      - name: Create build folder on Desktop
+        run: |
+          mkdir -p "$BUILD_DIR"
+          echo "Build folder created at: $BUILD_DIR"
+
+      - name: Configure CMake
+        run: |
+          cmake -B "$BUILD_DIR" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="$QT_DIR" \
+            -G "Ninja"
+
+      - name: Build
+        run: |
+          cmake --build "$BUILD_DIR" \
+            --config Release \
+            --parallel
+
+      - name: Build Complete
+        run: |
+          echo "Build saved to Desktop at: $BUILD_DIR"
+          ls -la "$BUILD_DIR/"
