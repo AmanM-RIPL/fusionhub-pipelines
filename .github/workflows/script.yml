@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-backend:
-    runs-on: [self-hosted, node-runner]
+    runs-on: [ubuntu-latest]
 
     defaults:
       run:
