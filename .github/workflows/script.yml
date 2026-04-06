@@ -3,11 +3,11 @@ name: Backend Build Pipeline
 on:
   push:
     branches:
-      - fusionhub-NJs-backend    # triggers on direct push
+      - fusionhub-NJs-backend
       # - main                   # uncomment when ready for production
   pull_request:
     branches:
-      - fusionhub-NJs-backend    # triggers when PR is merged to this branch
+      - fusionhub-NJs-backend
       # - main                   # uncomment when ready for production
   workflow_dispatch:
 
@@ -19,6 +19,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Create .env file
+        run: echo "${{ secrets.FUSIONHUB_SECRET }}" > .env
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -27,11 +30,18 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # - name: Install cross-env
-      #   run: npm install -g cross-env
+      - name: Install cross-env
+        run: npm install -g cross-env
 
-      # - name: Run tests
-      #   run: npx cross-env NODE_ENV=test npx jest --silent=false
+      - name: Run tests
+        run: npx cross-env NODE_ENV=test npx jest --silent=false
 
       - name: Build
         run: npm run build
+
+      # - name: Upload build artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: backend-build
+      #     path: dist/
+      #     retention-days: 7
