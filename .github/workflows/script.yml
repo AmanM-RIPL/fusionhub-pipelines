@@ -3,17 +3,17 @@ name: Backend Build Pipeline
 on:
   push:
     branches:
-      - fusionhub-NJs-backend
+      - fusionhub-NJs-backend    # triggers on direct push
+      # - main                   # uncomment when ready for production
+  pull_request:
+    branches:
+      - fusionhub-NJs-backend    # triggers when PR is merged to this branch
       # - main                   # uncomment when ready for production
   workflow_dispatch:
 
 jobs:
   build-backend:
-    runs-on: [ubuntu-latest]
-
-    defaults:
-      run:
-        shell: bash
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
