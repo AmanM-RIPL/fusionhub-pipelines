@@ -13,7 +13,7 @@ on:
 
 jobs:
   build-frontend:
-    runs-on: ubuntu-latest        # ← No self-hosted needed!
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -21,17 +21,38 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake \
+            ninja-build \
+            libgl1-mesa-dev \
+            libglu1-mesa-dev \
+            libx11-dev \
+            libx11-xcb-dev \
+            libxcb-xinerama0-dev \
+            libxcb-icccm4-dev \
+            libxcb-image0-dev \
+            libxcb-keysyms1-dev \
+            libxcb-randr0-dev \
+            libxcb-render-util0-dev \
+            libxcb-shape0-dev \
+            libxcb-sync-dev \
+            libxcb-xfixes0-dev \
+            libxcb-xkb-dev \
+            libxkbcommon-dev \
+            libxkbcommon-x11-dev \
+            libfontconfig1-dev \
+            libfreetype-dev \
+            libdbus-1-dev
+
       - name: Install Qt 6.5 via aqtinstall
         run: |
           pip install aqtinstall
           aqt install-qt linux desktop 6.5.0 gcc_64 -O $HOME/Qt
           echo "$HOME/Qt/6.5.0/gcc_64/bin" >> $GITHUB_PATH
           echo "Qt6_DIR=$HOME/Qt/6.5.0/gcc_64/lib/cmake/Qt6" >> $GITHUB_ENV
-
-      - name: Install CMake & Ninja
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake ninja-build
 
       - name: Configure CMake
         run: |
@@ -43,8 +64,8 @@ jobs:
       - name: Build
         run: cmake --build build --config Release --parallel
 
-      # - name: List build output
-      #  run: ls -la build/
+      - name: List build output
+        run: ls -la build/
 
       # - name: Upload build artifact
       #   uses: actions/upload-artifact@v4
